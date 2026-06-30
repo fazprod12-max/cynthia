@@ -1103,6 +1103,63 @@ footer{
 .chat-hint{font-size:11px;color:var(--txt3);text-align:center;margin-top:8px;}
 
 /* ════════════════════════════════════════
+   BETA BANNER
+════════════════════════════════════════ */
+#beta-banner{
+  position:fixed;top:0;left:0;right:0;z-index:10000;
+  background:linear-gradient(90deg,#b91c1c,#dc2626,#b91c1c);
+  border-bottom:2px solid #fbbf24;
+  padding:9px 16px 9px 48px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  font-size:12.5px;font-weight:700;color:#fff;letter-spacing:.3px;
+  box-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+#beta-banner .bb-text{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;text-align:center;}
+#beta-banner .bb-pill{background:rgba(251,191,36,.2);border:1px solid #fbbf24;border-radius:100px;padding:2px 10px;font-size:11px;font-weight:800;color:#fbbf24;white-space:nowrap;}
+#beta-banner .bb-close{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;cursor:pointer;padding:2px 8px;font-size:13px;font-weight:900;line-height:1.4;transition:.15s;}
+#beta-banner .bb-close:hover{background:rgba(255,255,255,.3);}
+body.beta-open{padding-top:40px;}
+body.beta-open .demo-bar{top:40px;}
+body.beta-open .gnav{top:calc(40px + 58px);}
+body.beta-open .gnav-mobile{top:calc(40px + 88px);}
+
+/* ════════════════════════════════════════
+   FAQ ACCORDION
+════════════════════════════════════════ */
+.faq-wrap{padding:64px 24px;max-width:720px;margin:0 auto;}
+.faq-title{text-align:center;font-size:clamp(22px,4vw,32px);font-weight:800;margin-bottom:36px;color:var(--txt);}
+.faq-item{border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;transition:.2s;}
+.faq-item.open{border-color:rgba(124,58,237,.4);}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;cursor:pointer;font-weight:700;font-size:15px;color:var(--txt);gap:12px;user-select:none;}
+.faq-q:hover{background:rgba(124,58,237,.05);}
+.faq-arrow{font-size:18px;flex-shrink:0;transition:transform .25s;color:var(--v4);}
+.faq-item.open .faq-arrow{transform:rotate(180deg);}
+.faq-body{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.faq-item.open .faq-body{max-height:300px;}
+.faq-body p{padding:0 24px 20px;font-size:14px;line-height:1.75;color:var(--txt2);}
+.faq-legal{text-align:center;font-size:12px;margin-top:28px;color:var(--txt3);}
+.faq-legal a{color:var(--txt3);text-decoration:underline;}
+.faq-legal a:hover{color:var(--v4);}
+
+/* ════════════════════════════════════════
+   BUTTON HOVER PREMIUM
+════════════════════════════════════════ */
+.btn-main{transition:transform .15s ease,box-shadow .15s ease,opacity .15s ease;}
+.btn-main:hover{transform:scale(1.04);box-shadow:0 8px 32px rgba(124,58,237,.45);}
+.btn-main:active{transform:scale(.98);}
+.btn-sec{transition:transform .15s ease,background .15s ease;}
+.btn-sec:hover{transform:scale(1.04);}
+.btn-launch{transition:transform .15s ease,box-shadow .15s ease;}
+.btn-launch:hover{transform:scale(1.03);box-shadow:0 8px 28px rgba(124,58,237,.4);}
+
+/* ════════════════════════════════════════
+   SKELETON LOADER (AI thinking)
+════════════════════════════════════════ */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel{background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite;border-radius:8px;}
+.chat-typing-wrap .typing-bubble{padding:14px 18px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.2);border-radius:0 14px 14px 14px;display:inline-flex;gap:6px;align-items:center;}
+
+/* ════════════════════════════════════════
    RESPONSIVE — SMALL (≤ 480px)
 ════════════════════════════════════════ */
 @media (max-width:480px){
@@ -1116,7 +1173,17 @@ footer{
 }
 </style>
 </head>
-<body>
+<body class="beta-open">
+
+<!-- ══ BETA BANNER ══ -->
+<div id="beta-banner">
+  <div class="bb-text">
+    <span>🧪</span>
+    <span class="bb-pill">BÊTA</span>
+    <span>PHASE DE TEST — Service <strong>100% GRATUIT</strong> · Données fictives affichées · Rejoignez les premiers testeurs !</span>
+  </div>
+  <button class="bb-close" onclick="closeBetaBanner()" title="Fermer">✕</button>
+</div>
 
 <canvas id="bg-canvas"></canvas>
 <div class="mesh"></div>
@@ -1127,7 +1194,7 @@ footer{
   <button onclick="gp('preappel')">② Pré-appel</button>
   <button onclick="gp('call')">③ En appel</button>
   <button onclick="gp('confirm')">④ Confirmation</button>
-  <span class="dl">Maquette CYNTH.IA v2</span>
+  <span class="dl">CYNTH.IA v3 — Bêta</span>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -1167,7 +1234,7 @@ footer{
       <div class="orb-core"></div>
     </div>
     <div class="hero-inner">
-      <div class="hero-pill"><span class="hdot"></span>847 personnes ont trouvé leur voie · Note 4.9★</div>
+      <div class="hero-pill"><span class="hdot"></span>Phase bêta ouverte · <span id="hero-count">0</span> premiers testeurs · Service 100% gratuit</div>
       <h1 class="hero-h">
         <span class="h-white">Votre carrière mérite</span>
         <span class="h-grad">mieux qu'un questionnaire.</span>
@@ -1175,15 +1242,15 @@ footer{
       <p class="hero-sub">Une conseillère IA qui vous écoute vraiment. 20 à 45 minutes de conversation. Trois pistes concrètes. Un rapport dans votre boîte.</p>
       <div class="hero-actions">
         <button class="btn-main" onclick="gp('preappel')">
-          <span>🎙</span> Démarrer mon entretien
+          <span>🎙</span> Démarrer mon entretien — Gratuit
         </button>
         <button class="btn-sec" onclick="showModal('audio')">Écouter un extrait ▶</button>
       </div>
       <div class="hero-proof">
         <div class="hp"><div class="hp-num">20–45 min</div><div class="hp-label">Durée moyenne</div></div>
-        <div class="hp"><div class="hp-num">847</div><div class="hp-label">Entretiens bêta</div></div>
-        <div class="hp"><div class="hp-num">4.9 ★</div><div class="hp-label">Note moyenne</div></div>
-        <div class="hp"><div class="hp-num">29 €</div><div class="hp-label">Prix unique tout inclus</div></div>
+        <div class="hp"><div class="hp-num" id="stat-count">0</div><div class="hp-label">Testeurs bêta</div></div>
+        <div class="hp"><div class="hp-num" style="font-size:12px;line-height:1.4;padding-top:4px;color:rgba(255,255,255,.6);">En cours<br>de collecte</div><div class="hp-label">Premiers avis</div></div>
+        <div class="hp"><div class="hp-num">Gratuit</div><div class="hp-label">Pendant la bêta</div></div>
       </div>
     </div>
   </div>
@@ -1191,23 +1258,23 @@ footer{
   <!-- TICKER -->
   <div class="ticker-wrap">
     <div class="ticker-track" id="ticker">
-      <span class="ti"><span class="tic">✦</span> 847 entretiens réalisés</span>
-      <span class="ti"><span class="tic">★</span> Note moyenne 4.9/5</span>
+      <span class="ti"><span class="tic">🧪</span> Phase bêta ouverte — rejoignez les premiers testeurs</span>
+      <span class="ti"><span class="tic">★</span> Premiers retours testeurs en cours de collecte</span>
       <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — Faouzi, 34 ans</span>
       <span class="ti"><span class="tic">✦</span> Profil RIASEC · CPF · VAE · ROME</span>
-      <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 min</span>
+      <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 à 45 min</span>
       <span class="ti"><span class="tic">✦</span> Disponible 24h/24 · 7j/7</span>
       <span class="ti"><span class="tic">✦</span> "Elle m'a posé des questions que personne n'avait osé" — Thilai</span>
-      <span class="ti"><span class="tic">★</span> Plan d'action 30 jours inclus</span>
+      <span class="ti"><span class="tic">★</span> Service 100% gratuit pendant la bêta · Plan d'action inclus</span>
       <!-- duplicate for seamless loop -->
-      <span class="ti"><span class="tic">✦</span> 847 entretiens réalisés</span>
-      <span class="ti"><span class="tic">★</span> Note moyenne 4.9/5</span>
+      <span class="ti"><span class="tic">🧪</span> Phase bêta ouverte — rejoignez les premiers testeurs</span>
+      <span class="ti"><span class="tic">★</span> Premiers retours testeurs en cours de collecte</span>
       <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — Faouzi, 34 ans</span>
       <span class="ti"><span class="tic">✦</span> Profil RIASEC · CPF · VAE · ROME</span>
-      <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 min</span>
+      <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 à 45 min</span>
       <span class="ti"><span class="tic">✦</span> Disponible 24h/24 · 7j/7</span>
       <span class="ti"><span class="tic">✦</span> "Elle m'a posé des questions que personne n'avait osé" — Thilai</span>
-      <span class="ti"><span class="tic">★</span> Plan d'action 30 jours inclus</span>
+      <span class="ti"><span class="tic">★</span> Service 100% gratuit pendant la bêta · Plan d'action inclus</span>
     </div>
   </div>
 
@@ -1537,15 +1604,15 @@ footer{
       <div class="fc-core"></div>
     </div>
     <div class="fc-inner">
-      <div class="fc-label">✦ 29 € · Sans engagement · Rapport inclus</div>
+      <div class="fc-label">🧪 Bêta · 100% Gratuit · Sans engagement · Rapport inclus</div>
       <div class="fc">
         <h2>
           <span class="fw">Votre avenir</span>
           <span class="fg">commence maintenant.</span>
         </h2>
-        <p class="fc-sub">847 personnes ont déjà fait le premier pas.<br>L'entretien dure entre 20 et 45 minutes. La clarté, elle, dure bien plus longtemps.</p>
+        <p class="fc-sub">Les premiers testeurs partagent leurs retours. <strong style="color:rgba(255,255,255,.9);">Service 100% gratuit pendant la bêta.</strong><br>L'entretien dure entre 20 et 45 minutes. La clarté, elle, dure bien plus longtemps.</p>
         <button class="btn-main" style="font-size:17px;padding:20px 56px;" onclick="gp('preappel')">
-          <span>🎙</span> Démarrer mon entretien — 29 €
+          <span>🎙</span> Démarrer mon entretien — Gratuit
         </button>
         <div class="fc-trust">
           <div class="ft"><span class="ftc">✓</span> 100% confidentiel</div>
@@ -1557,6 +1624,37 @@ footer{
     </div>
   </div>
 
+  <!-- FAQ -->
+  <div class="faq-wrap reveal">
+    <h2 class="faq-title">Questions fréquentes</h2>
+
+    <div class="faq-item" id="faq-1">
+      <div class="faq-q" onclick="toggleFaq('faq-1')">
+        <span>CYNTH.IA est-elle vraiment fiable pour m'orienter ?</span>
+        <span class="faq-arrow">▾</span>
+      </div>
+      <div class="faq-body">
+        <p>CYNTH.IA n'est pas un questionnaire à cases à cocher. Elle mène une vraie conversation guidée par les méthodes d'orientation reconnues (RIASEC, analyse des forces cachées, exploration des valeurs). Comme tout outil IA, elle complète — elle ne remplace pas — un conseiller humain agréé (CEP). Pendant la bêta, nous collectons les premiers retours pour continuer à améliorer la qualité des entretiens. Si vous n'êtes pas satisfait, vous nous écrivez et on améliore.</p>
+      </div>
+    </div>
+
+    <div class="faq-item" id="faq-2">
+      <div class="faq-q" onclick="toggleFaq('faq-2')">
+        <span>Que devient ce que je dis à CYNTH.IA ? Mes données sont-elles protégées ?</span>
+        <span class="faq-arrow">▾</span>
+      </div>
+      <div class="faq-body">
+        <p>Vos données ne sont jamais revendues, jamais partagées avec des tiers. Pendant la bêta, les entretiens peuvent être analysés en interne pour améliorer le service — uniquement de façon anonymisée. Vous pouvez demander la suppression complète de vos données à tout moment en écrivant à <a href="mailto:contact@cynth-ia.com" style="color:var(--v4);">contact@cynth-ia.com</a>. Nous respectons le RGPD. Données hébergées en Europe.</p>
+      </div>
+    </div>
+
+    <p class="faq-legal">
+      <a href="#" onclick="showModal('confidentialite');return false;">Mentions légales & RGPD</a>
+      · <a href="#" onclick="showModal('cgu');return false;">CGU</a>
+      · <a href="mailto:contact@cynth-ia.com">contact@cynth-ia.com</a>
+    </p>
+  </div>
+
   <footer>
     <div class="foot-logo">CYNTH.IA</div>
     <div class="foot-links">
@@ -1565,7 +1663,7 @@ footer{
       <a href="#" onclick="showModal('contact');return false;">Contact</a>
       <a href="#" onclick="showModal('pro');return false;">Professionnels</a>
     </div>
-    <div class="foot-copy">© 2026 CYNTH.IA · Tous droits réservés</div>
+    <div class="foot-copy">© 2026 CYNTH.IA · Bêta ouverte · Tous droits réservés</div>
   </footer>
 </div>
 
@@ -1607,7 +1705,7 @@ footer{
       </div>
       <div class="pa-guarantees">
         <div class="pg"><span class="pgc">✓</span>100% confidentiel</div>
-        <div class="pg"><span class="pgc">✓</span>29 €</div>
+        <div class="pg"><span class="pgc">✓</span>Gratuit — bêta</div>
         <div class="pg"><span class="pgc">✓</span>20–45 min</div>
         <div class="pg"><span class="pgc">✓</span>Rapport immédiat</div>
       </div>
@@ -1625,6 +1723,11 @@ footer{
         <button class="mic-test-btn" id="mic-test-btn" onclick="startMicTest()">▶ Tester</button>
       </div>
 
+      <div id="no-mic-hint" style="text-align:center;margin-bottom:12px;display:none;">
+        <a href="#" onclick="setMode('chat');document.getElementById('mode-btn-chat').click();return false;" style="font-size:13px;color:var(--v4);text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:100px;transition:.15s;">
+          📝 Pas de micro ? Passer en mode texte →
+        </a>
+      </div>
       <button class="btn-launch" onclick="if(validateForm())launchCall()">🎙 Démarrer l'entretien</button>
     </div>
   </div>
@@ -1731,6 +1834,48 @@ footer{
      SCRIPTS
 ══════════════════════════════════════ -->
 <script>
+/* ── CLEAN URL (retire ?ts=, ?nocache=, etc.) ── */
+if (location.search) { history.replaceState(null, '', location.pathname + location.hash); }
+
+/* ── BETA BANNER ── */
+function closeBetaBanner() {
+  const b = document.getElementById('beta-banner');
+  if (b) b.style.display = 'none';
+  document.body.classList.remove('beta-open');
+}
+// Afficher l'indice micro sur la page pré-appel après 3s si mode vocal
+setTimeout(() => {
+  const hint = document.getElementById('no-mic-hint');
+  if (hint) hint.style.display = 'block';
+}, 3000);
+
+/* ── ANIMATED COUNTER ── */
+function animateCounter(el, target, duration) {
+  let start = 0;
+  const increment = target / (duration / 16);
+  const t = setInterval(() => {
+    start = Math.min(start + increment, target);
+    el.textContent = Math.round(start);
+    if (start >= target) clearInterval(t);
+  }, 16);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const sc = document.getElementById('stat-count');
+  const hc = document.getElementById('hero-count');
+  if (sc) setTimeout(() => animateCounter(sc, 14, 1400), 1000);
+  if (hc) setTimeout(() => animateCounter(hc, 14, 1400), 1200);
+});
+
+/* ── FAQ ACCORDION ── */
+function toggleFaq(id) {
+  const item = document.getElementById(id);
+  if (!item) return;
+  const isOpen = item.classList.contains('open');
+  // Fermer tous les items
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
 /* ── CANVAS PARTICLES ── */
 const cv = document.getElementById('bg-canvas');
 const cx2 = cv.getContext('2d');
