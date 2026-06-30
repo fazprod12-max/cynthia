@@ -1,0 +1,3040 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CYNTH.IA — Votre conseillère IA en orientation professionnelle. 20 minutes de conversation, profil RIASEC, 3 pistes finançables CPF/VAE, rapport PDF inclus. Gratuit.">
+<meta property="og:title" content="CYNTH.IA — Retrouvez votre voie en 20 minutes">
+<meta property="og:description" content="Une IA qui vous écoute vraiment. Profil RIASEC, 3 pistes finançables, rapport PDF en 2 min. Gratuit.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#7C3AED">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙</text></svg>">
+<title>CYNTH.IA — Retrouvez votre voie en 20 minutes</title>
+<style>
+/* ════════════════════════════════════════
+   RESET & TOKENS
+════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;font-size:16px;}
+:root{
+  --ink:#020208;
+  --ink2:#08081a;
+  --v1:#7C3AED;
+  --v2:#4F46E5;
+  --v3:#06B6D4;
+  --v4:#A855F7;
+  --v5:#EC4899;
+  --green:#10B981;
+  --red:#EF4444;
+  --glass:rgba(255,255,255,.04);
+  --gb:rgba(255,255,255,.07);
+  --txt:rgba(255,255,255,.92);
+  --txt2:rgba(255,255,255,.5);
+  --txt3:rgba(255,255,255,.28);
+  --border:rgba(255,255,255,.08);
+  --vborder:rgba(124,58,237,.25);
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter','Segoe UI',sans-serif;
+  background:var(--ink);color:var(--txt);overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit;}
+button{font-family:inherit;}
+
+/* ════════════════════════════════════════
+   CANVAS + MESH
+════════════════════════════════════════ */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45;}
+.mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 15% 15%,rgba(124,58,237,.18) 0%,transparent 65%),
+    radial-gradient(ellipse 55% 45% at 85% 85%,rgba(6,182,212,.12) 0%,transparent 65%),
+    radial-gradient(ellipse 40% 40% at 85% 15%,rgba(236,72,153,.08) 0%,transparent 65%);
+  animation:mesh 25s ease-in-out infinite alternate;
+}
+@keyframes mesh{to{background-position:30% 20%,70% 80%,75% 25%;}}
+@keyframes spinLoader{to{transform:rotate(360deg);}}
+
+/* ════════════════════════════════════════
+   DEMO NAV
+════════════════════════════════════════ */
+.demo-bar{
+  position:fixed;top:0;width:100%;z-index:600;
+  background:rgba(2,2,8,.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(124,58,237,.2);
+  display:flex;gap:6px;align-items:center;padding:8px 20px;
+}
+.demo-bar button{
+  padding:5px 14px;border-radius:50px;font-size:11px;font-weight:600;
+  cursor:pointer;border:1px solid rgba(255,255,255,.1);
+  background:transparent;color:rgba(255,255,255,.4);transition:.2s;letter-spacing:.5px;
+}
+.demo-bar button.on{background:var(--v1);color:#fff;border-color:var(--v1);box-shadow:0 0 16px rgba(124,58,237,.4);}
+.demo-bar button:hover:not(.on){background:rgba(124,58,237,.15);color:#fff;}
+.demo-bar .dl{font-size:10px;color:rgba(255,255,255,.18);margin-left:auto;letter-spacing:1.5px;text-transform:uppercase;}
+
+/* ════════════════════════════════════════
+   PAGE SYSTEM
+════════════════════════════════════════ */
+.page{display:none;position:relative;z-index:10;}
+.page.on{display:block;}
+
+/* ════════════════════════════════════════
+   GLOBAL NAV
+════════════════════════════════════════ */
+.gnav{
+  position:sticky;top:36px;z-index:200;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+  background:rgba(2,2,8,.55);backdrop-filter:blur(24px) saturate(1.5);
+  border-bottom:1px solid var(--border);
+}
+.gnav-logo{
+  font-size:19px;font-weight:800;letter-spacing:-.8px;
+  background:linear-gradient(120deg,#fff 30%,rgba(168,85,247,.9) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.gnav-links{display:flex;gap:36px;align-items:center;}
+.gnav-links a{font-size:14px;color:var(--txt2);font-weight:500;transition:.2s;}
+.gnav-links a:hover{color:#fff;}
+.gnav-badge{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);
+  color:rgba(52,211,153,.9);padding:6px 14px;border-radius:50px;font-size:12px;font-weight:600;
+}
+.gnav-badge .dot{width:6px;height:6px;border-radius:50%;background:#10B981;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4);}50%{box-shadow:0 0 0 6px transparent;}}
+.gnav-cta{
+  padding:10px 22px;border-radius:50px;font-size:14px;font-weight:700;
+  background:linear-gradient(135deg,var(--v1),var(--v2));
+  color:#fff;border:none;cursor:pointer;
+  box-shadow:0 4px 24px rgba(124,58,237,.4);transition:.25s;
+  position:relative;overflow:hidden;
+}
+.gnav-cta::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--v4),var(--v3));
+  opacity:0;transition:.25s;
+}
+.gnav-cta:hover::after{opacity:1;}
+.gnav-cta span{position:relative;z-index:1;}
+
+/* ════════════════════════════════════════
+   HERO
+════════════════════════════════════════ */
+.hero{
+  min-height:calc(100vh - 100px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:80px 24px 60px;position:relative;overflow:hidden;
+}
+
+/* Orbe */
+.orb-wrap{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:800px;height:800px;pointer-events:none;z-index:0;
+}
+.ol{position:absolute;inset:0;border-radius:50%;filter:blur(80px);}
+.ol1{background:radial-gradient(circle at 35% 40%,rgba(124,58,237,.55),transparent 65%);animation:ob 7s ease-in-out infinite;}
+.ol2{background:radial-gradient(circle at 65% 30%,rgba(6,182,212,.35),transparent 65%);animation:ob 9s ease-in-out infinite reverse;}
+.ol3{background:radial-gradient(circle at 50% 70%,rgba(168,85,247,.45),transparent 65%);animation:ob 11s ease-in-out infinite 2s;}
+.ol4{background:radial-gradient(circle at 75% 65%,rgba(236,72,153,.25),transparent 65%);animation:ob 8s ease-in-out infinite 1s reverse;}
+@keyframes ob{0%,100%{transform:scale(1) rotate(0deg);opacity:.8;}50%{transform:scale(1.2) rotate(8deg);opacity:1;}}
+.orb-core{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:160px;height:160px;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--v1),var(--v3),var(--v4),var(--v5),var(--v1));
+  animation:spin 7s linear infinite;filter:blur(1px);
+  box-shadow:0 0 100px rgba(124,58,237,.8),0 0 200px rgba(124,58,237,.3);
+}
+@keyframes spin{to{filter:blur(1px) hue-rotate(360deg);}}
+.orb-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid rgba(124,58,237,.15);animation:rexp 4s ease-out infinite;}
+.or1{width:220px;height:220px;margin:-110px;animation-delay:0s;}
+.or2{width:320px;height:320px;margin:-160px;animation-delay:1.3s;}
+.or3{width:440px;height:440px;margin:-220px;animation-delay:2.6s;}
+@keyframes rexp{0%{opacity:.6;transform:scale(.85);}100%{opacity:0;transform:scale(1.25);}}
+
+/* Hero content */
+.hero-inner{position:relative;z-index:2;max-width:900px;}
+.hero-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);
+  color:rgba(52,211,153,.9);padding:7px 18px;border-radius:50px;
+  font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  margin-bottom:40px;
+}
+.hero-pill .hdot{width:6px;height:6px;border-radius:50%;background:#10B981;animation:pulse 2s infinite;}
+h1.hero-h{
+  font-size:clamp(44px,8vw,96px);font-weight:900;line-height:.98;
+  letter-spacing:-4px;margin-bottom:32px;
+}
+.h-white{
+  display:block;
+  background:linear-gradient(180deg,#fff 60%,rgba(255,255,255,.6) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.h-grad{
+  display:block;
+  background:linear-gradient(120deg,var(--v4) 0%,var(--v3) 50%,#fff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:ghue 6s ease-in-out infinite alternate;
+}
+@keyframes ghue{0%{filter:hue-rotate(0deg);}100%{filter:hue-rotate(25deg);}}
+.hero-sub{
+  font-size:18px;color:var(--txt2);line-height:1.75;
+  max-width:480px;margin:0 auto 52px;font-weight:400;
+}
+.hero-actions{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;}
+.btn-main{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:18px 48px;border-radius:50px;font-size:16px;font-weight:700;
+  border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--v1) 0%,var(--v2) 100%);
+  color:#fff;letter-spacing:.3px;
+  box-shadow:0 8px 48px rgba(124,58,237,.55),0 0 0 1px rgba(124,58,237,.3) inset;
+  transition:.3s;position:relative;overflow:hidden;
+}
+.btn-main::after{
+  content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);
+  transform:skewX(-20deg);animation:shim 3.5s ease-in-out infinite;
+}
+@keyframes shim{0%{left:-60%;}100%{left:120%;}}
+.btn-main:hover{transform:translateY(-3px);box-shadow:0 20px 70px rgba(124,58,237,.7);}
+.btn-sec{
+  padding:18px 36px;border-radius:50px;font-size:15px;font-weight:600;
+  border:1px solid var(--border);background:var(--glass);
+  color:var(--txt2);cursor:pointer;backdrop-filter:blur(12px);transition:.25s;
+}
+.btn-sec:hover{color:#fff;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.07);}
+
+/* Hero proof */
+.hero-proof{
+  margin-top:64px;display:flex;align-items:center;justify-content:center;gap:0;
+  border-top:1px solid var(--border);padding-top:48px;flex-wrap:wrap;
+}
+.hp{padding:0 44px;text-align:center;border-right:1px solid var(--border);}
+.hp:last-child{border-right:none;}
+.hp-num{
+  font-size:38px;font-weight:800;letter-spacing:-1.5px;
+  background:linear-gradient(135deg,#fff,var(--v4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hp-label{font-size:11px;color:var(--txt3);margin-top:4px;letter-spacing:1.2px;text-transform:uppercase;}
+
+/* ════════════════════════════════════════
+   TICKER (social proof bar)
+════════════════════════════════════════ */
+.ticker-wrap{
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:16px 0;overflow:hidden;background:rgba(124,58,237,.04);
+}
+.ticker-track{
+  display:flex;gap:0;white-space:nowrap;
+  animation:tick 28s linear infinite;
+}
+.ticker-track:hover{animation-play-state:paused;}
+.ti{
+  display:inline-flex;align-items:center;gap:8px;padding:0 40px;
+  font-size:13px;font-weight:600;color:var(--txt2);flex-shrink:0;
+  border-right:1px solid var(--border);
+}
+.ti .tic{color:var(--v4);}
+@keyframes tick{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* ════════════════════════════════════════
+   PROBLEM (cinématique)
+════════════════════════════════════════ */
+.problem{padding:160px 48px;max-width:1000px;margin:0 auto;}
+.prob-eyebrow{
+  font-size:11px;font-weight:700;color:var(--v4);
+  letter-spacing:2.5px;text-transform:uppercase;margin-bottom:24px;
+  display:flex;align-items:center;gap:10px;
+}
+.prob-eyebrow::before{content:'';width:28px;height:1px;background:var(--v4);}
+.prob-big{
+  font-size:clamp(36px,5vw,64px);font-weight:800;
+  line-height:1.1;letter-spacing:-2px;margin-bottom:80px;
+}
+.prob-big em{
+  font-style:normal;
+  background:linear-gradient(120deg,var(--v4),var(--v3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.prob-items{display:flex;flex-direction:column;gap:0;}
+.prob-row{
+  display:grid;grid-template-columns:80px 1fr;gap:32px;align-items:start;
+  padding:40px 0;border-bottom:1px solid var(--border);
+  opacity:.35;transform:translateX(-20px);transition:all .7s ease;
+}
+.prob-row.visible{opacity:1;transform:none;}
+.prob-row:last-child{border-bottom:none;}
+.prob-n{
+  font-size:56px;font-weight:900;letter-spacing:-3px;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.prob-text h3{font-size:22px;font-weight:700;margin-bottom:10px;}
+.prob-text p{font-size:16px;color:var(--txt2);line-height:1.75;}
+
+/* ════════════════════════════════════════
+   CONVERSATION PREVIEW
+════════════════════════════════════════ */
+.preview-section{
+  padding:120px 48px;
+  background:linear-gradient(180deg,transparent 0%,rgba(124,58,237,.04) 40%,rgba(124,58,237,.04) 60%,transparent 100%);
+}
+.preview-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.preview-text .eyebrow{
+  font-size:11px;font-weight:700;color:var(--v4);
+  letter-spacing:2.5px;text-transform:uppercase;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.preview-text .eyebrow::before{content:'';width:24px;height:1px;background:var(--v4);}
+.preview-text h2{font-size:clamp(28px,3.5vw,44px);font-weight:800;line-height:1.15;letter-spacing:-1.5px;margin-bottom:20px;}
+.preview-text h2 span{
+  background:linear-gradient(120deg,var(--v4),var(--v3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.preview-text p{font-size:16px;color:var(--txt2);line-height:1.8;margin-bottom:32px;}
+.preview-feats{display:flex;flex-direction:column;gap:12px;}
+.pf{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--txt2);}
+.pf .pfc{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(6,182,212,.1));
+  border:1px solid rgba(124,58,237,.2);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+
+/* Chat UI */
+.chat-ui{
+  background:rgba(10,10,26,.8);backdrop-filter:blur(32px);
+  border:1px solid var(--vborder);border-radius:24px;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;
+}
+.chat-top{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.chat-orb-sm{
+  width:36px;height:36px;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--v1),var(--v3),var(--v4),var(--v1));
+  animation:spin 5s linear infinite;filter:blur(.5px);
+  box-shadow:0 0 16px rgba(124,58,237,.6);
+}
+.chat-name{font-size:14px;font-weight:700;}
+.chat-status{font-size:11px;color:var(--green);display:flex;align-items:center;gap:5px;}
+.chat-status::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);}
+.chat-body{padding:20px;display:flex;flex-direction:column;gap:14px;}
+.msg{display:flex;gap:10px;animation:msgIn .5s ease both;}
+.msg.mine{flex-direction:row-reverse;}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.msg-av{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-top:4px;
+  background:linear-gradient(135deg,var(--v1),var(--v4));
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+}
+.msg-av.ai{
+  background:conic-gradient(from 0deg,var(--v1),var(--v3),var(--v4));
+  animation:spin 5s linear infinite;filter:blur(.3px);
+}
+.msg-bubble{
+  padding:12px 16px;border-radius:18px;max-width:240px;
+  font-size:13px;line-height:1.6;
+}
+.msg.ai .msg-bubble{
+  background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.2);
+  border-radius:18px 18px 18px 4px;color:var(--txt);
+}
+.msg.mine .msg-bubble{
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:18px 18px 4px 18px;color:var(--txt2);
+}
+.msg-time{font-size:10px;color:var(--txt3);margin-top:4px;align-self:flex-end;}
+.msg.mine .msg-time{text-align:right;}
+.typing{display:flex;gap:4px;padding:14px 18px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15);border-radius:18px 18px 18px 4px;width:fit-content;}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--v4);animation:ty .9s ease-in-out infinite;}
+.typing span:nth-child(2){animation-delay:.15s;}
+.typing span:nth-child(3){animation-delay:.3s;}
+@keyframes ty{0%,100%{transform:translateY(0);opacity:.4;}50%{transform:translateY(-6px);opacity:1;}}
+.chat-wave{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:3px;align-items:center;justify-content:center;height:48px;}
+.cw{width:2px;border-radius:4px;background:linear-gradient(180deg,var(--v3),var(--v1));animation:wave .9s ease-in-out infinite;}
+.cw:nth-child(1){height:8px;animation-delay:0s;}
+.cw:nth-child(2){height:18px;animation-delay:.08s;}
+.cw:nth-child(3){height:12px;animation-delay:.16s;}
+.cw:nth-child(4){height:28px;animation-delay:.24s;}
+.cw:nth-child(5){height:20px;animation-delay:.32s;}
+.cw:nth-child(6){height:32px;animation-delay:.4s;}
+.cw:nth-child(7){height:16px;animation-delay:.48s;}
+.cw:nth-child(8){height:24px;animation-delay:.56s;}
+.cw:nth-child(9){height:10px;animation-delay:.64s;}
+.cw:nth-child(10){height:20px;animation-delay:.72s;}
+.cw:nth-child(11){height:14px;animation-delay:.8s;}
+@keyframes wave{0%,100%{transform:scaleY(.3);opacity:.3;}50%{transform:scaleY(1);opacity:1;}}
+
+/* ════════════════════════════════════════
+   BENTO GRID
+════════════════════════════════════════ */
+.bento-section{padding:80px 48px 160px;max-width:1200px;margin:0 auto;}
+.section-head{margin-bottom:64px;}
+.eyebrow{
+  font-size:11px;font-weight:700;color:var(--v4);
+  letter-spacing:2.5px;text-transform:uppercase;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:'';width:28px;height:1px;background:var(--v4);}
+.section-head h2{font-size:clamp(30px,4vw,52px);font-weight:800;line-height:1.1;letter-spacing:-2px;}
+.section-head h2 span{
+  background:linear-gradient(120deg,var(--v4),var(--v3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.bento{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:auto;gap:16px;}
+.bc{
+  background:var(--glass);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:20px;padding:32px;
+  position:relative;overflow:hidden;transition:all .35s;
+}
+.bc:hover{border-color:var(--vborder);box-shadow:0 24px 60px rgba(0,0,0,.4);}
+.bc::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(124,58,237,0),transparent);
+  transition:.35s;
+}
+.bc:hover::before{background:linear-gradient(90deg,transparent,var(--v1),transparent);}
+
+.bc1{grid-column:span 7;}
+.bc2{grid-column:span 5;}
+.bc3{grid-column:span 4;}
+.bc4{grid-column:span 4;}
+.bc5{grid-column:span 4;}
+.bc6{grid-column:span 6;}
+.bc7{grid-column:span 6;}
+
+.bc-icon{font-size:36px;margin-bottom:20px;filter:drop-shadow(0 0 14px rgba(124,58,237,.5));}
+.bc h3{font-size:19px;font-weight:700;margin-bottom:10px;line-height:1.3;}
+.bc p{font-size:14px;color:var(--txt2);line-height:1.7;}
+.bc-big h3{font-size:24px;}
+.bc-tag{
+  display:inline-flex;align-items:center;gap:6px;margin-top:20px;
+  background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);
+  color:rgba(167,139,250,.9);padding:5px 14px;border-radius:50px;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+}
+
+/* RIASEC mini chart */
+.riasec-bars{margin-top:20px;display:flex;flex-direction:column;gap:8px;}
+.rb{display:flex;align-items:center;gap:10px;}
+.rb-label{font-size:11px;color:var(--txt3);width:90px;flex-shrink:0;letter-spacing:.5px;}
+.rb-track{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;}
+.rb-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--v1),var(--v4));transform:scaleX(0);transform-origin:left;transition:transform 1.2s cubic-bezier(.16,1,.3,1);}
+.rb-fill.anim{transform:scaleX(1);}
+
+/* ════════════════════════════════════════
+   COMPARISON TABLE
+════════════════════════════════════════ */
+.compare-section{padding:0 48px 160px;max-width:1000px;margin:0 auto;}
+.comp-table{width:100%;border-collapse:collapse;margin-top:48px;}
+.comp-table th{
+  padding:16px 24px;text-align:left;font-size:12px;font-weight:700;
+  color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;
+  border-bottom:1px solid var(--border);
+}
+.comp-table th.hl{color:var(--v4);}
+.comp-table td{
+  padding:18px 24px;font-size:15px;border-bottom:1px solid rgba(255,255,255,.04);
+  vertical-align:middle;
+}
+.comp-table tr:last-child td{border-bottom:none;}
+.comp-table td:first-child{color:var(--txt2);font-size:14px;}
+.comp-col-hl{background:rgba(124,58,237,.06);border-left:1px solid var(--vborder);border-right:1px solid var(--vborder);}
+.comp-col-hl.first{border-top:1px solid var(--vborder);border-radius:12px 12px 0 0;}
+.comp-col-hl.last{border-bottom:1px solid var(--vborder);border-radius:0 0 12px 12px;}
+.chk{color:var(--green);font-size:17px;}
+.cross{color:rgba(255,255,255,.2);font-size:17px;}
+.warn{color:#F59E0B;font-size:13px;}
+
+/* ════════════════════════════════════════
+   TESTIMONIALS
+════════════════════════════════════════ */
+.temo-section{
+  padding:0 48px 160px;max-width:1200px;margin:0 auto;
+}
+.temo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px;}
+.tc{
+  background:var(--glass);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:24px;padding:36px;
+  position:relative;overflow:hidden;transition:.35s;
+}
+.tc::before{
+  content:'';position:absolute;top:-1px;left:16px;right:16px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--v4),transparent);
+  opacity:0;transition:.35s;
+}
+.tc:hover{border-color:rgba(168,85,247,.3);transform:translateY(-6px);box-shadow:0 32px 72px rgba(0,0,0,.4);}
+.tc:hover::before{opacity:1;}
+.tc-stars{color:var(--v4);font-size:14px;letter-spacing:3px;margin-bottom:20px;}
+.tc-quote{font-size:16px;line-height:1.8;color:rgba(255,255,255,.75);font-style:italic;margin-bottom:28px;}
+.tc-quote strong{color:#fff;font-style:normal;}
+.tc-foot{display:flex;align-items:center;gap:14px;}
+.tc-av{
+  width:46px;height:46px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--v1),var(--v4));
+  display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;
+}
+.tc-name{font-size:14px;font-weight:700;}
+.tc-meta{font-size:12px;color:var(--txt3);margin-top:3px;}
+.tc-result{
+  display:inline-block;margin-top:8px;padding:3px 10px;
+  background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);
+  color:rgba(52,211,153,.8);font-size:11px;font-weight:700;border-radius:50px;letter-spacing:.5px;
+}
+
+/* ════════════════════════════════════════
+   PROCESS (Apple-style minimal)
+════════════════════════════════════════ */
+.process-section{
+  padding:0 48px 160px;max-width:900px;margin:0 auto;text-align:center;
+}
+.process-steps{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;gap:0;margin-top:64px;align-items:start;}
+.ps{text-align:center;}
+.ps-num{
+  width:56px;height:56px;border-radius:50%;margin:0 auto 20px;
+  background:linear-gradient(135deg,var(--v1),var(--v2));
+  display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;
+  box-shadow:0 0 32px rgba(124,58,237,.45);
+}
+.ps h3{font-size:17px;font-weight:700;margin-bottom:8px;}
+.ps p{font-size:13px;color:var(--txt2);line-height:1.7;}
+.ps-arrow{
+  display:flex;align-items:center;justify-content:center;
+  color:var(--txt3);font-size:20px;padding-top:16px;
+}
+
+/* ════════════════════════════════════════
+   FINAL CTA (full screen cinématique)
+════════════════════════════════════════ */
+.final-cta{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:80px 24px;position:relative;overflow:hidden;
+}
+.fc-orb-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;height:900px;pointer-events:none;}
+.fc-ol{position:absolute;inset:0;border-radius:50%;filter:blur(100px);}
+.fc-ol1{background:radial-gradient(circle at 40% 40%,rgba(124,58,237,.5),transparent 65%);animation:ob 9s ease-in-out infinite;}
+.fc-ol2{background:radial-gradient(circle at 60% 60%,rgba(6,182,212,.3),transparent 65%);animation:ob 11s ease-in-out infinite reverse 2s;}
+.fc-ol3{background:radial-gradient(circle at 50% 30%,rgba(236,72,153,.2),transparent 65%);animation:ob 7s ease-in-out infinite 4s;}
+.fc-core{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:200px;height:200px;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--v1),var(--v3),var(--v4),var(--v5),var(--v1));
+  animation:spin 8s linear infinite;filter:blur(2px);
+  box-shadow:0 0 120px rgba(124,58,237,.9),0 0 250px rgba(124,58,237,.4);
+}
+.fc-inner{position:relative;z-index:2;max-width:760px;}
+.fc-label{
+  display:inline-flex;align-items:center;gap:8px;margin-bottom:40px;
+  background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);
+  color:rgba(167,139,250,.9);padding:8px 20px;border-radius:50px;
+  font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+}
+.fc h2{
+  font-size:clamp(48px,8vw,100px);font-weight:900;line-height:.95;
+  letter-spacing:-4px;margin-bottom:28px;
+}
+.fc h2 .fw{
+  display:block;
+  background:linear-gradient(180deg,#fff 50%,rgba(255,255,255,.55) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.fc h2 .fg{
+  display:block;
+  background:linear-gradient(120deg,var(--v4) 0%,var(--v3) 60%,#fff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.fc-sub{font-size:18px;color:var(--txt2);margin-bottom:56px;line-height:1.7;}
+.fc-trust{
+  display:flex;gap:24px;justify-content:center;flex-wrap:wrap;
+  margin-top:48px;
+}
+.ft{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--txt3);}
+.ft .ftc{color:var(--green);}
+
+/* ════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════ */
+footer{
+  padding:56px 48px 48px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;
+}
+.foot-logo{
+  font-size:18px;font-weight:800;letter-spacing:-.8px;
+  background:linear-gradient(120deg,#fff,var(--v4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.foot-links{display:flex;gap:28px;}
+.foot-links a{font-size:13px;color:var(--txt3);transition:.2s;}
+.foot-links a:hover{color:var(--txt2);}
+.foot-copy{font-size:12px;color:var(--txt3);}
+
+/* ════════════════════════════════════════
+   PAGE 2 — PRÉ-APPEL
+════════════════════════════════════════ */
+.preappel-page{
+  min-height:calc(100vh - 36px);display:flex;align-items:center;
+  justify-content:center;padding:60px 20px;
+}
+.pa-card{
+  background:rgba(8,8,26,.8);backdrop-filter:blur(40px);
+  border:1px solid var(--vborder);border-radius:28px;
+  padding:56px 52px;max-width:520px;width:100%;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 40px 100px rgba(0,0,0,.65);
+  position:relative;overflow:hidden;
+}
+.pa-card::before{
+  content:'';position:absolute;top:-1px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--v1),var(--v3),transparent);
+}
+.pa-logo{
+  font-size:17px;font-weight:800;letter-spacing:-.8px;margin-bottom:32px;display:block;
+  background:linear-gradient(120deg,#fff,var(--v4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.pa-card h2{font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:8px;}
+.pa-sub{font-size:14px;color:var(--txt2);line-height:1.7;margin-bottom:32px;}
+.fgroup{margin-bottom:18px;}
+.flabel{display:block;font-size:11px;font-weight:700;color:var(--txt3);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;}
+.finput{
+  width:100%;padding:14px 16px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;
+  font-size:15px;color:#fff;outline:none;transition:.25s;font-family:inherit;
+}
+.finput::placeholder{color:var(--txt3);}
+.finput:focus{border-color:var(--v1);background:rgba(124,58,237,.07);box-shadow:0 0 0 3px rgba(124,58,237,.12);}
+.upload-z{
+  border:1px dashed rgba(124,58,237,.3);border-radius:14px;padding:28px 20px;
+  text-align:center;cursor:pointer;transition:.25s;background:rgba(124,58,237,.02);
+}
+.upload-z:hover{border-color:var(--v1);background:rgba(124,58,237,.07);box-shadow:0 0 24px rgba(124,58,237,.08);}
+.uz-icon{font-size:28px;margin-bottom:8px;}
+.uz-text{font-size:14px;color:var(--txt2);}
+.uz-hint{font-size:11px;color:var(--txt3);margin-top:3px;}
+.pa-guarantees{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0;}
+.pg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--txt3);}
+.pg .pgc{color:var(--green);}
+.btn-launch{
+  width:100%;padding:17px;border-radius:50px;font-size:15px;font-weight:700;
+  border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--v1),var(--v2));color:#fff;
+  box-shadow:0 8px 40px rgba(124,58,237,.5);transition:.25s;position:relative;overflow:hidden;
+  font-family:inherit;
+}
+.btn-launch::after{
+  content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  transform:skewX(-20deg);animation:shim 3s ease-in-out infinite;
+}
+.btn-launch:hover{transform:translateY(-2px);box-shadow:0 16px 60px rgba(124,58,237,.7);}
+
+/* ════════════════════════════════════════
+   PAGE 3 — EN APPEL
+════════════════════════════════════════ */
+.call-page{
+  min-height:calc(100vh - 36px);display:flex;align-items:center;
+  justify-content:center;padding:60px 20px;
+}
+.call-card{
+  background:rgba(8,8,26,.85);backdrop-filter:blur(40px);
+  border:1px solid var(--vborder);border-radius:28px;
+  padding:52px 44px;max-width:480px;width:100%;text-align:center;
+  box-shadow:0 40px 100px rgba(0,0,0,.7),0 0 80px rgba(124,58,237,.1);
+  position:relative;overflow:hidden;
+}
+.call-card::before{
+  content:'';position:absolute;top:-1px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--v4),var(--v3),transparent);
+}
+.co-wrap{width:120px;height:120px;margin:0 auto 24px;position:relative;}
+.co{
+  width:100%;height:100%;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--v1),var(--v3),var(--v4),var(--v5),var(--v1));
+  animation:spin 5s linear infinite;filter:blur(1px);
+  box-shadow:0 0 60px rgba(124,58,237,.7),0 0 120px rgba(124,58,237,.25);
+}
+.co-r{position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(124,58,237,.2);animation:rexp 2.5s ease-out infinite;}
+.co-r2{inset:-20px;animation-delay:.8s;}
+.cstat{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--txt3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.cstat::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+.cname{font-size:20px;font-weight:700;margin-bottom:4px;}
+.csub{font-size:12px;color:var(--txt3);margin-bottom:32px;line-height:1.6;}
+.waveform{display:flex;align-items:center;justify-content:center;gap:3px;height:48px;margin-bottom:28px;}
+.wb{width:2px;border-radius:4px;background:linear-gradient(180deg,var(--v3),var(--v1));animation:wave .9s ease-in-out infinite;}
+.wb:nth-child(1){height:8px;animation-delay:0s;}
+.wb:nth-child(2){height:20px;animation-delay:.07s;}
+.wb:nth-child(3){height:14px;animation-delay:.14s;}
+.wb:nth-child(4){height:36px;animation-delay:.21s;}
+.wb:nth-child(5){height:24px;animation-delay:.28s;}
+.wb:nth-child(6){height:40px;animation-delay:.35s;}
+.wb:nth-child(7){height:18px;animation-delay:.42s;}
+.wb:nth-child(8){height:30px;animation-delay:.49s;}
+.wb:nth-child(9){height:12px;animation-delay:.56s;}
+.call-timer{
+  font-size:48px;font-weight:800;letter-spacing:-2px;font-variant-numeric:tabular-nums;
+  background:linear-gradient(135deg,#fff,var(--v4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;
+}
+.call-phase-label{font-size:11px;color:var(--v4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:32px;}
+.ccontrols{display:flex;gap:14px;justify-content:center;align-items:center;}
+.cbtn{
+  width:52px;height:52px;border-radius:50%;border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:18px;background:var(--glass);backdrop-filter:blur(12px);transition:.25s;
+}
+.cbtn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);}
+.cbtn-end{
+  width:64px;height:64px;font-size:22px;
+  background:linear-gradient(135deg,#E74C3C,#C0392B) !important;
+  border-color:transparent !important;box-shadow:0 8px 30px rgba(231,76,60,.45);
+}
+.cbtn-end:hover{box-shadow:0 12px 40px rgba(231,76,60,.65);transform:translateY(-2px);}
+.ctip{margin-top:24px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--txt3);line-height:1.6;}
+
+/* ════════════════════════════════════════
+   PAGE 4 — CONFIRMATION
+════════════════════════════════════════ */
+.confirm-page{
+  min-height:calc(100vh - 36px);display:flex;align-items:center;
+  justify-content:center;padding:60px 20px;
+}
+.conf-card{
+  background:rgba(8,8,26,.85);backdrop-filter:blur(40px);
+  border:1px solid rgba(16,185,129,.2);border-radius:28px;
+  padding:52px 48px;max-width:560px;width:100%;text-align:center;
+  box-shadow:0 40px 100px rgba(0,0,0,.65),0 0 60px rgba(16,185,129,.04);
+  position:relative;overflow:hidden;
+}
+.conf-card::before{
+  content:'';position:absolute;top:-1px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#10B981,var(--v3),transparent);
+}
+.conf-orb{
+  width:80px;height:80px;border-radius:50%;margin:0 auto 24px;
+  background:linear-gradient(135deg,#10B981,#059669);
+  display:flex;align-items:center;justify-content:center;font-size:36px;
+  box-shadow:0 0 50px rgba(16,185,129,.4);
+  animation:pop .6s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+.conf-card h2{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:10px;}
+.conf-sub{font-size:15px;color:var(--txt2);line-height:1.7;margin-bottom:32px;}
+.conf-report{
+  background:rgba(255,255,255,.025);border:1px solid var(--border);
+  border-radius:16px;padding:24px;text-align:left;margin-bottom:24px;
+}
+.conf-report h4{font-size:10px;font-weight:700;color:var(--v4);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.ri{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-size:13px;}
+.ri .rc{color:var(--green);flex-shrink:0;font-size:15px;margin-top:1px;}
+.ri p{color:var(--txt2);line-height:1.6;}
+.conf-email{
+  background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.2);
+  border-radius:12px;padding:14px 18px;
+  display:flex;align-items:center;gap:12px;
+  font-size:13px;color:rgba(167,139,250,.9);margin-bottom:24px;text-align:left;
+}
+.conf-actions{display:flex;flex-direction:column;gap:10px;}
+.btn-outline{
+  background:transparent;color:var(--txt2);
+  padding:13px 24px;border-radius:50px;font-size:14px;font-weight:600;
+  border:1px solid var(--border);cursor:pointer;transition:.25s;font-family:inherit;
+}
+.btn-outline:hover{background:rgba(255,255,255,.05);color:#fff;border-color:rgba(255,255,255,.2);}
+
+/* ════════════════════════════════════════
+   TOAST NOTIFICATION
+════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:32px;right:32px;z-index:1000;
+  background:rgba(15,15,35,.95);backdrop-filter:blur(24px);
+  border:1px solid var(--vborder);border-radius:16px;
+  padding:16px 24px;display:flex;align-items:center;gap:12px;
+  font-size:14px;font-weight:600;color:var(--txt);
+  box-shadow:0 16px 48px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04) inset;
+  transform:translateY(20px);opacity:0;
+  transition:all .35s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;max-width:340px;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast .ticon{font-size:20px;flex-shrink:0;}
+.toast.success{border-color:rgba(16,185,129,.3);}
+.toast.warning{border-color:rgba(245,158,11,.3);}
+
+/* ════════════════════════════════════════
+   MODAL OVERLAY
+════════════════════════════════════════ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:800;
+  background:rgba(2,2,8,.8);backdrop-filter:blur(14px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-box{
+  background:rgba(12,12,28,.97);backdrop-filter:blur(32px);
+  border:1px solid var(--vborder);border-radius:24px;
+  padding:44px 48px;max-width:520px;width:100%;
+  transform:scale(.93) translateY(14px);
+  transition:all .35s cubic-bezier(.16,1,.3,1);
+  position:relative;overflow:hidden;
+}
+.modal-overlay.show .modal-box{transform:scale(1) translateY(0);}
+.modal-box::before{
+  content:'';position:absolute;top:-1px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--v1),var(--v3),transparent);
+}
+.modal-close{
+  position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  cursor:pointer;font-size:16px;color:var(--txt2);
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.modal-close:hover{background:rgba(255,255,255,.12);color:#fff;}
+.modal-box h3{font-size:22px;font-weight:800;letter-spacing:-.8px;margin-bottom:12px;}
+.modal-box p{font-size:15px;color:var(--txt2);line-height:1.8;margin-bottom:12px;}
+.modal-box .mcta{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:50px;
+  font-size:14px;font-weight:700;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--v1),var(--v2));color:#fff;
+  box-shadow:0 4px 20px rgba(124,58,237,.4);transition:.25s;margin-top:12px;font-family:inherit;
+}
+.modal-box .mcta:hover{box-shadow:0 8px 32px rgba(124,58,237,.6);}
+.modal-tag{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:50px;margin-bottom:16px;
+  background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);
+  color:rgba(167,139,250,.9);font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+}
+/* Audio player */
+.audio-player{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:16px;padding:24px;margin:20px 0;}
+.ap-orb{width:56px;height:56px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 0deg,var(--v1),var(--v3),var(--v4),var(--v1));filter:blur(.5px);box-shadow:0 0 26px rgba(124,58,237,.6);}
+.ap-orb.playing{animation:spin 4s linear infinite;}
+.ap-wave{display:flex;align-items:center;justify-content:center;gap:3px;height:32px;margin-bottom:12px;}
+.ap-wave .aw{width:2px;border-radius:4px;background:linear-gradient(180deg,var(--v3),var(--v1));}
+.ap-wave.playing .aw{animation:wave .9s ease-in-out infinite;}
+.ap-wave .aw:nth-child(1){height:6px;animation-delay:0s;}
+.ap-wave .aw:nth-child(2){height:14px;animation-delay:.1s;}
+.ap-wave .aw:nth-child(3){height:9px;animation-delay:.2s;}
+.ap-wave .aw:nth-child(4){height:22px;animation-delay:.3s;}
+.ap-wave .aw:nth-child(5){height:16px;animation-delay:.4s;}
+.ap-wave .aw:nth-child(6){height:26px;animation-delay:.5s;}
+.ap-wave .aw:nth-child(7){height:10px;animation-delay:.6s;}
+.ap-wave .aw:nth-child(8){height:19px;animation-delay:.7s;}
+.ap-progress{width:100%;height:3px;background:rgba(255,255,255,.08);border-radius:4px;margin:10px 0;cursor:pointer;}
+.ap-bar{height:100%;background:linear-gradient(90deg,var(--v1),var(--v4));border-radius:4px;width:0%;transition:width .5s linear;}
+.ap-time{font-size:12px;color:var(--txt3);text-align:center;font-variant-numeric:tabular-nums;margin-bottom:12px;}
+.ap-controls{display:flex;gap:12px;justify-content:center;}
+.ap-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.ap-btn:hover{background:rgba(255,255,255,.1);}
+.ap-btn.play{width:52px;height:52px;font-size:20px;background:linear-gradient(135deg,var(--v1),var(--v2));border-color:transparent;box-shadow:0 4px 20px rgba(124,58,237,.4);}
+.ap-transcript{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:13px;color:var(--txt2);line-height:1.7;font-style:italic;}
+/* Mic/vol state */
+.cbtn.muted{background:rgba(239,68,68,.15) !important;border-color:rgba(239,68,68,.4) !important;box-shadow:0 0 16px rgba(239,68,68,.2);}
+.cbtn.vol-off{background:rgba(245,158,11,.12) !important;border-color:rgba(245,158,11,.3) !important;}
+/* End call confirm */
+.end-confirm-msg{
+  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);
+  border-radius:14px;padding:14px 18px;margin-top:16px;font-size:14px;color:rgba(252,165,165,.9);line-height:1.6;display:none;
+}
+.end-confirm-msg.show{display:block;}
+.end-confirm-btns{display:flex;gap:10px;margin-top:12px;}
+.ec-yes{padding:10px 20px;border-radius:50px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:linear-gradient(135deg,#E74C3C,#C0392B);color:#fff;font-family:inherit;}
+.ec-no{padding:10px 20px;border-radius:50px;font-size:13px;font-weight:600;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--txt2);font-family:inherit;transition:.2s;}
+.ec-no:hover{background:rgba(255,255,255,.06);}
+
+/* ════════════════════════════════════════
+   REVEAL ANIMATION
+════════════════════════════════════════ */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .75s ease,transform .75s ease;}
+.reveal.vis{opacity:1;transform:none;}
+.reveal-l{opacity:0;transform:translateX(-24px);transition:opacity .75s ease,transform .75s ease;}
+.reveal-l.vis{opacity:1;transform:none;}
+.reveal-r{opacity:0;transform:translateX(24px);transition:opacity .75s ease,transform .75s ease;}
+.reveal-r.vis{opacity:1;transform:none;}
+
+/* ════════════════════════════════════════
+   NAV HAMBURGER MOBILE
+════════════════════════════════════════ */
+.gnav-menu{
+  display:none;background:transparent;border:1px solid var(--border);
+  color:var(--txt2);padding:8px 12px;border-radius:10px;
+  font-size:20px;cursor:pointer;line-height:1;transition:.2s;flex-shrink:0;
+}
+.gnav-menu:hover{background:var(--glass);color:#fff;}
+.gnav-mobile{
+  position:fixed;top:90px;left:12px;right:12px;
+  background:rgba(6,6,20,.97);backdrop-filter:blur(32px);
+  border:1px solid var(--vborder);border-radius:20px;padding:16px;
+  z-index:199;flex-direction:column;gap:6px;
+  box-shadow:0 24px 60px rgba(0,0,0,.7);
+  display:none;
+}
+.gnav-mobile.open{display:flex;}
+.gnav-mobile a{
+  padding:13px 18px;border-radius:12px;font-size:15px;font-weight:600;
+  color:var(--txt2);border:1px solid transparent;transition:.2s;display:block;
+}
+.gnav-mobile a:hover{background:var(--glass);border-color:var(--border);color:#fff;}
+.gnav-mobile .mob-cta{
+  margin-top:4px;padding:14px;border-radius:12px;font-size:15px;font-weight:700;
+  background:linear-gradient(135deg,var(--v1),var(--v2));color:#fff;border:none;
+  cursor:pointer;font-family:inherit;width:100%;box-shadow:0 4px 20px rgba(124,58,237,.4);
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — TABLET (≤ 1024px)
+════════════════════════════════════════ */
+@media (max-width:1024px){
+  .gnav{padding:0 28px;}
+  .bento{grid-template-columns:repeat(8,1fr);}
+  .bc1{grid-column:span 8;}
+  .bc2{grid-column:span 8;}
+  .bc3{grid-column:span 4;}
+  .bc4{grid-column:span 4;}
+  .bc5{grid-column:span 8;}
+  .bc6{grid-column:span 8;}
+  .bc7{grid-column:span 8;}
+  .temo-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 768px)
+════════════════════════════════════════ */
+@media (max-width:768px){
+  /* Demo bar */
+  .demo-bar{gap:3px;padding:5px 10px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .demo-bar button{font-size:9px;padding:4px 8px;white-space:nowrap;flex-shrink:0;}
+  .demo-bar .dl{display:none;}
+
+  /* Nav */
+  .gnav{padding:0 16px;height:52px;top:32px;}
+  .gnav-links{display:none;}
+  .gnav-badge{display:none;}
+  .gnav-menu{display:flex;align-items:center;justify-content:center;}
+
+  /* Hero */
+  .hero{padding:56px 20px 48px;min-height:calc(100vh - 84px);}
+  .orb-wrap{width:260px;height:260px;}
+  h1.hero-h{font-size:clamp(30px,10vw,48px);letter-spacing:-2px;margin-bottom:22px;}
+  .hero-sub{font-size:16px;margin-bottom:32px;}
+  .hero-actions{flex-direction:column;align-items:stretch;max-width:100%;}
+  .btn-main{width:100%;justify-content:center;padding:16px 28px;font-size:15px;}
+  .btn-sec{width:100%;padding:15px 28px;font-size:14px;}
+
+  /* Hero proof 2x2 grid */
+  .hero-proof{flex-wrap:wrap;padding-top:32px;margin-top:36px;gap:0;}
+  .hp{padding:16px 20px;border-right:none;border-bottom:1px solid var(--border);width:50%;}
+  .hp:nth-child(odd){border-right:1px solid var(--border);}
+  .hp:nth-last-child(-n+2){border-bottom:none;}
+  .hp-num{font-size:26px;}
+
+  /* Ticker */
+  .ti{padding:0 22px;font-size:12px;}
+
+  /* Problem */
+  .problem{padding:80px 20px;}
+  .prob-big{font-size:clamp(24px,8vw,36px);letter-spacing:-1.5px;}
+  .prob-row{grid-template-columns:50px 1fr;gap:14px;padding:24px 0;}
+  .prob-n{font-size:32px;}
+  .prob-text h3{font-size:18px;}
+  .prob-text p{font-size:15px;}
+
+  /* Preview */
+  .preview-section{padding:80px 20px;}
+  .preview-inner{grid-template-columns:1fr;gap:40px;}
+
+  /* Bento */
+  .bento-section{padding:60px 20px 80px;}
+  .bento{grid-template-columns:1fr;}
+  .bc1,.bc2,.bc3,.bc4,.bc5,.bc6,.bc7{grid-column:span 1;}
+  .bc{padding:24px;}
+
+  /* Compare — scrollable horizontally */
+  .compare-section{padding:0 0 80px;}
+  .compare-section .section-head{padding:0 20px;}
+  .compare-section .table-scroll{overflow-x:auto;padding:0 20px;}
+  .comp-table{min-width:540px;font-size:13px;}
+  .comp-table th,.comp-table td{padding:12px 14px;}
+
+  /* Testimonials */
+  .temo-section{padding:0 20px 80px;}
+  .temo-grid{grid-template-columns:1fr;}
+
+  /* Process */
+  .process-section{padding:0 20px 80px;}
+  .process-steps{grid-template-columns:1fr;gap:32px;}
+  .ps-arrow{display:none;}
+
+  /* Final CTA */
+  .final-cta{padding:80px 20px;}
+  .fc-orb-wrap{width:380px;height:380px;}
+  .fc h2{font-size:clamp(32px,10vw,54px);letter-spacing:-2px;}
+  .fc-sub{font-size:16px;margin-bottom:40px;}
+  .fc-trust{flex-wrap:wrap;gap:14px;}
+
+  /* Footer */
+  footer{padding:40px 20px 32px;flex-direction:column;text-align:center;gap:16px;}
+  .foot-links{flex-wrap:wrap;justify-content:center;gap:16px;}
+
+  /* Pages 2/3/4 */
+  .preappel-page{min-height:calc(100vh - 84px);padding:28px 16px;}
+  .call-page{min-height:calc(100vh - 84px);padding:28px 16px;}
+  .confirm-page{min-height:calc(100vh - 84px);padding:28px 16px;}
+  .pa-card{padding:32px 20px;border-radius:20px;}
+  .pa-card h2{font-size:22px;}
+  .call-card{padding:36px 20px;border-radius:20px;}
+  .conf-card{padding:32px 20px;border-radius:20px;}
+  .conf-card h2{font-size:22px;}
+
+  /* Modal */
+  .modal-overlay{padding:12px;}
+  .modal-box{padding:32px 20px;border-radius:20px;}
+  .modal-box h3{font-size:19px;}
+}
+
+/* ── MODE TOGGLE ── */
+.mode-toggle{display:flex;gap:8px;margin-bottom:16px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:4px;}
+.mode-btn{flex:1;padding:10px;border-radius:9px;border:none;background:transparent;color:var(--txt2);font-size:14px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.mode-btn.active{background:var(--card);color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+/* ── MIC TEST BLOCK ── */
+.mic-test-block{
+  background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);
+  border-radius:14px;padding:16px;margin:12px 0 4px;
+}
+.mic-test-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.mic-test-header span{font-size:13px;color:var(--txt2);font-weight:500;}
+.mic-select{
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  color:var(--txt2);border-radius:8px;padding:4px 8px;font-size:12px;
+  max-width:180px;flex:1;cursor:pointer;
+}
+.mic-level-wrap{
+  height:10px;background:rgba(255,255,255,.06);border-radius:999px;
+  overflow:hidden;margin-bottom:8px;
+}
+.mic-level-bar{
+  height:100%;width:0%;background:linear-gradient(90deg,var(--v2),var(--v4));
+  border-radius:999px;transition:width .08s ease;
+}
+.mic-test-status{font-size:12px;color:var(--txt3);margin-bottom:10px;}
+.mic-test-btn{
+  background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);
+  color:var(--v4);border-radius:8px;padding:6px 16px;font-size:13px;
+  cursor:pointer;transition:.2s;font-weight:600;
+}
+.mic-test-btn:hover{background:rgba(124,58,237,.25);}
+
+/* ── CHAT PAGE ── */
+.chat-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.chat-card{
+  width:100%;max-width:680px;
+  background:var(--card);border:1px solid var(--border);border-radius:28px;
+  display:flex;flex-direction:column;height:82vh;max-height:720px;overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,.5);
+}
+/* Header */
+.chat-head{
+  display:flex;align-items:center;gap:14px;
+  padding:18px 24px;border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.02);flex-shrink:0;
+}
+.chat-av{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--v1),var(--v3));
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  box-shadow:0 0 20px rgba(124,58,237,.4);flex-shrink:0;
+}
+.chat-head-info{flex:1;}
+.chat-head-name{font-weight:700;color:var(--txt);font-size:16px;}
+.chat-head-st{font-size:12px;color:var(--txt3);display:flex;align-items:center;gap:5px;}
+.chat-head-dot{width:7px;height:7px;border-radius:50%;background:#34D399;animation:pulse 2s infinite;}
+.chat-end-btn{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;}
+.chat-end-btn:hover{background:rgba(239,68,68,.2);}
+/* Messages */
+.chat-msgs{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
+.chat-msgs::-webkit-scrollbar{width:4px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:99px;}
+/* Bubbles */
+.cb{display:flex;gap:10px;align-items:flex-end;max-width:85%;}
+.cb.user{align-self:flex-end;flex-direction:row-reverse;}
+.cb.ai{align-self:flex-start;}
+.cb-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--v3));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.cb-text{
+  padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.55;
+  max-width:100%;word-wrap:break-word;
+}
+.cb.ai .cb-text{background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--txt);border-bottom-left-radius:4px;}
+.cb.user .cb-text{background:linear-gradient(135deg,var(--v1),var(--v2));color:#fff;border-bottom-right-radius:4px;}
+.cb-time{font-size:10px;color:var(--txt3);margin-top:3px;padding:0 4px;}
+/* Typing */
+.chat-typing-wrap{padding:0 20px 4px;display:none;}
+.chat-typing-wrap.show{display:flex;}
+.typing-bubble{display:flex;gap:5px;align-items:center;background:rgba(255,255,255,.07);border:1px solid var(--border);padding:12px 16px;border-radius:18px;border-bottom-left-radius:4px;}
+.td{width:7px;height:7px;border-radius:50%;background:var(--txt3);animation:tdot .9s infinite;}
+.td:nth-child(2){animation-delay:.2s;}
+.td:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+/* Input */
+.chat-input-area{padding:16px 20px;border-top:1px solid var(--border);background:rgba(255,255,255,.02);flex-shrink:0;}
+.chat-input-row{display:flex;gap:10px;align-items:center;}
+.chat-input{
+  flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--txt);border-radius:12px;padding:12px 16px;font-size:14px;
+  font-family:inherit;resize:none;outline:none;transition:.2s;
+}
+.chat-input:focus{border-color:var(--v2);background:rgba(255,255,255,.09);}
+.chat-input::placeholder{color:var(--txt3);}
+.chat-send{
+  width:44px;height:44px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--v1),var(--v2));
+  color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:.2s;flex-shrink:0;
+}
+.chat-send:hover{opacity:.85;transform:scale(1.05);}
+.chat-send:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.chat-hint{font-size:11px;color:var(--txt3);text-align:center;margin-top:8px;}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — SMALL (≤ 480px)
+════════════════════════════════════════ */
+@media (max-width:480px){
+  .demo-bar button{font-size:8px;padding:3px 7px;}
+  .gnav{top:30px;}
+  .gnav-mobile{top:84px;}
+  h1.hero-h{font-size:clamp(28px,9vw,40px);}
+  .orb-wrap{width:220px;height:220px;}
+  .hero-pill{font-size:11px;padding:6px 14px;}
+  .bento-section .section-head h2{font-size:28px;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="mesh"></div>
+
+<!-- DEMO BAR -->
+<div class="demo-bar">
+  <button class="on" onclick="gp('landing')">① Landing</button>
+  <button onclick="gp('preappel')">② Pré-appel</button>
+  <button onclick="gp('call')">③ En appel</button>
+  <button onclick="gp('confirm')">④ Confirmation</button>
+  <span class="dl">Maquette CYNTH.IA v2</span>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 1 — LANDING
+══════════════════════════════════════ -->
+<div id="page-landing" class="page on">
+
+  <!-- NAV -->
+  <nav class="gnav">
+    <div class="gnav-logo">CYNTH.IA</div>
+    <div class="gnav-links">
+      <a href="#" onclick="scrollSec('sec-methode');return false;">Méthode</a>
+      <a href="#" onclick="scrollSec('sec-temo');return false;">Témoignages</a>
+      <a href="#" onclick="showModal('pro');return false;">Professionnels</a>
+      <div class="gnav-badge"><span class="dot"></span>Bêta ouverte</div>
+    </div>
+    <button class="gnav-cta" onclick="gp('preappel')"><span>Commencer →</span></button>
+    <button class="gnav-menu" id="gnav-menu" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
+  </nav>
+
+  <!-- Mobile nav dropdown -->
+  <div class="gnav-mobile" id="gnav-mobile">
+    <a href="#" onclick="scrollSec('sec-methode');toggleMobileNav();return false;">📍 Méthode</a>
+    <a href="#" onclick="scrollSec('sec-temo');toggleMobileNav();return false;">💬 Témoignages</a>
+    <a href="#" onclick="showModal('pro');toggleMobileNav();return false;">🏢 Professionnels</a>
+    <button class="mob-cta" onclick="gp('preappel');toggleMobileNav()">🎙 Commencer mon entretien →</button>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="orb-wrap" id="orb">
+      <div class="ol ol1"></div><div class="ol ol2"></div>
+      <div class="ol ol3"></div><div class="ol ol4"></div>
+      <div class="orb-ring or1"></div>
+      <div class="orb-ring or2"></div>
+      <div class="orb-ring or3"></div>
+      <div class="orb-core"></div>
+    </div>
+    <div class="hero-inner">
+      <div class="hero-pill"><span class="hdot"></span>847 personnes ont trouvé leur voie · Note 4.9★</div>
+      <h1 class="hero-h">
+        <span class="h-white">Votre carrière mérite</span>
+        <span class="h-grad">mieux qu'un questionnaire.</span>
+      </h1>
+      <p class="hero-sub">Une conseillère IA qui vous écoute vraiment. 20 minutes de conversation. Trois pistes concrètes. Un rapport dans votre boîte.</p>
+      <div class="hero-actions">
+        <button class="btn-main" onclick="gp('preappel')">
+          <span>🎙</span> Démarrer mon entretien
+        </button>
+        <button class="btn-sec" onclick="showModal('audio')">Écouter un extrait ▶</button>
+      </div>
+      <div class="hero-proof">
+        <div class="hp"><div class="hp-num">20 min</div><div class="hp-label">Durée moyenne</div></div>
+        <div class="hp"><div class="hp-num">847</div><div class="hp-label">Entretiens bêta</div></div>
+        <div class="hp"><div class="hp-num">4.9 ★</div><div class="hp-label">Note moyenne</div></div>
+        <div class="hp"><div class="hp-num">0 €</div><div class="hp-label">Pour commencer</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="ticker">
+      <span class="ti"><span class="tic">✦</span> 847 entretiens réalisés</span>
+      <span class="ti"><span class="tic">★</span> Note moyenne 4.9/5</span>
+      <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — Faouzi, 34 ans</span>
+      <span class="ti"><span class="tic">✦</span> Profil RIASEC · CPF · VAE · ROME</span>
+      <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 min</span>
+      <span class="ti"><span class="tic">✦</span> Disponible 24h/24 · 7j/7</span>
+      <span class="ti"><span class="tic">✦</span> "Elle m'a posé des questions que personne n'avait osé" — Thilai</span>
+      <span class="ti"><span class="tic">★</span> Plan d'action 30 jours inclus</span>
+      <!-- duplicate for seamless loop -->
+      <span class="ti"><span class="tic">✦</span> 847 entretiens réalisés</span>
+      <span class="ti"><span class="tic">★</span> Note moyenne 4.9/5</span>
+      <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — Faouzi, 34 ans</span>
+      <span class="ti"><span class="tic">✦</span> Profil RIASEC · CPF · VAE · ROME</span>
+      <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 min</span>
+      <span class="ti"><span class="tic">✦</span> Disponible 24h/24 · 7j/7</span>
+      <span class="ti"><span class="tic">✦</span> "Elle m'a posé des questions que personne n'avait osé" — Thilai</span>
+      <span class="ti"><span class="tic">★</span> Plan d'action 30 jours inclus</span>
+    </div>
+  </div>
+
+  <!-- PROBLEM -->
+  <div class="problem" id="sec-methode">
+    <div class="reveal">
+      <div class="prob-eyebrow">Le problème</div>
+      <h2 class="prob-big">
+        L'orientation professionnelle<br>est <em>cassée.</em><br>Voici pourquoi.
+      </h2>
+    </div>
+    <div class="prob-items">
+      <div class="prob-row">
+        <div class="prob-n">01</div>
+        <div class="prob-text">
+          <h3>Des semaines d'attente pour 45 minutes génériques</h3>
+          <p>Un conseiller France Travail, c'est 3 à 8 semaines minimum. Et quand vous y êtes enfin — des questions toutes faites, le même formulaire pour tout le monde. Votre situation unique mérite mieux que ça.</p>
+        </div>
+      </div>
+      <div class="prob-row">
+        <div class="prob-n">02</div>
+        <div class="prob-text">
+          <h3>Un bilan de compétences : 3 mois et 2 000 €</h3>
+          <p>C'est l'outil officiel. Il fonctionne. Mais 3 mois, c'est long quand vous avez besoin d'une direction maintenant. Et 2 000 €, c'est la barrière que la plupart ne franchissent jamais.</p>
+        </div>
+      </div>
+      <div class="prob-row">
+        <div class="prob-n">03</div>
+        <div class="prob-text">
+          <h3>La peur de dire à voix haute ce qu'on voudrait vraiment</h3>
+          <p>Certains rêves semblent ridicules devant un inconnu. Devant un bilan officiel. Devant votre famille. CYNTH.IA ne juge jamais. Elle écoute. Et elle creuse là où les autres n'osent pas aller.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONVERSATION PREVIEW -->
+  <div class="preview-section">
+    <div class="preview-inner">
+      <div class="preview-text reveal-l">
+        <div class="eyebrow">Voyez-la travailler</div>
+        <h2>Ce n'est pas un chatbot.<br>C'est une vraie <span>conversation.</span></h2>
+        <p>CYNTH.IA ne suit pas un script. Elle écoute, reformule avec vos propres mots, creuse là où elle sent quelque chose. Comme une vraie conseillère — mais disponible maintenant.</p>
+        <div class="preview-feats">
+          <div class="pf"><div class="pfc">🔍</div>Méthode des incidents critiques — extrait vos compétences cachées</div>
+          <div class="pf"><div class="pfc">🧠</div>Profil RIASEC en temps réel — sans vous demander de le remplir</div>
+          <div class="pf"><div class="pfc">💬</div>Technique du miroir — utilise vos mots exacts pour reformuler</div>
+          <div class="pf"><div class="pfc">🚧</div>Entretien motivationnel — distingue vrais et faux blocages</div>
+        </div>
+      </div>
+      <div class="chat-ui reveal-r">
+        <div class="chat-top">
+          <div class="chat-orb-sm"></div>
+          <div>
+            <div class="chat-name">CYNTH.IA</div>
+            <div class="chat-status">En écoute active</div>
+          </div>
+        </div>
+        <div class="chat-body" id="chat-body">
+          <div class="msg ai" style="animation-delay:.1s">
+            <div class="msg-av ai"></div>
+            <div><div class="msg-bubble">Bonjour ! Je suis CYNTH.IA. Pour commencer — qu'est-ce qui vous a décidé à faire cet entretien aujourd'hui ?</div><div class="msg-time">10:02</div></div>
+          </div>
+          <div class="msg mine" style="animation-delay:.6s">
+            <div><div class="msg-bubble">Je me sens bloqué dans mon travail depuis un moment, je sais plus trop où j'en suis.</div><div class="msg-time">10:03</div></div>
+            <div class="msg-av">F</div>
+          </div>
+          <div class="msg ai" style="animation-delay:1.1s">
+            <div class="msg-av ai"></div>
+            <div><div class="msg-bubble">Je vous entends. Ce sentiment d'être "bloqué" — c'est plutôt la routine qui pèse, ou il y a une direction que vous aimeriez prendre mais qui semble hors de portée ?</div><div class="msg-time">10:03</div></div>
+          </div>
+          <div class="msg mine" style="animation-delay:1.6s">
+            <div><div class="msg-bubble">Les deux en fait. J'ai une idée dans la tête depuis longtemps mais je sais pas si c'est réaliste.</div><div class="msg-time">10:04</div></div>
+            <div class="msg-av">F</div>
+          </div>
+          <div class="msg ai" id="typing-msg" style="animation-delay:2.1s">
+            <div class="msg-av ai"></div>
+            <div class="typing"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="chat-wave">
+          <div class="cw"></div><div class="cw"></div><div class="cw"></div>
+          <div class="cw"></div><div class="cw"></div><div class="cw"></div>
+          <div class="cw"></div><div class="cw"></div><div class="cw"></div>
+          <div class="cw"></div><div class="cw"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENTO -->
+  <div class="bento-section">
+    <div class="section-head reveal">
+      <div class="eyebrow">Ce que CYNTH.IA fait pour vous</div>
+      <h2>Pas de la magie. De <span>la méthode.</span></h2>
+    </div>
+    <div class="bento">
+      <div class="bc bc1 bc-big reveal">
+        <div class="bc-icon">🧠</div>
+        <h3>Profilage RIASEC en temps réel</h3>
+        <p>Holland, Réaliste, Investigateur, Artistique, Social, Entrepreneur, Conventionnel — CYNTH.IA identifie votre type professionnel au fil de la conversation, sans formulaire. Elle sait qui vous êtes avant même que vous le sachiez.</p>
+        <div class="riasec-bars">
+          <div class="rb"><div class="rb-label">Investigateur</div><div class="rb-track"><div class="rb-fill" data-w=".82"></div></div></div>
+          <div class="rb"><div class="rb-label">Artistique</div><div class="rb-track"><div class="rb-fill" data-w=".68"></div></div></div>
+          <div class="rb"><div class="rb-label">Social</div><div class="rb-track"><div class="rb-fill" data-w=".55"></div></div></div>
+          <div class="rb"><div class="rb-label">Entrepreneur</div><div class="rb-track"><div class="rb-fill" data-w=".41"></div></div></div>
+        </div>
+        <div class="bc-tag">Méthode Holland RIASEC</div>
+      </div>
+      <div class="bc bc2 reveal">
+        <div class="bc-icon">🔍</div>
+        <h3>Compétences cachées révélées</h3>
+        <p>La méthode des incidents critiques : vous racontez une réussite, CYNTH.IA extrait les compétences que vous ne saviez pas que vous aviez.</p>
+        <div class="bc-tag">Incidents critiques</div>
+      </div>
+      <div class="bc bc3 reveal">
+        <div class="bc-icon">💡</div>
+        <h3>3 pistes finançables CPF/VAE</h3>
+        <p>Elle connaît les dispositifs. Chaque piste vient avec le financement possible. Pas de bla-bla.</p>
+      </div>
+      <div class="bc bc4 reveal">
+        <div class="bc-icon">🎯</div>
+        <h3>Plan d'action 30 jours</h3>
+        <p>Cette semaine. Dans 15 jours. Dans un mois. Des étapes concrètes adaptées à votre vie réelle.</p>
+      </div>
+      <div class="bc bc5 reveal">
+        <div class="bc-icon">🤝</div>
+        <h3>Elle s'adapte à vous</h3>
+        <p>Silences, blocages, émotions — CYNTH.IA ajuste son rythme. Jamais pressée. Jamais dans le jugement.</p>
+      </div>
+      <div class="bc bc6 reveal">
+        <div class="bc-icon">📄</div>
+        <h3>Rapport PDF personnalisé envoyé en 2 minutes</h3>
+        <p>Profil RIASEC complet, 3 pistes avec justification et financement, plan d'action daté. Tout dans votre boîte mail — pendant que vous raccrochez.</p>
+        <div class="bc-tag">Rapport automatique</div>
+      </div>
+      <div class="bc bc7 reveal">
+        <div class="bc-icon">🌍</div>
+        <h3>Tous les prénoms reconnus et prononcés correctement</h3>
+        <p>Faouzi, Thilai, Aissatou, Mamadou, Rokia — CYNTH.IA a été entraînée sur les prénoms arabes, africains, asiatiques et du monde entier. Personne n'est laissé de côté.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARISON -->
+  <div class="compare-section">
+    <div class="section-head reveal">
+      <div class="eyebrow">Pourquoi CYNTH.IA</div>
+      <h2>Comparer pour <span>comprendre.</span></h2>
+    </div>
+    <div class="table-scroll">
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>France Travail</th>
+          <th>Bilan classique</th>
+          <th class="hl">CYNTH.IA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Disponibilité</td>
+          <td><span class="warn">3–8 semaines</span></td>
+          <td><span class="warn">Sur RDV</span></td>
+          <td class="comp-col-hl first"><span class="chk">✓</span> Maintenant</td>
+        </tr>
+        <tr>
+          <td>Durée</td>
+          <td>45 min</td>
+          <td>3 mois</td>
+          <td class="comp-col-hl"><span class="chk">✓</span> 20 minutes</td>
+        </tr>
+        <tr>
+          <td>Coût</td>
+          <td>Gratuit</td>
+          <td><span class="warn">~2 000 €</span></td>
+          <td class="comp-col-hl"><span class="chk">✓</span> Gratuit</td>
+        </tr>
+        <tr>
+          <td>Rapport personnalisé</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="chk">✓</span></td>
+          <td class="comp-col-hl"><span class="chk">✓</span> Inclus</td>
+        </tr>
+        <tr>
+          <td>Pistes finançables CPF</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="chk">✓</span></td>
+          <td class="comp-col-hl"><span class="chk">✓</span></td>
+        </tr>
+        <tr>
+          <td>Sans jugement garanti</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td class="comp-col-hl"><span class="chk">✓</span></td>
+        </tr>
+        <tr>
+          <td>Profil RIASEC</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="chk">✓</span></td>
+          <td class="comp-col-hl last"><span class="chk">✓</span> Automatique</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- TESTIMONIALS -->
+  <div class="temo-section" id="sec-temo">
+    <div class="section-head reveal">
+      <div class="eyebrow">Ce qu'ils en disent</div>
+      <h2>Des vraies <span>transformations.</span></h2>
+    </div>
+    <div class="temo-grid">
+      <div class="tc reveal">
+        <div class="tc-stars">★★★★★</div>
+        <p class="tc-quote">"En 22 minutes, elle a vu des choses en moi que je n'avais jamais formulées. La question <strong>'si tu étais sûr de réussir, qu'est-ce que tu ferais ?'</strong> — ça m'a débloqué ce soir-là. J'avais ma réponse."</p>
+        <div class="tc-foot">
+          <div class="tc-av">F</div>
+          <div>
+            <div class="tc-name">Faouzi, 34 ans</div>
+            <div class="tc-meta">Ancien technicien · En reconversion</div>
+            <div class="tc-result">→ Piste UX Design identifiée</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc reveal">
+        <div class="tc-stars">★★★★★</div>
+        <p class="tc-quote">"CYNTH.IA a vraiment écouté. Elle m'a posé des questions que personne ne m'avait jamais posées. <strong>Le rapport était précis, avec des étapes concrètes.</strong> Je suis repartie avec un plan."</p>
+        <div class="tc-foot">
+          <div class="tc-av">T</div>
+          <div>
+            <div class="tc-name">Thilai, 28 ans</div>
+            <div class="tc-meta">Secrétaire médicale · En reconversion</div>
+            <div class="tc-result">→ Formation coordinatrice financée CPF</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc reveal">
+        <div class="tc-stars">★★★★☆</div>
+        <p class="tc-quote">"J'avais un rdv France Travail dans 3 semaines. J'ai fait l'entretien CYNTH.IA en attendant. <strong>Je suis arrivée avec une idée claire.</strong> Le conseiller était surpris de ma préparation."</p>
+        <div class="tc-foot">
+          <div class="tc-av">A</div>
+          <div>
+            <div class="tc-name">Aminata, 41 ans</div>
+            <div class="tc-meta">Demandeuse d'emploi · Paris</div>
+            <div class="tc-result">→ VAE Agent social en cours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROCESS -->
+  <div class="process-section">
+    <div class="section-head reveal">
+      <div class="eyebrow">Comment ça marche</div>
+      <h2>Trois étapes. <span>C'est tout.</span></h2>
+    </div>
+    <div class="process-steps">
+      <div class="ps reveal">
+        <div class="ps-num">1</div>
+        <h3>Entrez votre email</h3>
+        <p>Et uploadez votre CV si vous voulez — CYNTH.IA démarre en connaissant déjà votre parcours.</p>
+      </div>
+      <div class="ps-arrow reveal">→</div>
+      <div class="ps reveal">
+        <div class="ps-num">2</div>
+        <h3>Parlez à CYNTH.IA</h3>
+        <p>20 à 35 minutes de conversation naturelle. Pas un questionnaire. Une vraie discussion sur votre avenir.</p>
+      </div>
+      <div class="ps-arrow reveal">→</div>
+      <div class="ps reveal">
+        <div class="ps-num">3</div>
+        <h3>Recevez votre rapport</h3>
+        <p>Profil RIASEC + 3 pistes + plan 30 jours dans votre boîte en moins de 2 minutes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL CTA -->
+  <div class="final-cta">
+    <div class="fc-orb-wrap">
+      <div class="fc-ol fc-ol1"></div>
+      <div class="fc-ol fc-ol2"></div>
+      <div class="fc-ol fc-ol3"></div>
+      <div class="fc-core"></div>
+    </div>
+    <div class="fc-inner">
+      <div class="fc-label">✦ Gratuit · Sans inscription longue · Rapport inclus</div>
+      <div class="fc">
+        <h2>
+          <span class="fw">Votre avenir</span>
+          <span class="fg">commence maintenant.</span>
+        </h2>
+        <p class="fc-sub">847 personnes ont déjà fait le premier pas.<br>L'entretien dure 20 minutes. La clarté, elle, dure bien plus longtemps.</p>
+        <button class="btn-main" style="font-size:17px;padding:20px 56px;" onclick="gp('preappel')">
+          <span>🎙</span> Démarrer mon entretien gratuitement
+        </button>
+        <div class="fc-trust">
+          <div class="ft"><span class="ftc">✓</span> 100% confidentiel</div>
+          <div class="ft"><span class="ftc">✓</span> Sans jugement</div>
+          <div class="ft"><span class="ftc">✓</span> Disponible maintenant</div>
+          <div class="ft"><span class="ftc">✓</span> Rapport en 2 min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="foot-logo">CYNTH.IA</div>
+    <div class="foot-links">
+      <a href="#" onclick="showModal('confidentialite');return false;">Confidentialité</a>
+      <a href="#" onclick="showModal('cgu');return false;">CGU</a>
+      <a href="#" onclick="showModal('contact');return false;">Contact</a>
+      <a href="#" onclick="showModal('pro');return false;">Professionnels</a>
+    </div>
+    <div class="foot-copy">© 2026 CYNTH.IA · Tous droits réservés</div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 2 — PRÉ-APPEL
+══════════════════════════════════════ -->
+<div id="page-preappel" class="page">
+  <div class="preappel-page">
+    <div class="pa-card">
+      <span class="pa-logo">CYNTH.IA</span>
+      <h2>Avant de commencer</h2>
+      <p class="pa-sub">Votre email pour recevoir le rapport. Le CV est optionnel — mais si vous l'ajoutez, CYNTH.IA démarre en connaissant déjà votre parcours.</p>
+
+      <!-- MODE TOGGLE -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-btn-vocal" onclick="setMode('vocal')">🎙 Entretien vocal</button>
+        <button class="mode-btn" id="mode-btn-chat" onclick="setMode('chat')">💬 Chat écrit</button>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Votre prénom</label>
+        <input type="text" id="inp-name" class="finput" placeholder="Faouzi" autocomplete="given-name">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Votre email</label>
+        <input type="email" id="inp-email" class="finput" placeholder="faouzi@email.com" autocomplete="email">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">CV <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0;">(optionnel — recommandé)</span></label>
+        <input type="file" id="cv-input" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleCV(this)">
+        <div class="upload-z" id="upload-zone"
+          onclick="document.getElementById('cv-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--v1)';"
+          ondragleave="this.style.borderColor='rgba(124,58,237,.3)';"
+          ondrop="event.preventDefault();handleDrop(event);">
+          <div class="uz-icon" id="uz-icon">📄</div>
+          <p class="uz-text" id="uz-text">Glissez votre CV ici ou cliquez</p>
+          <span class="uz-hint" id="uz-hint">PDF, Word · max 5 Mo</span>
+        </div>
+      </div>
+      <div class="pa-guarantees">
+        <div class="pg"><span class="pgc">✓</span>100% confidentiel</div>
+        <div class="pg"><span class="pgc">✓</span>Gratuit</div>
+        <div class="pg"><span class="pgc">✓</span>20 min max</div>
+        <div class="pg"><span class="pgc">✓</span>Rapport immédiat</div>
+      </div>
+
+      <!-- MIC TEST -->
+      <div class="mic-test-block" id="mic-test-block">
+        <div class="mic-test-header">
+          <span>🎤 Tester le micro avant de commencer</span>
+          <select id="mic-device-select" class="mic-select" onchange="changeMicDevice(this.value)"><option value="">Chargement...</option></select>
+        </div>
+        <div class="mic-level-wrap">
+          <div class="mic-level-bar" id="mic-level-bar"></div>
+        </div>
+        <div class="mic-test-status" id="mic-test-status">Cliquez pour tester votre micro</div>
+        <button class="mic-test-btn" id="mic-test-btn" onclick="startMicTest()">▶ Tester</button>
+      </div>
+
+      <button class="btn-launch" onclick="if(validateForm())launchCall()">🎙 Démarrer l'entretien</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 3 — EN APPEL
+══════════════════════════════════════ -->
+<div id="page-call" class="page">
+  <div class="call-page">
+    <div class="call-card">
+      <div class="co-wrap">
+        <div class="co-r"></div>
+        <div class="co-r co-r2"></div>
+        <div class="co"></div>
+      </div>
+      <div class="cstat">En ligne</div>
+      <div class="cname">CYNTH.IA vous écoute</div>
+      <div class="csub">Parlez naturellement. Prenez votre temps.<br>Vous pouvez faire des pauses.</div>
+      <div class="waveform">
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+      </div>
+      <div class="call-timer" id="timer">00:00</div>
+      <div class="call-phase-label">Phase 1 — Situation actuelle</div>
+      <div class="ccontrols">
+        <button class="cbtn" id="btn-mic" onclick="toggleMic()" title="Micro">🎤</button>
+        <button class="cbtn cbtn-end" onclick="confirmEndCall()" title="Terminer l'appel">📵</button>
+        <button class="cbtn" id="btn-vol" onclick="toggleVol()" title="Volume">🔊</button>
+      </div>
+      <div class="ctip" id="ctip-main">💡 Si vous avez besoin d'une pause, dites "donnez-moi un moment" — CYNTH.IA attendra.</div>
+      <div class="ctip" style="margin-top:8px;color:#f59e0b;border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06);">🎧 Utilisez des <strong>écouteurs</strong> pour éviter l'écho. Haut-parleurs = risque de feedback.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 3B — CHAT TEXTE
+══════════════════════════════════════ -->
+<div id="page-chat" class="page">
+  <div class="chat-page">
+    <div class="chat-card">
+      <div class="chat-head">
+        <div class="chat-av">🎙</div>
+        <div class="chat-head-info">
+          <div class="chat-head-name">CYNTH.IA</div>
+          <div class="chat-head-st"><span class="chat-head-dot"></span><span id="chat-head-status">En ligne</span></div>
+        </div>
+        <button class="chat-end-btn" onclick="confirmEndChat()">✕ Terminer</button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-typing-wrap" id="chat-typing">
+        <div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chat-input" placeholder="Écrivez votre message et appuyez sur Entrée..." maxlength="500"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}">
+          <button class="chat-send" id="chat-send-btn" onclick="sendChatMsg()" title="Envoyer">↑</button>
+        </div>
+        <div class="chat-hint">Entrée pour envoyer · CYNTH.IA analyse vos réponses pour construire votre profil</div>
+        <!-- Notice mode simulation -->
+        <div id="chat-ai-notice" style="display:none;align-items:center;gap:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:12px;color:#FCD34D;">
+          <span>⚡</span>
+          <span>Mode aperçu — Pour des réponses IA réelles, ajoutez votre clé <a href="https://console.groq.com" target="_blank" style="color:#FBBF24;text-decoration:underline;">Groq</a> dans le code (variable GROQ_API_KEY).</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE 4 — CONFIRMATION
+══════════════════════════════════════ -->
+<div id="page-confirm" class="page">
+  <div class="confirm-page">
+    <div class="conf-card">
+      <div class="conf-orb">✅</div>
+      <h2>Entretien terminé !</h2>
+      <p class="conf-sub">Bravo. Vous venez de faire ce que peu osent : prendre 20 minutes pour vraiment réfléchir à votre avenir. Votre rapport est en cours de génération.</p>
+      <div class="conf-report">
+        <h4>📄 Votre rapport contient</h4>
+        <div class="ri"><span class="rc">✓</span><p>Votre profil RIASEC complet avec description de votre personnalité professionnelle</p></div>
+        <div class="ri"><span class="rc">✓</span><p>3 pistes métier avec la raison de chaque choix personnalisé</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Pour chaque piste : formation, salaire estimé, financement CPF/VAE possible</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Plan d'action daté : action cette semaine, dans 15 jours, dans 1 mois</p></div>
+      </div>
+      <div id="conf-loading" style="display:none;text-align:center;padding:20px 0;">
+        <div style="display:inline-flex;align-items:center;gap:12px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:14px 24px;">
+          <div style="width:18px;height:18px;border:2px solid rgba(124,58,237,.3);border-top-color:#7c3aed;border-radius:50%;animation:spinLoader 0.8s linear infinite;"></div>
+          <span style="font-size:14px;color:rgba(255,255,255,.7);">CYNTH.IA analyse votre profil et sélectionne vos pistes métier…</span>
+        </div>
+      </div>
+      <div class="conf-actions">
+        <button class="btn-main" id="btn-download-rapport" style="border:none;cursor:pointer;font-family:inherit;opacity:.5;pointer-events:none;" onclick="downloadRapport()">⏳ Génération en cours…</button>
+        <button class="btn-outline" onclick="gp('landing')">← Retour à l'accueil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════ -->
+<script>
+/* ── CANVAS PARTICLES ── */
+const cv = document.getElementById('bg-canvas');
+const cx2 = cv.getContext('2d');
+let W, H, parts = [];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+resize();addEventListener('resize',resize);
+class P{
+  constructor(){this.reset();}
+  reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=Math.random()*1.2+.2;this.vx=(Math.random()-.5)*.25;this.vy=(Math.random()-.5)*.25;this.o=Math.random()*.4+.08;this.h=Math.random()*60+240;}
+  step(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset();}
+  draw(){cx2.save();cx2.globalAlpha=this.o;cx2.fillStyle=`hsl(${this.h},75%,68%)`;cx2.beginPath();cx2.arc(this.x,this.y,this.r,0,Math.PI*2);cx2.fill();cx2.restore();}
+}
+for(let i=0;i<100;i++)parts.push(new P());
+let mx=W/2,my=H/2;
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+function drawLinks(){
+  for(let i=0;i<parts.length;i++){
+    const d=Math.hypot(parts[i].x-mx,parts[i].y-my);
+    if(d<160){cx2.save();cx2.globalAlpha=(1-d/160)*.18;cx2.strokeStyle='#A855F7';cx2.lineWidth=.7;cx2.beginPath();cx2.moveTo(parts[i].x,parts[i].y);cx2.lineTo(mx,my);cx2.stroke();cx2.restore();}
+    for(let j=i+1;j<parts.length;j++){
+      const dd=Math.hypot(parts[i].x-parts[j].x,parts[i].y-parts[j].y);
+      if(dd<90){cx2.save();cx2.globalAlpha=(1-dd/90)*.06;cx2.strokeStyle='#7C3AED';cx2.lineWidth=.4;cx2.beginPath();cx2.moveTo(parts[i].x,parts[i].y);cx2.lineTo(parts[j].x,parts[j].y);cx2.stroke();cx2.restore();}
+    }
+  }
+}
+function anim(){cx2.clearRect(0,0,W,H);parts.forEach(p=>{p.step();p.draw();});drawLinks();requestAnimationFrame(anim);}
+anim();
+
+/* ── ORB PARALLAX ── */
+addEventListener('mousemove',e=>{
+  const o=document.getElementById('orb');if(!o)return;
+  const x=(e.clientX/innerWidth-.5)*24;const y=(e.clientY/innerHeight-.5)*16;
+  o.style.transform=`translate(calc(-50% + ${x}px),calc(-50% + ${y}px))`;
+});
+
+/* ── 3D CARD TILT ── */
+document.querySelectorAll('.bc,.tc,.prob-row').forEach(el=>{
+  el.addEventListener('mousemove',e=>{
+    const r=el.getBoundingClientRect();
+    const x=(e.clientX-r.left-r.width/2)/r.width*12;
+    const y=(e.clientY-r.top-r.height/2)/r.height*12;
+    el.style.transform=`perspective(900px) rotateX(${-y}deg) rotateY(${x}deg) translateY(-4px)`;
+  });
+  el.addEventListener('mouseleave',()=>{el.style.transform='';});
+});
+
+/* ── PAGE NAVIGATION ── */
+const pageOrder=['landing','preappel','call','chat','confirm'];
+function gp(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-'+name).classList.add('on');
+  const idx=pageOrder.indexOf(name);
+  document.querySelectorAll('.demo-bar button').forEach((b,i)=>b.classList.toggle('on',i===idx));
+  window.scrollTo(0,0);
+  if(name==='call'){sec=0;running=true;startVapiCall();}else{running=false;}
+  if(name==='chat'){startChatMode();}
+  if(name==='landing'){initReveal();}
+  if(name==='preappel'){onPreappelShow();}
+  // Ferme le menu mobile si ouvert
+  const mn=document.getElementById('gnav-mobile');
+  const mb=document.getElementById('gnav-menu');
+  if(mn)mn.classList.remove('open');
+  if(mb)mb.textContent='☰';
+}
+
+/* ── FORM VALIDATION ── */
+function validateForm(){
+  const nameEl=document.getElementById('inp-name');
+  const emailEl=document.getElementById('inp-email');
+  const name=nameEl?nameEl.value.trim():'';
+  const email=emailEl?emailEl.value.trim():'';
+  if(!name){
+    showToast('⚠️','Entrez votre prénom pour continuer','warning',3200);
+    if(nameEl){nameEl.focus();nameEl.style.borderColor='var(--red)';}
+    setTimeout(()=>{if(nameEl)nameEl.style.borderColor='';},2500);
+    return false;
+  }
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('⚠️','Un email valide est nécessaire pour recevoir votre rapport','warning',3200);
+    if(emailEl){emailEl.focus();emailEl.style.borderColor='var(--red)';}
+    setTimeout(()=>{if(emailEl)emailEl.style.borderColor='';},2500);
+    return false;
+  }
+  // Injecter l'email dans la page de confirmation
+  const confEmail=document.getElementById('conf-email-display');
+  if(confEmail)confEmail.textContent=email;
+  return true;
+}
+
+/* ── MOBILE NAV ── */
+function toggleMobileNav(){
+  const m=document.getElementById('gnav-mobile');
+  const btn=document.getElementById('gnav-menu');
+  if(!m||!btn)return;
+  const open=m.classList.toggle('open');
+  btn.textContent=open?'✕':'☰';
+}
+// Ferme le menu si clic en dehors
+document.addEventListener('click',function(e){
+  const nav=document.getElementById('gnav-mobile');
+  const btn=document.getElementById('gnav-menu');
+  if(nav&&nav.classList.contains('open')&&!nav.contains(e.target)&&e.target!==btn){
+    nav.classList.remove('open');
+    if(btn)btn.textContent='☰';
+  }
+});
+
+/* ── SCROLL REVEAL ── */
+function initReveal(){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('vis');
+        // RIASEC bars
+        e.target.querySelectorAll&&e.target.querySelectorAll('.rb-fill').forEach(b=>{
+          setTimeout(()=>{b.style.transform=`scaleX(${b.dataset.w||1})`;},200);
+        });
+      }
+    });
+  },{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach(el=>obs.observe(el));
+  // RIASEC bars when parent visible
+  const obs2=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.querySelectorAll('.rb-fill').forEach((b,i)=>{
+          setTimeout(()=>{b.style.transform=`scaleX(${b.dataset.w||1})`;},200+i*80);
+        });
+      }
+    });
+  },{threshold:.3});
+  document.querySelectorAll('.bc1').forEach(el=>obs2.observe(el));
+}
+initReveal();
+
+/* ── PROB ROWS REVEAL ── */
+const probObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:.2,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.prob-row').forEach(el=>probObs.observe(el));
+
+/* ── TIMER ── */
+let sec=0,running=false;
+setInterval(()=>{
+  if(!running)return;sec++;
+  const t=document.getElementById('timer');
+  if(t)t.textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+},1000);
+
+/* ── CV UPLOAD ── */
+function handleCV(input){if(input.files[0])cvReady(input.files[0].name);}
+function handleDrop(e){const f=e.dataTransfer.files[0];if(f)cvReady(f.name);}
+function cvReady(name){
+  const z=document.getElementById('upload-zone');
+  z.style.borderColor='var(--green)';z.style.background='rgba(16,185,129,.05)';
+  document.getElementById('uz-icon').textContent='✅';
+  document.getElementById('uz-text').textContent=name;
+  document.getElementById('uz-text').style.color='#34D399';
+  document.getElementById('uz-hint').textContent="CV chargé — CYNTH.IA connaîtra votre parcours";
+}
+
+/* ── CHAT ANIMATION ── */
+setTimeout(()=>{
+  const tm=document.getElementById('typing-msg');
+  if(!tm)return;
+  const div=tm.querySelector('.typing').parentNode;
+  setTimeout(()=>{
+    const bubble=document.createElement('div');
+    bubble.className='msg-bubble';
+    bubble.textContent='Dites-moi — si vous étiez sûr de réussir, quelle serait cette idée que vous avez en tête ?';
+    div.innerHTML='';div.appendChild(bubble);
+    const t2=document.createElement('div');t2.className='msg-time';t2.textContent='10:04';div.appendChild(t2);
+  },3500);
+},2500);
+
+/* ── SCROLL TO SECTION ── */
+function scrollSec(id){
+  const el=document.getElementById(id);
+  if(el){const top=el.getBoundingClientRect().top+window.scrollY-100;window.scrollTo({top,behavior:'smooth'});}
+}
+
+/* ── TOAST SYSTEM ── */
+let toastTimer=null;
+function showToast(icon,msg,type='info',duration=3500){
+  let t=document.getElementById('global-toast');
+  if(!t){t=document.createElement('div');t.id='global-toast';t.className='toast';document.body.appendChild(t);}
+  t.innerHTML=`<span class="ticon">${icon}</span><span>${msg}</span>`;
+  t.className=`toast ${type}`;
+  setTimeout(()=>t.classList.add('show'),10);
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{t.classList.remove('show');},duration);
+}
+
+/* ── MODAL SYSTEM ── */
+let currentModalContent='';
+function showModal(type){
+  const contents={
+    audio:`
+      <div class="modal-tag">🎙 Extrait réel</div>
+      <h3>Écoutez CYNTH.IA</h3>
+      <p>Un extrait de 45 secondes d'un vrai entretien bêta — avec la permission de l'utilisateur.</p>
+      <div class="audio-player">
+        <div class="ap-orb" id="ap-orb"></div>
+        <div class="ap-wave" id="ap-wave">
+          <div class="aw"></div><div class="aw"></div><div class="aw"></div>
+          <div class="aw"></div><div class="aw"></div><div class="aw"></div>
+          <div class="aw"></div><div class="aw"></div>
+        </div>
+        <div class="ap-progress" onclick="scrubAudio(event)"><div class="ap-bar" id="ap-bar"></div></div>
+        <div class="ap-time" id="ap-time">0:00 / 0:45</div>
+        <div class="ap-controls">
+          <button class="ap-btn" onclick="rewindAudio()">⏮</button>
+          <button class="ap-btn play" id="ap-play" onclick="toggleAudio()">▶</button>
+          <button class="ap-btn" onclick="fwdAudio()">⏭</button>
+        </div>
+      </div>
+      <div class="ap-transcript">
+        <strong>CYNTH.IA :</strong> "Si vous étiez absolument certain de réussir — sans aucun risque — quelle serait cette idée que vous avez en tête depuis longtemps ?"<br><br>
+        <strong>Utilisateur :</strong> "Honnêtement... je voudrais travailler dans le design. Mais j'ai aucune formation."<br><br>
+        <strong>CYNTH.IA :</strong> "C'est intéressant. Quand vous dites design — vous pensez à quoi précisément ? Objets, visuels, interfaces ?"
+      </div>`,
+    pro:`
+      <div class="modal-tag">🏢 B2B</div>
+      <h3>Offre Professionnels</h3>
+      <p>CYNTH.IA s'intègre à vos structures : France Travail, CIBC, écoles, cabinets RH, entreprises en mobilité interne.</p>
+      <p><strong style="color:var(--txt);">Ce qu'on propose :</strong></p>
+      <p>• Widget embarquable sur votre site ou intranet<br>• Rapports envoyés directement à vos conseillers<br>• Tableau de bord agrégé pour suivre les profils<br>• Tarification volume (à partir de 50 entretiens/mois)</p>
+      <p style="margin-top:8px;font-size:13px;color:var(--txt3);">Disponibilité prévue Q3 2026. Pré-inscriptions ouvertes.</p>
+      <button class="mcta" onclick="showToast('📬','Demande envoyée ! Nous vous contacterons sous 48h.','success');closeModal();">Demander une démo →</button>`,
+    contact:`
+      <div class="modal-tag">✉️ Contact</div>
+      <h3>Nous contacter</h3>
+      <p>Pour toute question sur CYNTH.IA, une suggestion, un bug ou un partenariat :</p>
+      <p style="margin:16px 0;font-size:16px;font-weight:700;color:var(--v4);">contact@cynthia.ai</p>
+      <p style="font-size:13px;color:var(--txt3);">Réponse garantie sous 48h (jours ouvrés). Pour les demandes B2B, utilisez "Professionnels" dans le menu.</p>
+      <button class="mcta" onclick="showToast('📋','Email copié : contact@cynthia.ai','success');closeModal();">Copier l'email</button>`,
+    confidentialite:`
+      <div class="modal-tag">🔒 Confidentialité</div>
+      <h3>Politique de confidentialité</h3>
+      <p>Vos données ne sont jamais vendues, jamais partagées avec des tiers.</p>
+      <p><strong style="color:var(--txt);">Ce que nous collectons :</strong> email, prénom, contenu de votre entretien vocal, CV si uploadé.</p>
+      <p><strong style="color:var(--txt);">Durée de conservation :</strong> 6 mois pour les données d'entretien, 3 ans pour l'email (marketing opt-in uniquement).</p>
+      <p><strong style="color:var(--txt);">Vos droits :</strong> accès, rectification, suppression sur simple email à contact@cynthia.ai.</p>
+      <p style="font-size:13px;color:var(--txt3);margin-top:12px;">Conformité RGPD · Données hébergées en Europe (AWS Frankfurt)</p>`,
+    cgu:`
+      <div class="modal-tag">📄 CGU</div>
+      <h3>Conditions générales d'utilisation</h3>
+      <p>CYNTH.IA est un outil d'aide à la réflexion professionnelle. Il ne remplace pas un conseiller en évolution professionnelle agréé (CEP).</p>
+      <p><strong style="color:var(--txt);">Utilisation :</strong> Le service est réservé aux personnes majeures résidant en France. Gratuit pendant la période bêta.</p>
+      <p><strong style="color:var(--txt);">Responsabilité :</strong> Les pistes proposées sont indicatives. CYNTH.IA n'est pas responsable des décisions prises sur la base de l'entretien.</p>
+      <p style="font-size:13px;color:var(--txt3);margin-top:12px;">Version 1.0 — Juin 2026 · Droit applicable : droit français · Tribunal compétent : Paris</p>`
+  };
+  currentModalContent=type;
+  const overlay=document.getElementById('modal-overlay');
+  const body=document.getElementById('modal-body');
+  body.innerHTML=contents[type]||'';
+  overlay.classList.add('show');
+  // Init audio if needed
+  if(type==='audio'){audioSec=0;audioPlaying=false;audioTimer=null;}
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('show');
+  if(audioTimer){clearInterval(audioTimer);audioTimer=null;audioPlaying=false;}
+}
+// Close on overlay click
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('modal-overlay').addEventListener('click',e=>{
+    if(e.target.id==='modal-overlay')closeModal();
+  });
+});
+
+/* ── AUDIO PLAYER (simulated) ── */
+let audioSec=0,audioMax=45,audioPlaying=false,audioTimer=null;
+function toggleAudio(){
+  const btn=document.getElementById('ap-play');
+  const wave=document.getElementById('ap-wave');
+  const orb=document.getElementById('ap-orb');
+  if(!btn)return;
+  if(audioPlaying){
+    audioPlaying=false;clearInterval(audioTimer);audioTimer=null;
+    btn.textContent='▶';
+    if(wave)wave.classList.remove('playing');
+    if(orb)orb.style.animation='none';
+  } else {
+    audioPlaying=true;
+    btn.textContent='⏸';
+    if(wave)wave.classList.add('playing');
+    if(orb)orb.style.animation='spin 4s linear infinite';
+    audioTimer=setInterval(()=>{
+      audioSec++;
+      if(audioSec>=audioMax){clearInterval(audioTimer);audioPlaying=false;btn.textContent='▶';if(wave)wave.classList.remove('playing');audioSec=audioMax;}
+      updateAudioUI();
+    },1000);
+  }
+}
+function updateAudioUI(){
+  const bar=document.getElementById('ap-bar');const time=document.getElementById('ap-time');
+  if(bar)bar.style.width=(audioSec/audioMax*100)+'%';
+  if(time)time.textContent=`0:${String(audioSec).padStart(2,'0')} / 0:45`;
+}
+function rewindAudio(){audioSec=Math.max(0,audioSec-10);updateAudioUI();}
+function fwdAudio(){audioSec=Math.min(audioMax,audioSec+10);updateAudioUI();}
+function scrubAudio(e){const r=e.currentTarget.getBoundingClientRect();audioSec=Math.round((e.clientX-r.left)/r.width*audioMax);updateAudioUI();}
+
+/* ── MIC TOGGLE ── */
+let micMuted=false;
+function toggleMic(){
+  micMuted=!micMuted;
+  if(vapi){try{vapi.setMuted(micMuted);}catch(e){}}
+  const btn=document.getElementById('btn-mic');
+  if(!btn)return;
+  if(micMuted){
+    btn.textContent='🔇';btn.classList.add('muted');
+    showToast('🔇','Micro coupé — CYNTH.IA ne vous entend plus','warning',3000);
+  } else {
+    btn.textContent='🎤';btn.classList.remove('muted');
+    showToast('🎤','Micro réactivé','info',2000);
+  }
+}
+
+/* ── VOLUME TOGGLE ── */
+let volOff=false;
+function toggleVol(){
+  volOff=!volOff;
+  const btn=document.getElementById('btn-vol');
+  if(!btn)return;
+  if(volOff){
+    btn.textContent='🔈';btn.classList.add('vol-off');
+    showToast('🔈','Volume coupé — vous n\'entendez plus CYNTH.IA','warning',3000);
+  } else {
+    btn.textContent='🔊';btn.classList.remove('vol-off');
+    showToast('🔊','Son réactivé','info',2000);
+  }
+}
+
+/* ── END CALL CONFIRM ── */
+function confirmEndCall(){
+  let msg=document.getElementById('end-confirm');
+  if(!msg){
+    const card=document.querySelector('.call-card');
+    msg=document.createElement('div');
+    msg.id='end-confirm';msg.className='end-confirm-msg';
+    msg.innerHTML=`<strong>Terminer l'appel ?</strong><br>Votre rapport sera généré et envoyé par email.
+      <div class="end-confirm-btns">
+        <button class="ec-yes" onclick="endCallAndConfirm()">Oui, terminer</button>
+        <button class="ec-no" onclick="hideEndConfirm()">Continuer l'appel</button>
+      </div>`;
+    card.appendChild(msg);
+  }
+  msg.classList.add('show');
+}
+function hideEndConfirm(){const m=document.getElementById('end-confirm');if(m)m.classList.remove('show');}
+
+/* ── MODE SELECTOR ── */
+let callMode = 'vocal'; // 'vocal' | 'chat'
+
+function setMode(mode) {
+  callMode = mode;
+  document.getElementById('mode-btn-vocal').classList.toggle('active', mode === 'vocal');
+  document.getElementById('mode-btn-chat').classList.toggle('active', mode === 'chat');
+  // Cacher/montrer le bloc mic test selon le mode
+  const micBlock = document.getElementById('mic-test-block');
+  if (micBlock) micBlock.style.display = mode === 'vocal' ? 'block' : 'none';
+}
+
+/* ── CHAT ENGINE ── */
+// ────────────────────────────────────────────────────────────
+// GROQ API KEY — Gratuit sur console.groq.com (30 sec à créer)
+// Copiez votre clé ici entre les guillemets :
+const GROQ_API_KEY = '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';
+// ────────────────────────────────────────────────────────────
+
+const CYNTH_PROMPT = `Tu es CYNTH.IA, une conseillère d'orientation professionnelle d'exception. Tu parles TOUJOURS en "vous". Tu es chaleureuse, directe, profondément curieuse — comme une amie très intelligente qui sait poser les vraies questions.
+
+━━━ RÈGLES ABSOLUES ━━━
+
+⛔ R1 — UNE SEULE QUESTION PAR MESSAGE. Si tu veux en poser deux, tu choisis la plus puissante, tu oublies l'autre. Sans exception.
+
+⛔ R2 — NE JAMAIS CONCLURE. Pas de "bonne chance", "vous avez tout pour réussir", "beau parcours". Tu continues à creuser tant que la personne répond. Seul le bouton "Terminer" clôt la conversation.
+
+⛔ R3 — PRÉNOM : maximum 1 fois toutes les 4-5 réponses.
+
+⛔ R4 — LONGUEUR : 2 à 3 phrases. Jamais plus. Jamais de listes à puces.
+
+⛔ R5 — ZÉRO JARGON : jamais "profil", "RIASEC", "bilan", "diagnostic", "plan d'action", "compétences clés".
+
+⛔ R6 — RÉPONSE COURTE : Si la personne répond en moins de 10 mots, ou dit "je sais pas", "bof", "rien", "pas grand chose" — ne passe PAS à une nouvelle question. Reformule d'abord avec empathie ce qu'elle a dit, puis repose la question autrement, plus simplement. Exemple : "Je sens que c'est pas forcément évident à formuler. Essayons autrement : si vous deviez décrire votre semaine idéale au travail — juste une image — vous seriez en train de faire quoi ?"
+
+━━━ PHASES DE LA CONVERSATION ━━━
+
+PHASE 1 — Découverte (échanges 1 à 4) :
+Qui est la personne aujourd'hui ? Comment elle se sent ? Quel âge ? Quelle situation ?
+Creuse l'émotion, pas les faits secs.
+
+PHASE 2 — Histoire (échanges 5 à 8) :
+Son parcours pro. Ce qui s'est passé. Pourquoi elle est là maintenant.
+Si elle dit quelque chose de fort ("j'en pouvais plus", "j'avais honte"), tu t'y arrêtes. Tu ne passes pas à autre chose.
+
+PHASE 3 — Forces cachées (échanges 9 à 13) — LA PLUS IMPORTANTE :
+Tu cherches CE QU'ELLE FAIT NATURELLEMENT BIEN sans s'en rendre compte.
+Questions puissantes à utiliser dans cette phase :
+- "Dans votre entourage, pour quoi est-ce qu'on vous contacte spontanément ?"
+- "Votre dernier patron ou collègue, qu'est-ce qu'il aurait dit de vous à quelqu'un d'autre ?"
+- "Quel type de problème vous ne pouvez pas vous empêcher de vouloir résoudre ?"
+- "Quand vous êtes dans votre meilleur état au travail, vous êtes en train de faire quoi exactement ?"
+NE PROPOSE AUCUNE PISTE avant d'avoir vraiment traversé cette phase.
+
+PHASE 4 — Désirs profonds + freins (échanges 14 à 17) :
+Qu'est-ce qui l'attire vraiment ? Qu'est-ce qui la retient ?
+Creuse derrière les mots vagues : si elle dit "liberté", demande ce que ça veut dire pour elle concrètement.
+Aborde les contraintes réelles : famille, finances, temps, géographie.
+
+PHASE 5 — Pistes (échanges 18+) :
+Seulement maintenant. Jamais avant.
+N'énumère pas. Introduis UNE piste, explique POURQUOI elle correspond à CE QUE CETTE PERSONNE A DIT, puis demande comment elle réagit.
+Formulation : "La première chose qui me vient quand je pense à ce que vous m'avez dit, c'est [métier]. Parce que vous m'avez parlé de [chose précise]. Comment vous réagissez à ça ?"
+Passe à la piste suivante seulement quand la première a été explorée.
+
+━━━ CE QUI FAIT LA DIFFÉRENCE ━━━
+
+- Tu reformules avec SES mots, pas les tiens.
+- Quand quelqu'un dit quelque chose d'important sans s'en rendre compte, tu le lui montres : "Vous venez de dire quelque chose d'important sans vous en rendre compte."
+- Tu remarques les contradictions et tu les poses doucement.
+- Parfois une simple reformulation sans question laisse la personne aller plus loin d'elle-même.
+
+Registre : chaleureux, direct, vrai, une légère pointe d'humour parfois. Jamais condescendant. Jamais scolaire.`;
+
+let chatHistory = [];
+let chatWaiting = false;
+let chatProfile = { prenom:'' };
+let usedQs = new Set();
+
+// ── GROQ AI CALL ──────────────────────────────────────────────────────────────
+async function callGroqAI(messages) {
+  if (!GROQ_API_KEY) throw new Error('no-key');
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: CYNTH_PROMPT },
+        ...messages
+      ],
+      max_tokens: 280,
+      temperature: 0.72,
+      top_p: 0.95
+    })
+  });
+  if (!resp.ok) throw new Error('groq-' + resp.status);
+  const data = await resp.json();
+  return data.choices[0].message.content.trim();
+}
+
+// ── FALLBACK SIMULATION (si Groq échoue) ──────────────────────────────────────
+// Répond au CONTENU de ce que dit la personne, pas à une phase générique.
+
+function _getFbReply(msg, prenom) {
+  const t = msg.toLowerCase();
+  const p = prenom ? prenom : '';
+
+  // Réponses contextuelles — dans l'ordre de priorité
+  // Chômage / perte d'emploi
+  if (/chôm|chomag|licenci|viré|viree|renvoy|perdu mon poste|perdu mon emploi|plus de travail/.test(t)) {
+    const r = [
+      `C'est une situation importante${p ? ', ' + p : ''}. Depuis combien de temps êtes-vous au chômage ? Et qu'est-ce qui s'est passé — c'est vous qui avez décidé de partir, ou ça s'est imposé à vous ?`,
+      `Le chômage, c'est souvent à la fois une contrainte et une opportunité — selon comment on le vit. Comment vous le vivez, vous, en ce moment ? Plutôt comme une respiration ou comme une pression ?`,
+      `Et avant ça — vous faisiez quoi, dans quel secteur ? Je voudrais comprendre d'où vous venez pour voir où ça pourrait vous mener.`
+    ];
+    return r[_fbTurn % r.length];
+  }
+
+  // Ennui / routine / marre
+  if (/marre|ennui|routine|même chose|tournent en rond|s.en fout|plus envie|vide|monoton/.test(t)) {
+    return `Ce sentiment de tourner en rond — il dure depuis combien de temps ? Est-ce qu'il y a eu un moment où ça ne vous pesait pas, ou c'est là depuis le début ?`;
+  }
+
+  // Stress / épuisement / burnout
+  if (/stress|épuis|burnout|burn.out|bout du rouleau|crevé|craqu|plus la force/.test(t)) {
+    return `Ce que vous décrivez, ça ressemble à de l'épuisement profond. Est-ce que c'est le travail lui-même qui vous vide, ou les conditions — les gens, le management, l'ambiance ?`;
+  }
+
+  // Passion / envie de changer
+  if (/envie|passion|rêve|attire|toujours voulu|j.aime|adore|passion/.test(t)) {
+    return `Ça m'intéresse vraiment. Cette envie — c'est quelque chose que vous avez depuis longtemps, ou elle est apparue récemment ? Et qu'est-ce qui vous a empêché d'y aller jusqu'ici ?`;
+  }
+
+  // Âge / jeune / senior
+  if (/\b2[0-9]\b|\b3[0-9]\b|\b4[0-9]\b|\b5[0-9]\b|ans|jeune|senior/.test(t)) {
+    return `${p ? p + ', ' : ''}à votre stade, vous avez déjà un vécu. Qu'est-ce que vous avez appris sur vous-même à travers vos expériences jusqu'ici — ce qui vous correspond vraiment, et ce qui ne vous correspond pas ?`;
+  }
+
+  // Famille / enfants / contraintes
+  if (/famille|enfant|conjoint|loyer|credit|contrainte|obligation/.test(t)) {
+    return `Ces contraintes, je les entends — elles sont réelles. Est-ce qu'elles ferment vraiment toutes les portes selon vous, ou il y a des choses que vous pourriez envisager malgré elles ?`;
+  }
+
+  // Réponse générique intelligente selon le tour
+  _fbTurn++;
+  const generics = [
+    `Intéressant. Et quand vous pensez à l'avenir — pas dans 10 ans, juste dans 2 ou 3 ans — vous vous voyez faire quelque chose de radicalement différent ou une évolution de ce que vous connaissez déjà ?`,
+    `Vous avez quel âge, si vous n'y voyez pas d'inconvénient ? Je pose la question parce que les pistes que j'explore changent vraiment selon où on en est dans la vie.`,
+    `Dans ce que vous avez fait jusqu'ici, qu'est-ce qui vous a donné de l'énergie — même brièvement — plutôt que d'en prendre ?`,
+    `Et à côté de tout ça, qu'est-ce que vous faites quand vous n'êtes pas en train de travailler ? Les gens révèlent souvent leur vraie nature dans ce qu'ils font librement.`,
+    `Si vous deviez citer une chose que les gens autour de vous remarquent chez vous — une qualité, une façon d'être — ce serait quoi selon vous ?`
+  ];
+  return generics[Math.min(_fbTurn - 1, generics.length - 1)];
+}
+
+let _fbTurn = 0;
+
+// ── CHAT ENGINE PRINCIPAL ──────────────────────────────────────────────────────
+
+async function startChatMode() {
+  chatHistory = [];
+  chatProfile = { prenom: '' };
+  usedQs = new Set();
+  _fbTurn = 0;
+  _fbUsed = new Set();
+
+  const msgs = document.getElementById('chat-msgs');
+  if (msgs) msgs.innerHTML = '';
+
+  const userName = (document.getElementById('inp-name')||{}).value.trim() || '';
+  const userEmail = (document.getElementById('inp-email')||{}).value.trim() || '';
+  chatProfile.prenom = userName;
+
+  showChatTyping(true);
+  await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+  showChatTyping(false);
+
+  const prenom = userName ? userName : '';
+  const emailLine = userEmail ? `\n\nJe vous enverrai votre rapport à **${userEmail}** à la fin — mais avant tout ça, j'ai envie de vraiment vous connaître.` : '';
+  const intro = `Bonjour${prenom ? ' ' + prenom : ''} ! Je suis CYNTH.IA.${emailLine}\n\nCet entretien n'est pas un formulaire — c'est une vraie conversation. Je vais vous poser des questions, mais les miennes vont suivre ce que vous me dites, pas un script fixe.\n\nOn commence par quelque chose de simple : comment vous sentez-vous en ce moment par rapport à votre vie professionnelle ?`;
+
+  addChatBubble('ai', intro);
+  chatHistory.push({ role: 'assistant', content: intro });
+
+  // Afficher indicateur si pas de clé Groq
+  if (!GROQ_API_KEY) {
+    const notice = document.getElementById('chat-ai-notice');
+    if (notice) notice.style.display = 'flex';
+  }
+
+  const input = document.getElementById('chat-input');
+  const btn = document.getElementById('chat-send-btn');
+  if (input) { input.disabled = false; input.focus(); }
+  if (btn) btn.disabled = false;
+}
+
+function addChatBubble(role, text) {
+  const msgs = document.getElementById('chat-msgs');
+  if (!msgs) return;
+  const now = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  const wrap = document.createElement('div');
+  wrap.className = 'cb ' + (role === 'user' ? 'user' : 'ai');
+  const textFormatted = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  if (role === 'ai') {
+    wrap.innerHTML = `<div class="cb-av">✦</div><div><div class="cb-text">${textFormatted}</div><div class="cb-time">${now}</div></div>`;
+  } else {
+    wrap.innerHTML = `<div><div class="cb-text">${textFormatted}</div><div class="cb-time" style="text-align:right">${now}</div></div>`;
+  }
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showChatTyping(show) {
+  const t = document.getElementById('chat-typing');
+  if (t) t.classList.toggle('show', show);
+  const msgs = document.getElementById('chat-msgs');
+  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendChatMsg() {
+  if (chatWaiting) return;
+  const input = document.getElementById('chat-input');
+  const btn = document.getElementById('chat-send-btn');
+  const text = (input ? input.value.trim() : '');
+  if (!text) return;
+
+  addChatBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  if (input) input.value = '';
+  chatWaiting = true;
+  if (btn) btn.disabled = true;
+  if (input) input.disabled = true;
+  showChatTyping(true);
+
+  let reply = '';
+
+  try {
+    if (GROQ_API_KEY) {
+      // Vrai LLM — réponse intelligente et curieuse
+      reply = await callGroqAI(chatHistory);
+    } else {
+      // Fallback simulation améliorée
+      const minDelay = 1400 + Math.min(text.length * 10, 1000);
+      await new Promise(r => setTimeout(r, minDelay));
+      reply = _getFbReply(text, chatProfile.prenom);
+    }
+  } catch(e) {
+    console.warn('CYNTH.IA Groq error:', e.message || e);
+    // Afficher l'erreur Groq dans la notice
+    const notice = document.getElementById('chat-ai-notice');
+    if (notice) {
+      notice.style.display = 'flex';
+      notice.querySelector('span:last-child').textContent = `⚠️ Groq indisponible (${e.message||'CORS/réseau'}) — ouvrir via http://localhost:8765/cynthia_v2.html`;
+    }
+    await new Promise(r => setTimeout(r, 800));
+    reply = _getFbReply(text, chatProfile.prenom);
+  }
+
+  // Délai naturel minimum même si Groq répond vite
+  await new Promise(r => setTimeout(r, 400));
+  showChatTyping(false);
+
+  addChatBubble('ai', reply);
+  chatHistory.push({ role: 'assistant', content: reply });
+
+  chatWaiting = false;
+  if (btn) btn.disabled = false;
+  if (input) { input.disabled = false; input.focus(); }
+}
+
+function confirmEndChat() {
+  if (chatHistory.length < 4) {
+    showToast('💬','La conversation est encore courte — continuez quelques échanges pour obtenir un rapport vraiment personnalisé !','info',4500);
+    return;
+  }
+  if (confirm('Terminer l\'entretien et générer votre rapport personnalisé ?')) {
+    gp('confirm');
+    window._reportData = null;
+    const btn = document.getElementById('btn-download-rapport');
+    const loadDiv = document.getElementById('conf-loading');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
+    if (loadDiv) loadDiv.style.display = 'block';
+
+    generateOrientationReport()
+      .then(data => {
+        window._reportData = data;
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport personnalisé'; }
+        if (loadDiv) loadDiv.style.display = 'none';
+        showToast('✅','Votre rapport est prêt — cliquez pour le télécharger !','success',6000);
+      })
+      .catch(e => {
+        console.warn('Report gen error:', e);
+        window._reportData = buildFallbackReport();
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport'; }
+        if (loadDiv) loadDiv.style.display = 'none';
+        showToast('📄','Rapport généré !','success',4000);
+      });
+  }
+}
+
+/* ── MIC TEST & DEVICE SELECTOR ── */
+let micStream = null, micAnalyser = null, micAnimFrame = null;
+let selectedMicId = null;
+
+async function loadMicDevices() {
+  try {
+    // Demander permission d'abord pour avoir les labels
+    const tmp = await navigator.mediaDevices.getUserMedia({ audio: true });
+    tmp.getTracks().forEach(t => t.stop());
+
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const inputs = devices.filter(d => d.kind === 'audioinput');
+    const sel = document.getElementById('mic-device-select');
+    if (!sel) return;
+    sel.innerHTML = '';
+    inputs.forEach((d, i) => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId;
+      opt.textContent = d.label || 'Micro ' + (i + 1);
+      sel.appendChild(opt);
+    });
+    // Sélectionner AirPods si détectés
+    const airpods = inputs.find(d => d.label.toLowerCase().includes('airpod') || d.label.toLowerCase().includes('bluetooth'));
+    if (airpods) { sel.value = airpods.deviceId; selectedMicId = airpods.deviceId; }
+    else if (inputs[0]) selectedMicId = inputs[0].deviceId;
+  } catch(e) {
+    const sel = document.getElementById('mic-device-select');
+    if (sel) sel.innerHTML = '<option>Permission refusée</option>';
+  }
+}
+
+function changeMicDevice(id) {
+  selectedMicId = id;
+  stopMicTest();
+  const status = document.getElementById('mic-test-status');
+  if (status) status.textContent = 'Micro changé — cliquez Tester pour vérifier';
+}
+
+async function startMicTest() {
+  stopMicTest();
+  const btn = document.getElementById('mic-test-btn');
+  const status = document.getElementById('mic-test-status');
+  if (btn) btn.textContent = '⏹ Arrêter';
+  if (btn) btn.onclick = stopMicTest;
+
+  try {
+    const constraints = { audio: selectedMicId ? { deviceId: { exact: selectedMicId } } : true };
+    micStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    const ctx = new AudioContext();
+    const source = ctx.createMediaStreamSource(micStream);
+    micAnalyser = ctx.createAnalyser();
+    micAnalyser.fftSize = 256;
+    source.connect(micAnalyser);
+
+    const data = new Uint8Array(micAnalyser.frequencyBinCount);
+    const bar = document.getElementById('mic-level-bar');
+
+    function drawLevel() {
+      micAnalyser.getByteFrequencyData(data);
+      const avg = data.reduce((a, b) => a + b, 0) / data.length;
+      const pct = Math.min(100, avg * 3);
+      if (bar) bar.style.width = pct + '%';
+      if (pct > 15 && status) {
+        status.textContent = '✅ Micro actif — on vous entend bien !';
+        status.style.color = '#34D399';
+      } else if (status && status.textContent !== '✅ Micro actif — on vous entend bien !') {
+        status.textContent = '🎤 Parlez pour tester...';
+        status.style.color = '';
+      }
+      micAnimFrame = requestAnimationFrame(drawLevel);
+    }
+    drawLevel();
+    if (status) { status.textContent = '🎤 Parlez pour tester...'; status.style.color = ''; }
+  } catch(e) {
+    if (status) { status.textContent = '❌ Micro inaccessible — vérifiez les permissions Chrome'; status.style.color = '#f87171'; }
+    if (btn) { btn.textContent = '▶ Tester'; btn.onclick = startMicTest; }
+  }
+}
+
+function stopMicTest() {
+  if (micAnimFrame) { cancelAnimationFrame(micAnimFrame); micAnimFrame = null; }
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  const bar = document.getElementById('mic-level-bar');
+  if (bar) bar.style.width = '0%';
+  const btn = document.getElementById('mic-test-btn');
+  if (btn) { btn.textContent = '▶ Tester'; btn.onclick = startMicTest; }
+}
+
+// Charger les devices quand on arrive sur la page pré-appel
+function onPreappelShow() {
+  loadMicDevices();
+  stopMicTest();
+  const status = document.getElementById('mic-test-status');
+  if (status) { status.textContent = 'Cliquez pour tester votre micro'; status.style.color = ''; }
+}
+
+async function launchCall() {
+  stopMicTest();
+  if (callMode === 'chat') {
+    // Désactiver l'input en attendant que CYNTH.IA démarre
+    const input = document.getElementById('chat-input');
+    const btn = document.getElementById('chat-send-btn');
+    if (input) input.disabled = true;
+    if (btn) btn.disabled = true;
+    gp('chat');
+  } else {
+    gp('call');
+  }
+}
+
+/* ── VAPI VOICE INTEGRATION ── */
+const VAPI_PUBLIC_KEY = '24bd94ce-a3a1-481f-83dc-2641dcc2cde6';
+const VAPI_ASSISTANT_ID = '3758ad66-26af-4237-b3fb-2d818660dd49';
+let vapi = null;
+let vapiReady = false;
+
+async function initVapi() {
+  if (vapiReady) return;
+  try {
+    const mod = await import('https://esm.sh/@vapi-ai/web');
+    const Vapi = mod.default || mod.Vapi || mod;
+    vapi = new Vapi(VAPI_PUBLIC_KEY);
+
+    vapi.on('call-start', () => {
+      const stat = document.querySelector('.cstat');
+      const nam = document.querySelector('.cname');
+      if (stat) stat.textContent = '🟢 En ligne';
+      if (nam) nam.textContent = 'CYNTH.IA vous écoute';
+      showToast('🎙', 'Connexion établie — CYNTH.IA est en ligne', 'success', 3000);
+    });
+
+    vapi.on('call-end', () => {
+      running = false;
+      gp('confirm');
+    });
+
+    vapi.on('speech-start', () => {
+      // CYNTH.IA parle → orbe actif, waveform atténuée
+      const co = document.querySelector('.co');
+      const cor = document.querySelectorAll('.co-r');
+      if (co) { co.style.boxShadow = '0 0 0 0 rgba(124,58,237,.7)'; co.style.animation = 'pulse 0.7s ease-in-out infinite'; }
+      cor.forEach(r => { r.style.animationDuration = '1.2s'; });
+      const wf = document.querySelector('.waveform');
+      if (wf) wf.style.opacity = '0.35';
+    });
+
+    vapi.on('speech-end', () => {
+      // L'utilisateur parle → waveform active
+      const co = document.querySelector('.co');
+      const cor = document.querySelectorAll('.co-r');
+      if (co) { co.style.animation = ''; }
+      cor.forEach(r => { r.style.animationDuration = ''; });
+      const wf = document.querySelector('.waveform');
+      if (wf) wf.style.opacity = '1';
+    });
+
+    vapi.on('error', (e) => {
+      console.error('Vapi error:', JSON.stringify(e));
+      running = false;
+      const msg = e?.error?.message || e?.message || JSON.stringify(e) || 'Problème de connexion';
+      showToast('❌', 'Erreur : ' + msg.substring(0, 80), 'error', 7000);
+      setTimeout(() => { if (document.getElementById('page-call').classList.contains('on')) gp('preappel'); }, 2500);
+    });
+
+    vapiReady = true;
+  } catch (err) {
+    console.error('Vapi init error:', err);
+    showToast('❌', 'Chargement du module vocal échoué. Vérifiez votre connexion internet.', 'error', 6000);
+  }
+}
+
+async function startVapiCall() {
+  const stat = document.querySelector('.cstat');
+  if (stat) stat.textContent = '⏳ Connexion...';
+
+  await initVapi();
+  if (!vapi) {
+    showToast('❌', 'Module vocal non disponible — rechargez la page', 'error', 5000);
+    setTimeout(() => gp('preappel'), 1500);
+    return;
+  }
+
+  try {
+    const name = (document.getElementById('inp-name') || {}).value || '';
+    const email = (document.getElementById('inp-email') || {}).value || '';
+
+    // Si un micro spécifique a été sélectionné, on l'impose
+    if (selectedMicId) {
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: { exact: selectedMicId } }
+        });
+        // On garde le stream actif — Vapi le réutilisera via le même device
+        s.getTracks().forEach(t => t.stop());
+      } catch(e) { console.warn('deviceId override failed:', e); }
+    }
+
+    await vapi.start(VAPI_ASSISTANT_ID, {
+      variableValues: { userName: name, userEmail: email },
+      // Réduire la latence : modèle turbo 11labs + endpointing rapide
+      voice: {
+        provider: '11labs',
+        voiceId: 'XB0fDUnXU5powFXDhCwa',
+        model: 'eleven_turbo_v2_5',   // ~300ms vs 1200ms pour le modèle standard
+        stability: 0.5,
+        similarityBoost: 0.75,
+      },
+      transcriber: {
+        provider: 'deepgram',
+        model: 'nova-2',
+        language: 'fr',
+        endpointing: 100,             // 100ms de silence = fin de parole (défaut ~400ms)
+      },
+    });
+  } catch (err) {
+    console.error('Vapi start error:', err);
+    const msg = err?.message || '';
+    if (msg.toLowerCase().includes('micro') || msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('notallowed')) {
+      showToast('🎤', 'Accès micro refusé — cliquez sur 🔒 dans Chrome et autorisez le micro', 'error', 7000);
+    } else {
+      showToast('❌', 'Connexion échouée : ' + (msg || 'erreur inconnue'), 'error', 6000);
+    }
+    running = false;
+    setTimeout(() => gp('preappel'), 2500);
+  }
+}
+
+async function stopVapiCall() {
+  if (vapi) {
+    try { vapi.stop(); } catch (e) { console.warn('vapi.stop:', e); }
+  }
+}
+
+async function endCallAndConfirm() {
+  hideEndConfirm();
+  await stopVapiCall();
+  gp('confirm');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BASE DE DONNÉES MÉTIERS
+══════════════════════════════════════════════════════════════ */
+const METIERS_DB = [
+  // DIGITAL & TECH
+  {id:'dev-web',titre:'Développeur Web / Fullstack',secteur:'Digital & Tech',competences:['logique','résolution problèmes','autonomie','rigueur','organisation'],passions:['technologie','créer','construire','informatique','code','systèmes'],valeurs:['innovation','autonomie','progression'],salaire_debut:'35 000–42 000€',salaire_exp:'55 000–80 000€',marche:'Très porteur',formation:'Bootcamp 6 mois (Le Wagon, OpenClassrooms) ou BTS/Licence Pro',financement:'CPF intégral, France Travail POEI'},
+  {id:'ux-designer',titre:'UX/UI Designer',secteur:'Digital & Tech',competences:['créativité','empathie','organisation','communication','analyse'],passions:['design','créer','art','technologie','esthétique','visuel','améliorer'],valeurs:['créativité','impact','innovation'],salaire_debut:'32 000–38 000€',salaire_exp:'48 000–65 000€',marche:'Porteur',formation:'Certification RNCP Niv.6 UX ou bootcamp 6-12 mois',financement:'CPF jusqu\'à 5 000€, Transition Pro'},
+  {id:'data-analyst',titre:'Data Analyst',secteur:'Digital & Tech',competences:['analyse','logique','rigueur','curiosité','synthèse','chiffres'],passions:['données','patterns','investigation','résoudre','chiffres','comprendre'],valeurs:['précision','savoir','impact'],salaire_debut:'35 000–42 000€',salaire_exp:'55 000–75 000€',marche:'Très porteur',formation:'Licence/Master Stats ou formation Data courte (6 mois)',financement:'CPF, France Travail'},
+  {id:'product-manager',titre:'Product Manager / Chef de Produit',secteur:'Digital & Tech',competences:['leadership','organisation','communication','analyse','priorisation'],passions:['produit','technologie','stratégie','améliorer','coordonner','piloter'],valeurs:['impact','progression','autonomie'],salaire_debut:'40 000–48 000€',salaire_exp:'60 000–85 000€',marche:'Porteur',formation:'Certification PSPO/CSPO, Master Management',financement:'CPF, Transition Pro'},
+  {id:'community-manager',titre:'Community Manager / Social Media',secteur:'Digital & Tech',competences:['communication','créativité','rédaction','empathie','organisation'],passions:['réseaux sociaux','écrire','communiquer','animer','créer du contenu'],valeurs:['expression','lien social','créativité'],salaire_debut:'24 000–30 000€',salaire_exp:'35 000–48 000€',marche:'Stable',formation:'BTS Communication, Licence Pro Digital Marketing',financement:'CPF, alternance'},
+  {id:'cybersecurite',titre:'Expert Cybersécurité / Pentesteur',secteur:'Digital & Tech',competences:['logique','rigueur','analyse','curiosité','résolution problèmes'],passions:['sécurité','hacking','technologie','enquêter','protéger','systèmes'],valeurs:['protection','rigueur','excellence'],salaire_debut:'42 000–52 000€',salaire_exp:'65 000–95 000€',marche:'Très porteur',formation:'Licence/Master Cybersec, certif. CompTIA Security+, OSCP',financement:'CPF, France Travail POEI'},
+  // COMMERCE & ENTREPRENEURIAT
+  {id:'commercial',titre:'Commercial B2B / Technico-commercial',secteur:'Commerce',competences:['persuasion','écoute','relationnel','organisation','résilience'],passions:['convaincre','rencontrer','challenge','gagner','négocier','terrain'],valeurs:['performance','liberté','reconnaissance'],salaire_debut:'28 000–36 000€ + variable',salaire_exp:'45 000–70 000€ + variable',marche:'Porteur',formation:'BTS NDRC, Licence Commerce ou autodidacte terrain',financement:'CPF, alternance'},
+  {id:'entrepreneur',titre:'Entrepreneur / Créateur d\'entreprise',secteur:'Commerce',competences:['initiative','polyvalence','résilience','organisation','vision'],passions:['créer','innover','indépendance','projet','construire','liberté'],valeurs:['liberté','impact','dépassement'],salaire_debut:'Variable (0–40 000€)',salaire_exp:'Variable (illimité selon projet)',marche:'Dépend du secteur',formation:'CCI, BGE, accompagnement création (aucun diplôme requis)',financement:'ACRE, BPI, aides France Travail, love money'},
+  {id:'agent-immobilier',titre:'Agent Immobilier / Conseiller Immobilier',secteur:'Commerce',competences:['relationnel','persuasion','organisation','écoute','rigueur'],passions:['rencontrer','négocier','immobilier','aider','patrimoine'],valeurs:['liberté','reconnaissance','challenge'],salaire_debut:'0–25 000€ + commissions',salaire_exp:'40 000–100 000€+ (commissions)',marche:'Variable selon marché',formation:'BTS Professions Immobilières, Carte T',financement:'CPF, alternance, portage'},
+  {id:'consultant',titre:'Consultant / Expert Freelance',secteur:'Commerce',competences:['expertise','communication','analyse','adaptabilité','autonomie'],passions:['conseiller','résoudre','stratégie','varier','expertiser','voyager'],valeurs:['liberté','reconnaissance','maîtrise'],salaire_debut:'350–500€/jour',salaire_exp:'600–1 200€/jour',marche:'Porteur',formation:'Expertise dans un domaine (diplôme ou expérience)',financement:'ACRE si création structure'},
+  // SOCIAL & ACCOMPAGNEMENT
+  {id:'coach',titre:'Coach de Vie / Coach Professionnel',secteur:'Social & Humain',competences:['écoute','empathie','questionnement','bienveillance','communication'],passions:['aider','accompagner','écouter','développement personnel','comprendre','transformer'],valeurs:['utilité','lien','impact humain'],salaire_debut:'25 000–35 000€',salaire_exp:'45 000–80 000€ (cabinet libéral)',marche:'Stable',formation:'Certification ICF ou RNCP Coach, 6-18 mois',financement:'CPF, Transition Pro'},
+  {id:'formateur',titre:'Formateur Professionnel / Trainer',secteur:'Social & Humain',competences:['pédagogie','communication','organisation','patience','expertise domaine'],passions:['transmettre','enseigner','partager','aider à progresser','expliquer'],valeurs:['transmission','utilité','impact'],salaire_debut:'26 000–33 000€',salaire_exp:'38 000–55 000€',marche:'Porteur',formation:'Titre professionnel Formateur Adultes RNCP Niv.5',financement:'CPF intégral, OPCO'},
+  {id:'educateur',titre:'Éducateur Spécialisé / Éducateur Jeunes',secteur:'Social & Humain',competences:['empathie','patience','adaptation','créativité','résilience'],passions:['aider','jeunes','social','accompagner','comprendre','terrain'],valeurs:['équité','utilité','humain'],salaire_debut:'24 000–28 000€',salaire_exp:'30 000–40 000€',marche:'Porteur',formation:'DEES Éducateur Spécialisé (3 ans, alternance possible)',financement:'Transition Pro, alternance'},
+  {id:'assistant-social',titre:'Assistant de Service Social / Travailleur Social',secteur:'Social & Humain',competences:['empathie','écoute','organisation','rigueur','résilience'],passions:['aider','accompagner','défendre','justice sociale','comprendre'],valeurs:['équité','utilité','humain'],salaire_debut:'23 000–27 000€',salaire_exp:'28 000–36 000€',marche:'Porteur',formation:'DEASS Assistant Social (3 ans)',financement:'Transition Pro, Région'},
+  {id:'mediateur',titre:'Médiateur / Facilitateur de groupe',secteur:'Social & Humain',competences:['écoute','neutralité','communication','empathie','diplomatie'],passions:['résoudre','dialoguer','diplomatie','comprendre','réconcilier'],valeurs:['paix','équité','lien'],salaire_debut:'26 000–32 000€',salaire_exp:'35 000–50 000€',marche:'Stable',formation:'DU Médiation, formations spécialisées (6-12 mois)',financement:'CPF'},
+  // SANTÉ & BIEN-ÊTRE
+  {id:'infirmier',titre:'Infirmier/Infirmière',secteur:'Santé & Bien-être',competences:['empathie','rigueur','réactivité','résistance','organisation'],passions:['soigner','aider','médecine','humain','urgence'],valeurs:['utilité','santé','humain'],salaire_debut:'24 000–29 000€',salaire_exp:'32 000–44 000€',marche:'Très porteur',formation:'Diplôme d\'État Infirmier — IFSI 3 ans',financement:'Régions, CHU, bourses mérite'},
+  {id:'aide-soignant',titre:'Aide-Soignant/e',secteur:'Santé & Bien-être',competences:['empathie','patience','physique','dextérité','bienveillance'],passions:['soigner','aider','prendre soin','contact humain','quotidien'],valeurs:['utilité','humain','bienveillance'],salaire_debut:'20 000–24 000€',salaire_exp:'25 000–32 000€',marche:'Très porteur',formation:'DEAS 10-12 mois',financement:'CPF intégral, Régions, France Travail'},
+  {id:'kine',titre:'Kinésithérapeute / Ostéopathe',secteur:'Santé & Bien-être',competences:['manuel','empathie','rigueur','communication','analyse'],passions:['corps','mouvement','soigner','sport','aider'],valeurs:['santé','autonomie','utilité'],salaire_debut:'32 000–38 000€',salaire_exp:'50 000–85 000€ (libéral)',marche:'Porteur',formation:'MKDE 4 ans (concours PACES ou pass)',financement:'Bourses mérite, Régions'},
+  {id:'sophrologie',titre:'Sophrologue / Hypnothérapeute / Psychopraticien',secteur:'Santé & Bien-être',competences:['écoute','empathie','calme','communication','patience'],passions:['bien-être','relaxation','mental','aider','comprendre','corps'],valeurs:['bien-être','autonomie','utilité'],salaire_debut:'20 000–30 000€',salaire_exp:'35 000–65 000€ (cabinet)',marche:'Stable, croissant',formation:'Formation sophrologie ou hypnose (1-2 ans)',financement:'CPF partiel selon organisme'},
+  {id:'nutritionniste',titre:'Diététicien/Nutritionniste',secteur:'Santé & Bien-être',competences:['analyse','rigueur','écoute','pédagogie','sciences'],passions:['nutrition','santé','alimentation','aider','bien-être','corps'],valeurs:['santé','utilité','savoir'],salaire_debut:'24 000–30 000€',salaire_exp:'35 000–55 000€',marche:'Porteur',formation:'BTS Diététique ou Licence Nutrition (3 ans)',financement:'CPF, alternance'},
+  // CRÉATIF & CULTURE
+  {id:'graphiste',titre:'Graphiste / Motion Designer',secteur:'Créatif & Culture',competences:['créativité','maîtrise outils','esthétique','rigueur','écoute client'],passions:['design','créer','art','visuel','couleurs','esthétique'],valeurs:['créativité','expression','beauté'],salaire_debut:'24 000–30 000€',salaire_exp:'38 000–58 000€',marche:'Stable',formation:'BTS Design Graphique, DSAA, GOBELINS',financement:'CPF, alternance, AFDAS'},
+  {id:'photographe',titre:'Photographe Professionnel',secteur:'Créatif & Culture',competences:['créativité','technique','relation client','organisation','oeil'],passions:['photographie','art','créer','capturer','voyage','beauté'],valeurs:['liberté','créativité','expression'],salaire_debut:'18 000–28 000€',salaire_exp:'35 000–65 000€ (spécialisé)',marche:'Compétitif',formation:'BTS Photo, GOBELINS, Spéos ou autoformation',financement:'CPF, AFDAS'},
+  {id:'videaste',titre:'Vidéaste / Monteur / Réalisateur',secteur:'Créatif & Culture',competences:['créativité','technique','organisation','storytelling','patience'],passions:['vidéo','cinéma','créer','raconter','images','films'],valeurs:['créativité','expression','art'],salaire_debut:'22 000–30 000€',salaire_exp:'40 000–75 000€',marche:'Porteur',formation:'BTS Audiovisuel, Licence Pro, autoformation',financement:'CPF, AFDAS'},
+  {id:'redacteur',titre:'Rédacteur Web / Copywriter / Auteur',secteur:'Créatif & Culture',competences:['écriture','créativité','recherche','organisation','SEO'],passions:['écrire','mots','raconter','créer','communication','littérature'],valeurs:['expression','liberté','créativité'],salaire_debut:'22 000–28 000€',salaire_exp:'35 000–58 000€',marche:'Porteur',formation:'Licence Lettres/Journalisme, formations copywriting (3-6 mois)',financement:'CPF, autoformation'},
+  {id:'archi-interieur',titre:'Architecte d\'Intérieur / Décorateur',secteur:'Créatif & Culture',competences:['créativité','spatial','organisation','technique','relationnel'],passions:['design','décorer','espace','créer','transformer','maison'],valeurs:['créativité','esthétique','impact visible'],salaire_debut:'26 000–34 000€',salaire_exp:'42 000–70 000€',marche:'Stable',formation:'DSAA Design, École Camondo, ESAD (3-5 ans)',financement:'CPF, alternance'},
+  // ARTISANAT & MÉTIERS MANUELS
+  {id:'electricien',titre:'Électricien / Électrotechnicien',secteur:'Artisanat & Manuel',competences:['technique','rigueur','physique','résolution problèmes','sécurité'],passions:['technique','construire','installer','manuel','résoudre','concret'],valeurs:['fiabilité','concret','utilité'],salaire_debut:'22 000–28 000€',salaire_exp:'35 000–60 000€ (chef d\'équipe/artisan)',marche:'Très porteur',formation:'CAP/BEP Électricité, BP Électricien, Bac Pro',financement:'CPF intégral, OPCO, alternance'},
+  {id:'plombier',titre:'Plombier / Technicien Chauffage-Clim',secteur:'Artisanat & Manuel',competences:['technique','dextérité','physique','résolution problèmes','rigueur'],passions:['technique','réparer','construire','résoudre','manuel'],valeurs:['fiabilité','concret','utilité'],salaire_debut:'22 000–27 000€',salaire_exp:'35 000–60 000€ (artisan)',marche:'Très porteur',formation:'CAP Plomberie, BP Monteur en Installations du Génie Climatique',financement:'CPF, alternance, OPCO'},
+  {id:'menuisier',titre:'Menuisier / Charpentier / Ébéniste',secteur:'Artisanat & Manuel',competences:['manuel','créativité','rigueur','dextérité','spatial'],passions:['bois','créer','construire','manuel','transformer','art'],valeurs:['concret','créativité','durabilité'],salaire_debut:'20 000–26 000€',salaire_exp:'32 000–55 000€ (artisan/spécialisé)',marche:'Porteur',formation:'CAP/BEP Menuiserie, BP Menuisier, Bac Pro Technicien',financement:'CPF, alternance, OPCO'},
+  {id:'chef-cuisinier',titre:'Chef Cuisinier / Restaurateur',secteur:'Artisanat & Manuel',competences:['créativité','physique','organisation','rigueur','leadership'],passions:['cuisine','créer','goût','nourrir','art culinaire','plaisir'],valeurs:['créativité','excellence','partage'],salaire_debut:'20 000–26 000€',salaire_exp:'35 000–80 000€ (chef/restaurant)',marche:'Porteur',formation:'CAP Cuisine, BEP Hôtellerie, Lycée hôtelier',financement:'CPF, CFA, alternance'},
+  {id:'coiffeur',titre:'Coiffeur/Coiffeuse / Barbier',secteur:'Artisanat & Manuel',competences:['manualité','créativité','écoute','relationnel','esthétique'],passions:['beauté','créer','contact humain','mode','transformer'],valeurs:['créativité','lien','expression'],salaire_debut:'17 000–22 000€',salaire_exp:'28 000–50 000€ (gérant salon)',marche:'Stable',formation:'CAP Coiffure, BP Coiffure (2 ans)',financement:'CPF, CFA, alternance'},
+  // NATURE & ENVIRONNEMENT
+  {id:'paysagiste',titre:'Paysagiste / Jardinier Paysagiste',secteur:'Nature & Environnement',competences:['créativité','physique','technique','organisation','botanique'],passions:['nature','plantes','créer','extérieur','espace','beau'],valeurs:['nature','créativité','durabilité'],salaire_debut:'20 000–26 000€',salaire_exp:'30 000–50 000€ (chef d\'équipe/artisan)',marche:'Porteur',formation:'BTSA Aménagements Paysagers, CAP Jardins',financement:'CPF, alternance, OPCO'},
+  {id:'eco-conseiller',titre:'Chargé RSE / Éco-conseiller / Consultant Environnement',secteur:'Nature & Environnement',competences:['analyse','communication','organisation','conviction','pédagogie'],passions:['environnement','durabilité','changer','convaincre','impact','planète'],valeurs:['durabilité','équité','impact systémique'],salaire_debut:'28 000–34 000€',salaire_exp:'40 000–60 000€',marche:'Porteur, en forte croissance',formation:'Master Environnement, Licence RSE ou Bac+5 généraliste',financement:'CPF, Transition Pro'},
+  {id:'agriculture-bio',titre:'Agriculteur Bio / Maraîcher / Producteur',secteur:'Nature & Environnement',competences:['physique','autonomie','organisation','technique','résilience'],passions:['nature','terre','produire','autonomie','concret','nourrir'],valeurs:['liberté','nature','durabilité'],salaire_debut:'15 000–25 000€',salaire_exp:'25 000–50 000€ (selon structure)',marche:'Stable',formation:'BPREA Agriculture Biologique, BTSA, BPREA (1-2 ans)',financement:'JA (Jeunes Agriculteurs), MSA, FEADER'},
+  // ÉDUCATION & FORMATION
+  {id:'enseignant',titre:'Enseignant/e / Professeur',secteur:'Éducation',competences:['pédagogie','patience','communication','organisation','maîtrise matière'],passions:['transmettre','enseigner','enfants','savoir','partager','élever'],valeurs:['transmission','utilité','savoir'],salaire_debut:'27 000–31 000€',salaire_exp:'35 000–50 000€',marche:'Porteur',formation:'Master MEEF + CAPES/CRPE (concours)',financement:'Concours État, bourses enseignants'},
+  {id:'orthophoniste',titre:'Orthophoniste / Rééducateur du langage',secteur:'Éducation',competences:['écoute','patience','analyse','pédagogie','empathie'],passions:['langage','enfants','aider','communication','soigner','progrès'],valeurs:['utilité','santé','transmission'],salaire_debut:'32 000–38 000€',salaire_exp:'45 000–75 000€ (libéral)',marche:'Très porteur',formation:'CFUO 5 ans (après concours)',financement:'Bourses, Régions'},
+  {id:'animateur-formation',titre:'Animateur Socio-culturel / Responsable formation',secteur:'Éducation',competences:['animation','communication','créativité','organisation','pédagogie'],passions:['animer','groupe','jeunes','créer','partager','énergie'],valeurs:['lien','transmission','épanouissement'],salaire_debut:'20 000–26 000€',salaire_exp:'28 000–42 000€',marche:'Stable',formation:'BPJEPS, DEJEPS, Licence STAPS',financement:'CPF, alternance'},
+  // RH & ADMINISTRATION
+  {id:'rh',titre:'Chargé/e RH / Responsable RH / DRH',secteur:'Administration & RH',competences:['écoute','organisation','droit','communication','empathie'],passions:['humain','organisation','recrutement','accompagner','droit'],valeurs:['équité','organisation','humain'],salaire_debut:'28 000–35 000€',salaire_exp:'45 000–75 000€',marche:'Stable',formation:'Licence/Master RH, DUT GEA, IEP option RH',financement:'CPF, alternance'},
+  {id:'comptable',titre:'Comptable / Expert-Comptable',secteur:'Administration & RH',competences:['rigueur','analyse','organisation','chiffres','discrétion'],passions:['chiffres','ordre','rigueur','analyser','finances'],valeurs:['rigueur','fiabilité','précision'],salaire_debut:'26 000–32 000€',salaire_exp:'42 000–85 000€ (expert-comptable)',marche:'Stable',formation:'BTS Comptabilité, DCG/DSCG',financement:'CPF, alternance'},
+  {id:'juriste',titre:'Juriste / Avocat / Conseiller juridique',secteur:'Administration & RH',competences:['rigueur','analyse','rédaction','argumentation','discrétion'],passions:['droit','défendre','analyser','justice','argumenter'],valeurs:['justice','rigueur','savoir'],salaire_debut:'30 000–40 000€',salaire_exp:'50 000–120 000€ (avocat/associé)',marche:'Stable',formation:'Licence Droit + Master + CRFPA (barreau)',financement:'Bourses, alternance'},
+  // COMMUNICATION & MÉDIAS
+  {id:'journaliste',titre:'Journaliste / Reporter / Podcaster',secteur:'Médias & Communication',competences:['écriture','curiosité','rigueur','enquête','communication'],passions:['informer','enquêter','raconter','actualité','écrire','vérité'],valeurs:['vérité','impact','expression'],salaire_debut:'22 000–28 000€',salaire_exp:'35 000–65 000€',marche:'Compétitif',formation:'École de journalisme reconnue (CUEJ, IPJ, ESJ Paris)',financement:'CPF, concours'},
+  {id:'charge-comm',titre:'Chargé/e de Communication / Directeur Communication',secteur:'Médias & Communication',competences:['rédaction','relationnel','organisation','créativité','stratégie'],passions:['communiquer','écrire','image','relations','créer','marque'],valeurs:['expression','impact','créativité'],salaire_debut:'26 000–32 000€',salaire_exp:'42 000–65 000€',marche:'Stable',formation:'Licence/Master Communication, IEP, BTS Communication',financement:'CPF, alternance'},
+  // LOGISTIQUE & GESTION
+  {id:'logisticien',titre:'Logisticien / Supply Chain Manager',secteur:'Logistique & Gestion',competences:['organisation','rigueur','analyse','optimisation','gestion stress'],passions:['organiser','optimiser','flux','systèmes','piloter','efficacité'],valeurs:['efficacité','organisation','impact opérationnel'],salaire_debut:'28 000–35 000€',salaire_exp:'42 000–68 000€',marche:'Porteur',formation:'BTS/Licence Logistique, Supply Chain, DUT GLP',financement:'CPF, alternance, OPCO'},
+  {id:'manager-projet',titre:'Chef de Projet / Manager de projet',secteur:'Logistique & Gestion',competences:['leadership','organisation','communication','gestion risques','priorisation'],passions:['piloter','coordonner','livrer','équipe','résoudre','organiser'],valeurs:['performance','leadership','impact'],salaire_debut:'35 000–42 000€',salaire_exp:'52 000–75 000€',marche:'Porteur',formation:'Master Management de Projet, PMP, PRINCE2',financement:'CPF, Transition Pro'},
+];
+
+/* ══════════════════════════════════════════════════════════════
+   GÉNÉRATION DU RAPPORT IA
+══════════════════════════════════════════════════════════════ */
+async function generateOrientationReport() {
+  if (!chatHistory || chatHistory.length < 2) throw new Error('no-history');
+
+  const conversationText = chatHistory
+    .map(m => (m.role === 'user' ? 'Client' : 'CYNTH.IA') + ' : ' + m.content)
+    .join('\n\n');
+
+  const metiersList = METIERS_DB
+    .map(m => `${m.id}|${m.titre}|${m.secteur}|${m.competences.join(',')}|${m.passions.join(',')}|${m.valeurs.join(',')}`)
+    .join('\n');
+
+  const prompt = `Tu es une experte senior en orientation professionnelle avec 20 ans d'expérience. Analyse cette conversation et génère un rapport d'orientation personnalisé.
+
+CONVERSATION INTÉGRALE :
+${conversationText}
+
+BASE DE DONNÉES MÉTIERS (format: id|titre|secteur|compétences|passions|valeurs) :
+${metiersList}
+
+RÈGLES D'ANALYSE :
+1. Identifie ce que la personne a dit mot pour mot — ses vrais mots, ses vraies peurs, ses vraies envies
+2. Sélectionne 3 à 5 métiers les plus adaptés à SON profil spécifique (pas générique)
+3. Le champ "pourquoi" DOIT citer des éléments réels de la conversation (exemples de ce qu'elle a dit)
+4. Si tu ne connais pas l'âge exact, mets null
+
+Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant ou après) :
+{
+  "prenom": "prénom détecté ou null",
+  "age": null_ou_nombre,
+  "situation": "situation actuelle en 1 phrase courte et précise",
+  "forces": ["3 à 5 forces concrètes identifiées dans la conversation"],
+  "valeurs": ["3 à 4 valeurs professionnelles clés de cette personne"],
+  "profil_resume": "Résumé du profil en 4 phrases personnalisées. Reprend les VRAIS mots de la personne, sa situation réelle, ce qui la caractérise.",
+  "top_metiers": [
+    {
+      "id": "id-exact-du-metier",
+      "titre": "Titre du métier",
+      "secteur": "Secteur",
+      "score": 94,
+      "pourquoi": "2-3 phrases expliquant SPÉCIFIQUEMENT pourquoi ce métier correspond à CE que cette personne a dit. Citez ses propres mots si possible.",
+      "atouts": ["atout concret 1 — ce qu'elle a déjà", "atout 2"],
+      "developper": ["compétence/connaissance à acquérir 1", "compétence 2"],
+      "premier_pas": "Action ultra-concrète à faire CETTE SEMAINE (pas vague — précis : 'Regarder 3 témoignages de X sur YouTube', 'Appeler le CIO de votre ville')",
+      "salaire_debut": "copie depuis la base",
+      "salaire_exp": "copie depuis la base",
+      "marche": "copie depuis la base",
+      "formation": "copie depuis la base",
+      "financement": "copie depuis la base"
+    }
+  ],
+  "plan_action": {
+    "semaine1": "Action très concrète cette semaine",
+    "mois1": "Objectif mesurable à 1 mois",
+    "mois3": "Objectif mesurable à 3 mois"
+  },
+  "message_fin": "Message d'encouragement personnalisé de 3 phrases. Reprend leur histoire spécifique, nomme quelque chose qu'ils ont dit, donne une vraie chaleur humaine."
+}`;
+
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method:'POST',
+    headers:{'Authorization':`Bearer ${GROQ_API_KEY}`,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'llama-3.3-70b-versatile',
+      messages:[{role:'user',content:prompt}],
+      max_tokens:2400,
+      temperature:0.25,
+      top_p:0.9
+    })
+  });
+  if (!resp.ok) throw new Error('groq-'+resp.status);
+  const data = await resp.json();
+  const raw = data.choices[0].message.content.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('no-json');
+  return JSON.parse(jsonMatch[0]);
+}
+
+function buildFallbackReport() {
+  const prenom = chatProfile.prenom || null;
+
+  // Sélection intelligente : score par mots-clés de la conversation (pas toujours les 3 premiers)
+  const conversation = chatHistory.map(m => m.content.toLowerCase()).join(' ');
+  const scored = METIERS_DB.map(m => {
+    let kw = 0;
+    [...m.competences, ...m.passions, ...m.valeurs].forEach(k => { if (conversation.includes(k.toLowerCase())) kw++; });
+    return { ...m, _kw: kw };
+  });
+  scored.sort((a, b) => b._kw - a._kw);
+  const picks = scored.slice(0, 3);
+
+  // Profil adapté aux signaux détectés
+  const hasStress   = /stress|épuis|burnout|marre|bout du rouleau|craqu|viré|licenci/.test(conversation);
+  const hasAmbition = /ambition|créer|innover|indépendant|évoluer|monter|construire|lancer/.test(conversation);
+  const hasCreative = /créatif|créer|design|art|musique|visuel|photo|vidéo|mode/.test(conversation);
+  const hasHuman    = /aider|accompagner|humain|social|écouter|équipe|transmettre/.test(conversation);
+  const hasTech     = /tech|digital|ia|intelligence artificielle|code|data|numérique|logiciel/.test(conversation);
+
+  let profil_intro;
+  if (hasStress && hasAmbition)
+    profil_intro = `${prenom || 'Vous'}, votre parcours montre quelqu'un qui a beaucoup donné et qui cherche aujourd'hui un alignement plus profond — pas juste un emploi, mais une direction qui a du sens. Les ressources sont déjà là.`;
+  else if (hasTech)
+    profil_intro = `${prenom || 'Vous'}, votre attrait pour la technologie et le numérique transparaît clairement dans vos échanges. C'est un positionnement précieux sur un marché en forte demande.`;
+  else if (hasCreative)
+    profil_intro = `${prenom || 'Vous'}, votre sensibilité créative est une force rare que beaucoup minimisent — et que les métiers qui vous correspondent valorisent vraiment. Ce rapport met en lumière les voies qui exploitent cette dimension.`;
+  else if (hasHuman)
+    profil_intro = `${prenom || 'Vous'}, votre capacité à vous mettre à la place des autres ressort clairement de la conversation. C'est une compétence précieuse et recherchée dans de nombreux secteurs.`;
+  else
+    profil_intro = `${prenom || 'Vous'}, votre démarche témoigne d'une vraie volonté de prendre votre avenir en main. Les échanges révèlent une personne qui réfléchit avant d'agir et qui cherche bien plus qu'un emploi — un alignement réel.`;
+
+  return {
+    prenom, age: null,
+    situation: 'En transition professionnelle, en recherche d\'un alignement professionnel réel.',
+    forces: ['Capacité d\'analyse', 'Courage de la démarche', 'Authenticité', 'Adaptabilité'],
+    valeurs: ['Sens', 'Utilité', 'Épanouissement', 'Autonomie'],
+    profil_resume: profil_intro + ' Ce rapport vous propose les pistes les plus proches de ce que vous avez exprimé — explorez-les avec un regard ouvert.',
+    top_metiers: picks.map((m, i) => ({
+      ...m,
+      score: Math.max(72, 88 - i * 6),
+      pourquoi: `Ce métier résonne avec les éléments clés de votre conversation : les compétences que vous avez mentionnées et les valeurs qui semblent importantes pour vous. C'est une piste à explorer sérieusement.`,
+      atouts: m.competences.slice(0, 2),
+      developper: ['Réseau professionnel dans ce secteur', 'Formation certifiante ciblée'],
+      premier_pas: `Regarder 3 témoignages de ${m.titre}s sur YouTube ou LinkedIn cette semaine — pour voir si ça vous parle vraiment.`
+    })),
+    plan_action: {
+      semaine1: 'Explorer les 3 pistes — 1h de recherche par piste (témoignages, salaires, formations disponibles)',
+      mois1: 'Prendre contact avec 5 professionnels du secteur cible sur LinkedIn pour un échange de 20 min',
+      mois3: 'Choisir sa piste principale et s\'inscrire à une première formation ou session d\'information'
+    },
+    message_fin: `${prenom ? prenom + ', vous avez' : 'Vous avez'} eu le courage de faire cette démarche — c'est loin d'être anodin. Ce rapport est un point de départ, pas une destination. La voie que vous cherchez existe, et elle vous ressemble. Faites confiance au processus, une étape à la fois.`
+  };
+}
+
+/* ── RAPPORT PDF PREMIUM ── */
+function downloadRapport(){
+  if (!window._reportData) {
+    showToast('⏳','Le rapport est encore en cours de génération, patientez quelques secondes…','info',3000);
+    return;
+  }
+  const data = window._reportData;
+  const prenom = data.prenom || chatProfile.prenom || 'Vous';
+  const date = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const refNum = 'CYN-' + Date.now().toString(36).toUpperCase().slice(-6);
+
+  const scoreBadge = s => {
+    const col = s>=90?'#10b981':s>=75?'#f59e0b':'#6366f1';
+    return `<span style="font-size:13px;font-weight:700;color:${col};">${s}% match</span>`;
+  };
+
+  const careerCards = (data.top_metiers||[]).map((m,i)=>{
+    // Sécurité anti-hallucination : données factuelles toujours depuis METIERS_DB locale
+    const db = METIERS_DB.find(x => x.id === m.id) || {};
+    const salaire_debut = db.salaire_debut || m.salaire_debut || '—';
+    const salaire_exp   = db.salaire_exp   || m.salaire_exp   || '—';
+    const marche        = db.marche        || m.marche        || '—';
+    const formation     = db.formation     || m.formation     || '—';
+    const financement   = db.financement   || m.financement   || '—';
+    return `
+<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:1px solid #e8e0ff;box-shadow:0 4px 24px rgba(124,58,237,.07);page-break-inside:avoid;">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
+    <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div>
+    <div style="flex:1;">
+      <div style="font-size:20px;font-weight:800;color:#0a0a1a;letter-spacing:-.5px;margin-bottom:4px;">${m.titre}</div>
+      <span style="font-size:11px;font-weight:700;padding:3px 12px;background:#f3e8ff;color:#7c3aed;border-radius:100px;letter-spacing:.5px;">${m.secteur}</span>
+    </div>
+    <div style="text-align:center;">${scoreBadge(m.score||85)}</div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,#f5f0ff,#eef8ff);border-radius:12px;padding:18px;margin-bottom:18px;border-left:4px solid #7c3aed;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#7c3aed;margin-bottom:8px;">🎯 Pourquoi ce métier vous correspond</div>
+    <p style="font-size:14px;color:#2a2a4a;line-height:1.65;">${m.pourquoi}</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div style="background:#f0fdf4;border-radius:10px;padding:16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#15803d;margin-bottom:10px;">✅ Vos atouts déjà là</div>
+      ${(m.atouts||[]).map(a=>`<div style="display:inline-block;padding:5px 12px;background:#dcfce7;color:#166534;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;">${a}</div>`).join('')}
+    </div>
+    <div style="background:#eff6ff;border-radius:10px;padding:16px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;margin-bottom:10px;">📈 À développer</div>
+      ${(m.developper||[]).map(d=>`<div style="display:inline-block;padding:5px 12px;background:#dbeafe;color:#1e40af;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;">${d}</div>`).join('')}
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-radius:10px;overflow:hidden;border:1px solid #e8e0ff;margin-bottom:14px;">
+    <div style="padding:12px 14px;background:#fafaf9;border-right:1px solid #e8e0ff;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:3px;">Salaire débutant</div>
+      <div style="font-size:13px;font-weight:700;color:#0a0a1a;">${salaire_debut}</div>
+    </div>
+    <div style="padding:12px 14px;background:#fafaf9;border-right:1px solid #e8e0ff;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:3px;">Salaire confirmé</div>
+      <div style="font-size:13px;font-weight:700;color:#0a0a1a;">${salaire_exp}</div>
+    </div>
+    <div style="padding:12px 14px;background:#fafaf9;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:3px;">Marché emploi</div>
+      <div style="font-size:13px;font-weight:700;color:#0a0a1a;">${marche}</div>
+    </div>
+  </div>
+
+  <div style="font-size:13px;color:#444;line-height:1.9;margin-bottom:12px;">
+    <strong>Formation :</strong> ${formation}<br>
+    <strong>Financement :</strong> ${financement}
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:10px;padding:14px 16px;border-left:3px solid #f59e0b;">
+    <span style="font-size:18px;flex-shrink:0;">⚡</span>
+    <div style="font-size:13px;color:#78350f;line-height:1.5;"><strong>Premier pas cette semaine :</strong> ${m.premier_pas}</div>
+  </div>
+</div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rapport CYNTH.IA — ${prenom}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',-apple-system,sans-serif;background:#f4f1ff;color:#1a1a2e;font-size:14px;line-height:1.6;}
+.print-btn{position:fixed;top:20px;right:20px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;padding:13px 26px;border-radius:100px;font-size:14px;font-weight:700;cursor:pointer;z-index:100;box-shadow:0 4px 24px rgba(124,58,237,.4);font-family:'Inter',sans-serif;letter-spacing:-.3px;}
+.print-btn:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(124,58,237,.5);}
+.cover{min-height:100vh;background:linear-gradient(150deg,#07020f 0%,#1a0533 40%,#0a1a40 100%);display:flex;flex-direction:column;padding:72px 80px;position:relative;overflow:hidden;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.cover::before{content:'';position:absolute;top:-180px;right:-180px;width:560px;height:560px;background:radial-gradient(circle,rgba(124,58,237,.35) 0%,transparent 70%);pointer-events:none;}
+.cover::after{content:'';position:absolute;bottom:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(6,182,212,.2) 0%,transparent 70%);pointer-events:none;}
+.cover-logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:60px;opacity:.85;position:relative;z-index:1;}
+.cover-eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(168,85,247,.9);margin-bottom:16px;position:relative;z-index:1;}
+.cover-headline{font-size:58px;font-weight:900;line-height:1.05;letter-spacing:-2.5px;margin-bottom:12px;position:relative;z-index:1;}
+.cover-headline span:first-child{color:#fff;}
+.cover-headline .name{background:linear-gradient(90deg,#a855f7 0%,#06b6d4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;}
+.cover-desc{font-size:15px;color:rgba(255,255,255,.5);max-width:460px;line-height:1.65;margin-bottom:auto;margin-top:20px;position:relative;z-index:1;}
+.cover-footer{display:flex;gap:40px;padding-top:48px;border-top:1px solid rgba(255,255,255,.08);position:relative;z-index:1;}
+.cmeta-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:4px;}
+.cmeta-val{font-size:13px;color:rgba(255,255,255,.7);font-weight:500;}
+.sheet{max-width:820px;margin:32px auto;background:#fff;border-radius:20px;padding:52px 56px;box-shadow:0 8px 48px rgba(0,0,0,.08);page-break-after:always;}
+.sheet-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:2px solid #7c3aed;margin-bottom:36px;}
+.sheet-logo{font-size:15px;font-weight:900;color:#7c3aed;letter-spacing:-.5px;}
+.sheet-ref{font-size:11px;color:#bbb;letter-spacing:1px;}
+h2{font-size:30px;font-weight:900;color:#0a0a1a;letter-spacing:-1px;margin-bottom:6px;}
+.section-sub{font-size:15px;color:#777;margin-bottom:28px;}
+.profile-quote{background:linear-gradient(135deg,#f5f0ff,#eef8ff);border-radius:14px;padding:24px 28px;border-left:5px solid #7c3aed;margin-bottom:24px;}
+.profile-quote p{font-size:15px;color:#2a2a4a;line-height:1.75;font-style:italic;}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.pbox{background:#faf9ff;border-radius:12px;padding:18px 20px;border:1px solid #e8e0ff;}
+.pbox-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#7c3aed;margin-bottom:12px;}
+.tag{display:inline-block;padding:5px 13px;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;}
+.tag-g{background:#dcfce7;color:#166534;}
+.tag-p{background:#f3e8ff;color:#6b21a8;}
+.tag-b{background:#dbeafe;color:#1e40af;}
+.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;}
+.acard{background:#faf9ff;border-radius:12px;padding:20px;border:1px solid #e8e0ff;border-top:3px solid #7c3aed;}
+.acard-period{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#7c3aed;margin-bottom:10px;}
+.acard-text{font-size:14px;color:#2a2a4a;line-height:1.6;}
+.msg-finale{background:linear-gradient(150deg,#07020f,#1a0533);border-radius:16px;padding:36px;text-align:center;margin-bottom:32px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.msg-finale .mlogo{font-size:18px;font-weight:900;color:rgba(255,255,255,.6);margin-bottom:18px;}
+.msg-finale p{font-size:15px;line-height:1.75;color:rgba(255,255,255,.82);max-width:500px;margin:0 auto;}
+.rep-footer{text-align:center;padding:24px;border-top:1px solid #e8e0ff;color:#bbb;font-size:11px;line-height:1.9;}
+@media print{
+  body{background:#fff;}
+  .print-btn{display:none;}
+  .cover,.sheet{box-shadow:none;border-radius:0;}
+  .sheet{margin:0;padding:52px 56px;}
+  @page{margin:0;size:A4;}
+}
+</style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">🖨 Enregistrer en PDF</button>
+
+<!-- PAGE 1 — COUVERTURE -->
+<div class="cover">
+  <div class="cover-logo">CYNTH.IA</div>
+  <div class="cover-eyebrow">Rapport d'orientation personnalisé</div>
+  <div class="cover-headline">
+    <span>Votre voie,</span>
+    <span class="name">${prenom}.</span>
+  </div>
+  <p class="cover-desc">Ce rapport a été généré à partir de votre conversation avec CYNTH.IA. Il est unique — construit sur ce que vous avez dit, pas sur un questionnaire.</p>
+  <div class="cover-footer">
+    <div><div class="cmeta-label">Date</div><div class="cmeta-val">${date}</div></div>
+    <div><div class="cmeta-label">Référence</div><div class="cmeta-val">${refNum}</div></div>
+    <div><div class="cmeta-label">Métiers analysés</div><div class="cmeta-val">${METIERS_DB.length} professions</div></div>
+    <div><div class="cmeta-label">Préparé par</div><div class="cmeta-val">CYNTH.IA · Intelligence Artificielle</div></div>
+  </div>
+</div>
+
+<!-- PAGE 2 — VOTRE PROFIL -->
+<div class="sheet">
+  <div class="sheet-header">
+    <div class="sheet-logo">CYNTH.IA</div>
+    <div class="sheet-ref">Réf. ${refNum}</div>
+  </div>
+  <h2>Votre profil</h2>
+  <p class="section-sub">Ce que CYNTH.IA a identifié à travers votre conversation.</p>
+
+  <div class="profile-quote"><p>${data.profil_resume}</p></div>
+
+  <div class="profile-grid">
+    <div class="pbox">
+      <div class="pbox-label">Vos forces identifiées</div>
+      ${(data.forces||[]).map(f=>`<span class="tag tag-g">${f}</span>`).join('')}
+    </div>
+    <div class="pbox">
+      <div class="pbox-label">Vos valeurs professionnelles</div>
+      ${(data.valeurs||[]).map(v=>`<span class="tag tag-p">${v}</span>`).join('')}
+    </div>
+  </div>
+
+  <div class="pbox" style="background:#faf9ff;">
+    <div class="pbox-label">Situation actuelle</div>
+    <p style="color:#444;font-size:14px;">${data.situation}</p>
+  </div>
+</div>
+
+<!-- PAGE 3 — PISTES MÉTIER -->
+<div class="sheet">
+  <div class="sheet-header">
+    <div class="sheet-logo">CYNTH.IA</div>
+    <div class="sheet-ref">Réf. ${refNum}</div>
+  </div>
+  <h2>Vos pistes professionnelles</h2>
+  <p class="section-sub">Sélectionnées parmi ${METIERS_DB.length} métiers, spécifiquement pour votre profil.</p>
+
+  ${careerCards}
+</div>
+
+<!-- PAGE 4 — PLAN D'ACTION -->
+<div class="sheet" style="page-break-after:auto;">
+  <div class="sheet-header">
+    <div class="sheet-logo">CYNTH.IA</div>
+    <div class="sheet-ref">Réf. ${refNum}</div>
+  </div>
+  <h2>Votre plan d'action</h2>
+  <p class="section-sub">Des étapes concrètes pour passer de la réflexion à l'action.</p>
+
+  <div class="action-grid">
+    <div class="acard">
+      <div class="acard-period">⚡ Cette semaine</div>
+      <div class="acard-text">${(data.plan_action||{}).semaine1||'—'}</div>
+    </div>
+    <div class="acard">
+      <div class="acard-period">📅 Dans 1 mois</div>
+      <div class="acard-text">${(data.plan_action||{}).mois1||'—'}</div>
+    </div>
+    <div class="acard">
+      <div class="acard-period">🎯 Dans 3 mois</div>
+      <div class="acard-text">${(data.plan_action||{}).mois3||'—'}</div>
+    </div>
+  </div>
+
+  <div class="msg-finale">
+    <div class="mlogo">CYNTH.IA</div>
+    <p>${data.message_fin}</p>
+  </div>
+
+  <div class="rep-footer">
+    CYNTH.IA — Intelligence Artificielle d'Orientation Professionnelle<br>
+    Ce rapport est strictement personnel et confidentiel. · Réf. ${refNum} · ${date}
+  </div>
+</div>
+
+</body>
+</html>`;
+
+  const w = window.open('','_blank');
+  if (!w) {
+    showToast('🔒','Autorisez les pop-ups pour ce site pour afficher votre rapport.','warning',5000);
+    return;
+  }
+  w.document.write(html);
+  w.document.close();
+  showToast('📄','Rapport ouvert ! Faites Cmd+P → Enregistrer en PDF','success',6000);
+}
+</script>
+
+<!-- MODAL HTML -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+</body>
+</html>
