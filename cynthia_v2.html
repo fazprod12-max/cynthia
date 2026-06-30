@@ -1177,10 +1177,11 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 
 <!-- ══ BETA BANNER ══ -->
 <div id="beta-banner">
+  <!-- MODIF V3 - CONCURRENT : date expiration bêta explicite -->
   <div class="bb-text">
     <span>🧪</span>
     <span class="bb-pill">BÊTA</span>
-    <span>PHASE DE TEST — Service <strong>100% GRATUIT</strong> · Données fictives affichées · Rejoignez les premiers testeurs !</span>
+    <span>PHASE DE TEST — Service <strong>100% GRATUIT jusqu'au 31/12/2026</strong> · Données fictives · Rejoignez les premiers testeurs !</span>
   </div>
   <button class="bb-close" onclick="closeBetaBanner()" title="Fermer">✕</button>
 </div>
@@ -1260,20 +1261,21 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     <div class="ticker-track" id="ticker">
       <span class="ti"><span class="tic">🧪</span> Phase bêta ouverte — rejoignez les premiers testeurs</span>
       <span class="ti"><span class="tic">★</span> Premiers retours testeurs en cours de collecte</span>
-      <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — Faouzi, 34 ans</span>
+      <!-- MODIF V3 - CONCURRENT : suppression faux témoignages, ticker honnête -->
+      <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — <em style="font-size:10px;opacity:.6;">(simulation)</em></span>
       <span class="ti"><span class="tic">✦</span> Profil RIASEC · CPF · VAE · ROME</span>
       <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 à 45 min</span>
       <span class="ti"><span class="tic">✦</span> Disponible 24h/24 · 7j/7</span>
-      <span class="ti"><span class="tic">✦</span> "Elle m'a posé des questions que personne n'avait osé" — Thilai</span>
+      <span class="ti"><span class="tic">✦</span> "Elle posait des questions que personne n'osait" — <em style="font-size:10px;opacity:.6;">(simulation)</em></span>
       <span class="ti"><span class="tic">★</span> Service 100% gratuit pendant la bêta · Plan d'action inclus</span>
       <!-- duplicate for seamless loop -->
       <span class="ti"><span class="tic">🧪</span> Phase bêta ouverte — rejoignez les premiers testeurs</span>
       <span class="ti"><span class="tic">★</span> Premiers retours testeurs en cours de collecte</span>
-      <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — Faouzi, 34 ans</span>
+      <span class="ti"><span class="tic">✦</span> "J'ai enfin su quoi faire" — <em style="font-size:10px;opacity:.6;">(simulation)</em></span>
       <span class="ti"><span class="tic">✦</span> Profil RIASEC · CPF · VAE · ROME</span>
       <span class="ti"><span class="tic">★</span> 3 pistes finançables identifiées en 20 à 45 min</span>
       <span class="ti"><span class="tic">✦</span> Disponible 24h/24 · 7j/7</span>
-      <span class="ti"><span class="tic">✦</span> "Elle m'a posé des questions que personne n'avait osé" — Thilai</span>
+      <span class="ti"><span class="tic">✦</span> "Elle posait des questions que personne n'osait" — <em style="font-size:10px;opacity:.6;">(simulation)</em></span>
       <span class="ti"><span class="tic">★</span> Service 100% gratuit pendant la bêta · Plan d'action inclus</span>
     </div>
   </div>
@@ -1430,6 +1432,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
           <th class="hl">CYNTH.IA</th>
         </tr>
       </thead>
+      <!-- MODIF V3 - CONCURRENT : tableau honnête avec certification -->
       <tbody>
         <tr>
           <td>Disponibilité</td>
@@ -1445,9 +1448,21 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         </tr>
         <tr>
           <td>Coût</td>
-          <td>Gratuit</td>
+          <td>Gratuit (service public)</td>
           <td><span class="warn">~2 000 €</span></td>
-          <td class="comp-col-hl"><span class="chk">✓</span> 29 €</td>
+          <td class="comp-col-hl"><span class="chk">✓</span> 0 € bêta / 29 € ensuite*</td>
+        </tr>
+        <tr>
+          <td>Accompagnement humain</td>
+          <td><span class="chk">✓</span> Conseiller dédié</td>
+          <td><span class="chk">✓</span> Psychologue du travail</td>
+          <td class="comp-col-hl"><span class="cross">—</span> <span style="font-size:11px;opacity:.6;">IA uniquement</span></td>
+        </tr>
+        <tr>
+          <td>Certification / Agrément</td>
+          <td>Conseiller CEP agréé</td>
+          <td>Psychologue du travail</td>
+          <td class="comp-col-hl"><span style="font-size:11px;color:rgba(255,255,255,.5);">Outil d'aide à la décision (non agréé)</span></td>
         </tr>
         <tr>
           <td>Rapport personnalisé</td>
@@ -1462,12 +1477,6 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
           <td class="comp-col-hl"><span class="chk">✓</span></td>
         </tr>
         <tr>
-          <td>Sans jugement garanti</td>
-          <td><span class="cross">—</span></td>
-          <td><span class="cross">—</span></td>
-          <td class="comp-col-hl"><span class="chk">✓</span></td>
-        </tr>
-        <tr>
           <td>Profil RIASEC</td>
           <td><span class="cross">—</span></td>
           <td><span class="chk">✓</span></td>
@@ -1476,6 +1485,9 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       </tbody>
     </table>
     </div>
+    <p style="text-align:center;font-size:12px;color:rgba(255,255,255,.4);margin-top:16px;max-width:680px;margin-left:auto;margin-right:auto;">
+      * CYNTH.IA est un outil d'aide à la réflexion professionnelle, pas un conseiller CEP agréé. Il ne remplace pas un accompagnement humain certifié. · Tarif bêta gratuit jusqu'au 31/12/2026.
+    </p>
   </div>
 
   <!-- BLOC PRICING -->
@@ -1484,10 +1496,12 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       <!-- Accent top -->
       <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--v1),var(--v4),var(--v3));"></div>
 
-      <div style="display:inline-block;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:100px;padding:6px 18px;font-size:12px;font-weight:700;color:var(--v4);letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;">Offre transparente</div>
+      <!-- MODIF V3 - CONCURRENT : prix bêta transparent -->
+      <div style="display:inline-block;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:100px;padding:6px 18px;font-size:12px;font-weight:700;color:#f87171;letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;">🧪 Phase bêta</div>
 
-      <h2 style="font-size:clamp(32px,5vw,52px);font-weight:900;color:var(--txt);margin-bottom:8px;letter-spacing:-1px;">29 <span style="color:var(--v4);">€</span></h2>
-      <p style="font-size:15px;color:var(--txt2);margin-bottom:36px;">Paiement unique · Aucun abonnement · Aucune surprise</p>
+      <h2 style="font-size:clamp(32px,5vw,52px);font-weight:900;color:var(--txt);margin-bottom:8px;letter-spacing:-1px;">Gratuit <span style="color:#34d399;">✓</span></h2>
+      <p style="font-size:15px;color:var(--txt2);margin-bottom:8px;">100% gratuit pendant la bêta · jusqu'au 31/12/2026</p>
+      <p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:32px;">Tarif après bêta : 29 € · paiement unique · aucun abonnement</p>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:left;margin-bottom:40px;">
         <div style="display:flex;align-items:flex-start;gap:12px;">
@@ -1628,23 +1642,34 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <div class="faq-wrap reveal">
     <h2 class="faq-title">Questions fréquentes</h2>
 
+    <!-- MODIF V3 - CONCURRENT : FAQ honnête, 3 questions courtes -->
     <div class="faq-item" id="faq-1">
       <div class="faq-q" onclick="toggleFaq('faq-1')">
-        <span>CYNTH.IA est-elle vraiment fiable pour m'orienter ?</span>
+        <span>CYNTH.IA remplace-t-elle un vrai conseiller ?</span>
         <span class="faq-arrow">▾</span>
       </div>
       <div class="faq-body">
-        <p>CYNTH.IA n'est pas un questionnaire à cases à cocher. Elle mène une vraie conversation guidée par les méthodes d'orientation reconnues (RIASEC, analyse des forces cachées, exploration des valeurs). Comme tout outil IA, elle complète — elle ne remplace pas — un conseiller humain agréé (CEP). Pendant la bêta, nous collectons les premiers retours pour continuer à améliorer la qualité des entretiens. Si vous n'êtes pas satisfait, vous nous écrivez et on améliore.</p>
+        <p>Non — et on l'assume. CYNTH.IA est un outil d'aide à la réflexion, pas un conseiller CEP agréé. Elle pose les bonnes questions, analyse votre profil RIASEC et propose des pistes concrètes. Pour une démarche officielle (bilan CPF financé, VAE), un conseiller humain reste la référence. CYNTH.IA, c'est le premier pas accessible à tous — maintenant, pas dans 6 semaines.</p>
       </div>
     </div>
 
     <div class="faq-item" id="faq-2">
       <div class="faq-q" onclick="toggleFaq('faq-2')">
-        <span>Que devient ce que je dis à CYNTH.IA ? Mes données sont-elles protégées ?</span>
+        <span>Mes données sont-elles protégées ? Mon CV aussi ?</span>
         <span class="faq-arrow">▾</span>
       </div>
       <div class="faq-body">
-        <p>Vos données ne sont jamais revendues, jamais partagées avec des tiers. Pendant la bêta, les entretiens peuvent être analysés en interne pour améliorer le service — uniquement de façon anonymisée. Vous pouvez demander la suppression complète de vos données à tout moment en écrivant à <a href="mailto:contact@cynth-ia.com" style="color:var(--v4);">contact@cynth-ia.com</a>. Nous respectons le RGPD. Données hébergées en Europe.</p>
+        <p>Oui. Vos données ne sont jamais revendues ni partagées. Le CV est chiffré et supprimé dans les 48h — il ne sert pas à entraîner l'IA. Suppression complète sur demande : <a href="mailto:contact@cynth-ia.com" style="color:var(--v4);">contact@cynth-ia.com</a>. Conformité RGPD · Hébergement Europe.</p>
+      </div>
+    </div>
+
+    <div class="faq-item" id="faq-3">
+      <div class="faq-q" onclick="toggleFaq('faq-3')">
+        <span>Et si je ne suis pas satisfait de mon entretien ?</span>
+        <span class="faq-arrow">▾</span>
+      </div>
+      <div class="faq-body">
+        <p>Écrivez-nous à <a href="mailto:contact@cynth-ia.com" style="color:var(--v4);">contact@cynth-ia.com</a>. On vous offre un second entretien personnalisé, sans condition. Pendant la bêta, votre feedback est notre carburant — on veut que ça marche pour vous.</p>
       </div>
     </div>
 
@@ -1655,6 +1680,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     </p>
   </div>
 
+  <!-- MODIF V3 - CONCURRENT : mentions légales complètes -->
   <footer>
     <div class="foot-logo">CYNTH.IA</div>
     <div class="foot-links">
@@ -1664,6 +1690,11 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       <a href="#" onclick="showModal('pro');return false;">Professionnels</a>
     </div>
     <div class="foot-copy">© 2026 CYNTH.IA · Bêta ouverte · Tous droits réservés</div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:rgba(255,255,255,.25);line-height:1.8;text-align:center;">
+      Éditeur : Faouzi Samhoud · Genève, Suisse · <a href="mailto:contact@cynth-ia.com" style="color:rgba(255,255,255,.35);">contact@cynth-ia.com</a><br>
+      Hébergé par <a href="https://pages.github.com" target="_blank" style="color:rgba(255,255,255,.35);">GitHub Pages</a> · Données hébergées en Europe<br>
+      CYNTH.IA est un outil d'aide à la décision — non agréé CEP · <a href="#" onclick="showModal('confidentialite');return false;" style="color:rgba(255,255,255,.35);">Politique de confidentialité & RGPD</a>
+    </div>
   </footer>
 </div>
 
@@ -1702,6 +1733,10 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
           <p class="uz-text" id="uz-text">Glissez votre CV ici ou cliquez</p>
           <span class="uz-hint" id="uz-hint">PDF, Word · max 5 Mo</span>
         </div>
+        <!-- MODIF V3 - CONCURRENT : sécurité CV -->
+        <div style="margin-top:10px;padding:10px 14px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.18);border-radius:10px;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.6;">
+          🔒 Votre CV est chiffré et supprimé automatiquement après génération du rapport. Aucune donnée conservée au-delà de 48h. <strong style="color:rgba(52,211,153,.7);">Le CV ne sert pas à entraîner l'IA.</strong>
+        </div>
       </div>
       <div class="pa-guarantees">
         <div class="pg"><span class="pgc">✓</span>100% confidentiel</div>
@@ -1723,8 +1758,9 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         <button class="mic-test-btn" id="mic-test-btn" onclick="startMicTest()">▶ Tester</button>
       </div>
 
-      <div id="no-mic-hint" style="text-align:center;margin-bottom:12px;display:none;">
-        <a href="#" onclick="setMode('chat');document.getElementById('mode-btn-chat').click();return false;" style="font-size:13px;color:var(--v4);text-decoration:none;display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:100px;transition:.15s;">
+      <!-- MODIF V3 - CONCURRENT : mode texte visible immédiatement -->
+      <div id="no-mic-hint" style="text-align:center;margin-bottom:16px;">
+        <a href="#" onclick="setMode('chat');return false;" style="font-size:14px;font-weight:600;color:var(--v4);text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(124,58,237,.1);border:1.5px solid rgba(124,58,237,.35);border-radius:100px;transition:all .2s;">
           📝 Pas de micro ? Passer en mode texte →
         </a>
       </div>
@@ -1843,11 +1879,7 @@ function closeBetaBanner() {
   if (b) b.style.display = 'none';
   document.body.classList.remove('beta-open');
 }
-// Afficher l'indice micro sur la page pré-appel après 3s si mode vocal
-setTimeout(() => {
-  const hint = document.getElementById('no-mic-hint');
-  if (hint) hint.style.display = 'block';
-}, 3000);
+// MODIF V3 - CONCURRENT : bouton mode texte visible immédiatement (déjà affiché via HTML)
 
 /* ── ANIMATED COUNTER ── */
 function animateCounter(el, target, duration) {
