@@ -2493,8 +2493,10 @@ function _getFbSynthesis(prenom) {
 }
 
 function _getFbReply(msg, prenom) {
-  // Déclencher la synthèse après 7 tours
-  if (_fbTurn >= 7) return _getFbSynthesis(prenom);
+  _fbTurn++; // Toujours incrémenter — même pour les réponses contextuelles
+  // Déclencher la synthèse selon le nombre réel de messages utilisateur (ou 7 tours de fallback)
+  const _userMsgCount = chatHistory.filter(m => m.role === 'user').length;
+  if (_userMsgCount >= 8 || _fbTurn >= 7) return _getFbSynthesis(prenom);
 
   const t = msg.toLowerCase();
   const p = prenom ? prenom : '';
@@ -2535,8 +2537,7 @@ function _getFbReply(msg, prenom) {
     return `Ces contraintes, je les entends — elles sont réelles. Est-ce qu'elles ferment vraiment toutes les portes selon vous, ou il y a des choses que vous pourriez envisager malgré elles ?`;
   }
 
-  // Réponse générique intelligente selon le tour
-  _fbTurn++;
+  // Réponse générique intelligente selon le tour (le _fbTurn++ est déjà fait en début de fonction)
   const generics = [
     `Intéressant. Et quand vous pensez à l'avenir — pas dans 10 ans, juste dans 2 ou 3 ans — vous vous voyez faire quelque chose de radicalement différent ou une évolution de ce que vous connaissez déjà ?`,
     `Vous avez quel âge, si vous n'y voyez pas d'inconvénient ? Je pose la question parce que les pistes que j'explore changent vraiment selon où on en est dans la vie.`,
@@ -2688,12 +2689,9 @@ async function sendChatMsg() {
     }
   } catch(e) {
     console.warn('CYNTH.IA Groq error:', e.message || e);
-    // Afficher l'erreur Groq dans la notice
+    // Afficher la notice "Mode aperçu" de façon persistante quand l'API échoue
     const notice = document.getElementById('chat-ai-notice');
-    if (notice) {
-      notice.style.display = 'flex';
-      notice.style.display = 'none'; // Bascule silencieuse sur le mode local
-    }
+    if (notice) notice.style.display = 'flex';
     await new Promise(r => setTimeout(r, 800));
     reply = _getFbReply(text, chatProfile.prenom);
   }
