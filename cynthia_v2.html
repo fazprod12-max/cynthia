@@ -1056,8 +1056,35 @@ footer{
 .chat-head-name{font-weight:700;color:var(--txt);font-size:16px;}
 .chat-head-st{font-size:12px;color:var(--txt3);display:flex;align-items:center;gap:5px;}
 .chat-head-dot{width:7px;height:7px;border-radius:50%;background:#34D399;animation:pulse 2s infinite;}
-.chat-end-btn{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;}
-.chat-end-btn:hover{background:rgba(239,68,68,.2);}
+.chat-end-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:.2s;}
+.chat-end-btn:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#f87171;}
+/* Phase indicator */
+.chat-phase-bar{display:flex;align-items:center;gap:6px;padding:6px 16px;background:rgba(124,58,237,.06);border-bottom:1px solid rgba(124,58,237,.1);}
+.chat-phase-step{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(255,255,255,.3);font-weight:500;letter-spacing:.3px;transition:.4s;}
+.chat-phase-step.active{color:rgba(168,85,247,.9);}
+.chat-phase-step.done{color:rgba(16,185,129,.7);}
+.chat-phase-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.chat-phase-sep{font-size:9px;color:rgba(255,255,255,.15);flex:1;text-align:center;}
+/* Synthesis cards */
+.synth-wrap{display:flex;flex-direction:column;gap:10px;}
+.synth-prose{font-size:14px;line-height:1.6;color:var(--txt);margin-bottom:2px;}
+.synth-card{background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(6,182,212,.06));border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
+.synth-card-title{font-weight:700;font-size:14px;color:#C084FC;letter-spacing:-.2px;}
+.synth-card-line{font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;}
+.sp-why{color:#67E8F9;font-weight:600;}
+.sp-step{color:#86EFAC;font-weight:600;}
+/* Modal confirmation */
+.end-modal-bg{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;}
+.end-modal-bg.show{display:flex;}
+.end-modal{background:linear-gradient(135deg,rgba(18,18,36,.98),rgba(12,12,28,.98));border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:32px;max-width:400px;width:90%;text-align:center;box-shadow:0 40px 80px rgba(0,0,0,.6);}
+.end-modal h3{font-size:20px;font-weight:700;margin-bottom:10px;}
+.end-modal p{color:var(--txt2);font-size:14px;line-height:1.6;margin-bottom:24px;}
+.end-modal-btns{display:flex;gap:10px;justify-content:center;}
+.end-modal-btns button{padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:.2s;}
+.end-modal-confirm{background:linear-gradient(135deg,var(--v1),var(--v2));color:#fff;}
+.end-modal-confirm:hover{opacity:.9;}
+.end-modal-cancel{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)!important;color:var(--txt2);}
+.end-modal-cancel:hover{background:rgba(255,255,255,.1);color:#fff;}
 /* Messages */
 .chat-msgs{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
 .chat-msgs::-webkit-scrollbar{width:4px;}
@@ -1078,6 +1105,10 @@ footer{
 .chat-typing-wrap{padding:0 20px 4px;display:none;}
 .chat-typing-wrap.show{display:flex;}
 .typing-bubble{display:flex;gap:5px;align-items:center;background:rgba(255,255,255,.07);border:1px solid var(--border);padding:12px 16px;border-radius:18px;border-bottom-left-radius:4px;}
+/* Points animés du typing indicator */
+.chat-typing-wrap .typing-bubble .td{width:7px;height:7px;border-radius:50%;background:var(--v4);opacity:.7;animation:ty .9s ease-in-out infinite;}
+.chat-typing-wrap .typing-bubble .td:nth-child(2){animation-delay:.18s;}
+.chat-typing-wrap .typing-bubble .td:nth-child(3){animation-delay:.36s;}
 .td{width:7px;height:7px;border-radius:50%;background:var(--txt3);animation:tdot .9s infinite;}
 .td:nth-child(2){animation-delay:.2s;}
 .td:nth-child(3){animation-delay:.4s;}
@@ -1815,6 +1846,14 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         </div>
         <button class="chat-end-btn" onclick="confirmEndChat()">✕ Terminer</button>
       </div>
+      <!-- Phase progress -->
+      <div class="chat-phase-bar" id="chat-phase-bar">
+        <div class="chat-phase-step active" id="phase-step-1"><div class="chat-phase-dot"></div>Découverte</div>
+        <div class="chat-phase-sep">──</div>
+        <div class="chat-phase-step" id="phase-step-2"><div class="chat-phase-dot"></div>Approfondissement</div>
+        <div class="chat-phase-sep">──</div>
+        <div class="chat-phase-step" id="phase-step-3"><div class="chat-phase-dot"></div>Synthèse</div>
+      </div>
       <div class="chat-msgs" id="chat-msgs"></div>
       <div class="chat-typing-wrap" id="chat-typing">
         <div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>
@@ -1956,11 +1995,12 @@ document.querySelectorAll('.bc,.tc,.prob-row').forEach(el=>{
 
 /* ── PAGE NAVIGATION ── */
 const pageOrder=['landing','preappel','call','chat','confirm'];
+const pageNavIdx={'landing':0,'preappel':1,'call':2,'chat':2,'confirm':3}; // chat = même nav que "En appel"
 function gp(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.getElementById('page-'+name).classList.add('on');
-  const idx=pageOrder.indexOf(name);
-  document.querySelectorAll('.demo-bar button').forEach((b,i)=>b.classList.toggle('on',i===idx));
+  const navIdx=pageNavIdx[name]??pageOrder.indexOf(name);
+  document.querySelectorAll('.demo-bar button').forEach((b,i)=>b.classList.toggle('on',i===navIdx));
   window.scrollTo(0,0);
   if(name==='call'){sec=0;running=true;startVapiCall();}else{running=false;}
   if(name==='chat'){startChatMode();}
@@ -2391,7 +2431,7 @@ async function callGroqAI(messages) {
         { role: 'system', content: systemPrompt },
         ...messages
       ],
-      max_tokens: userMsgCount >= 8 ? 600 : 300,
+      max_tokens: userMsgCount >= 8 ? 600 : 350,
       temperature: 0.72,
       top_p: 0.95
     })
@@ -2404,7 +2444,39 @@ async function callGroqAI(messages) {
 // ── FALLBACK SIMULATION (si Groq échoue) ──────────────────────────────────────
 // Répond au CONTENU de ce que dit la personne, pas à une phase générique.
 
+function _getFbSynthesis(prenom) {
+  // Synthèse de secours basée sur les mots-clés détectés dans l'historique
+  const history = chatHistory.map(m => m.content.toLowerCase()).join(' ');
+  const p = prenom ? prenom + ', ' : '';
+  const hasTech = /tech|digital|informatique|code|développ|web|data/.test(history);
+  const hasTeach = /form|enseign|apprendr|transmettre|expliqu|pedagog|prof|coach/.test(history);
+  const hasHelp = /aide|accompagn|soin|social|personnes|humain|écoute|conseil/.test(history);
+  const hasCreat = /créat|design|art|graphi|visuel|créer|innov/.test(history);
+  const hasManage = /gestion|manage|équipe|organis|pilotage|chef|diriger/.test(history);
+
+  let pistes = [];
+  if (hasTeach) pistes.push('● Formateur / Coach professionnel\n→ Pourquoi vous : vous aimez transmettre et aider les autres à progresser.\n→ Premier pas : explorer les certifications de formateur (Qualiopi, RNCP Niv.5) finançables CPF.');
+  if (hasHelp) pistes.push('● Conseiller en insertion / Chargé d\'accompagnement\n→ Pourquoi vous : vous êtes à l\'écoute et orienté solutions humaines.\n→ Premier pas : contacter France Travail ou Mission Locale pour des postes disponibles dans votre région.');
+  if (hasTech) pistes.push('● Chef de projet digital / Product Owner\n→ Pourquoi vous : vous combinez sens de l\'organisation et intérêt pour la technologie.\n→ Premier pas : certification PSPO en ligne (3 mois, finançable CPF).');
+  if (hasCreat) pistes.push('● Consultant en communication / Créatif freelance\n→ Pourquoi vous : votre sens visuel et votre créativité sont des atouts concurrentiels.\n→ Premier pas : constituer un portfolio de 3 projets personnels.');
+  if (hasManage) pistes.push('● Manager de transition / Consultant indépendant\n→ Pourquoi vous : votre expérience en gestion d\'équipes est directement valorisable.\n→ Premier pas : rejoindre une plateforme de consultants (Malt, Comatch) et définir votre offre.');
+
+  // Toujours au moins 3 pistes
+  const defaults = [
+    '● Consultant / Freelance dans votre domaine d\'expertise\n→ Pourquoi vous : votre expérience est un actif direct.\n→ Premier pas : définir votre offre et créer un profil sur Malt ou LinkedIn.',
+    '● Reconversion dans les métiers du conseil RH / Orientation\n→ Pourquoi vous : vous avez l\'écoute et la capacité d\'analyse.\n→ Premier pas : formation CIP (Conseiller en Insertion Professionnelle) — finançable CPF.',
+    '● Entrepreneuriat dans un secteur qui vous tient à cœur\n→ Pourquoi vous : vous avez la vision et le vécu.\n→ Premier pas : tester votre idée avec 5 clients potentiels avant de vous lancer.'
+  ];
+  while (pistes.length < 3) pistes.push(defaults[pistes.length]);
+  pistes = pistes.slice(0, 5);
+
+  return `Voilà. J'ai maintenant une image assez claire de ce qui vous correspond. Voici ce que je vois pour vous :\n\n${pistes.join('\n\n')}\n\nParmi ces pistes, laquelle vous parle le plus — même à 20% ?`;
+}
+
 function _getFbReply(msg, prenom) {
+  // Déclencher la synthèse après 7 tours
+  if (_fbTurn >= 7) return _getFbSynthesis(prenom);
+
   const t = msg.toLowerCase();
   const p = prenom ? prenom : '';
 
@@ -2479,8 +2551,7 @@ async function startChatMode() {
   showChatTyping(false);
 
   const prenom = userName ? userName : '';
-  const emailLine = userEmail ? `\n\nJe vous enverrai votre rapport à **${userEmail}** à la fin — mais avant tout ça, j'ai envie de vraiment vous connaître.` : '';
-  const intro = `Bonjour${prenom ? ' ' + prenom : ''} ! Je suis CYNTH.IA.${emailLine}\n\nCet entretien n'est pas un formulaire — c'est une vraie conversation. Je vais vous poser des questions, mais les miennes vont suivre ce que vous me dites, pas un script fixe.\n\nOn commence par quelque chose de simple : comment vous sentez-vous en ce moment par rapport à votre vie professionnelle ?`;
+  const intro = `Bonjour${prenom ? ' ' + prenom : ''} ! Je suis CYNTH.IA, votre conseillère d'orientation.\n\nQu'est-ce qui vous a amené ici aujourd'hui ?`;
 
   addChatBubble('ai', intro);
   chatHistory.push({ role: 'assistant', content: intro });
@@ -2497,20 +2568,69 @@ async function startChatMode() {
   if (btn) btn.disabled = false;
 }
 
+function formatChatText(text) {
+  // Détecte un message de synthèse (contient au moins un "● ")
+  if (text.includes('●')) {
+    // Séparer intro / pistes / outro
+    const lines = text.split('\n');
+    let html = '';
+    let inPiste = false;
+    let pisteLines = [];
+
+    const flushPiste = () => {
+      if (pisteLines.length === 0) return;
+      const titleLine = pisteLines[0]; // "● Titre"
+      const title = titleLine.replace(/^●\s*/, '').trim();
+      const rest = pisteLines.slice(1).map(l => {
+        return l.replace(/^→\s*Pourquoi vous\s*:/i, '<span class="sp-why">Pourquoi vous :</span>')
+                .replace(/^→\s*Premier pas\s*:/i, '<span class="sp-step">Premier pas :</span>')
+                .replace(/^→\s*/,'').trim();
+      }).filter(Boolean);
+      html += `<div class="synth-card"><div class="synth-card-title">● ${title}</div>${rest.map(r=>`<div class="synth-card-line">${r}</div>`).join('')}</div>`;
+      pisteLines = [];
+    };
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('●')) {
+        flushPiste();
+        inPiste = true;
+        pisteLines = [trimmed];
+      } else if (inPiste && (trimmed.startsWith('→') || trimmed === '')) {
+        if (trimmed !== '') pisteLines.push(trimmed);
+      } else {
+        if (inPiste && trimmed !== '') {
+          flushPiste();
+          inPiste = false;
+        }
+        if (trimmed !== '' || !inPiste) {
+          html += `<div class="synth-prose">${trimmed.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+        }
+      }
+    }
+    flushPiste();
+    return `<div class="synth-wrap">${html}</div>`;
+  }
+  // Texte normal
+  return text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
+
 function addChatBubble(role, text) {
   const msgs = document.getElementById('chat-msgs');
   if (!msgs) return;
   const now = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
   const wrap = document.createElement('div');
   wrap.className = 'cb ' + (role === 'user' ? 'user' : 'ai');
-  const textFormatted = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  const textFormatted = formatChatText(text);
   if (role === 'ai') {
-    wrap.innerHTML = `<div class="cb-av">✦</div><div><div class="cb-text">${textFormatted}</div><div class="cb-time">${now}</div></div>`;
+    wrap.innerHTML = `<div class="cb-av">✦</div><div style="flex:1"><div class="cb-text">${textFormatted}</div><div class="cb-time">${now}</div></div>`;
   } else {
     wrap.innerHTML = `<div><div class="cb-text">${textFormatted}</div><div class="cb-time" style="text-align:right">${now}</div></div>`;
   }
   msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
+  // Mise à jour indicateur de phase
+  updatePhaseIndicator();
 }
 
 function showChatTyping(show) {
@@ -2576,28 +2696,56 @@ function confirmEndChat() {
     showToast('💬','La conversation est encore courte — continuez quelques échanges pour obtenir un rapport vraiment personnalisé !','info',4500);
     return;
   }
-  if (confirm('Terminer l\'entretien et générer votre rapport personnalisé ?')) {
-    gp('confirm');
-    window._reportData = null;
-    const btn = document.getElementById('btn-download-rapport');
-    const loadDiv = document.getElementById('conf-loading');
-    if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
-    if (loadDiv) loadDiv.style.display = 'block';
+  // Afficher le modal élégant au lieu du confirm() natif
+  document.getElementById('end-modal-bg').classList.add('show');
+}
 
-    generateOrientationReport()
-      .then(data => {
-        window._reportData = data;
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport personnalisé'; }
-        if (loadDiv) loadDiv.style.display = 'none';
-        showToast('✅','Votre rapport est prêt — cliquez pour le télécharger !','success',6000);
-      })
-      .catch(e => {
-        console.warn('Report gen error:', e);
-        window._reportData = buildFallbackReport();
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport'; }
-        if (loadDiv) loadDiv.style.display = 'none';
-        showToast('📄','Rapport généré !','success',4000);
-      });
+function doEndChat() {
+  document.getElementById('end-modal-bg').classList.remove('show');
+  gp('confirm');
+  window._reportData = null;
+  const btn = document.getElementById('btn-download-rapport');
+  const loadDiv = document.getElementById('conf-loading');
+  if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
+  if (loadDiv) loadDiv.style.display = 'block';
+
+  generateOrientationReport()
+    .then(data => {
+      window._reportData = data;
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport personnalisé'; }
+      if (loadDiv) loadDiv.style.display = 'none';
+      showToast('✅','Votre rapport est prêt — cliquez pour le télécharger !','success',6000);
+    })
+    .catch(e => {
+      console.warn('Report gen error:', e);
+      window._reportData = buildFallbackReport();
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport'; }
+      if (loadDiv) loadDiv.style.display = 'none';
+      showToast('📄','Rapport généré !','success',4000);
+    });
+}
+
+function updatePhaseIndicator() {
+  const userCount = chatHistory.filter(m => m.role === 'user').length;
+  const s1 = document.getElementById('phase-step-1');
+  const s2 = document.getElementById('phase-step-2');
+  const s3 = document.getElementById('phase-step-3');
+  if (!s1) return;
+  // Phase 1: 0-3 échanges utilisateur
+  // Phase 2: 4-7 échanges utilisateur
+  // Phase 3: 8+ échanges utilisateur (synthèse)
+  if (userCount <= 3) {
+    s1.className = 'chat-phase-step active';
+    s2.className = 'chat-phase-step';
+    s3.className = 'chat-phase-step';
+  } else if (userCount <= 7) {
+    s1.className = 'chat-phase-step done';
+    s2.className = 'chat-phase-step active';
+    s3.className = 'chat-phase-step';
+  } else {
+    s1.className = 'chat-phase-step done';
+    s2.className = 'chat-phase-step done';
+    s3.className = 'chat-phase-step active';
   }
 }
 
@@ -3409,6 +3557,18 @@ h2{font-size:30px;font-weight:900;color:#0a0a1a;letter-spacing:-1px;margin-botto
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Modal fin de session -->
+<div class="end-modal-bg" id="end-modal-bg">
+  <div class="end-modal">
+    <h3>✨ Générer votre rapport</h3>
+    <p>CYNTH.IA va analyser votre conversation et créer vos 3 à 5 pistes professionnelles personnalisées, finançables CPF.</p>
+    <div class="end-modal-btns">
+      <button class="end-modal-cancel" onclick="document.getElementById('end-modal-bg').classList.remove('show')">Continuer l'entretien</button>
+      <button class="end-modal-confirm" onclick="doEndChat()">Générer mon rapport →</button>
+    </div>
   </div>
 </div>
 
