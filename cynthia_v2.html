@@ -1440,7 +1440,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       </div>
       <div class="bc bc6 reveal">
         <div class="bc-icon">📄</div>
-        <h3>Rapport PDF personnalisé envoyé en 2 minutes</h3>
+        <h3>Rapport PDF personnalisé généré en 2 minutes</h3>
         <p>Profil RIASEC complet, 3 pistes avec justification et financement, plan d'action daté. Rapport PDF téléchargeable immédiatement — en moins de 2 minutes.</p>
         <div class="bc-tag">Rapport automatique</div>
       </div>
@@ -1737,7 +1737,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     <div class="pa-card">
       <span class="pa-logo">CYNTH.IA</span>
       <h2>Avant de commencer</h2>
-      <p class="pa-sub">Votre email pour recevoir le rapport. Le CV est optionnel — mais si vous l'ajoutez, CYNTH.IA démarre en connaissant déjà votre parcours.</p>
+      <p class="pa-sub">Saisissez votre prénom pour personnaliser l'entretien. L'email est optionnel — le rapport est téléchargeable directement.</p>
 
       <!-- MODE TOGGLE -->
       <div class="mode-toggle">
@@ -1749,8 +1749,8 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         <input type="text" id="inp-name" class="finput" placeholder="Faouzi" autocomplete="given-name">
       </div>
       <div class="fgroup">
-        <label class="flabel">Votre email</label>
-        <input type="email" id="inp-email" class="finput" placeholder="faouzi@email.com" autocomplete="email">
+        <label class="flabel">Votre email <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0;">(optionnel)</span></label>
+        <input type="email" id="inp-email" class="finput" placeholder="faouzi@email.com (facultatif)" autocomplete="email">
       </div>
       <div class="fgroup">
         <label class="flabel">CV <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0;">(optionnel — recommandé)</span></label>
@@ -2025,8 +2025,9 @@ function validateForm(){
     setTimeout(()=>{if(nameEl)nameEl.style.borderColor='';},2500);
     return false;
   }
-  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    showToast('⚠️','Un email valide est nécessaire pour recevoir votre rapport','warning',3200);
+  // Email optionnel — validation souple (format si fourni)
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('⚠️','Format email invalide — laissez vide ou corrigez','warning',3200);
     if(emailEl){emailEl.focus();emailEl.style.borderColor='var(--red)';}
     setTimeout(()=>{if(emailEl)emailEl.style.borderColor='';},2500);
     return false;
@@ -2290,7 +2291,7 @@ function confirmEndCall(){
     const card=document.querySelector('.call-card');
     msg=document.createElement('div');
     msg.id='end-confirm';msg.className='end-confirm-msg';
-    msg.innerHTML=`<strong>Terminer l'appel ?</strong><br>Votre rapport sera généré et envoyé par email.
+    msg.innerHTML=`<strong>Terminer l'appel ?</strong><br>Votre rapport sera généré et téléchargeable immédiatement.
       <div class="end-confirm-btns">
         <button class="ec-yes" onclick="endCallAndConfirm()">Oui, terminer</button>
         <button class="ec-no" onclick="hideEndConfirm()">Continuer l'appel</button>
