@@ -1202,6 +1202,117 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .hero-pill{font-size:11px;padding:6px 14px;}
   .bento-section .section-head h2{font-size:28px;}
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MODE DOUTE — bouton flottant + modal
+══════════════════════════════════════════════════════════════ */
+.btn-doute-float{
+  position:fixed;bottom:90px;right:20px;z-index:900;
+  display:none; /* affiché uniquement sur page-chat via JS */
+  align-items:center;gap:8px;
+  background:linear-gradient(135deg,rgba(124,58,237,.9),rgba(6,182,212,.8));
+  color:#fff;border:none;border-radius:100px;padding:12px 18px;
+  font-size:14px;font-weight:600;font-family:inherit;
+  cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);
+  transition:transform .2s,box-shadow .2s;
+}
+.btn-doute-float:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(124,58,237,.55);}
+.btn-doute-float:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.doute-modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  z-index:1100;display:none;align-items:flex-end;justify-content:center;padding:0 12px 20px;
+}
+.doute-modal-bg.show{display:flex;}
+.doute-modal{
+  width:100%;max-width:520px;background:#1a1333;
+  border:1px solid rgba(124,58,237,.35);border-radius:20px;
+  padding:22px 20px 18px;display:flex;flex-direction:column;gap:14px;
+  box-shadow:0 -4px 40px rgba(124,58,237,.25);
+}
+.doute-modal-head{display:flex;align-items:flex-start;gap:14px;}
+.doute-modal-icon{font-size:28px;line-height:1;flex-shrink:0;}
+.doute-modal-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:2px;}
+.doute-modal-sub{font-size:12px;color:rgba(255,255,255,.5);line-height:1.4;}
+.doute-modal-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;padding:0 4px;flex-shrink:0;}
+.doute-modal-close:hover{color:#fff;}
+.doute-textarea{
+  width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);
+  border:1px solid rgba(124,58,237,.3);border-radius:12px;
+  color:#fff;font-family:inherit;font-size:14px;line-height:1.5;
+  padding:12px 14px;resize:none;outline:none;
+}
+.doute-textarea:focus{border-color:rgba(124,58,237,.65);}
+.doute-textarea::placeholder{color:rgba(255,255,255,.35);}
+.doute-modal-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.doute-counter{font-size:11px;color:rgba(255,255,255,.35);}
+.doute-send-btn{
+  background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;border:none;
+  border-radius:100px;padding:10px 20px;font-size:14px;font-weight:600;
+  font-family:inherit;cursor:pointer;transition:opacity .15s;white-space:nowrap;
+}
+.doute-send-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ══════════════════════════════════════════════════════════════
+   AVATARS MÉTIERS — grille de cartes + modal chat
+══════════════════════════════════════════════════════════════ */
+.conf-metiers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+.conf-metier-card{
+  background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(6,182,212,.06));
+  border:1px solid rgba(124,58,237,.28);border-radius:14px;padding:16px;
+  cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;
+  display:flex;flex-direction:column;gap:6px;
+}
+.conf-metier-card:hover{transform:translateY(-3px);border-color:rgba(124,58,237,.6);box-shadow:0 6px 24px rgba(124,58,237,.2);}
+.conf-metier-card-title{font-size:14px;font-weight:700;color:#C084FC;}
+.conf-metier-card-sect{font-size:12px;color:rgba(255,255,255,.5);}
+.conf-metier-card-score{font-size:11px;color:#34D399;font-weight:600;margin-top:2px;}
+.conf-metier-card-cta{font-size:12px;color:rgba(124,58,237,.8);margin-top:4px;}
+.avatar-modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
+  z-index:1200;display:none;align-items:center;justify-content:center;padding:16px;
+}
+.avatar-modal-bg.show{display:flex;}
+.avatar-modal{
+  width:100%;max-width:540px;max-height:85vh;background:#1a1333;
+  border:1px solid rgba(124,58,237,.35);border-radius:20px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 8px 60px rgba(124,58,237,.3);
+}
+.avatar-modal-head{
+  display:flex;align-items:center;gap:12px;padding:16px 18px;
+  border-bottom:1px solid rgba(124,58,237,.15);flex-shrink:0;
+}
+.avatar-modal-icon{font-size:26px;flex-shrink:0;}
+.avatar-modal-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;}
+.avatar-modal-sub{font-size:12px;color:rgba(255,255,255,.45);}
+.avatar-modal-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.4);font-size:18px;cursor:pointer;flex-shrink:0;}
+.avatar-modal-close:hover{color:#fff;}
+.avatar-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:200px;}
+.avatar-typing-wrap{padding:0 16px 8px;display:none;}
+.avatar-typing-wrap.show{display:block;}
+.avatar-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid rgba(124,58,237,.15);flex-shrink:0;}
+
+/* ══════════════════════════════════════════════════════════════
+   OFFRES FRANCE TRAVAIL
+══════════════════════════════════════════════════════════════ */
+.offre-card{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:14px 16px;margin-bottom:10px;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.offre-card-info{flex:1;min-width:0;}
+.offre-card-titre{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px;}
+.offre-card-meta{font-size:12px;color:rgba(255,255,255,.45);}
+.offre-card-link{
+  flex-shrink:0;padding:8px 14px;background:rgba(124,58,237,.15);
+  border:1px solid rgba(124,58,237,.3);border-radius:8px;
+  font-size:12px;font-weight:600;color:#C084FC;text-decoration:none;
+  transition:background .2s;white-space:nowrap;
+}
+.offre-card-link:hover{background:rgba(124,58,237,.3);}
+.offre-metier-group{margin-bottom:16px;}
+.offre-metier-label{font-size:13px;font-weight:700;color:rgba(255,255,255,.6);
+  margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.07);}
 </style>
 </head>
 <body class="beta-open">
@@ -1868,8 +1979,32 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         <!-- Notice mode simulation -->
         <div id="chat-ai-notice" style="display:none;align-items:center;gap:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:12px;color:#FCD34D;">
           <span>⚡</span>
-          <span>Mode aperçu — Pour des réponses IA réelles, ajoutez votre clé <a href="https://console.groq.com" target="_blank" style="color:#FBBF24;text-decoration:underline;">Groq</a> dans le code (variable GROQ_API_KEY).</span>
+          <span>Mode aperçu — Pour des réponses IA réelles, configurez le proxy Cloudflare Worker.</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOUTON FLOTTANT "J'AI UN DOUTE" ── -->
+  <button id="btn-doute" class="btn-doute-float" onclick="openDoubtModal()" aria-label="Exprimer un doute">
+    💬 J'ai un doute
+  </button>
+
+  <!-- ── MODAL SAISIE DU DOUTE ── -->
+  <div id="doute-modal-bg" class="doute-modal-bg" role="dialog" aria-modal="true" aria-labelledby="doute-modal-title">
+    <div class="doute-modal">
+      <div class="doute-modal-head">
+        <div class="doute-modal-icon">🤔</div>
+        <div>
+          <div id="doute-modal-title" class="doute-modal-title">Exprimez votre doute</div>
+          <div class="doute-modal-sub">CYNTH.IA vous répond avec empathie et des faits concrets.</div>
+        </div>
+        <button class="doute-modal-close" onclick="closeDoubtModal()" aria-label="Fermer">✕</button>
+      </div>
+      <textarea id="doute-input" class="doute-textarea" placeholder="Ex : J'ai peur de ne pas y arriver, j'ai 48 ans…" maxlength="600" rows="4"></textarea>
+      <div class="doute-modal-footer">
+        <span id="doute-counter-label" class="doute-counter"></span>
+        <button id="doute-send-btn" class="doute-send-btn" onclick="submitDoubt()">Envoyer mon doute →</button>
       </div>
     </div>
   </div>
@@ -1897,10 +2032,55 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
           <span style="font-size:14px;color:rgba(255,255,255,.7);">CYNTH.IA analyse votre profil et sélectionne vos pistes métier…</span>
         </div>
       </div>
+      <!-- Section Avatars Métiers (remplie dynamiquement après génération du rapport) -->
+      <div id="conf-metiers-section" style="display:none;margin-top:28px;width:100%;">
+        <h3 style="font-size:16px;font-weight:700;color:rgba(255,255,255,.9);margin:0 0 6px;">🧑‍💼 Dialoguez avec un professionnel</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px;">Cliquez sur un métier pour poser toutes vos questions à un professionnel IA.</p>
+        <div id="conf-metiers-grid" class="conf-metiers-grid"></div>
+      </div>
+
+      <!-- Section Offres France Travail (remplie dynamiquement) -->
+      <div id="conf-offres-section" style="display:none;margin-top:28px;width:100%;">
+        <h3 style="font-size:16px;font-weight:700;color:rgba(255,255,255,.9);margin:0 0 6px;">💼 Offres d'emploi en temps réel</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,.5);margin:0 0 16px;">Offres actuellement disponibles pour vos métiers recommandés.</p>
+        <div id="conf-offres-list"></div>
+      </div>
+
       <div class="conf-actions">
-        <button class="btn-main" id="btn-download-rapport" style="border:none;cursor:pointer;font-family:inherit;opacity:.5;pointer-events:none;" onclick="downloadRapport()">⏳ Génération en cours…</button>
+        <!-- Bouton gratuit (rapport basique) -->
+        <button class="btn-outline" id="btn-download-rapport" style="border:none;cursor:pointer;font-family:inherit;opacity:.5;pointer-events:none;" onclick="downloadRapport()">⏳ Génération en cours…</button>
+        <!-- Bouton Premium (rapport complet PDF) -->
+        <button class="btn-main" id="btn-premium" style="display:none;" onclick="startStripeCheckout()">
+          📄 Télécharger le rapport complet — 29,90€
+        </button>
         <button class="btn-outline" onclick="gp('landing')">← Retour à l'accueil</button>
       </div>
+      <p id="conf-premium-hint" style="display:none;font-size:12px;color:rgba(255,255,255,.4);margin-top:12px;text-align:center;">
+        Accès immédiat · Paiement sécurisé Stripe · Satisfait ou remboursé 7 jours
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL AVATAR MÉTIER ── -->
+<div id="avatar-modal-bg" class="avatar-modal-bg" role="dialog" aria-modal="true" aria-labelledby="avatar-modal-title">
+  <div class="avatar-modal">
+    <div class="avatar-modal-head">
+      <div class="avatar-modal-icon" id="avatar-modal-icon">🧑‍💼</div>
+      <div style="flex:1;min-width:0;">
+        <div id="avatar-modal-title" class="avatar-modal-title">Chargement…</div>
+        <div id="avatar-modal-sub" class="avatar-modal-sub"></div>
+      </div>
+      <button class="avatar-modal-close" onclick="closeAvatarModal()" aria-label="Fermer">✕</button>
+    </div>
+    <div class="avatar-msgs" id="avatar-msgs"></div>
+    <div class="avatar-typing-wrap" id="avatar-typing">
+      <div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+    </div>
+    <div class="avatar-input-row">
+      <input type="text" class="chat-input" id="avatar-input" placeholder="Posez votre question…" maxlength="400"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAvatarMsg();}">
+      <button class="chat-send" id="avatar-send-btn" onclick="sendAvatarMsg()" title="Envoyer">↑</button>
     </div>
   </div>
 </div>
@@ -2006,6 +2186,9 @@ function gp(name){
   if(name==='chat'){startChatMode();}
   if(name==='landing'){initReveal();}
   if(name==='preappel'){onPreappelShow();}
+  // Affiche / masque le bouton "J'ai un doute" uniquement sur page-chat
+  const btnD = document.getElementById('btn-doute');
+  if(btnD) btnD.style.display = (name==='chat') ? 'flex' : 'none';
   // Ferme le menu mobile si ouvert
   const mn=document.getElementById('gnav-mobile');
   const mb=document.getElementById('gnav-menu');
@@ -2316,70 +2499,100 @@ function setMode(mode) {
 
 /* ── CHAT ENGINE ── */
 // ────────────────────────────────────────────────────────────
-// GROQ API KEY — Gratuit sur console.groq.com (30 sec à créer)
-// Copiez votre clé ici entre les guillemets :
-const GROQ_API_KEY = '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';
+// GROQ PROXY — La clé API est stockée côté serveur (Cloudflare Worker).
+// Remplacez l'URL ci-dessous par votre Worker après déploiement.
+// Pour déployer : voir cloudflare_worker/worker.js + wrangler.toml
+const GROQ_PROXY_URL = 'https://cynth-ia-proxy.fazprod12.workers.dev';
 // ────────────────────────────────────────────────────────────
 
-const CYNTH_PROMPT = `Tu es CYNTH.IA, conseillère d'orientation professionnelle. Tu parles TOUJOURS en "vous". Tu es chaleureuse, directe, curieuse — et tu sais conclure au bon moment avec des pistes concrètes et personnalisées.
+const CYNTH_PROMPT = `Tu es CYNTH.IA, une conseillère d'orientation de niveau expert, formée à la psychologie humaniste (Carl Rogers) et au coaching professionnel. Tu parles TOUJOURS en "vous". Ta mission est d'accompagner l'utilisateur dans la découverte de sa voie avec une profondeur, une bienveillance et une rigueur dignes d'un coach certifié.
 
-TON RÔLE : collecter des informations clés sur la personne, puis lui proposer 3 à 5 pistes professionnelles concrètes adaptées à SA situation. Tu n'es pas thérapeute. Tu n'es pas assistante sociale. Tu es conseillère d'orientation — tu conclus avec des résultats.
+TON RÔLE : accompagner, écouter, reformuler — puis proposer des pistes professionnelles concrètes et adaptées à SA situation réelle. Tu n'es pas un chatbot généraliste. Tu es une coach.
 
-━━━ RÈGLES ABSOLUES ━━━
+## STYLE D'ÉCOUTE ET DE COMMUNICATION
+
+- Tu es chaleureuse, empathique, mais jamais complaisante.
+- Tu reformules régulièrement ce que l'utilisateur dit pour montrer que tu écoutes vraiment. Ex : "Si je comprends bien, vous ressentez..." ou "Ce que vous décrivez, c'est..."
+- Tu poses des questions ouvertes qui invitent à la réflexion (comment, pourquoi, qu'est-ce qui) — jamais de questions fermées (oui/non).
+- Tu utilises un langage simple, humain, sans jargon technique.
+- Tu évites les jugements, tu explores.
+- Tu t'adaptes au rythme de l'utilisateur : s'il est bref, tu restes concise ; s'il est expansif, tu approfondis.
+
+## TA MÉTHODE EN 4 PHASES
+
+### PHASE 1 — DÉCOUVERTE (messages 1 à 3)
+Objectif : créer un lien de confiance et comprendre le contexte global.
+Questions types (à adapter selon les réponses) :
+- "Qu'est-ce qui vous amène aujourd'hui ?"
+- "Depuis combien de temps ressentez-vous ce besoin de changement ?"
+- "Si vous imaginiez votre vie professionnelle idéale dans 5 ans, que voyez-vous ?"
+- "Qu'est-ce qui vous freine ou vous inquiète dans ce changement ?"
+- "Que ressentez-vous en ce moment par rapport à votre situation ?"
+
+### PHASE 2 — APPROFONDISSEMENT (messages 4 à 6)
+Objectif : explorer les valeurs, les forces, les compétences transférables et les freins.
+Questions types :
+- "Dans vos expériences passées, qu'est-ce qui vous a procuré le plus de fierté ?"
+- "Si vos proches devaient décrire ce que vous apportez de unique, que diraient-ils ?"
+- "Y a-t-il un moment où vous vous êtes senti parfaitement aligné avec ce que vous faisiez ? Décrivez-le."
+- "Quelles sont les conditions non négociables pour vous dans un futur métier (salaire, ambiance, sens, autonomie) ?"
+- "Avez-vous déjà exploré une piste qui vous a déçu ? Qu'avez-vous appris de cette déception ?"
+- "Quand vous pensez à ce que vous aimez faire, même dans votre temps libre, qu'est-ce qui vous vient ?"
+
+### PHASE 3 — SYNTHÈSE ET PISTES (messages 7 à 8)
+Objectif : restituer avec empathie ce que tu as compris et proposer 3 pistes concrètes.
+Ta réponse DOIT contenir :
+1. Une reformulation empathique de son parcours, de ses aspirations et de ses contraintes (2-3 phrases).
+2. Une liste de 3 métiers ou secteurs qui correspondent à ses forces, valeurs et contraintes :
+   - Le titre du métier.
+   - Une phrase "Pourquoi vous" (en lien direct avec ce qu'il a dit).
+   - Un "Premier pas" ultra-concret (ex : "contacter X", "faire un bilan de compétences", "suivre une formation sur Y").
+3. Une question d'engagement : "Parmi ces 3 pistes, laquelle résonne le plus en vous — même à 20 % ?"
+
+### PHASE 4 — RÉPONSE AU DOUTE (si l'utilisateur exprime une peur ou un doute)
+Si l'utilisateur exprime un doute explicite ou implicite ("j'ai peur...", "je ne vais pas y arriver", "et si je me trompe ?") :
+- Accueille l'émotion : "Je comprends que cela puisse faire peur..." ou "C'est tout à fait compréhensible."
+- Normalise : "C'est une réaction très humaine. Beaucoup de personnes dans votre situation ressentent cela."
+- Recadre avec des faits si possible : donne un exemple de réussite ou une statistique positive.
+- Propose une micro-action : "Si vous deviez faire une toute petite chose cette semaine pour avancer, ce serait quoi ?"
+
+## ADAPTATION AU PROFIL (détection automatique)
+
+- Si l'utilisateur a moins de 30 ans ou mentionne une première expérience : utilise un vocabulaire dynamique — "explorer", "découvrir", "premiers pas", "alternance", "stage", "réseau social professionnel".
+- Si l'utilisateur a plus de 30 ans ou mentionne une reconversion : utilise "compétences transférables", "bilan de compétences", "CPF", "VAE", "France Travail", "expérience acquise", "projet de transition professionnelle".
+
+## TON TON GÉNÉRAL
+
+- Calme, posé, confiant.
+- Tu ne donnes JAMAIS de conseils directifs ("vous devriez..."). Tu aides l'utilisateur à trouver ses propres réponses.
+- Tu ne juges jamais ses choix ou ses hésitations.
+- Tu ne parles jamais de toi ni de ton expérience personnelle.
+- Tu restes concentrée sur lui/elle, et sur le présent.
+
+## STRUCTURE DE CHAQUE RÉPONSE
+
+1. 1 à 2 phrases d'empathie et/ou de reformulation : "Je vous entends...", "Ce que vous décrivez est..."
+2. 1 question ouverte (parfois 2 si le sujet est riche).
+3. Ton fluide et naturel — comme une conversation humaine, pas un formulaire.
+
+## EXEMPLE DE TON IDÉAL
+
+"Je vous entends. C'est un moment charnière, et il est normal de ressentir un mélange d'excitation et d'appréhension. Ce que vous décrivez — cette envie de combiner votre expérience avec un besoin de sens — est une quête profonde. Si on prend un instant pour explorer ce qui, dans vos expériences passées, vous a vraiment donné de l'énergie, qu'est-ce qui vous vient en premier ?"
+
+## RÈGLES ABSOLUES
 
 ⛔ R1 — UNE SEULE QUESTION PAR MESSAGE. Toujours. Sans exception.
-
-⛔ R2 — LONGUEUR : 2 à 3 phrases maximum pendant la collecte. La synthèse finale peut être plus longue.
-
+⛔ R2 — LONGUEUR : 2 à 3 phrases maximum pendant la collecte. La synthèse peut être plus longue.
 ⛔ R3 — PRÉNOM : maximum 1 fois toutes les 4-5 réponses.
+⛔ R4 — ZÉRO JARGON dans les phases 1 et 2 : pas de "profil", "RIASEC", "bilan", "plan d'action".
+⛔ R5 — Si la personne répond vaguement ou dit "je sais pas" : reformule avec empathie, repose la question autrement.
+⛔ R6 — Ne jamais sortir du rôle (tu n'es pas un chatbot généraliste, tu es une coach).
+⛔ R7 — Ne pas donner de listes de métiers avant la phase 3.
+⛔ R8 — Chaque réponse doit s'appuyer sur le message précédent. Jamais de réponse générique.
+⛔ R9 — Si l'utilisateur est confus, ralentis et reformule plus simplement.
+⛔ R10 — ANTI-BOUCLE : si tu as posé plus de 8 questions sans conclure → passe IMMÉDIATEMENT à la Phase 3.
 
-⛔ R4 — ZÉRO JARGON : jamais "profil", "RIASEC", "bilan", "diagnostic", "plan d'action", "compétences clés".
-
-⛔ R5 — RÉPONSE VAGUE : Si la personne répond en moins de 10 mots ou dit "je sais pas" → reformule avec empathie, repose la question autrement, plus simplement.
-
-━━━ STRUCTURE EN 3 PHASES ━━━
-
-╔══════════════════════════════════════════╗
-║  PHASE 1 — ANCRAGE (échanges 1 à 3)     ║
-╚══════════════════════════════════════════╝
-Comprendre la situation aujourd'hui : âge, statut (emploi/chômage/reconversion), ce qui les a amenés ici maintenant. Creuse l'émotion.
-
-╔══════════════════════════════════════════╗
-║  PHASE 2 — EXPLORATION (échanges 4 à 8) ║
-╚══════════════════════════════════════════╝
-Cherche leurs forces naturelles, envies profondes, et contraintes réelles.
-Utilise ces questions puissantes (pas toutes, les plus pertinentes) :
-- "Pour quoi est-ce qu'on vous contacte spontanément dans votre entourage ?"
-- "Quand vous étiez à votre meilleur au travail, vous faisiez quoi exactement ?"
-- "Qu'est-ce que vous ne supportez plus dans votre situation actuelle ?"
-- "Si l'argent n'était pas un problème, vous feriez quoi demain matin ?"
-- "Quelles sont vos contraintes réelles — famille, finances, géographie ?"
-
-╔══════════════════════════════════════════════════════════╗
-║  PHASE 3 — SYNTHÈSE OBLIGATOIRE (à partir du 9e échange) ║
-╚══════════════════════════════════════════════════════════╝
-À partir du 9e échange, ou dès que tu as assez d'informations : ARRÊTE de poser des questions. Tu passes en mode résultats.
-
-PHRASE D'INTRODUCTION OBLIGATOIRE :
-"Voilà. J'ai maintenant une image assez claire de ce qui vous correspond. Je vous propose ce que je vois pour vous."
-
-PUIS présente 3 à 5 pistes dans ce format :
-
-"● [TITRE DU MÉTIER / DOMAINE]
-→ Pourquoi vous : [lien direct et précis avec ce que la personne a dit]
-→ Premier pas concret : [1 action simple et réalisable immédiatement]"
-
-Présente les 3 à 5 pistes d'un coup. Sois précis, concret, personnalisé à ce qu'elle t'a dit.
-
-PHRASE DE CLÔTURE OBLIGATOIRE après les pistes :
-"Parmi ces pistes, laquelle vous parle le plus — même à 20% ?"
-
-━━━ RÈGLE ANTI-BOUCLE ABSOLUE ━━━
-Si tu constates que tu as posé plus de 8 questions sans avoir encore proposé de pistes → STOP. Passe IMMÉDIATEMENT à la Phase 3 avec ce que tu as. Une synthèse imparfaite vaut infiniment mieux qu'une conversation qui tourne en boucle sans conclusion.
-
-━━━ CE QUI FAIT LA DIFFÉRENCE ━━━
-Tu reformules avec SES mots, pas les tiens. Tu remarques les contradictions et tu les poses doucement.
-Registre : chaleureux, direct, vrai. Jamais condescendant. Jamais scolaire.`;
+TU ES PRÊTE. COMMENCE LA CONVERSATION MAINTENANT.`;
 
 // Prompt optimisé pour la voix (Vapi)
 const VAPI_SYSTEM_PROMPT = `Tu es CYNTH.IA, conseillère d'orientation professionnelle. Tu parles TOUJOURS en "vous". Tu communiques à l'oral — phrases courtes, naturelles, sans listes à puces.
@@ -2404,14 +2617,34 @@ Termine par : "Parmi ces pistes, laquelle vous parle le plus — même à 20% ?"
 
 RÈGLE ABSOLUE ANTI-BOUCLE : après 8 questions sans avoir conclu → passe immédiatement à la synthèse. Toujours.`;
 
+// ── DÉTECTION D'ÉMOTION ──────────────────────────────────────────────────────
+/**
+ * Détecte l'émotion dominante dans le message de l'utilisateur.
+ * @param {string} text — message brut
+ * @returns {'peur'|'tristesse'|'colere'|'doute'|'neutre'}
+ */
+function detectEmotion(text) {
+  const t = text.toLowerCase();
+  const motsPeur      = ['peur', 'angoisse', 'angoissé', 'inquiet', 'inquiète', 'stressé', 'stresse', 'panique', 'crainte', 'appréhension', 'terrifié', 'terrorisé', 'effrayé'];
+  const motsTristesse = ['triste', 'tristesse', 'déçu', 'déçue', 'découragé', 'découragée', 'abattu', 'abattue', 'mélancolique', 'déprimé', 'déprimée', 'malheureux', 'malheureuse'];
+  const motsColere    = ['colère', 'énervé', 'énervée', 'frustré', 'frustrée', 'injuste', 'révolté', 'révoltée', 'furieux', 'furieuse', 'en rage', 'marre', 'ras-le-bol'];
+  const motsDoute     = ['doute', 'hésite', 'hésitation', 'incertain', 'incertaine', 'pas sûr', 'pas sûre', 'peut-être', 'je sais pas', 'je ne sais pas', 'trop difficile', 'compliqué', 'j\'ai peur', 'et si je', 'je vais pas y arriver'];
+
+  if (motsPeur.some(m => t.includes(m)))      return 'peur';
+  if (motsTristesse.some(m => t.includes(m))) return 'tristesse';
+  if (motsColere.some(m => t.includes(m)))    return 'colere';
+  if (motsDoute.some(m => t.includes(m)))     return 'doute';
+  return 'neutre';
+}
+
 let chatHistory = [];
 let chatWaiting = false;
-let chatProfile = { prenom:'' };
+let chatProfile = { prenom: '', lastEmotion: 'neutre' };
 let usedQs = new Set();
 
 // ── GROQ AI CALL ──────────────────────────────────────────────────────────────
 async function callGroqAI(messages) {
-  if (!GROQ_API_KEY) throw new Error('no-key');
+  if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) throw new Error('no-proxy');
 
   // Compte les échanges utilisateur pour déclencher la synthèse au bon moment
   const userMsgCount = messages.filter(m => m.role === 'user').length;
@@ -2419,6 +2652,18 @@ async function callGroqAI(messages) {
   let systemPrompt = CYNTH_PROMPT;
   if (isSynthesis) {
     systemPrompt = `${CYNTH_PROMPT}\n\n🔴 ORDRE ABSOLU — SYNTHÈSE MAINTENANT : Tu as déjà posé assez de questions. INTERDICTION TOTALE de poser une nouvelle question. Tu DOIS impérativement produire la synthèse finale avec 3 à 5 pistes au format :\n● [Titre piste]\n→ Pourquoi vous : ...\n→ Premier pas : ...\nToute réponse sans le format ● est une faute grave.`;
+  }
+
+  // Enrichissement émotionnel — Phase 4 si émotion détectée
+  if (chatProfile.lastEmotion && chatProfile.lastEmotion !== 'neutre') {
+    const labels = {
+      peur:      'peur / anxiété',
+      tristesse: 'découragement / tristesse',
+      colere:    'frustration / colère',
+      doute:     'doute / hésitation'
+    };
+    const label = labels[chatProfile.lastEmotion] || chatProfile.lastEmotion;
+    systemPrompt += `\n\n⚠️ ÉMOTION DÉTECTÉE : L'utilisateur exprime de la "${label}". Applique IMMÉDIATEMENT la Phase 4 — Réponse au Doute : commence par accueillir chaleureusement l'émotion (1 phrase empathique), normalise-la ("c'est tout à fait normal de ressentir ça"), recadre positivement, puis propose une micro-action concrète pour avancer malgré tout. Ne saute aucune de ces étapes.`;
   }
 
   // Construction du tableau de messages — avec prefix completion si synthèse
@@ -2434,10 +2679,9 @@ async function callGroqAI(messages) {
     });
   }
 
-  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const resp = await fetch(GROQ_PROXY_URL, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
@@ -2495,9 +2739,34 @@ function _getFbSynthesis(prenom) {
 
 function _getFbReply(msg, prenom) {
   _fbTurn++; // Toujours incrémenter — même pour les réponses contextuelles
-  // Déclencher la synthèse selon le nombre réel de messages utilisateur (ou 7 tours de fallback)
   const _userMsgCount = chatHistory.filter(m => m.role === 'user').length;
-  if (_userMsgCount >= 8 || _fbTurn >= 7) return _getFbSynthesis(prenom);
+
+  // ── Post-synthèse : répondre au choix de l'utilisateur sans boucler ──────────
+  if (_synthesisDone) {
+    const t = msg.toLowerCase();
+    const p = prenom ? prenom + ', ' : '';
+    if (/conseiller|accompagn|insertion|mission|chargé/.test(t))
+      return `${p}excellent choix. Conseiller en insertion correspond vraiment à votre profil — écoute, solutions concrètes, relation humaine. Concrètement : cherchez les offres sur Pôle Emploi Pro, Mission Locale et APEC. Votre propre expérience du chômage sera une vraie force, pas un frein. Vous voulez que je vous détaille les premières étapes ?`;
+    if (/entrepren|projet|créer|creer|lancer|indép|indep|freelance|auto.?entrepreneur/.test(t))
+      return `${p}je le sentais dans votre profil. La règle d'or : ne lancez pas avant d'avoir validé avec 5 vraies personnes. Une semaine de conversations peut vous éviter 6 mois d'erreurs. Quel est le projet que vous avez en tête ?`;
+    if (/formateur|form|coach|enseign|transmettre/.test(t))
+      return `${p}formateur, c'est concret et rapide à lancer. La certification CIP ou une formation via CPF peut se faire en quelques mois. Vous avez déjà un domaine d'expertise précis en tête pour enseigner ?`;
+    if (/les deux|deux|2|combiner|et l'autre|les 2/.test(t))
+      return `${p}tout à fait cohérent. Beaucoup de conseillers en insertion deviennent entrepreneurs dans ce secteur justement. Commencez par le salariat pour stabiliser vos revenus, et développez votre projet en parallèle. C'est une voie solide et progressive.`;
+    // Réponses génériques post-synthèse
+    const followups = [
+      `${p}bien. La prochaine étape concrète : prenez une seule action dans les 7 prochains jours — même petite. Qu'est-ce qui vous semble le plus accessible pour commencer ?`,
+      `Votre profil est clair, la direction aussi. Ce qui reste, c'est le premier pas. Qu'est-ce qui vous retient encore ?`,
+      `Pour aller plus loin et avoir un plan d'action personnalisé complet, vous pouvez générer votre rapport complet. Mais ce que vous avez déjà, c'est solide.`
+    ];
+    return followups[Math.min(_fbPostTurn++, followups.length - 1)];
+  }
+
+  // ── Première synthèse ─────────────────────────────────────────────────────────
+  if (_userMsgCount >= 8 || _fbTurn >= 7) {
+    _synthesisDone = true;
+    return _getFbSynthesis(prenom);
+  }
 
   const t = msg.toLowerCase();
   const p = prenom ? prenom : '';
@@ -2550,14 +2819,18 @@ function _getFbReply(msg, prenom) {
 }
 
 let _fbTurn = 0;
+let _synthesisDone = false;
+let _fbPostTurn = 0;
 
 // ── CHAT ENGINE PRINCIPAL ──────────────────────────────────────────────────────
 
 async function startChatMode() {
   chatHistory = [];
-  chatProfile = { prenom: '' };
+  chatProfile = { prenom: '', lastEmotion: 'neutre' };
   usedQs = new Set();
   _fbTurn = 0;
+  _synthesisDone = false;
+  _fbPostTurn = 0;
   _fbUsed = new Set();
 
   const msgs = document.getElementById('chat-msgs');
@@ -2578,7 +2851,7 @@ async function startChatMode() {
   chatHistory.push({ role: 'assistant', content: intro });
 
   // Afficher indicateur si pas de clé Groq
-  if (!GROQ_API_KEY) {
+  if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) {
     const notice = document.getElementById('chat-ai-notice');
     if (notice) notice.style.display = 'flex';
   }
@@ -2669,6 +2942,11 @@ async function sendChatMsg() {
   if (!text) return;
 
   addChatBubble('user', text);
+  // Détection d'émotion — stockée pour enrichir le prompt système
+  const _detectedEmotion = detectEmotion(text);
+  if (_detectedEmotion !== 'neutre') {
+    chatProfile.lastEmotion = _detectedEmotion;
+  }
   chatHistory.push({ role: 'user', content: text });
   if (input) input.value = '';
   chatWaiting = true;
@@ -2679,7 +2957,7 @@ async function sendChatMsg() {
   let reply = '';
 
   try {
-    if (GROQ_API_KEY) {
+    if (GROQ_PROXY_URL && !GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) {
       // Vrai LLM — réponse intelligente et curieuse
       reply = await callGroqAI(chatHistory);
     } else {
@@ -2730,15 +3008,26 @@ function doEndChat() {
   generateOrientationReport()
     .then(data => {
       window._reportData = data;
-      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport personnalisé'; }
       if (loadDiv) loadDiv.style.display = 'none';
-      showToast('✅','Votre rapport est prêt — cliquez pour le télécharger !','success',6000);
+      // Déverrouiller le bouton rapport basique (gratuit)
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📋 Aperçu du rapport (gratuit)'; }
+      // Afficher le bouton Premium + hint
+      const pBtn = document.getElementById('btn-premium');
+      const pHint = document.getElementById('conf-premium-hint');
+      if (pBtn) pBtn.style.display = 'inline-flex';
+      if (pHint) pHint.style.display = 'block';
+      // Rendre les cartes Avatar Métiers
+      renderMetiersSection(data.top_metiers || []);
+      // Charger les offres France Travail
+      fetchAllJobOffers(data.top_metiers || []);
+      showToast('✅','Votre rapport est prêt !','success',5000);
     })
     .catch(e => {
       console.warn('Report gen error:', e);
       window._reportData = buildFallbackReport();
-      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📄 Télécharger mon rapport'; }
       if (loadDiv) loadDiv.style.display = 'none';
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📋 Aperçu du rapport'; }
+      renderMetiersSection((window._reportData.top_metiers) || []);
       showToast('📄','Rapport généré !','success',4000);
     });
 }
@@ -3137,9 +3426,9 @@ Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant o
   "message_fin": "Message d'encouragement personnalisé de 3 phrases. Reprend leur histoire spécifique, nomme quelque chose qu'ils ont dit, donne une vraie chaleur humaine."
 }`;
 
-  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const resp = await fetch(GROQ_PROXY_URL, {
     method:'POST',
-    headers:{'Authorization':`Bearer ${GROQ_API_KEY}`,'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       model:'llama-3.3-70b-versatile',
       messages:[{role:'user',content:prompt}],
@@ -3553,6 +3842,660 @@ h2{font-size:30px;font-weight:900;color:#0a0a1a;letter-spacing:-1px;margin-botto
   frame.srcdoc = html;
   showToast('📄','Rapport prêt ! Cliquez "Enregistrer en PDF" pour le sauvegarder.','success',6000);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHANTIER 3A — MODE "DOUTE"
+   Permet à l'utilisateur d'exprimer une peur ou une incertitude à tout
+   moment pendant la conversation, sans perturber le compteur userCount.
+   Limite : 3 doutes par session (sessionStorage). Anti-XSS.
+══════════════════════════════════════════════════════════════════════════ */
+
+const DOUBT_MAX = 3;
+const DOUBT_PROMPT = `Tu es CYNTH.IA, conseillère d'orientation professionnelle.
+L'utilisateur traverse un moment de doute ou d'anxiété face à sa reconversion.
+Il vient d'exprimer la pensée suivante :
+
+"{DOUTE}"
+
+━━━ TON RÔLE ━━━
+Répondre avec EMPATHIE PROFONDE d'abord (valider son ressenti), puis apporter
+des FAITS CONCRETS et RASSURANTS, et enfin proposer 1 à 2 ACTIONS CONCRÈTES.
+
+━━━ DÉTECTE LE TYPE DE DOUTE ━━━
+● DOUTE FINANCIER ("je vais perdre de l'argent", "les formations coûtent cher")
+  → Cite : CPF (jusqu'à 3 000€), Transitions Pro (jusqu'à 24 mois financés),
+    AIF (aide individuelle France Travail), salaires de reconversion réels.
+● DOUTE D'ÂGE ("je suis trop vieux/vieille", "à mon âge c'est trop tard")
+  → Rappelle : 47% des reconversions réussies concernent les 35-55 ans (Apec).
+    L'expérience est un atout réel sur le marché. Cite 1-2 exemples concrets.
+● DOUTE DE CAPACITÉ ("je n'y arriverai pas", "je ne suis pas assez")
+  → Valide : le syndrome de l'imposteur touche 70% des reconvertis. Rappelle
+    que les compétences s'acquièrent, que l'élan compte plus que les diplômes.
+● DOUTE FAMILIAL / ENTOURAGE ("ma famille ne croit pas en moi")
+  → Empathie forte : c'est normal et douloureux. Propose : 1) en parler
+    directement, 2) montrer des données concrètes sur la reconversion réussie,
+    3) avancer à petit pas pour montrer l'exemple.
+● DOUTE GÉNÉRIQUE (non catégorisé)
+  → Empathie, puis 3 faits positifs sur la reconversion professionnelle en France.
+
+━━━ FORMAT DE RÉPONSE ━━━
+1. Une phrase d'empathie (reconnaît le ressenti, sans minimiser).
+2. 2-3 faits concrets ou chiffres pertinents (crédibles, sourcés).
+3. 1-2 actions concrètes à faire MAINTENANT ou cette semaine.
+
+Longueur : 6 à 10 phrases maximum. Ton : chaleureux, humain, expert.
+Tu parles TOUJOURS en "vous". Jamais condescendant.`;
+
+/**
+ * Retourne le nombre de doutes envoyés dans cette session.
+ */
+function getDoubtCount() {
+  return parseInt(sessionStorage.getItem('cynthia_doubt_count') || '0', 10);
+}
+
+/**
+ * Ouvre le modal de saisie du doute.
+ * Vérifie la limite DOUBT_MAX avant d'ouvrir.
+ */
+function openDoubtModal() {
+  const count = getDoubtCount();
+  if (count >= DOUBT_MAX) {
+    showToast('💬', 'Vous avez utilisé vos 3 questions de doute. Continuons ensemble !', 'info', 4000);
+    return;
+  }
+  const remaining = DOUBT_MAX - count;
+  const label = document.getElementById('doute-counter-label');
+  if (label) label.textContent = `${remaining} question${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`;
+  const ta = document.getElementById('doute-input');
+  if (ta) { ta.value = ''; ta.focus(); }
+  document.getElementById('doute-modal-bg').classList.add('show');
+}
+
+/**
+ * Ferme le modal du doute.
+ */
+function closeDoubtModal() {
+  document.getElementById('doute-modal-bg').classList.remove('show');
+}
+
+/**
+ * Sanitise le texte utilisateur pour prévenir les injections XSS.
+ * @param {string} str
+ * @returns {string}
+ */
+function _sanitize(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/**
+ * Lit le texte du textarea doute, vérifie les guards, appelle Groq.
+ */
+async function submitDoubt() {
+  const ta = document.getElementById('doute-input');
+  const sendBtn = document.getElementById('doute-send-btn');
+  if (!ta) return;
+  const raw = ta.value.trim();
+  if (!raw || raw.length < 5) {
+    showToast('✏️', 'Exprimez votre doute en quelques mots.', 'info', 3000);
+    return;
+  }
+  if (getDoubtCount() >= DOUBT_MAX) {
+    closeDoubtModal();
+    showToast('💬', 'Limite de 3 doutes atteinte pour cette session.', 'info', 4000);
+    return;
+  }
+  // Désactiver le bouton le temps de la requête
+  if (sendBtn) sendBtn.disabled = true;
+  closeDoubtModal();
+  await handleDoubt(raw);
+  if (sendBtn) sendBtn.disabled = false;
+}
+
+/**
+ * Appelle Groq avec le prompt Mode Doute, insère la réponse dans le chat
+ * SANS incrémenter chatHistory côté utilisateur (donc sans toucher userCount).
+ * @param {string} userDoubt — texte brut du doute utilisateur
+ */
+async function handleDoubt(userDoubt) {
+  // Incrémenter le compteur de doutes (sessionStorage)
+  const newCount = getDoubtCount() + 1;
+  sessionStorage.setItem('cynthia_doubt_count', String(newCount));
+
+  // Mettre à jour le label du bouton
+  const remaining = DOUBT_MAX - newCount;
+  const btnD = document.getElementById('btn-doute');
+  if (btnD) {
+    if (remaining <= 0) {
+      btnD.disabled = true;
+      btnD.title = 'Limite de doutes atteinte pour cette session.';
+    }
+  }
+
+  // Afficher le message de l'utilisateur dans le chat (en tant qu'aside visuel)
+  addChatBubble('user', '💭 ' + userDoubt);
+
+  // Afficher l'indicateur de saisie
+  showChatTyping(true);
+
+  let reply = '';
+  const prompt = DOUBT_PROMPT.replace('{DOUTE}', userDoubt.replace(/"/g, '\\"'));
+
+  try {
+    if (GROQ_PROXY_URL && !GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+      try {
+        const resp = await fetch(GROQ_PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 450,
+            temperature: 0.65,
+            top_p: 0.9
+          })
+        });
+        clearTimeout(timeout);
+        if (!resp.ok) throw new Error('groq-' + resp.status);
+        const data = await resp.json();
+        reply = data.choices[0].message.content.trim();
+      } catch (fetchErr) {
+        clearTimeout(timeout);
+        throw fetchErr;
+      }
+    } else {
+      // Fallback si proxy non configuré
+      await new Promise(r => setTimeout(r, 1200));
+      reply = _getDoubtFallback(userDoubt);
+    }
+  } catch (e) {
+    console.warn('Doubt API error:', e.message || e);
+    reply = _getDoubtFallback(userDoubt);
+  }
+
+  // Délai naturel minimum
+  await new Promise(r => setTimeout(r, 400));
+  showChatTyping(false);
+
+  // Insérer la réponse en tant que message assistant SANS toucher chatHistory côté user
+  // On l'ajoute à chatHistory pour contexte futur mais sans que ça compte dans userMsgCount
+  addChatBubble('ai', reply);
+  // Note : on n'ajoute PAS ce message à chatHistory pour ne pas perturber le compteur.
+  // Le doute est une sidebar contextuelle, pas un échange du flow principal.
+}
+
+/**
+ * Réponse de secours si l'API est indisponible.
+ * @param {string} doubt
+ * @returns {string}
+ */
+function _getDoubtFallback(doubt) {
+  const d = doubt.toLowerCase();
+  if (/vieux|âge|tard|48|50|55|45/.test(d)) {
+    return "Ce que vous ressentez est tout à fait normal — et très courant. Sachez que 47% des reconversions réussies concernent des personnes de 35 à 55 ans (données Apec 2023). L'expérience que vous avez accumulée est un atout que les jeunes diplômés n'ont pas : vous savez ce qui compte vraiment dans un environnement professionnel. Premier pas concret : cherchez 3 témoignages de personnes qui ont réussi une reconversion après 45 ans — ils existent, et ils vous ressemblent.";
+  }
+  if (/argent|salaire|financ|coût|cher|payer/.test(d)) {
+    return "La peur financière est légitime — et c'est souvent ce qui bloque le plus. Bonne nouvelle : des dispositifs existent pour financer votre transition. Le CPF (Compte Personnel de Formation) peut couvrir jusqu'à 3 000€ de formation. Transitions Pro peut financer jusqu'à 24 mois de reconversion avec maintien partiel du salaire. France Travail propose des aides individuelles (AIF). Premier pas : connectez-vous sur moncompteformation.gouv.fr pour voir votre solde CPF actuel.";
+  }
+  if (/famille|mari|femme|enfants|entourage|conjoint|croire/.test(d)) {
+    return "C'est douloureux quand ceux qu'on aime ne voient pas encore ce qu'on voit en soi. Souvent, leur inquiétude vient de l'amour — ils ont peur pour vous, pas contre vous. Ce qui peut changer les choses : non pas les convaincre avec des mots, mais avancer à petits pas et leur montrer des résultats concrets. Premier pas concret : faites un test gratuit (type MBTI ou test de forces) et partagez les résultats avec eux. Ça donne une base objective à la conversation.";
+  }
+  return "Ce doute que vous ressentez est normal — il touche 9 personnes sur 10 en début de reconversion. Ce n'est pas un signal d'alarme, c'est un signal de sérieux. Vous prenez ça au sérieux parce que ça compte pour vous. Premier pas : notez noir sur blanc ce qui vous fait peur. Une peur qu'on formule précisément perd la moitié de sa puissance.";
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHANTIER 3B — AVATARS MÉTIERS
+   Après la synthèse, affiche des cartes cliquables pour dialoguer avec
+   un professionnel IA qui incarne chaque métier recommandé.
+   Historique par métier_id stocké en localStorage.
+══════════════════════════════════════════════════════════════════════════ */
+
+// État courant de l'avatar en conversation
+let _avatarMetier = null;       // objet métier courant
+let _avatarHistory = [];        // historique de la conversation avatar
+let _avatarWaiting = false;     // verrou anti-doublon
+
+/**
+ * Construit le prompt système pour l'avatar d'un métier.
+ * @param {object} metier — objet top_metiers du rapport
+ * @returns {string}
+ */
+function _buildAvatarPrompt(metier) {
+  const titre = metier.titre || 'professionnel';
+  const secteur = metier.secteur || 'ce secteur';
+  return `Tu es ${titre}, un professionnel expérimenté dans le domaine de ${secteur}.
+Tu t'appelles Alex (prénom neutre) et tu as 12 ans d'expérience dans ce métier.
+Tu as fait une reconversion toi-même il y a quelques années, donc tu comprends les doutes.
+
+TON RÔLE : répondre aux questions de la personne sur ton métier avec RÉALISME et AUTHENTICITÉ.
+Tu ne vends pas du rêve. Tu donnes une vision honnête et humaine du quotidien.
+
+RÈGLES ABSOLUES :
+⛔ Tu parles à la 1ère personne ("dans mon travail, je...", "ce que j'aime le plus c'est...")
+⛔ Tu réponds toujours en "vous" à la personne qui te parle.
+⛔ Maximum 4-5 phrases par réponse. Sois précis, concret.
+⛔ Si tu ne sais pas quelque chose, dis-le honnêtement.
+⛔ Mentionne les vraies difficultés du métier (pas seulement les avantages).
+
+TU PEUX RÉPONDRE À :
+- Le quotidien : "C'est quoi une journée type ?"
+- Les défis : "Qu'est-ce qui est difficile dans votre métier ?"
+- Les compétences : "Qu'est-ce qu'il faut vraiment savoir ?"
+- La reconversion : "Comment vous y êtes-vous mis(e) ?"
+- Le salaire : "Est-ce qu'on gagne bien sa vie ?"
+- Les perspectives : "Est-ce qu'il y a de l'avenir dans ce domaine ?"
+- Les formations : "Par où commencer si on veut se former ?"
+
+Si tu as du contexte sur l'utilisateur, adapte tes réponses à SA situation spécifique.
+Contexte utilisateur : ${chatProfile.prenom ? 'Prénom : ' + chatProfile.prenom + '. ' : ''}${
+  window._reportData ? 'Profil : ' + (window._reportData.profil_resume || '') : ''
+}`;
+}
+
+/**
+ * Rend la section Avatars Métiers sur la page de confirmation.
+ * @param {Array} metiers — tableau top_metiers du rapport
+ */
+function renderMetiersSection(metiers) {
+  if (!metiers || metiers.length === 0) return;
+  const section = document.getElementById('conf-metiers-section');
+  const grid = document.getElementById('conf-metiers-grid');
+  if (!section || !grid) return;
+  grid.innerHTML = '';
+  metiers.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'conf-metier-card';
+    // Sanitisation
+    const titre = _sanitize(m.titre || 'Métier');
+    const secteur = _sanitize(m.secteur || '');
+    const score = m.score ? m.score + '% de compatibilité' : '';
+    card.innerHTML = `
+      <div class="conf-metier-card-title">● ${titre}</div>
+      ${secteur ? `<div class="conf-metier-card-sect">${secteur}</div>` : ''}
+      ${score ? `<div class="conf-metier-card-score">✦ ${score}</div>` : ''}
+      <div class="conf-metier-card-cta">💬 Parler à un professionnel →</div>
+    `;
+    card.addEventListener('click', () => openAvatarModal(m));
+    grid.appendChild(card);
+  });
+  section.style.display = 'block';
+}
+
+/**
+ * Ouvre le modal Avatar pour un métier donné.
+ * Recharge l'historique depuis localStorage si disponible.
+ * @param {object} metier
+ */
+function openAvatarModal(metier) {
+  _avatarMetier = metier;
+  _avatarWaiting = false;
+
+  // Charger l'historique depuis localStorage
+  const storageKey = 'cynthia_avatar_' + (metier.id || metier.titre || 'default').replace(/\s+/g,'_');
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch {}
+  _avatarHistory = Array.isArray(saved) ? saved : [];
+
+  // Mise à jour du header du modal
+  document.getElementById('avatar-modal-title').textContent = metier.titre || 'Professionnel IA';
+  document.getElementById('avatar-modal-sub').textContent = 'Alex · ' + (metier.secteur || '') + ' · 12 ans d\'exp.';
+
+  // Vider + rempir le chat
+  const msgs = document.getElementById('avatar-msgs');
+  if (msgs) {
+    msgs.innerHTML = '';
+    if (_avatarHistory.length === 0) {
+      // Message d'introduction de l'avatar
+      const intro = `Bonjour ! Je suis Alex, ${metier.titre || 'professionnel'} depuis 12 ans. J'ai moi-même fait une reconversion, donc je comprends vos doutes. Posez-moi toutes vos questions — sur le quotidien, les formations, le salaire, les difficultés… Je vous réponds honnêtement.`;
+      _addAvatarBubble('ai', intro);
+      _avatarHistory.push({ role: 'assistant', content: intro });
+    } else {
+      _avatarHistory.forEach(msg => _addAvatarBubble(msg.role === 'user' ? 'user' : 'ai', msg.content));
+    }
+  }
+
+  // Focus input
+  const input = document.getElementById('avatar-input');
+  if (input) { input.value = ''; setTimeout(() => input.focus(), 100); }
+
+  // Ouvrir le modal
+  document.getElementById('avatar-modal-bg').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Ferme le modal Avatar et sauvegarde l'historique.
+ */
+function closeAvatarModal() {
+  if (_avatarMetier) {
+    const storageKey = 'cynthia_avatar_' + (_avatarMetier.id || _avatarMetier.titre || 'default').replace(/\s+/g,'_');
+    try { localStorage.setItem(storageKey, JSON.stringify(_avatarHistory.slice(-40))); } catch {}
+    // slice(-40) : garde max 40 messages pour éviter de saturer localStorage
+  }
+  document.getElementById('avatar-modal-bg').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+/**
+ * Ajoute une bulle dans le chat avatar.
+ * @param {'user'|'ai'} role
+ * @param {string} text
+ */
+function _addAvatarBubble(role, text) {
+  const msgs = document.getElementById('avatar-msgs');
+  if (!msgs) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'cb ' + (role === 'user' ? 'user' : 'ai');
+  const safe = _sanitize(text).replace(/\n/g, '<br>');
+  if (role === 'ai') {
+    wrap.innerHTML = `<div class="cb-av">🧑‍💼</div><div style="flex:1"><div class="cb-text">${safe}</div></div>`;
+  } else {
+    wrap.innerHTML = `<div><div class="cb-text">${safe}</div></div>`;
+  }
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+/**
+ * Envoie un message à l'avatar.
+ */
+async function sendAvatarMsg() {
+  if (_avatarWaiting) return;
+  const input = document.getElementById('avatar-input');
+  const sendBtn = document.getElementById('avatar-send-btn');
+  if (!input || !_avatarMetier) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Sanitiser l'input utilisateur
+  const safeText = text.substring(0, 400); // limite de longueur
+  input.value = '';
+  _avatarWaiting = true;
+  if (sendBtn) sendBtn.disabled = true;
+
+  _addAvatarBubble('user', safeText);
+  _avatarHistory.push({ role: 'user', content: safeText });
+
+  // Indicateur de saisie
+  const typing = document.getElementById('avatar-typing');
+  if (typing) typing.classList.add('show');
+
+  let reply = '';
+  try {
+    if (GROQ_PROXY_URL && !GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      try {
+        const resp = await fetch(GROQ_PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: _buildAvatarPrompt(_avatarMetier) },
+              ..._avatarHistory
+            ],
+            max_tokens: 300,
+            temperature: 0.7,
+            top_p: 0.9
+          })
+        });
+        clearTimeout(timeout);
+        if (!resp.ok) throw new Error('groq-' + resp.status);
+        const data = await resp.json();
+        reply = data.choices[0].message.content.trim();
+      } catch (fetchErr) {
+        clearTimeout(timeout);
+        throw fetchErr;
+      }
+    } else {
+      await new Promise(r => setTimeout(r, 1000));
+      reply = "Mon réseau est perturbé en ce moment. Réessayez dans quelques secondes ou posez-moi une autre question — je suis là !";
+    }
+  } catch (e) {
+    console.warn('Avatar API error:', e.message || e);
+    reply = "Je suis désolé, mon réseau est perturbé. Réessayez dans quelques secondes ou posez-moi une autre question.";
+  }
+
+  await new Promise(r => setTimeout(r, 300));
+  if (typing) typing.classList.remove('show');
+
+  _addAvatarBubble('ai', reply);
+  _avatarHistory.push({ role: 'assistant', content: reply });
+
+  // Sauvegarde immédiate (évite la perte si l'utilisateur ferme sans closeAvatarModal)
+  if (_avatarMetier) {
+    const storageKey = 'cynthia_avatar_' + (_avatarMetier.id || _avatarMetier.titre || 'default').replace(/\s+/g,'_');
+    try { localStorage.setItem(storageKey, JSON.stringify(_avatarHistory.slice(-40))); } catch {}
+  }
+
+  _avatarWaiting = false;
+  if (sendBtn) sendBtn.disabled = false;
+  if (input) input.focus();
+}
+
+// Fermer le modal avatar avec Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('avatar-modal-bg').classList.contains('show')) closeAvatarModal();
+    if (document.getElementById('doute-modal-bg').classList.contains('show')) closeDoubtModal();
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHANTIER 3C — MATCHING OFFRES FRANCE TRAVAIL
+   Appelle le Worker Cloudflare (route /ft-search) pour récupérer les offres
+   d'emploi via l'API France Travail. Séquentiel pour éviter le rate-limiting.
+   Affichage robuste : 0 offres, erreur réseau, timeout → dégradation gracieuse.
+
+   PRÉREQUIS : ajouter au Worker les variables d'env :
+     FT_CLIENT_ID     = votre Client ID France Travail
+     FT_CLIENT_SECRET = votre Client Secret France Travail
+   (Inscription gratuite : https://francetravail.io/data/api)
+══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Récupère les offres pour un intitulé de métier via le Worker.
+ * @param {string} intitule — titre du métier (ex: "Data Analyst")
+ * @returns {Promise<Array>} — tableau d'offres (peut être vide)
+ */
+async function fetchJobOffers(intitule) {
+  if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) return [];
+  // On utilise le même Worker mais avec une route différente (/ft-search)
+  const ftUrl = GROQ_PROXY_URL.replace(/\/?$/, '') + '/ft-search';
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+  try {
+    const resp = await fetch(ftUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({ motsCles: intitule, range: '0-4' })
+    });
+    clearTimeout(timeout);
+    if (!resp.ok) return []; // France Travail indisponible → dégradation gracieuse
+    const data = await resp.json();
+    return Array.isArray(data.resultats) ? data.resultats : [];
+  } catch (e) {
+    clearTimeout(timeout);
+    console.warn('France Travail fetch error:', e.message || e);
+    return [];
+  }
+}
+
+/**
+ * Lance les appels France Travail en SÉQUENCE (pas en parallèle)
+ * pour max 3 métiers, et affiche les résultats.
+ * @param {Array} metiers — tableau top_metiers
+ */
+async function fetchAllJobOffers(metiers) {
+  if (!metiers || metiers.length === 0) return;
+  const section = document.getElementById('conf-offres-section');
+  const list = document.getElementById('conf-offres-list');
+  if (!section || !list) return;
+  section.style.display = 'block';
+  list.innerHTML = '<p style="font-size:13px;color:rgba(255,255,255,.4);">🔍 Recherche des offres en cours…</p>';
+
+  const top3 = metiers.slice(0, 3); // max 3 pour limiter les appels API
+  let hasAnyOffer = false;
+  let html = '';
+
+  for (const metier of top3) {
+    // Délai entre chaque appel (respecte le rate-limiting France Travail)
+    await new Promise(r => setTimeout(r, 600));
+    const offres = await fetchJobOffers(metier.titre || '');
+    if (offres.length > 0) {
+      hasAnyOffer = true;
+      html += `<div class="offre-metier-group">`;
+      html += `<div class="offre-metier-label">${_sanitize(metier.titre || '')}</div>`;
+      offres.slice(0, 3).forEach(o => { // max 3 offres par métier
+        const titre = _sanitize(o.intitule || 'Offre d\'emploi');
+        const lieu = _sanitize(o.lieuTravail?.libelle || '');
+        const contrat = _sanitize(o.typeContratLibelle || '');
+        const entreprise = _sanitize(o.entreprise?.nom || '');
+        const url = o.origineOffre?.urlOrigine || ('https://www.francetravail.fr/offres/recherche?motsCles=' + encodeURIComponent(metier.titre || ''));
+        html += `<div class="offre-card">
+          <div class="offre-card-info">
+            <div class="offre-card-titre">${titre}</div>
+            <div class="offre-card-meta">${[entreprise, lieu, contrat].filter(Boolean).join(' · ')}</div>
+          </div>
+          <a href="${url}" target="_blank" rel="noopener noreferrer" class="offre-card-link">Voir →</a>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+  }
+
+  if (!hasAnyOffer) {
+    list.innerHTML = `<p style="font-size:13px;color:rgba(255,255,255,.4);padding:8px 0;">
+      Aucune offre disponible actuellement pour ces métiers dans votre région.
+      <a href="https://www.francetravail.fr" target="_blank" rel="noopener noreferrer"
+        style="color:#C084FC;text-decoration:underline;">Consultez France Travail</a> régulièrement.
+    </p>`;
+  } else {
+    list.innerHTML = html;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHANTIER 4 — MONÉTISATION FREEMIUM (Stripe Checkout via Worker)
+
+   Architecture :
+   - Worker route POST /create-checkout → crée la session Stripe → retourne l'URL
+   - Worker route GET /verify-session?id=xxx → vérifie le paiement
+   - Frontend redirige vers Stripe, puis revient avec ?payment=success&session_id=xxx
+   - Vérification → déverrouillage du PDF complet
+   - localStorage : mémorise le paiement pour la session
+
+   PRÉREQUIS Worker :
+     STRIPE_SECRET_KEY = sk_live_xxx (wrangler secret put STRIPE_SECRET_KEY)
+     STRIPE_PRICE_ID   = price_xxx (créé dans le dashboard Stripe)
+══════════════════════════════════════════════════════════════════════════ */
+
+const STRIPE_PRODUCT_PRICE = '29.90';
+
+/**
+ * Vérifie si l'utilisateur a déjà payé (localStorage).
+ * @returns {boolean}
+ */
+function hasPaidReport() {
+  try {
+    const paid = localStorage.getItem('cynthia_paid_session');
+    if (!paid) return false;
+    const { ts } = JSON.parse(paid);
+    // Valide 24h (pour éviter le partage de sessions entre utilisateurs)
+    return Date.now() - ts < 86400000;
+  } catch { return false; }
+}
+
+/**
+ * Lance le checkout Stripe via le Worker.
+ * Si déjà payé → télécharge directement le rapport.
+ */
+async function startStripeCheckout() {
+  // Si déjà payé → télécharger directement
+  if (hasPaidReport()) {
+    downloadRapport();
+    return;
+  }
+
+  const btn = document.getElementById('btn-premium');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Redirection vers le paiement…'; }
+
+  try {
+    if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) {
+      throw new Error('Proxy non configuré');
+    }
+    const checkoutUrl = GROQ_PROXY_URL.replace(/\/?$/, '') + '/create-checkout';
+    const successUrl = window.location.origin + window.location.pathname + '?payment=success&session_id={CHECKOUT_SESSION_ID}';
+    const cancelUrl  = window.location.href;
+
+    const resp = await fetch(checkoutUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ success_url: successUrl, cancel_url: cancelUrl })
+    });
+    if (!resp.ok) throw new Error('checkout-' + resp.status);
+    const data = await resp.json();
+    if (!data.url) throw new Error('no-checkout-url');
+    // Redirection vers Stripe Checkout (hors domaine, sécurisé)
+    window.location.href = data.url;
+  } catch (e) {
+    console.warn('Stripe checkout error:', e.message);
+    if (btn) { btn.disabled = false; btn.textContent = `📄 Télécharger le rapport complet — ${STRIPE_PRODUCT_PRICE}€`; }
+    showToast('❌', 'Erreur lors du paiement. Réessayez ou contactez support@cynth-ia.fr', 'error', 6000);
+  }
+}
+
+/**
+ * Vérifie le retour Stripe (appelé au chargement de la page si ?payment=success).
+ * Valide la session côté Worker (secret Stripe jamais exposé côté client).
+ */
+async function checkStripeReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('payment') !== 'success') return;
+  const sessionId = params.get('session_id');
+  if (!sessionId) return;
+
+  // Nettoyer l'URL immédiatement (évite re-vérification au rechargement)
+  history.replaceState(null, '', window.location.pathname + '#confirm');
+
+  // Naviguer vers la page confirm
+  gp('confirm');
+
+  showToast('✅', 'Paiement reçu ! Vérification en cours…', 'success', 4000);
+
+  try {
+    if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) {
+      throw new Error('Proxy non configuré');
+    }
+    const verifyUrl = GROQ_PROXY_URL.replace(/\/?$/, '') + '/verify-session?id=' + encodeURIComponent(sessionId);
+    const resp = await fetch(verifyUrl);
+    if (!resp.ok) throw new Error('verify-' + resp.status);
+    const data = await resp.json();
+    if (data.paid === true) {
+      // Sauvegarder le paiement en localStorage (24h)
+      localStorage.setItem('cynthia_paid_session', JSON.stringify({ ts: Date.now(), sessionId }));
+      // Mettre à jour le bouton
+      const pBtn = document.getElementById('btn-premium');
+      if (pBtn) { pBtn.textContent = '📄 Télécharger mon rapport complet'; pBtn.onclick = downloadRapport; }
+      showToast('🎉', 'Paiement validé ! Votre rapport complet est prêt.', 'success', 6000);
+    } else {
+      throw new Error('payment-not-completed');
+    }
+  } catch (e) {
+    console.warn('Stripe verify error:', e.message);
+    showToast('⚠️', 'Impossible de vérifier le paiement. Contactez support@cynth-ia.fr', 'error', 8000);
+  }
+}
+
+// Vérifier le retour Stripe dès le chargement de la page
+document.addEventListener('DOMContentLoaded', checkStripeReturn);
 </script>
 
 <!-- RAPPORT OVERLAY — jamais bloqué par les popup blockers -->
