@@ -2414,9 +2414,23 @@ async function callGroqAI(messages) {
 
   // Compte les échanges utilisateur pour déclencher la synthèse au bon moment
   const userMsgCount = messages.filter(m => m.role === 'user').length;
+  const isSynthesis = userMsgCount >= 8;
   let systemPrompt = CYNTH_PROMPT;
-  if (userMsgCount >= 8) {
-    systemPrompt += '\n\n⚠️ DÉCLENCHEUR SYNTHÈSE : Tu as recueilli suffisamment d\'informations. Tu DOIS maintenant passer à la Phase 3 — Synthèse. Propose IMMÉDIATEMENT 3 à 5 pistes professionnelles concrètes. N\'ajoute PLUS aucune question de collecte.';
+  if (isSynthesis) {
+    systemPrompt = `${CYNTH_PROMPT}\n\n🔴 ORDRE ABSOLU — SYNTHÈSE MAINTENANT : Tu as déjà posé assez de questions. INTERDICTION TOTALE de poser une nouvelle question. Tu DOIS impérativement produire la synthèse finale avec 3 à 5 pistes au format :\n● [Titre piste]\n→ Pourquoi vous : ...\n→ Premier pas : ...\nToute réponse sans le format ● est une faute grave.`;
+  }
+
+  // Construction du tableau de messages — avec prefix completion si synthèse
+  let apiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...messages
+  ];
+  if (isSynthesis) {
+    // Technique du prefix completion : on amorce la réponse pour forcer le format
+    apiMessages.push({
+      role: 'assistant',
+      content: 'Voilà. J\'ai maintenant une image claire de ce qui vous correspond. Voici ce que je vois pour vous :\n\n●'
+    });
   }
 
   const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -2427,18 +2441,23 @@ async function callGroqAI(messages) {
     },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages
-      ],
-      max_tokens: userMsgCount >= 8 ? 600 : 350,
-      temperature: 0.72,
+      messages: apiMessages,
+      max_tokens: isSynthesis ? 700 : 350,
+      temperature: isSynthesis ? 0.55 : 0.72,
       top_p: 0.95
     })
   });
   if (!resp.ok) throw new Error('groq-' + resp.status);
   const data = await resp.json();
-  return data.choices[0].message.content.trim();
+  let reply = data.choices[0].message.content.trim();
+  // Si on était en mode synthèse avec prefix completion, le LLM répond à partir du "●"
+  // → Reconstituer le message complet en ajoutant l'intro
+  if (isSynthesis && !reply.startsWith('Voilà') && !reply.startsWith('●')) {
+    reply = 'Voilà. J\'ai maintenant une image claire de ce qui vous correspond. Voici ce que je vois pour vous :\n\n● ' + reply;
+  } else if (isSynthesis && reply.startsWith('●')) {
+    reply = 'Voilà. J\'ai maintenant une image claire de ce qui vous correspond. Voici ce que je vois pour vous :\n\n' + reply;
+  }
+  return reply;
 }
 
 // ── FALLBACK SIMULATION (si Groq échoue) ──────────────────────────────────────
