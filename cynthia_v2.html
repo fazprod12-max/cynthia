@@ -2572,18 +2572,18 @@ Si l'utilisateur exprime un doute explicite ou implicite ("j'ai peur...", "je ne
 ## STRUCTURE DE CHAQUE RÉPONSE
 
 1. 1 à 2 phrases d'empathie et/ou de reformulation : "Je vous entends...", "Ce que vous décrivez est..."
-2. 1 question ouverte (parfois 2 si le sujet est riche).
+2. 1 question ouverte — et une seule, toujours. Jamais deux.
 3. Ton fluide et naturel — comme une conversation humaine, pas un formulaire.
 
-## EXEMPLE DE TON IDÉAL
+## EXEMPLE DE TON IDÉAL (3 phrases maximum — pas une de plus)
 
-"Je vous entends. C'est un moment charnière, et il est normal de ressentir un mélange d'excitation et d'appréhension. Ce que vous décrivez — cette envie de combiner votre expérience avec un besoin de sens — est une quête profonde. Si on prend un instant pour explorer ce qui, dans vos expériences passées, vous a vraiment donné de l'énergie, qu'est-ce qui vous vient en premier ?"
+"Je vous entends. Ce que vous décrivez — cette envie d'aligner votre travail avec ce qui vous donne de l'énergie — c'est exactement ce que nous allons explorer. Dans vos expériences passées, qu'est-ce qui vous a vraiment donné envie de vous lever le matin ?"
 
 ## RÈGLES ABSOLUES
 
 ⛔ R1 — UNE SEULE QUESTION PAR MESSAGE. ABSOLUMENT. Avant d'envoyer ta réponse, relis-la : si elle contient "et" entre deux questions, supprime la deuxième. ❌ Interdit : "Qu'est-ce qui vous attire, et qu'est-ce qui vous ferait penser que c'est la bonne voie ?" ✅ Correct : "Qu'est-ce qui vous attire dans ce domaine ?"
-⛔ R2 — LONGUEUR MAXIMALE PHASES 1-2 : 2 phrases de reformulation + 1 question. C'est tout. Pas de développement, pas de justification, pas d'explication. La synthèse peut être plus longue.
-⛔ R3 — PRÉNOM : maximum 1 fois toutes les 4-5 réponses.
+⛔ R2 — LONGUEUR MAXIMALE PHASES 1-2 : 2 phrases de reformulation + 1 question. C'est tout. Pas de développement, pas de justification, pas d'explication. Compte tes phrases avant d'envoyer : si tu en as plus de 3, supprime les suivantes. La synthèse peut être plus longue.
+⛔ R3 — PRÉNOM : utilise-le au maximum 1 fois, puis n'y reviens qu'après 4 réponses sans l'avoir cité. ❌ Interdit : commencer chaque réponse par "Je vous entends, [Prénom]." ✅ Correct : "Je vous entends." (sans prénom). Si le système t'indique que le prénom est en cooldown, NE L'UTILISE PAS.
 ⛔ R4 — ZÉRO JARGON dans les phases 1 et 2 : pas de "profil", "RIASEC", "bilan", "plan d'action".
 ⛔ R5 — Si la personne répond vaguement ou dit "je sais pas" : reformule avec empathie, repose la question autrement.
 ⛔ R6 — Ne jamais sortir du rôle (tu n'es pas un chatbot généraliste, tu es une coach).
@@ -2705,8 +2705,10 @@ const CYNTH_MAX_HISTORY = 14; // ~7 échanges complets = contexte optimal sans s
 
 let chatHistory = [];
 let chatWaiting = false;
-let chatProfile = { prenom: '', age: null, lastEmotion: 'neutre', _emotionTurns: 0 };
+let chatProfile = { prenom: '', age: null, lastEmotion: 'neutre', _emotionTurns: 0, _prenomCooldown: 0 };
 let usedQs = new Set();
+// Flag : synthèse déjà envoyée — évite la boucle infinie post-synthèse
+let synthesisFired = false;
 
 // ── GROQ AI CALL ──────────────────────────────────────────────────────────────
 async function callGroqAI(messages) {
@@ -2724,7 +2726,10 @@ async function callGroqAI(messages) {
   const userMsgCount = trimmed.filter(m => m.role === 'user').length;
   // Synthèse anticipée si on a déjà le prénom ET l'âge dès le 6e message
   const hasKeyProfile = chatProfile.prenom && chatProfile.age !== null;
-  const isSynthesis = (userMsgCount >= 8) || (hasKeyProfile && userMsgCount >= 6);
+  // IMPORTANT : synthesisFired empêche la boucle infinie — une fois la synthèse
+  // envoyée, on ne la redéclenche jamais, même si les conditions restent vraies.
+  const isSynthesis = !synthesisFired && ((userMsgCount >= 8) || (hasKeyProfile && userMsgCount >= 6));
+  if (isSynthesis) synthesisFired = true; // verrouillage immédiat anti-boucle
 
   // ── Résumé du profil pour enrichir le contexte de l'IA ───────────────────────
   let profileContext = '';
@@ -2735,8 +2740,18 @@ async function callGroqAI(messages) {
   // ── Construction du system prompt ────────────────────────────────────────────
   let systemPrompt = CYNTH_PROMPT + profileNote;
 
+  // ── MODE POST-SYNTHÈSE : conversation de suivi (jamais re-synthèse) ──────────
+  if (synthesisFired && !isSynthesis) {
+    systemPrompt += `\n\n✅ SYNTHÈSE DÉJÀ ENVOYÉE — MODE SUIVI ACTIF. Tu es maintenant en conversation de suivi post-synthèse. RÈGLES ABSOLUES :\n1. NE génère PAS de nouvelles pistes avec ● — la synthèse est terminée.\n2. Réponds en 2 à 3 phrases maximum, de façon conversationnelle et chaleureuse.\n3. Si l'utilisateur mentionne une piste qui l'attire : valide-la avec enthousiasme, donne 1 fait concret sur cette voie, et propose 1 micro-action pour CETTE semaine.\n4. Si l'utilisateur exprime un doute ou une peur : accueille l'émotion, rassure avec un fait réel, propose une toute petite action.\n5. Si l'utilisateur demande plus d'info : donne 2-3 éléments concrets, pas une liste générique.\nTon : chaleureux, humain, concret. Jamais de listes à puces. Jamais de réponse > 4 phrases.`;
+  }
+
   if (isSynthesis) {
     systemPrompt += `\n\n🔴 ORDRE ABSOLU — SYNTHÈSE MAINTENANT : Tu as posé suffisamment de questions. INTERDICTION TOTALE d'en poser une nouvelle. Tu DOIS produire la synthèse finale avec 3 à 5 pistes personnalisées. Format OBLIGATOIRE :\n● [Titre du métier / secteur]\n→ Pourquoi vous : [lien direct avec ce que l'utilisateur a dit]\n→ Premier pas : [action ultra-concrète, réalisable cette semaine]\n\nToute réponse sans ce format est une erreur grave. Commence par 1-2 phrases d'empathie qui reformulent son parcours.`;
+  }
+
+  // ── Contrôle prénom (R3) — injection dynamique selon cooldown ────────────────
+  if (chatProfile.prenom && chatProfile._prenomCooldown > 0) {
+    systemPrompt += `\n\n⛔ INTERDIT dans CE message : Ne cite PAS le prénom "${chatProfile.prenom}". Commence ta réponse par "Je vous entends.", "Ce que vous décrivez...", "C'est tout à fait normal." ou similaire — mais jamais par le prénom.`;
   }
 
   // ── Enrichissement émotionnel ────────────────────────────────────────────────
@@ -2751,8 +2766,8 @@ async function callGroqAI(messages) {
     if (isSynthesis) {
       // En mode synthèse : inclure l'empathie DANS l'intro de la synthèse
       systemPrompt += `\n\n⚠️ ÉMOTION IMPORTANTE : L'utilisateur a exprimé de la "${label}". Ta synthèse DOIT commencer par accueillir cette émotion (1 phrase), avant de présenter les pistes.`;
-    } else {
-      // Hors synthèse : Phase 4 complète
+    } else if (!synthesisFired || isSynthesis) {
+      // Hors synthèse (phases 1-2) : Phase 4 complète
       systemPrompt += `\n\n⚠️ ÉMOTION DÉTECTÉE : L'utilisateur exprime de la "${label}". Applique la Phase 4 — Réponse au Doute : (1) accueille l'émotion avec empathie en 1 phrase, (2) normalise-la ("c'est tout à fait humain"), (3) recadre positivement avec un fait concret si possible, (4) propose une micro-action pour avancer malgré tout. Ne saute aucune étape.`;
     }
   }
@@ -2770,14 +2785,19 @@ async function callGroqAI(messages) {
     });
   }
 
+  // max_tokens : limité à 180 hors synthèse → force le respect de R2 côté LLM
+  // post-synthèse : 220 (suivi conversationnel court)
+  // synthèse : 750 (contenu riche nécessaire)
+  const maxTokens = isSynthesis ? 750 : (synthesisFired ? 220 : 180);
+
   const resp = await fetch(GROQ_PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       messages: apiMessages,
-      max_tokens: isSynthesis ? 750 : 400,
-      temperature: isSynthesis ? 0.55 : 0.70,
+      max_tokens: maxTokens,
+      temperature: isSynthesis ? 0.55 : 0.50,  // 0.50 hors-synthèse = meilleur suivi des instructions
       top_p: 0.92
     })
   });
@@ -2915,8 +2935,9 @@ let _fbPostTurn = 0;
 
 async function startChatMode() {
   chatHistory = [];
-  chatProfile = { prenom: '', age: null, lastEmotion: 'neutre', _emotionTurns: 0 };
+  chatProfile = { prenom: '', age: null, lastEmotion: 'neutre', _emotionTurns: 0, _prenomCooldown: 0 };
   usedQs = new Set();
+  synthesisFired = false; // Reset du flag anti-boucle pour chaque nouvelle session
   _fbTurn = 0;
   _synthesisDone = false;
   _fbPostTurn = 0;
@@ -3097,6 +3118,15 @@ async function sendChatMsg() {
   if (chatProfile._emotionTurns >= 2) {
     chatProfile.lastEmotion = 'neutre';
     chatProfile._emotionTurns = 0;
+  }
+
+  // ── Tracking R3 : cooldown du prénom ─────────────────────────────────────────
+  // Si l'AI a utilisé le prénom dans sa réponse → cooldown 4 tours
+  // Sinon → décrémenter le cooldown (jusqu'à 0)
+  if (chatProfile.prenom && reply.includes(chatProfile.prenom)) {
+    chatProfile._prenomCooldown = 4; // bloqué pour les 4 prochaines réponses
+  } else if (chatProfile._prenomCooldown > 0) {
+    chatProfile._prenomCooldown--;
   }
 
   // Délai naturel minimum même si Groq répond vite
@@ -4070,6 +4100,12 @@ async function submitDoubt() {
   if (getDoubtCount() >= DOUBT_MAX) {
     closeDoubtModal();
     showToast('💬', 'Limite de 3 doutes atteinte pour cette session.', 'info', 4000);
+    return;
+  }
+  // ── Sécurité : bloquer les tentatives de jailbreak dans le modal Doute ───────
+  if (detectJailbreak(raw)) {
+    closeDoubtModal();
+    showToast('🔒', 'Je suis CYNTH.IA, votre conseillère en orientation. Exprimez-moi une vraie crainte ou hésitation.', 'info', 5000);
     return;
   }
   // Désactiver le bouton le temps de la requête
