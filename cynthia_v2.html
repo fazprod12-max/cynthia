@@ -2828,7 +2828,35 @@ async function callGroqAI(messages) {
   }
 
   if (isSynthesis) {
-    systemPrompt += `\n\n🔴 PHASE 4 — SYNTHÈSE MAINTENANT. Tu as exploré suffisamment. INTERDICTION TOTALE de poser une nouvelle question avant les pistes. Tu DOIS produire la synthèse avec 3 pistes personnalisées. Format OBLIGATOIRE :\n● [Titre du métier / secteur]\n→ Pourquoi vous : [lien DIRECT avec ce que l'utilisateur a dit dans CETTE conversation — cite ses propres mots]\n→ Premier pas : [action ultra-concrète, réalisable CETTE SEMAINE — pas vague]\n\nCommence par 1-2 phrases d'empathie qui reformulent son parcours réel. Termine par : "Parmi ces pistes, laquelle résonne le plus en vous — même à 20 % ?"`;
+    // Injecter les vrais messages utilisateur comme source de citations
+    const allUserMsgs = trimmed
+      .filter(m => m.role === 'user')
+      .map(m => `- "${m.content.substring(0, 300)}"`)
+      .join('\n');
+
+    systemPrompt += `\n\n🔴 PHASE 4 — SYNTHÈSE MAINTENANT.
+
+⛔ INTERDICTION TOTALE de poser une nouvelle question.
+⛔ INTERDICTION de proposer un métier que tu ne peux pas justifier par une citation ci-dessous.
+
+STRUCTURE OBLIGATOIRE EN 2 ÉTAPES — respecte cet ordre exact :
+
+ÉTAPE 1 — RESTITUTION (OBLIGATOIRE, commence par là) :
+Résume ce que l'utilisateur a dit en 2-3 phrases qui reprennent SES PROPRES MOTS.
+Format : "Vous m'avez confié [X tiré de ses messages]. Vous avez aussi exprimé [Y réel]. Ce que vous cherchez, c'est [Z exprimé par lui]."
+→ N'invente rien. Utilise uniquement ce qui apparaît dans les messages ci-dessous.
+
+ÉTAPE 2 — 3 PISTES MÉTIER (format strict, une par bloc) :
+● [Titre du métier]
+→ Vous avez dit : "[citation EXACTE copiée mot pour mot depuis les messages ci-dessous]" — c'est pourquoi ce rôle vous correspond.
+→ Premier pas concret : [action réalisable CETTE SEMAINE, très précise]
+
+⛔ RÈGLE ABSOLUE COHÉRENCE : si tu ne trouves PAS de citation dans les messages ci-dessous pour justifier un métier, n'inclus pas ce métier. Aucune supposition, aucune invention.
+
+📋 MESSAGES DE L'UTILISATEUR (source unique des citations) :
+${allUserMsgs}
+
+Termine par : "Parmi ces pistes, laquelle résonne le plus en vous — même à 20 % ?"`;
   }
 
   // ── Contrôle prénom (R3) — injection dynamique selon cooldown ────────────────
@@ -2859,13 +2887,8 @@ async function callGroqAI(messages) {
     { role: 'system', content: systemPrompt },
     ...trimmed
   ];
-  // Technique du prefix-completion pour forcer le format de synthèse
-  if (isSynthesis) {
-    apiMessages.push({
-      role: 'assistant',
-      content: 'Voilà. J\'ai maintenant une image claire de ce qui vous correspond. Voici ce que je vois pour vous :\n\n●'
-    });
-  }
+  // Pas de prefix-completion en synthèse : on laisse le modèle générer la restitution en premier
+  // (l'ancien prefix forçait "●" dès le départ, sautant l'étape de restitution obligatoire)
 
   // max_tokens : le tokenizer LLaMA encode le français à ~2.5 chars/token (accents = plusieurs tokens)
   // → 300 tokens coupait à ~750 chars mid-sentence. Correction : 420 pour phases 1-3 et post-synth.
@@ -2906,12 +2929,7 @@ async function callGroqAI(messages) {
   const data = await resp.json();
   let reply = data.choices[0].message.content.trim();
 
-  // Reconstitution du message complet si prefix-completion utilisé
-  if (isSynthesis && !reply.startsWith('Voilà') && !reply.startsWith('●')) {
-    reply = 'Voilà. J\'ai maintenant une image claire de ce qui vous correspond. Voici ce que je vois pour vous :\n\n● ' + reply;
-  } else if (isSynthesis && reply.startsWith('●')) {
-    reply = 'Voilà. J\'ai maintenant une image claire de ce qui vous correspond. Voici ce que je vois pour vous :\n\n' + reply;
-  }
+  // Plus de reconstitution liée au prefix — le modèle génère librement (restitution + pistes)
   return reply;
 }
 
