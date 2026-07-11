@@ -2777,7 +2777,10 @@ async function callGroqAI(messages) {
     (hasDeepProfile && userMsgCount >= 14) ||
     (hasKeyProfile && userMsgCount >= 16)
   );
-  if (isSynthesis) synthesisFired = true; // verrouillage immédiat anti-boucle
+  if (isSynthesis) {
+    synthesisFired = true; // verrouillage immédiat anti-boucle
+    _synthesisDone = true; // Bug #8 fix : synchronise le fallback pour éviter double synthèse
+  }
 
   // ── Mise à jour de la phase courante ─────────────────────────────────────────
   // Règle : les phases 5-6 ne commencent QU'APRÈS que la synthèse ait été envoyée.
