@@ -1,11 +1,12 @@
 /**
- * CYNTH.IA — Worker Proxy Multi-Provider v3.0 (Gratuit / Zéro coût)
+ * CYNTH.IA — Worker Proxy Multi-Provider v3.1
  *
  * Route principale POST / — cascade multi-provider :
- *   1. Groq  (8b phases 1-3, 70b synthèse uniquement)
- *   2. Hugging Face  (Mistral-7B-Instruct via endpoint OpenAI-compatible)
- *   3. OpenRouter  (Gemma-2-9B-IT gratuit)
- *   4. Fallback local (réponses contextuelles codées)
+ *   1. DeepSeek  (deepseek-chat = V3, principal)
+ *   2. Groq      (8b phases 1-3, 70b synthèse — fallback)
+ *   3. Hugging Face  (Mistral-7B-Instruct)
+ *   4. OpenRouter    (Gemma-2-9B-IT gratuit)
+ *   5. Fallback local (réponses contextuelles codées)
  *
  * Autres routes :
  *   POST /ft-search        → proxy France Travail
@@ -13,7 +14,8 @@
  *   GET  /verify-session   → vérifie un paiement Stripe
  *
  * Secrets à configurer (wrangler secret put <NOM>) :
- *   GROQ_API_KEY        — clé API Groq (obligatoire)
+ *   DEEPSEEK_API_KEY    — clé API DeepSeek (platform.deepseek.com)
+ *   GROQ_API_KEY        — clé API Groq (fallback)
  *   HF_API_KEY          — clé API Hugging Face (gratuit sur hf.co/settings/tokens)
  *   OPENROUTER_API_KEY  — clé API OpenRouter (gratuit sur openrouter.ai/keys)
  *   FT_CLIENT_ID        — Client ID France Travail
@@ -30,13 +32,15 @@ const ALLOWED_ORIGINS = [
 ];
 
 /* ── URLs des API partenaires ────────────────────────────────────────────── */
-const GROQ_URL         = 'https://api.groq.com/openai/v1/chat/completions';
-const FT_TOKEN_URL     = 'https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire';
-const FT_SEARCH_URL    = 'https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search';
-const STRIPE_CHECKOUT  = 'https://api.stripe.com/v1/checkout/sessions';
+const DEEPSEEK_URL   = 'https://api.deepseek.com/chat/completions';
+const DEEPSEEK_MODEL = 'deepseek-chat'; // DeepSeek-V3
+const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions';
+const FT_TOKEN_URL   = 'https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire';
+const FT_SEARCH_URL  = 'https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search';
+const STRIPE_CHECKOUT = 'https://api.stripe.com/v1/checkout/sessions';
 
-// Hugging Face — endpoint OpenAI-compatible (plus fiable que l'ancien endpoint text-generation)
-const HF_URL = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions';
+// Hugging Face — endpoint OpenAI-compatible
+const HF_URL   = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions';
 const HF_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3';
 
 // OpenRouter — Gemma-2-9B-IT (gratuit, aucun crédit requis)
@@ -120,21 +124,51 @@ async function handleMultiProvider(request, env, corsHeaders) {
 
   const errors = [];
 
-  // ─── 1. GROQ ───────────────────────────────────────────────────────────
+  // ─── 1. DEEPSEEK (principal) ───────────────────────────────────────────
+  if (env.DEEPSEEK_API_KEY) {
+    try {
+      const resp = await fetchWithTimeout(DEEPSEEK_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.DEEPSEEK_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: DEEPSEEK_MODEL,
+          messages,
+          max_tokens: payload.max_tokens || 500,
+          temperature: payload.temperature || 0.7,
+        }),
+      }, 30000);
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (content) {
+          return jsonResp({
+            choices: [{ message: { content, role: 'assistant' } }],
+            provider: 'deepseek',
+            model: DEEPSEEK_MODEL,
+          }, 200, corsHeaders);
+        }
+      }
+
+      const errText = await resp.text();
+      errors.push(`DeepSeek ${resp.status}: ${errText.substring(0, 200)}`);
+      console.warn('DeepSeek failed:', resp.status, errText.substring(0, 200));
+    } catch (e) {
+      errors.push('DeepSeek timeout/error: ' + e.message);
+      console.warn('DeepSeek exception:', e.message);
+    }
+  } else {
+    errors.push('DeepSeek: DEEPSEEK_API_KEY not set');
+  }
+
+  // ─── 2. GROQ (fallback) ────────────────────────────────────────────────
   if (env.GROQ_API_KEY) {
     try {
-      // Sélection du modèle selon le type de requête
-      // Synthèse : llama-3.3-70b (1 seul appel 70b par session)
-      // Phases 1-3 : llama-3.1-8b (quota TPD plus élevé → ~33 utilisateurs/jour)
+      // Synthèse : llama-3.3-70b | Phases 1-3 : llama-3.1-8b
       const model = isSynthesis ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
-
-      const groqBody = {
-        ...payload,           // reprend max_tokens, temperature, top_p du front
-        model,               // override le modèle
-        messages,
-      };
-      delete groqBody.model; // sera réinjecté après
-      groqBody.model = model;
 
       const resp = await fetchWithTimeout(GROQ_URL, {
         method: 'POST',
@@ -157,7 +191,6 @@ async function handleMultiProvider(request, env, corsHeaders) {
         }
       }
 
-      // Groq répond mais avec un statut d'erreur
       const errText = await resp.text();
       errors.push(`Groq ${resp.status}: ${errText.substring(0, 200)}`);
       console.warn('Groq failed:', resp.status, errText.substring(0, 200));
@@ -169,7 +202,7 @@ async function handleMultiProvider(request, env, corsHeaders) {
     errors.push('Groq: GROQ_API_KEY not set');
   }
 
-  // ─── 2. HUGGING FACE ───────────────────────────────────────────────────
+  // ─── 3. HUGGING FACE ───────────────────────────────────────────────────
   if (env.HF_API_KEY) {
     try {
       const resp = await fetchWithTimeout(HF_URL, {
@@ -210,7 +243,7 @@ async function handleMultiProvider(request, env, corsHeaders) {
     errors.push('HuggingFace: HF_API_KEY not set');
   }
 
-  // ─── 3. OPENROUTER ─────────────────────────────────────────────────────
+  // ─── 4. OPENROUTER ─────────────────────────────────────────────────────
   if (env.OPENROUTER_API_KEY) {
     try {
       const resp = await fetchWithTimeout(OR_URL, {
@@ -253,7 +286,7 @@ async function handleMultiProvider(request, env, corsHeaders) {
     errors.push('OpenRouter: OPENROUTER_API_KEY not set');
   }
 
-  // ─── 4. FALLBACK LOCAL ─────────────────────────────────────────────────
+  // ─── 5. FALLBACK LOCAL ─────────────────────────────────────────────────
   console.warn('All providers failed. Errors:', errors);
   const fallbackContent = getFallbackReply(messages);
   return jsonResp({
