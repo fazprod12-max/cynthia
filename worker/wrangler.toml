@@ -1,0 +1,11 @@
+# CYNTH.IA — Cloudflare Worker Configuration
+# Doc : https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "cynth-ia-proxy"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Secrets à configurer (wrangler secret put <NOM>) :
+#   wrangler secret put GROQ_API_KEY         (obligatoire — déjà configuré)
+#   wrangler secret put HF_API_KEY           (gratuit sur hf.co/settings/tokens)
+#   wrangler secret put OPENROUTER_API_KEY   (gratuit sur openrouter.ai/keys)
