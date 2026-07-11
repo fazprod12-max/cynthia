@@ -323,20 +323,21 @@ function getFallbackReply(messages) {
   const count = userMsgs.length;
 
   // Détection de thèmes prioritaires dans les derniers messages
+  // Ordre : état émotionnel → famille → valeurs → financier → aspiration
+  if (recentContext.includes('burnout') || recentContext.includes('épuisé') || recentContext.includes('plus l\'énergie')) {
+    return "Ce que vous décrivez ressemble à un signal fort que quelque chose doit changer. Avant d'envisager la suite, qu'est-ce qui vous donnerait l'envie de vous lever le matin avec enthousiasme ?";
+  }
   if (recentContext.includes('peur') || recentContext.includes('angoisse') || recentContext.includes('bloqué')) {
     return "Je comprends que cela puisse faire peur. C'est une réaction très humaine face à un changement. Pouvez-vous me dire ce qui vous semble le plus difficile à surmonter en ce moment ?";
+  }
+  if (recentContext.includes('famille') || recentContext.includes('enfant') || recentContext.includes('conjoint')) {
+    return "Je comprends que votre famille soit au cœur de vos préoccupations. Comment vos proches vous voient-ils dans cette réflexion ? Sont-ils présents dans cette démarche ?";
   }
   if (recentContext.includes('sens') || recentContext.includes('alignement') || recentContext.includes('utile') || recentContext.includes('impact')) {
     return "Je perçois que le sens occupe une place centrale pour vous. Quand vous pensez à un moment de votre vie où vous vous êtes senti vraiment utile, qu'est-ce que vous faisiez ?";
   }
   if (recentContext.includes('financier') || recentContext.includes('argent') || recentContext.includes('salaire') || recentContext.includes('crédit')) {
     return "La question financière est réelle et légitime. Pour avancer sereinement, quel serait, selon vous, le minimum dont vous auriez besoin pour vous sentir en sécurité le temps d'une transition ?";
-  }
-  if (recentContext.includes('famille') || recentContext.includes('enfant') || recentContext.includes('conjoint')) {
-    return "Je comprends que votre famille soit au cœur de vos préoccupations. Comment vos proches vous voient-ils dans cette réflexion ? Sont-ils présents dans cette démarche ?";
-  }
-  if (recentContext.includes('burnout') || recentContext.includes('épuisé') || recentContext.includes('plus l\'énergie')) {
-    return "Ce que vous décrivez ressemble à un signal fort que quelque chose doit changer. Avant d'envisager la suite, qu'est-ce qui vous donnerait l'envie de vous lever le matin avec enthousiasme ?";
   }
   if (recentContext.includes('passion') || recentContext.includes('envie') || recentContext.includes('rêve') || recentContext.includes('j\'aimerais')) {
     return "Ce que vous décrivez là, c'est une piste précieuse. Qu'est-ce qui vous a jusqu'à présent retenu de l'explorer davantage ?";
