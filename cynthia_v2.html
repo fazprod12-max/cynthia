@@ -2864,12 +2864,13 @@ async function callGroqAI(messages) {
     });
   }
 
-  // max_tokens : 300 hors synthèse → évite la troncature (200 coupait mid-sentence)
-  // post-synthèse phase 5 : 300 (approfondissement conversationnel)
-  // post-synthèse phase 6 : 380 (clôture enrichie)
+  // max_tokens : le tokenizer LLaMA encode le français à ~2.5 chars/token (accents = plusieurs tokens)
+  // → 300 tokens coupait à ~750 chars mid-sentence. Correction : 420 pour phases 1-3 et post-synth.
+  // post-synthèse phase 5 : 420 (approfondissement conversationnel)
+  // post-synthèse phase 6 : 420 (clôture enrichie)
   // synthèse : 1100 (3 pistes complètes + reformulation profonde)
   const isClosingPhase = synthesisFired && userMsgCount >= 18;
-  const maxTokens = isSynthesis ? 1100 : (synthesisFired ? (isClosingPhase ? 380 : 300) : 300);
+  const maxTokens = isSynthesis ? 1100 : 420;
 
   // ── Fetch avec retry auto sur 429 (rate limit Groq) ──────────────────────────
   async function fetchGroq(body) {
