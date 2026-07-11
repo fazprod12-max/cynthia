@@ -2581,8 +2581,8 @@ Si l'utilisateur exprime un doute explicite ou implicite ("j'ai peur...", "je ne
 
 ## RÈGLES ABSOLUES
 
-⛔ R1 — UNE SEULE QUESTION PAR MESSAGE. Toujours. Sans exception.
-⛔ R2 — LONGUEUR : 2 à 3 phrases maximum pendant la collecte. La synthèse peut être plus longue.
+⛔ R1 — UNE SEULE QUESTION PAR MESSAGE. ABSOLUMENT. Avant d'envoyer ta réponse, relis-la : si elle contient "et" entre deux questions, supprime la deuxième. ❌ Interdit : "Qu'est-ce qui vous attire, et qu'est-ce qui vous ferait penser que c'est la bonne voie ?" ✅ Correct : "Qu'est-ce qui vous attire dans ce domaine ?"
+⛔ R2 — LONGUEUR MAXIMALE PHASES 1-2 : 2 phrases de reformulation + 1 question. C'est tout. Pas de développement, pas de justification, pas d'explication. La synthèse peut être plus longue.
 ⛔ R3 — PRÉNOM : maximum 1 fois toutes les 4-5 réponses.
 ⛔ R4 — ZÉRO JARGON dans les phases 1 et 2 : pas de "profil", "RIASEC", "bilan", "plan d'action".
 ⛔ R5 — Si la personne répond vaguement ou dit "je sais pas" : reformule avec empathie, repose la question autrement.
@@ -2966,7 +2966,7 @@ function formatChatText(rawText) {
     const flushPiste = () => {
       if (pisteLines.length === 0) return;
       const titleLine = pisteLines[0]; // "● Titre"
-      const title = titleLine.replace(/^●\s*/, '').trim();
+      const title = titleLine.replace(/^●\s*/, '').trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       const rest = pisteLines.slice(1).map(l => {
         return l.replace(/^→\s*Pourquoi vous\s*:/i, '<span class="sp-why">Pourquoi vous :</span>')
                 .replace(/^→\s*Premier pas\s*:/i, '<span class="sp-step">Premier pas :</span>')
@@ -3041,8 +3041,10 @@ async function sendChatMsg() {
 
   // ── Détection d'injection de prompt ──────────────────────────────────────────
   if (detectJailbreak(text)) {
-    addChatBubble('ai', 'Je suis CYNTH.IA, votre conseillère d\'orientation — et je le reste. Revenons à ce qui compte vraiment : votre avenir professionnel. Qu\'est-ce qui vous préoccupe le plus en ce moment ?');
+    addChatBubble('user', sanitizeHtml(text));   // Afficher le message pour la clarté UX
     if (input) input.value = '';
+    await new Promise(r => setTimeout(r, 600));  // Petite pause naturelle
+    addChatBubble('ai', 'Je suis CYNTH.IA, votre conseillère d\'orientation — et je le reste. Revenons à ce qui compte vraiment : votre avenir professionnel.');
     return;
   }
 
@@ -3090,9 +3092,9 @@ async function sendChatMsg() {
   }
 
   // ── Réinitialisation de l'émotion après qu'elle a été traitée ────────────────
-  // (l'émotion ne "colle" pas indéfiniment — elle est gérée sur 1 tour)
+  // (l'émotion persiste 2 tours pour rester présente lors de la synthèse)
   chatProfile._emotionTurns++;
-  if (chatProfile._emotionTurns >= 1) {
+  if (chatProfile._emotionTurns >= 2) {
     chatProfile.lastEmotion = 'neutre';
     chatProfile._emotionTurns = 0;
   }
@@ -3156,25 +3158,27 @@ function doEndChat() {
 
 function updatePhaseIndicator() {
   const userCount = chatHistory.filter(m => m.role === 'user').length;
+  const hasKeyProfile = chatProfile.prenom && chatProfile.age !== null;
+  // Même logique que callGroqAI : synthèse à msg 8, ou msg 6 si profil complet
+  const isSynthesisPhase = (userCount >= 8) || (hasKeyProfile && userCount >= 6);
+
   const s1 = document.getElementById('phase-step-1');
   const s2 = document.getElementById('phase-step-2');
   const s3 = document.getElementById('phase-step-3');
   if (!s1) return;
-  // Phase 1: 0-3 échanges utilisateur
-  // Phase 2: 4-7 échanges utilisateur
-  // Phase 3: 8+ échanges utilisateur (synthèse)
-  if (userCount <= 3) {
-    s1.className = 'chat-phase-step active';
-    s2.className = 'chat-phase-step';
-    s3.className = 'chat-phase-step';
-  } else if (userCount <= 7) {
-    s1.className = 'chat-phase-step done';
-    s2.className = 'chat-phase-step active';
-    s3.className = 'chat-phase-step';
-  } else {
+
+  if (isSynthesisPhase) {
     s1.className = 'chat-phase-step done';
     s2.className = 'chat-phase-step done';
     s3.className = 'chat-phase-step active';
+  } else if (userCount <= 3) {
+    s1.className = 'chat-phase-step active';
+    s2.className = 'chat-phase-step';
+    s3.className = 'chat-phase-step';
+  } else {
+    s1.className = 'chat-phase-step done';
+    s2.className = 'chat-phase-step active';
+    s3.className = 'chat-phase-step';
   }
 }
 
