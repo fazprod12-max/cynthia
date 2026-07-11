@@ -2872,23 +2872,23 @@ async function callGroqAI(messages) {
   const isClosingPhase = synthesisFired && userMsgCount >= 18;
   const maxTokens = isSynthesis ? 1100 : 420;
 
-  // ── Fetch avec retry auto sur 429 (rate limit Groq) ──────────────────────────
+  // ── Fetch avec backoff exponentiel sur 429 (rate limit Groq) ────────────────
+  // 3 tentatives : attente 3s → 6s → 12s avant de laisser passer le 429
   async function fetchGroq(body) {
-    const r = await fetch(GROQ_PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (r.status === 429) {
-      // Attendre 2.5s et réessayer une fois avant de tomber en erreur
-      await new Promise(res => setTimeout(res, 2500));
-      return fetch(GROQ_PROXY_URL, {
+    const delays = [3000, 6000, 12000];
+    let lastResp;
+    for (let attempt = 0; attempt <= delays.length; attempt++) {
+      lastResp = await fetch(GROQ_PROXY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
+      if (lastResp.status !== 429) return lastResp;
+      if (attempt < delays.length) {
+        await new Promise(res => setTimeout(res, delays[attempt]));
+      }
     }
-    return r;
+    return lastResp; // retourne le dernier 429 → throw dans callGroqAI
   }
 
   const resp = await fetchGroq({
@@ -3004,7 +3004,7 @@ function _getFbReply(msg, prenom) {
   }
 
   // Âge / jeune / senior
-  if (/\b2[0-9]\b|\b3[0-9]\b|\b4[0-9]\b|\b5[0-9]\b|ans|jeune|senior/.test(t)) {
+  if (/\b2[0-9]\b|\b3[0-9]\b|\b4[0-9]\b|\b5[0-9]\b|\bans\b|jeune|senior/.test(t)) {
     return `${p ? p + ', ' : ''}à votre stade, vous avez déjà un vécu. Qu'est-ce que vous avez appris sur vous-même à travers vos expériences jusqu'ici — ce qui vous correspond vraiment, et ce qui ne vous correspond pas ?`;
   }
 
