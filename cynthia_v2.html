@@ -2734,7 +2734,7 @@ function sanitizeHtml(str) {
 }
 
 // ── LIMITATION HISTORIQUE ─────────────────────────────────────────────────────
-const CYNTH_MAX_HISTORY = 30; // ~15 échanges complets = supporte la conversation profonde 15-20 messages
+const CYNTH_MAX_HISTORY = 14; // 7 échanges récents + intro = ~4300 tokens/req sous la limite TPM Groq (6000/min)
 
 let chatHistory = [];
 let chatWaiting = false;
