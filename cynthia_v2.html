@@ -2895,11 +2895,12 @@ async function callGroqAI(messages) {
   }
 
   const resp = await fetchGroq({
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.3-70b-versatile',   // ignoré côté Worker (il choisit le modèle) — conservé pour rétrocompatibilité
       messages: apiMessages,
       max_tokens: maxTokens,
       temperature: isSynthesis ? 0.55 : 0.50,  // 0.50 hors-synthèse = meilleur suivi des instructions
-      top_p: 0.92
+      top_p: 0.92,
+      isSynthesis,                              // v3 : flag transmis au Worker pour sélection 70b/8b
   });
   if (!resp.ok) throw new Error('groq-' + resp.status);
   const data = await resp.json();
