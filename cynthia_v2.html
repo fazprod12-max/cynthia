@@ -2977,13 +2977,10 @@ async function callCynthAI(messages) {
 
     systemPrompt += `\n\n════════════════════════════════════════
 🔴 MODE REFORMULATION — INSTRUCTION ABSOLUE 🔴
-Génère EXACTEMENT UNE phrase empathique de 10 à 20 mots, terminée par un point.
-La phrase accueille ou reformule ce que l'utilisateur vient de partager, avec ses propres mots.
-INTERDIT : "quand", "comment", "pourquoi", "qu'est-ce que", "avez-vous", "pouvez-vous", "est-ce que".
-INTERDIT : toute formulation interrogative, même terminée par un point au lieu d'un "?".
-INTERDIT : tout texte supplémentaire après la phrase. INTERDIT : liste ou conseil.
-EXEMPLE CORRECT : "Ce besoin de sens que vous décrivez est profondément ancré en vous."
-EXEMPLE INTERDIT : "Quand vous pensez à X, qu'est-ce que vous faisiez."
+Génère EXACTEMENT UNE phrase empathique de 10 à 20 mots.
+Reformule ou accueille ce que l'utilisateur vient de partager — avec ses propres mots si possible.
+INTERDIT : toute question. INTERDIT : tout texte après la phrase. INTERDIT : liste ou conseil.
+Format attendu : une seule phrase affirmative qui se termine par un point.
 ════════════════════════════════════════`;
   }
 
