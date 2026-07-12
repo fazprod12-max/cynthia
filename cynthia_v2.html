@@ -1071,6 +1071,7 @@ footer{
 .synth-card{background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(6,182,212,.06));border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
 .synth-card-title{font-weight:700;font-size:14px;color:#C084FC;letter-spacing:-.2px;}
 .synth-card-line{font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;}
+.sp-cite{color:#FCD34D;font-weight:600;}
 .sp-why{color:#67E8F9;font-weight:600;}
 .sp-step{color:#86EFAC;font-weight:600;}
 /* Modal confirmation */
@@ -2896,7 +2897,7 @@ Termine par : "Parmi ces pistes, laquelle résonne le plus en vous — même à 
   // post-synthèse phase 6 : 420 (clôture enrichie)
   // synthèse : 1100 (3 pistes complètes + reformulation profonde)
   const isClosingPhase = synthesisFired && userMsgCount >= 18;
-  const maxTokens = isSynthesis ? 1100 : 420;
+  const maxTokens = isSynthesis ? 1500 : 420; // 1500 : restitution + citations + 3 pistes + question
 
   // ── Fetch avec backoff exponentiel sur 429 (rate limit Groq) ────────────────
   // 3 tentatives : attente 3s → 6s → 12s avant de laisser passer le 429
@@ -3126,8 +3127,9 @@ function formatChatText(rawText) {
       const titleLine = pisteLines[0]; // "● Titre"
       const title = titleLine.replace(/^●\s*/, '').trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       const rest = pisteLines.slice(1).map(l => {
-        return l.replace(/^→\s*Pourquoi vous\s*:/i, '<span class="sp-why">Pourquoi vous :</span>')
-                .replace(/^→\s*Premier pas\s*:/i, '<span class="sp-step">Premier pas :</span>')
+        return l.replace(/^→\s*Vous avez dit\s*:/i, '<span class="sp-cite">Vous avez dit :</span>')
+                .replace(/^→\s*Pourquoi vous\s*:/i, '<span class="sp-why">Pourquoi vous :</span>')
+                .replace(/^→\s*Premier pas( concret)?\s*:/i, '<span class="sp-step">Premier pas :</span>')
                 .replace(/^→\s*/,'').trim();
       }).filter(Boolean);
       html += `<div class="synth-card"><div class="synth-card-title">● ${title}</div>${rest.map(r=>`<div class="synth-card-line">${r}</div>`).join('')}</div>`;
@@ -3790,7 +3792,8 @@ Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant o
       messages:[{role:'user',content:prompt}],
       max_tokens:3500,
       temperature:0.25,
-      top_p:0.9
+      top_p:0.9,
+      isSynthesis:true
     })
   });
   if (!resp.ok) throw new Error('groq-'+resp.status);
