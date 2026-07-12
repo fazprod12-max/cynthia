@@ -2919,22 +2919,30 @@ async function callCynthAI(messages) {
   }
 
   // ── R10 — Anti-répétition : interdiction explicite de la dernière question ──
-  // Injecté EN FIN de prompt pour que le modèle le lise en dernier (priorité max)
+  // ── R10 RENFORCÉ — Rotation forcée des angles de question ───────────────────
+  // Injecté EN FIN de prompt. Interdit + impose un angle précis à explorer.
   if (!wantSynthesis) {
     const _allAI = messages.filter(m => m.role === 'assistant');
     const _lastAIContent = _allAI[_allAI.length - 1]?.content || '';
     const _lastQs = (_lastAIContent.match(/[^.!?●→\n]*\?/g) || [])
       .map(q => q.trim()).filter(q => q.length > 12);
     const _lastQ = _lastQs[_lastQs.length - 1] || '';
-    // Liste compacte des 3 dernières questions (contexte supplémentaire)
-    const _recentQs = _allAI.slice(-3)
+    // Liste de toutes les questions déjà posées (pour la liste d'interdits)
+    const _allAskedQs = _allAI
       .flatMap(m => (m.content.match(/[^.!?●→\n]*\?/g) || []))
-      .map(q => q.trim()).filter(q => q.length > 12).slice(-3);
+      .map(q => q.trim()).filter(q => q.length > 12).slice(-5);
+    // Angles par phase — rotation forcée pour éviter les questions génériques
+    const _anglesByPhase = {
+      1: ["un moment précis où vous vous êtes senti vraiment utile", "ce que vos proches diraient de vous en 3 mots", "ce qui vous manque le plus dans votre travail actuel"],
+      2: ["vos freins concrets : qu'est-ce qui vous retient vraiment de changer ?", "comment vous imaginez votre journée idéale dans 3 ans", "ce que vous n'êtes plus prêt à accepter dans votre prochain poste"],
+      3: ["laquelle de ces pistes vous parle le plus à cet instant", "le premier pas concret que vous pourriez faire dès cette semaine"]
+    };
+    const _phase = chatProfile.currentPhase || 1;
+    const _angles = _anglesByPhase[_phase] || _anglesByPhase[1];
+    const _angleIdx = (messages.filter(m => m.role === 'user').length - 1) % _angles.length;
+    const _suggestedAngle = _angles[_angleIdx];
     if (_lastQ) {
-      systemPrompt += `\n\n🔴 QUESTION INTERDITE (exactement celle que tu viens de poser) : "${_lastQ}" — Tu DOIS explorer un angle ENTIÈREMENT NOUVEAU. Toute reformulation de cette question est également interdite.`;
-    }
-    if (_recentQs.length > 1) {
-      systemPrompt += `\n📌 Autres questions récentes à ne pas répéter : ${_recentQs.slice(0, -1).map(q => `"${q}"`).join(' | ')}`;
+      systemPrompt += `\n\n🔴 ANTI-RÉPÉTITION (PRIORITÉ ABSOLUE) :\nQuestion interdite : "${_lastQ}"\nAutres interdites : ${_allAskedQs.slice(0,-1).map(q=>`"${q}"`).join(', ') || 'aucune encore'}\nAngle IMPOSÉ pour ta prochaine question : ${_suggestedAngle}.\nCommence ta réponse par une reformulation courte de ce que l'utilisateur vient de dire, PUIS pose ta question sur cet angle.`;
     }
   }
 
