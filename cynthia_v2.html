@@ -2739,6 +2739,18 @@ function extractAge(text) {
   return (age >= 16 && age <= 75) ? age : null;
 }
 
+// ── DÉTECTION ÉMOTION DOMINANTE ───────────────────────────────────────────────
+function detectEmotion(text) {
+  const tl = text.toLowerCase();
+  if (/\b(peur|anxieu|stress|inquiet|tremble|flippe|angoiss|paniq)/i.test(tl)) return 'peur';
+  if (/\b(fier|fierté|proud|content|ravi|heureux|accompli|réussi|bravo|super|génial)/i.test(tl)) return 'fierté';
+  if (/\b(injustice|inégalit|scandaleux|inadmissible|inacceptable|révolte|honte)/i.test(tl)) return 'injustice';
+  if (/\b(épuisé|burnout|burn.out|fatigue|à bout|plus la force|ras.le.bol|saturé)/i.test(tl)) return 'épuisement';
+  if (/\b(passionn|j'adore|j'aime|enthousias|motivé|inspiré|porté|porté par|aligné)/i.test(tl)) return 'aligné';
+  if (/\b(authentic|vrai|moi.même|sincère|intègre|cohérent)/i.test(tl)) return 'authentique';
+  return 'neutre';
+}
+
 // ── SANITISATION HTML (protection XSS) ────────────────────────────────────────
 function sanitizeHtml(str) {
   if (!str) return '';
@@ -3226,31 +3238,35 @@ async function sendChatMsg() {
   // ── Affichage immédiat + extraction profil ────────────────────────────────────
   addChatBubble('user', sanitizeHtml(text));
 
-  const newPrenom = extractPrenom(text);
-  if (newPrenom && !chatProfile.prenom) chatProfile.prenom = newPrenom;
-  const newAge = extractAge(text);
-  if (newAge && !chatProfile.age) chatProfile.age = newAge;
+  try {
+    const newPrenom = extractPrenom(text);
+    if (newPrenom && !chatProfile.prenom) chatProfile.prenom = newPrenom;
+    const newAge = extractAge(text);
+    if (newAge && !chatProfile.age) chatProfile.age = newAge;
 
-  (function extractProfileSignals(t) {
-    const tl = t.toLowerCase();
-    if (/sens|utilité|impact|aider|humain|liberté|autonomie|créativité|famille|équilibre|justice|partage/.test(tl)) {
-      const matches = tl.match(/\b(sens|utilité|impact|aider|humain|liberté|autonomie|créativité|famille|équilibre|justice|partage)\b/g) || [];
-      matches.forEach(v => { if (!chatProfile.valeurs.includes(v)) chatProfile.valeurs.push(v); });
-    }
-    if (/écoute|communiqu|organis|analys|créat|leader|pédago|résoud|adapt|convainc|rédact|manage/.test(tl)) {
-      const fMatches = tl.match(/\b(écoute|communiqu\w*|organis\w*|analys\w*|créat\w*|leader\w*|pédago\w*|résoud\w*|adapt\w*|convainc\w*|rédact\w*|manage\w*)\b/g) || [];
-      fMatches.slice(0, 2).forEach(f => { if (!chatProfile.forces.includes(f) && chatProfile.forces.length < 5) chatProfile.forces.push(f); });
-    }
-    if (/peur|hésit|trop vieux|légitime|diplôm|argent|risque|famil|credit|loyer|confianc|doute/.test(tl)) {
-      const frMatches = tl.match(/\b(peur\w*|hésit\w*|légitime|diplôm\w*|risque|confianc\w*|doute\w*)\b/g) || [];
-      frMatches.slice(0, 2).forEach(fr => { if (!chatProfile.freins.includes(fr) && chatProfile.freins.length < 4) chatProfile.freins.push(fr); });
-    }
-  })(text);
+    (function extractProfileSignals(t) {
+      const tl = t.toLowerCase();
+      if (/sens|utilité|impact|aider|humain|liberté|autonomie|créativité|famille|équilibre|justice|partage/.test(tl)) {
+        const matches = tl.match(/\b(sens|utilité|impact|aider|humain|liberté|autonomie|créativité|famille|équilibre|justice|partage)\b/g) || [];
+        matches.forEach(v => { if (!chatProfile.valeurs.includes(v)) chatProfile.valeurs.push(v); });
+      }
+      if (/écoute|communiqu|organis|analys|créat|leader|pédago|résoud|adapt|convainc|rédact|manage/.test(tl)) {
+        const fMatches = tl.match(/\b(écoute|communiqu\w*|organis\w*|analys\w*|créat\w*|leader\w*|pédago\w*|résoud\w*|adapt\w*|convainc\w*|rédact\w*|manage\w*)\b/g) || [];
+        fMatches.slice(0, 2).forEach(f => { if (!chatProfile.forces.includes(f) && chatProfile.forces.length < 5) chatProfile.forces.push(f); });
+      }
+      if (/peur|hésit|trop vieux|légitime|diplôm|argent|risque|famil|credit|loyer|confianc|doute/.test(tl)) {
+        const frMatches = tl.match(/\b(peur\w*|hésit\w*|légitime|diplôm\w*|risque|confianc\w*|doute\w*)\b/g) || [];
+        frMatches.slice(0, 2).forEach(fr => { if (!chatProfile.freins.includes(fr) && chatProfile.freins.length < 4) chatProfile.freins.push(fr); });
+      }
+    })(text);
 
-  const _detectedEmotion = detectEmotion(text);
-  if (_detectedEmotion !== 'neutre') {
-    chatProfile.lastEmotion = _detectedEmotion;
-    chatProfile._emotionTurns = 0;
+    const _detectedEmotion = detectEmotion(text);
+    if (_detectedEmotion !== 'neutre') {
+      chatProfile.lastEmotion = _detectedEmotion;
+      chatProfile._emotionTurns = 0;
+    }
+  } catch(e) {
+    console.warn('[CYNTH.IA] extractProfileSignals error (non-fatal):', e.message);
   }
 
   // ── Verrouillage UI ───────────────────────────────────────────────────────────
