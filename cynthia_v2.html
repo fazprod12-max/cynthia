@@ -2802,12 +2802,11 @@ function sanitizeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/>/g, '&gt;');
 }
 
 // ── LIMITATION HISTORIQUE ─────────────────────────────────────────────────────
-const CYNTH_MAX_HISTORY = 22; // DeepSeek (64K contexte) : intro + 21 derniers messages — toute la conversation utile
+const CYNTH_MAX_HISTORY = 12; // intro + 11 derniers messages — contexte optimal pour llama-3.3-70b (8K context)
 
 let chatHistory = [];
 let chatWaiting = false;
@@ -2919,15 +2918,24 @@ async function callCynthAI(messages) {
     systemPrompt += `\n\n📌 R4 — SIGNAL FORT détecté dans le dernier message. Approfondis-le en priorité. Angle suggéré : "${signalAngle}" (adapte la formulation à ses mots exacts).`;
   }
 
-  // ── R10 — Anti-répétition : liste des questions déjà posées ─────────────────
-  const askedQuestions = messages
-    .filter(m => m.role === 'assistant')
-    .flatMap(m => (m.content.match(/[^.!?●→\n]*\?/g) || []))
-    .map(q => q.trim())
-    .filter(q => q.length > 12)
-    .slice(-6);
-  if (askedQuestions.length > 0 && !wantSynthesis) {
-    systemPrompt += `\n\n📌 R10 — Questions DÉJÀ posées (n'en repose AUCUNE, même reformulée) :\n- ${askedQuestions.join('\n- ')}`;
+  // ── R10 — Anti-répétition : interdiction explicite de la dernière question ──
+  // Injecté EN FIN de prompt pour que le modèle le lise en dernier (priorité max)
+  if (!wantSynthesis) {
+    const _allAI = messages.filter(m => m.role === 'assistant');
+    const _lastAIContent = _allAI[_allAI.length - 1]?.content || '';
+    const _lastQs = (_lastAIContent.match(/[^.!?●→\n]*\?/g) || [])
+      .map(q => q.trim()).filter(q => q.length > 12);
+    const _lastQ = _lastQs[_lastQs.length - 1] || '';
+    // Liste compacte des 3 dernières questions (contexte supplémentaire)
+    const _recentQs = _allAI.slice(-3)
+      .flatMap(m => (m.content.match(/[^.!?●→\n]*\?/g) || []))
+      .map(q => q.trim()).filter(q => q.length > 12).slice(-3);
+    if (_lastQ) {
+      systemPrompt += `\n\n🔴 QUESTION INTERDITE (exactement celle que tu viens de poser) : "${_lastQ}" — Tu DOIS explorer un angle ENTIÈREMENT NOUVEAU. Toute reformulation de cette question est également interdite.`;
+    }
+    if (_recentQs.length > 1) {
+      systemPrompt += `\n📌 Autres questions récentes à ne pas répéter : ${_recentQs.slice(0, -1).map(q => `"${q}"`).join(' | ')}`;
+    }
   }
 
   // ── Post-synthèse : approfondissement, plus de nouvelles listes ─────────────
