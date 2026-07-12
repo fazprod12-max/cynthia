@@ -3047,17 +3047,20 @@ Format attendu : une seule phrase qui se termine par un point.
   let reply = data.choices[0].message.content.trim();
 
   // ── R10 v5 — Injection de la question prescrite ──────────────────────────────
-  // Groq retourne uniquement les tokens générés (pas le prefill).
-  // On assemble ici : reformulation courte du modèle + question prescrite en JS.
+  // Transition pré-écrite (100% déterministe) + question prescrite injectée en JS.
+  // Le LLM ne contrôle plus la reformulation → zéro question déguisée, zéro répétition.
   if (_r10Active && _r10PrescribedQ) {
-    let _reformulation = reply.trim();
-    // Si le modèle a quand même posé une question, on la tronque avant le "?"
-    const _qMark = _reformulation.indexOf('?');
-    if (_qMark !== -1) _reformulation = _reformulation.slice(0, _qMark).trim();
-    // S'assurer que la reformulation se termine proprement
-    if (_reformulation && !_reformulation.match(/[.!]$/)) _reformulation += '.';
-    // Assembler : reformulation + saut de ligne + question prescrite
-    reply = (_reformulation ? _reformulation + '\n\n' : '') + _r10PrescribedQ;
+    const _transitions = [
+      "Je vous entends.",
+      "C'est important ce que vous partagez.",
+      "Je comprends ce que vous traversez.",
+      "Merci pour cette précision.",
+      "Ce que vous décrivez résonne vraiment.",
+      "Je perçois ce que cela représente pour vous."
+    ];
+    const _uCountFinal = chatHistory.filter(m => m.role === 'user').length;
+    const _transition = _transitions[(_uCountFinal - 1) % _transitions.length];
+    reply = _transition + '\n\n' + _r10PrescribedQ;
   }
 
   // ── Verrouillage des flags UNIQUEMENT après une réponse réussie ─────────────
