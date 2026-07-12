@@ -2918,59 +2918,90 @@ async function callCynthAI(messages) {
     systemPrompt += `\n\n📌 R4 — SIGNAL FORT détecté dans le dernier message. Approfondis-le en priorité. Angle suggéré : "${signalAngle}" (adapte la formulation à ses mots exacts).`;
   }
 
-  // ── R10 v3 — Anti-répétition : interdiction + angle OBLIGATOIRE ─────────────
-  // Dernière instruction du prompt = poids maximal. Remplace tout angle suggéré avant.
+  // ── R10 v4 — Question PRESCRITE EXACTE + Prefill assistant ──────────────────
+  // Double verrouillage : (1) question mot-pour-mot dans le prompt,
+  // (2) prefill assistant qui force la continuation vers cette question.
+  // Le modèle ne peut pas "oublier" une instruction qu'il est en train d'exécuter.
   if (!wantSynthesis) {
     const _allAI = messages.filter(m => m.role === 'assistant');
     const _lastAIContent = _allAI[_allAI.length - 1]?.content || '';
-    // Extraire TOUTES les questions de la dernière réponse IA
     const _lastQs = (_lastAIContent.match(/[^.!?●→\n]*\?/g) || [])
       .map(q => q.trim()).filter(q => q.length > 12);
     const _lastQ = _lastQs[_lastQs.length - 1] || '';
-    // Toutes les questions déjà posées sur les 5 derniers échanges
     const _allAskedQs = _allAI
       .flatMap(m => (m.content.match(/[^.!?●→\n]*\?/g) || []))
-      .map(q => q.trim()).filter(q => q.length > 12).slice(-5);
-    // Angles OBLIGATOIRES par phase (rotation basée sur le nb de messages utilisateur)
-    const _anglesByPhase = {
+      .map(q => q.trim()).filter(q => q.length > 12).slice(-6);
+
+    // ── Questions prescrites EXACTES par phase (rotation sur userMsgCount) ──
+    const _exactQsByPhase = {
       1: [
-        "ce que vos proches diraient de vous en 3 mots",
-        "ce qui vous manque le plus dans votre travail actuel",
-        "ce qui vous a le plus appris dans votre parcours jusqu'ici"
+        "En quels termes vos proches vous décriraient-ils spontanément ?",
+        "Qu'est-ce qui vous manque le plus dans votre quotidien professionnel actuel ?",
+        "Qu'est-ce que ces années dans ce poste vous ont appris sur vous-même ?"
       ],
       2: [
-        "vos freins concrets : qu'est-ce qui vous retient vraiment de changer ?",
-        "comment vous imaginez votre journée idéale dans 3 ans",
-        "ce que vous n'êtes plus prêt à accepter dans votre prochain poste"
+        "Concrètement, qu'est-ce qui vous retient encore de passer à l'action ?",
+        "Si vous vous projetiez dans 3 ans, comment ressemblerait une journée de travail idéale ?",
+        "Y a-t-il des conditions que vous n'êtes plus prêt à accepter dans un prochain poste ?"
       ],
       3: [
-        "laquelle de ces pistes vous parle le plus à cet instant",
-        "le premier pas concret que vous pourriez faire dès cette semaine"
+        "Parmi les pistes qu'on a évoquées, laquelle vous parle le plus en ce moment ?",
+        "Quel serait le premier pas concret que vous pourriez faire dès cette semaine ?"
       ]
     };
+
+    // ── Prefills par question prescrite — dirigent naturellement vers la question ──
+    const _prefillMap = {
+      "En quels termes vos proches vous décriraient-ils spontanément ?":
+        "Ce que vous partagez me donne un éclairage précieux. En pensant à ceux qui vous connaissent bien,",
+      "Qu'est-ce qui vous manque le plus dans votre quotidien professionnel actuel ?":
+        "Ce que vous décrivez est parlant. Dans votre quotidien de travail,",
+      "Qu'est-ce que ces années dans ce poste vous ont appris sur vous-même ?":
+        "Ces années de terrain ont forcément laissé des traces.",
+      "Concrètement, qu'est-ce qui vous retient encore de passer à l'action ?":
+        "Je vois ce qui vous attire dans ce changement. Ce qui m'intéresse maintenant,",
+      "Si vous vous projetiez dans 3 ans, comment ressemblerait une journée de travail idéale ?":
+        "Projetons-nous un instant. Dans 3 ans, si tout se passait comme vous le souhaitez,",
+      "Y a-t-il des conditions que vous n'êtes plus prêt à accepter dans un prochain poste ?":
+        "Il y a ce que vous cherchez — et il y a ce que vous ne voulez plus.",
+      "Parmi les pistes qu'on a évoquées, laquelle vous parle le plus en ce moment ?":
+        "On a exploré plusieurs directions ensemble. En ce moment précis,",
+      "Quel serait le premier pas concret que vous pourriez faire dès cette semaine ?":
+        "Vous avez une vision de ce qui vous anime. Concrètement,"
+    };
+
     const _phase = chatProfile.currentPhase || 1;
-    const _angles = _anglesByPhase[_phase] || _anglesByPhase[1];
-    // Rotation sur nb messages UTILISATEUR (pas total) pour garantir la variété
+    const _exactQs = _exactQsByPhase[_phase] || _exactQsByPhase[1];
     const _uCount = messages.filter(m => m.role === 'user').length;
-    const _angleIdx = (_uCount - 1) % _angles.length;
-    const _suggestedAngle = _angles[_angleIdx];
-    if (_lastQ) {
-      systemPrompt += `\n\n════════════════════════════════════════
-🔴🔴🔴 INSTRUCTION FINALE — PRIORITÉ ABSOLUE — ANNULE TOUT CE QUI PRÉCÈDE 🔴🔴🔴
+    const _qIdx = (_uCount - 1) % _exactQs.length;
+    const _prescribedQ = _exactQs[_qIdx];
+    const _prefill = _prefillMap[_prescribedQ] || 'Ce que vous venez de partager est clair.';
+
+    // ── Injection système : question prescrite exacte ──────────────────────
+    const _forbiddenBlock = _lastQ
+      ? `❌ QUESTION INTERDITE (ni mot pour mot ni reformulée) : "${_lastQ}"\n`
+      : '';
+    const _otherForbidden = _allAskedQs.filter(q => q !== _lastQ).slice(-3);
+    const _otherBlock = _otherForbidden.length > 0
+      ? `❌ AUSSI INTERDITES : ${_otherForbidden.map(q => `"${q}"`).join(' / ')}\n`
+      : '';
+
+    systemPrompt += `\n\n════════════════════════════════════════
+🔴 INSTRUCTION FINALE — ANNULE ET REMPLACE TOUT — PRIORITÉ ABSOLUE 🔴
 ════════════════════════════════════════
-QUESTION STRICTEMENT INTERDITE (mot pour mot ET reformulation) :
-  ❌ "${_lastQ}"
-${_allAskedQs.slice(0, -1).length > 0 ? `AUTRES QUESTIONS INTERDITES :\n${_allAskedQs.slice(0, -1).map(q => `  ❌ "${q}"`).join('\n')}` : ''}
-ANGLE OBLIGATOIRE pour ta prochaine question (formule-le avec tes propres mots) :
-  ✅ ${_suggestedAngle}
-FORMAT OBLIGATOIRE :
-  1. Une phrase qui reformule ce que l'utilisateur vient de dire (15 mots max).
-  2. Une SEULE question sur l'angle ci-dessus.
-  3. Pas de liste. Pas de métier. Pas de conseil.
+${_forbiddenBlock}${_otherBlock}
+✅ TA RÉPONSE DOIT SE TERMINER PAR CETTE QUESTION EXACTE (copie mot pour mot) :
+"${_prescribedQ}"
+
+FORMAT IMPÉRATIF :
+  → Continue la phrase déjà commencée ci-dessous (reformulation de l'utilisateur, 15 mots max).
+  → Termine OBLIGATOIREMENT par : "${_prescribedQ}"
+  → Rien d'autre. Zéro liste. Zéro conseil. Zéro autre question.
 ════════════════════════════════════════`;
-    } else {
-      // Même sans question précédente détectée, imposer l'angle
-      systemPrompt += `\n\n🔴 INSTRUCTION FINALE : Angle OBLIGATOIRE pour ta prochaine question : ${_suggestedAngle}. Une reformulation (15 mots), une question sur cet angle. Pas de liste ni de métier.`;
+
+    // ── Prefill assistant : force la direction — le modèle CONTINUE ce texte ──
+    if (trimmed.length > 0 && trimmed[trimmed.length - 1].role === 'user') {
+      trimmed = [...trimmed, { role: 'assistant', content: _prefill }];
     }
   }
 
