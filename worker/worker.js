@@ -1,9 +1,9 @@
 /**
- * CYNTH.IA — Worker Proxy Multi-Provider v3.1
+ * CYNTH.IA — Worker Proxy Multi-Provider v3.3
  *
  * Route principale POST / — cascade multi-provider :
- *   1. DeepSeek  (deepseek-chat = V3, principal)
- *   2. Groq      (8b phases 1-3, 70b synthèse — fallback)
+ *   1. Groq      (8b phases 1-3, 70b synthèse — principal)
+ *   2. DeepSeek  (deepseek-chat = V3, fallback)
  *   3. Hugging Face  (Mistral-7B-Instruct)
  *   4. OpenRouter    (Gemma-2-9B-IT gratuit)
  *   5. Fallback local (réponses contextuelles codées)
@@ -124,7 +124,45 @@ async function handleMultiProvider(request, env, corsHeaders) {
 
   const errors = [];
 
-  // ─── 1. DEEPSEEK (principal) ───────────────────────────────────────────
+  // ─── 1. GROQ (principal) ───────────────────────────────────────────────
+  if (env.GROQ_API_KEY) {
+    try {
+      // Toutes les phases en 70b — meilleur suivi des instructions
+      const model = 'llama-3.3-70b-versatile';
+
+      const resp = await fetchWithTimeout(GROQ_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...payload, model, messages }),
+      }, 30000);
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (content) {
+          return jsonResp({
+            choices: [{ message: { content, role: 'assistant' } }],
+            provider: 'groq',
+            model,
+          }, 200, corsHeaders);
+        }
+      }
+
+      const errText = await resp.text();
+      errors.push(`Groq ${resp.status}: ${errText.substring(0, 200)}`);
+      console.warn('Groq failed:', resp.status, errText.substring(0, 200));
+    } catch (e) {
+      errors.push('Groq timeout/error: ' + e.message);
+      console.warn('Groq exception:', e.message);
+    }
+  } else {
+    errors.push('Groq: GROQ_API_KEY not set');
+  }
+
+  // ─── 2. DEEPSEEK (fallback) ────────────────────────────────────────────
   if (env.DEEPSEEK_API_KEY) {
     try {
       const resp = await fetchWithTimeout(DEEPSEEK_URL, {
@@ -162,44 +200,6 @@ async function handleMultiProvider(request, env, corsHeaders) {
     }
   } else {
     errors.push('DeepSeek: DEEPSEEK_API_KEY not set');
-  }
-
-  // ─── 2. GROQ (fallback) ────────────────────────────────────────────────
-  if (env.GROQ_API_KEY) {
-    try {
-      // Synthèse : llama-3.3-70b | Phases 1-3 : llama-3.1-8b
-      const model = isSynthesis ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
-
-      const resp = await fetchWithTimeout(GROQ_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...payload, model, messages }),
-      }, 30000);
-
-      if (resp.ok) {
-        const data = await resp.json();
-        const content = data.choices?.[0]?.message?.content;
-        if (content) {
-          return jsonResp({
-            choices: [{ message: { content, role: 'assistant' } }],
-            provider: 'groq',
-            model,
-          }, 200, corsHeaders);
-        }
-      }
-
-      const errText = await resp.text();
-      errors.push(`Groq ${resp.status}: ${errText.substring(0, 200)}`);
-      console.warn('Groq failed:', resp.status, errText.substring(0, 200));
-    } catch (e) {
-      errors.push('Groq timeout/error: ' + e.message);
-      console.warn('Groq exception:', e.message);
-    }
-  } else {
-    errors.push('Groq: GROQ_API_KEY not set');
   }
 
   // ─── 3. HUGGING FACE ───────────────────────────────────────────────────
