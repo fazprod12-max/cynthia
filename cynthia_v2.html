@@ -2954,15 +2954,25 @@ async function callCynthAI(messages) {
     // Anti-répétition : choisir la première question non encore posée dans ce cycle
     const _askedLower = new Set(_allAskedQs.map(q => q.toLowerCase()));
     let _qIdx = (_uCount - 1) % _exactQs.length;
+    let _foundFresh = false;
     for (let _i = 0; _i < _exactQs.length; _i++) {
       const _candidate = _exactQs[(_qIdx + _i) % _exactQs.length];
       if (!_askedLower.has(_candidate.toLowerCase())) {
         _qIdx = (_qIdx + _i) % _exactQs.length;
+        _foundFresh = true;
         break;
       }
     }
 
-    _r10PrescribedQ = _exactQs[_qIdx];
+    // Si toutes les questions de cette phase sont épuisées → piocher dans la phase suivante
+    if (!_foundFresh) {
+      const _nextPhase = _phase < 3 ? _phase + 1 : 2;
+      const _nextQs = _exactQsByPhase[_nextPhase] || [];
+      const _spillQ = _nextQs.find(q => !_askedLower.has(q.toLowerCase()));
+      _r10PrescribedQ = _spillQ || _exactQs[_qIdx];
+    } else {
+      _r10PrescribedQ = _exactQs[_qIdx];
+    }
     _r10Active = true;
 
     systemPrompt += `\n\n════════════════════════════════════════
