@@ -2980,7 +2980,7 @@ async function callCynthAI(messages) {
 Génère EXACTEMENT UNE phrase empathique de 10 à 20 mots.
 Reformule ou accueille ce que l'utilisateur vient de partager — avec ses propres mots si possible.
 INTERDIT : toute question. INTERDIT : tout texte après la phrase. INTERDIT : liste ou conseil.
-Format attendu : une seule phrase affirmative qui se termine par un point.
+Format attendu : une seule phrase qui se termine par un point.
 ════════════════════════════════════════`;
   }
 
@@ -3051,15 +3051,12 @@ Format attendu : une seule phrase affirmative qui se termine par un point.
   // On assemble ici : reformulation courte du modèle + question prescrite en JS.
   if (_r10Active && _r10PrescribedQ) {
     let _reformulation = reply.trim();
-    // 1) Tronquer à la première "?" (question explicite)
+    // Si le modèle a quand même posé une question, on la tronque avant le "?"
     const _qMark = _reformulation.indexOf('?');
     if (_qMark !== -1) _reformulation = _reformulation.slice(0, _qMark).trim();
-    // 2) Garder UNIQUEMENT la 1ère phrase — élimine les questions déguisées en 2e phrase
-    const _firstStop = _reformulation.search(/(?<=[a-zàâéèêëîïôùûü])[.!]/i);
-    if (_firstStop > 10) _reformulation = _reformulation.slice(0, _firstStop + 1).trim();
-    // 3) S'assurer que la reformulation se termine proprement
+    // S'assurer que la reformulation se termine proprement
     if (_reformulation && !_reformulation.match(/[.!]$/)) _reformulation += '.';
-    // 4) Assembler : reformulation courte + question prescrite
+    // Assembler : reformulation + saut de ligne + question prescrite
     reply = (_reformulation ? _reformulation + '\n\n' : '') + _r10PrescribedQ;
   }
 
