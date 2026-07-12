@@ -960,6 +960,23 @@ footer{
   .modal-overlay{padding:12px;}
   .modal-box{padding:32px 20px;border-radius:20px;}
   .modal-box h3{font-size:19px;}
+
+  /* ── Chat mobile ── */
+  .chat-page{padding:0;justify-content:flex-start;}
+  .chat-card{height:100dvh;max-height:100dvh;border-radius:0;border-left:none;border-right:none;border-bottom:none;}
+  .chat-head{padding:12px 16px;gap:10px;}
+  .chat-av{width:38px;height:38px;font-size:16px;}
+  .chat-head-name{font-size:14px;}
+  .chat-head-status{font-size:11px;}
+  .chat-msgs{padding:12px 14px;}
+  .chat-bubble{max-width:88%;}
+  .chat-input-area{padding:10px 12px;}
+  .chat-input-row{gap:7px;}
+  .chat-input{font-size:16px;padding:10px 13px;} /* 16px évite le zoom iOS */
+  .chat-send{width:40px;height:40px;font-size:18px;}
+  #mic-async-btn{font-size:18px;padding:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;}
+  .chat-hint{font-size:10px;}
+  .btn-doute-float{bottom:80px;right:12px;padding:10px 14px;font-size:13px;}
 }
 
 
@@ -1139,17 +1156,41 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
    MODE DOUTE — bouton flottant + modal
 ══════════════════════════════════════════════════════════════ */
 .btn-doute-float{
-  position:fixed;bottom:90px;right:20px;z-index:900;
-  display:none; /* affiché uniquement sur page-chat via JS */
+  position:fixed;bottom:90px;left:20px;z-index:900;
+  display:none; /* affiché dynamiquement par JS après réponse Cynthia (msg 5+) */
   align-items:center;gap:8px;
   background:linear-gradient(135deg,rgba(224,168,78,.9),rgba(200,151,74,.85));
   color:#fff;border:none;border-radius:100px;padding:12px 18px;
   font-size:14px;font-weight:600;font-family:inherit;
   cursor:pointer;box-shadow:0 4px 20px rgba(200,151,74,.35);
-  transition:transform .2s,box-shadow .2s;
+  transition:transform .2s,box-shadow .2s,opacity .3s;
+  animation:doute-appear .35s ease;
 }
+@keyframes doute-appear{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .btn-doute-float:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(200,151,74,.5);}
 .btn-doute-float:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+/* Icône info + tooltip hover */
+.doute-info-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:50%;
+  background:rgba(255,255,255,.25);font-size:11px;font-weight:700;
+  color:#fff;cursor:default;flex-shrink:0;position:relative;
+  border:1px solid rgba(255,255,255,.35);line-height:1;
+}
+.doute-info-btn:hover .doute-tooltip{display:block;}
+.doute-tooltip{
+  display:none;
+  position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
+  width:240px;background:#0D2118;border:1px solid rgba(143,188,139,.4);
+  border-radius:14px;padding:14px 15px;font-size:12px;font-weight:400;
+  color:rgba(250,243,224,.9);line-height:1.55;text-align:left;
+  box-shadow:0 6px 30px rgba(0,0,0,.55);z-index:1000;pointer-events:none;
+  white-space:normal;
+}
+.doute-tooltip::after{
+  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:7px solid transparent;border-top-color:#0D2118;
+}
 .doute-modal-bg{
   position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
   z-index:1100;display:none;align-items:flex-end;justify-content:center;padding:0 12px 20px;
@@ -1424,7 +1465,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <button onclick="gp('questionnaire')">③ Questionnaire</button>
   <button onclick="gp('chat')">④ Chat</button>
   <button onclick="gp('confirm')">⑤ Confirmation</button>
-  <span class="dl">CYNTH.IA v4 — Bêta · DeepSeek</span>
+  <span class="dl">CYNTH.IA v4 — Bêta</span>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -1679,7 +1720,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
           <td>Coût</td>
           <td>Gratuit (service public)</td>
           <td><span class="warn">~2 000 €</span></td>
-          <td class="comp-col-hl"><span class="chk">✓</span> 0 € bêta / 29 € ensuite*</td>
+          <td class="comp-col-hl"><span class="chk">✓</span> Gratuit bêta*</td>
         </tr>
         <tr>
           <td>Accompagnement humain</td>
@@ -1715,7 +1756,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     </table>
     </div>
     <p style="text-align:center;font-size:12px;color:rgba(250,243,224,.4);margin-top:16px;max-width:680px;margin-left:auto;margin-right:auto;">
-      * CYNTH.IA est un outil d'aide à la réflexion professionnelle, pas un conseiller CEP agréé. Il ne remplace pas un accompagnement humain certifié. · Tarif bêta gratuit jusqu'au 31/12/2026.
+      * CYNTH.IA est un outil d'aide à la réflexion professionnelle, pas un conseiller CEP agréé. Il ne remplace pas un accompagnement humain certifié.
     </p>
   </div>
 
@@ -1729,8 +1770,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       <div style="display:inline-block;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:100px;padding:6px 18px;font-size:12px;font-weight:700;color:#f87171;letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;">🧪 Phase bêta</div>
 
       <h2 style="font-size:clamp(32px,5vw,52px);font-weight:900;color:var(--txt);margin-bottom:8px;letter-spacing:-1px;">Gratuit <span style="color:#34d399;">✓</span></h2>
-      <p style="font-size:15px;color:var(--txt2);margin-bottom:8px;">100% gratuit pendant la bêta · jusqu'au 31/12/2026</p>
-      <p style="font-size:12px;color:rgba(250,243,224,.4);margin-bottom:32px;">Tarif après bêta : 29 € · paiement unique · aucun abonnement</p>
+      <p style="font-size:15px;color:var(--txt2);margin-bottom:32px;">100% gratuit pendant la bêta</p>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:left;margin-bottom:40px;">
         <div style="display:flex;align-items:flex-start;gap:12px;">
@@ -2170,6 +2210,13 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <!-- ── BOUTON FLOTTANT "J'AI UN DOUTE" ── -->
   <button id="btn-doute" class="btn-doute-float" onclick="openDoubtModal()" aria-label="Exprimer un doute">
     💬 J'ai un doute
+    <span class="doute-info-btn" onclick="event.stopPropagation()">ⓘ
+      <span class="doute-tooltip">
+        <strong style="color:#fff;">À quoi ça sert ?</strong><br>
+        Si quelque chose freine votre élan — une peur, un doute, un "et si…" — partagez-le à Cynthia. Elle répond avec empathie et des éléments concrets.<br><br>
+        <em style="color:rgba(250,243,224,.6);">Ex : "J'ai peur d'être trop âgé pour changer de voie."</em>
+      </span>
+    </span>
   </button>
 
   <!-- ── MODAL SAISIE DU DOUTE ── -->
@@ -2233,13 +2280,10 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         <button class="btn-outline" id="btn-download-rapport" style="border:none;cursor:pointer;font-family:inherit;opacity:.5;pointer-events:none;" onclick="downloadRapport()">⏳ Génération en cours…</button>
         <!-- Bouton Premium (rapport complet PDF) -->
         <button class="btn-main" id="btn-premium" style="display:none;" onclick="startStripeCheckout()">
-          📄 Télécharger le rapport complet — 29,90€
+          📄 Télécharger le rapport complet
         </button>
         <button class="btn-outline" onclick="gp('landing')">← Retour à l'accueil</button>
       </div>
-      <p id="conf-premium-hint" style="display:none;font-size:12px;color:rgba(250,243,224,.4);margin-top:12px;text-align:center;">
-        Accès immédiat · Paiement sécurisé Stripe · Satisfait ou remboursé 7 jours
-      </p>
     </div>
   </div>
 </div>
@@ -2369,9 +2413,10 @@ function gp(name){
   if(name==='questionnaire'){resetQuiz();}
   if(name==='landing'){initReveal();}
 
-  // Affiche / masque le bouton "J'ai un doute" uniquement sur page-chat
+  // Masque le bouton "J'ai un doute" à chaque changement de page
+  // (il réapparaîtra dynamiquement après la réponse de Cynthia dès le msg 5)
   const btnD = document.getElementById('btn-doute');
-  if(btnD) btnD.style.display = (name==='chat') ? 'flex' : 'none';
+  if(btnD) btnD.style.display = 'none';
   // Ferme le menu mobile si ouvert
   const mn=document.getElementById('gnav-mobile');
   const mb=document.getElementById('gnav-menu');
@@ -3276,6 +3321,9 @@ async function sendChatMsg() {
   if (btn)   btn.disabled   = true;
   if (input) input.disabled = true;
   showChatTyping(true);
+  // Masquer le bouton "J'ai un doute" pendant que l'IA réfléchit
+  const _btnDoute = document.getElementById('btn-doute');
+  if (_btnDoute) _btnDoute.style.display = 'none';
 
   const _wasSynthFired = synthesisFired;
   let reply = '';
@@ -3317,6 +3365,12 @@ async function sendChatMsg() {
     showChatTyping(false);
     addChatBubble('ai', reply);
     chatHistory.push({ role: 'assistant', content: reply });
+
+    // ── Bouton "J'ai un doute" : apparaît après la réponse de Cynthia dès le 5e message ──
+    const _userMsgCount = chatHistory.filter(m => m.role === 'user').length;
+    if (_btnDoute && _userMsgCount >= 5 && !synthesisFired) {
+      setTimeout(() => { _btnDoute.style.display = 'flex'; }, 600);
+    }
 
     // ── Options post-synthèse ─────────────────────────────────────────────────
     if (synthesisFired && _wasSynthFired && !_optionsShown) {
@@ -3372,7 +3426,7 @@ function doEndChat() {
       const showPay = !CONFIG.RAPPORT_GRATUIT && !utilisateurAPaye();
       if (pBtn) {
         pBtn.style.display = showPay ? 'inline-flex' : 'none';
-        pBtn.innerHTML = `📄 Télécharger le rapport complet — ${CONFIG.PRIX_RAPPORT.toFixed(2).replace('.', ',')}€`;
+        pBtn.innerHTML = `📄 Télécharger le rapport complet`;
       }
       if (pHint) pHint.style.display = showPay ? 'block' : 'none';
       // Rendre les cartes Avatar Métiers
