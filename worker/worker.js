@@ -1,27 +1,25 @@
 /**
- * CYNTH.IA — Worker Proxy Multi-Provider v3.3
+ * CYNTH.IA — Worker Proxy v5.0 (Claude principal + DeepSeek + Groq fallback)
  *
- * Route principale POST / — cascade multi-provider :
- *   1. Groq      (8b phases 1-3, 70b synthèse — principal)
- *   2. DeepSeek  (deepseek-chat = V3, fallback)
- *   3. Hugging Face  (Mistral-7B-Instruct)
- *   4. OpenRouter    (Gemma-2-9B-IT gratuit)
- *   5. Fallback local (réponses contextuelles codées)
+ * Route principale POST / — cascade :
+ *   1. Claude    (claude-haiku-4-5 — provider principal, meilleure empathie FR)
+ *   2. DeepSeek  (deepseek-chat / DeepSeek-V3 — 1er fallback)
+ *   3. Groq      (fallback : llama-3.3-70b synthèse / llama-3.1-8b collecte)
+ *   4. Fallback local (réponses contextuelles codées — le service ne tombe jamais)
  *
- * Autres routes :
+ * Autres routes (inchangées) :
  *   POST /ft-search        → proxy France Travail
  *   POST /create-checkout  → crée une session Stripe Checkout
  *   GET  /verify-session   → vérifie un paiement Stripe
  *
  * Secrets à configurer (wrangler secret put <NOM>) :
- *   DEEPSEEK_API_KEY    — clé API DeepSeek (platform.deepseek.com)
- *   GROQ_API_KEY        — clé API Groq (fallback)
- *   HF_API_KEY          — clé API Hugging Face (gratuit sur hf.co/settings/tokens)
- *   OPENROUTER_API_KEY  — clé API OpenRouter (gratuit sur openrouter.ai/keys)
- *   FT_CLIENT_ID        — Client ID France Travail
- *   FT_CLIENT_SECRET    — Client Secret France Travail
- *   STRIPE_SECRET_KEY   — sk_live_xxx
- *   STRIPE_PRICE_ID     — price_xxx
+ *   ANTHROPIC_API_KEY   — clé API Claude (OBLIGATOIRE — console.anthropic.com)
+ *   DEEPSEEK_API_KEY    — clé API DeepSeek (fallback — platform.deepseek.com)
+ *   GROQ_API_KEY        — clé API Groq (fallback — console.groq.com)
+ *   FT_CLIENT_ID        — Client ID France Travail (optionnel)
+ *   FT_CLIENT_SECRET    — Client Secret France Travail (optionnel)
+ *   STRIPE_SECRET_KEY   — sk_live_xxx (optionnel, mode production)
+ *   STRIPE_PRICE_ID     — price_xxx (optionnel, mode production)
  */
 
 /* ── Origines autorisées ─────────────────────────────────────────────────── */
@@ -32,20 +30,17 @@ const ALLOWED_ORIGINS = [
 ];
 
 /* ── URLs des API partenaires ────────────────────────────────────────────── */
-const DEEPSEEK_URL   = 'https://api.deepseek.com/chat/completions';
-const DEEPSEEK_MODEL = 'deepseek-chat'; // DeepSeek-V3
-const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions';
-const FT_TOKEN_URL   = 'https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire';
-const FT_SEARCH_URL  = 'https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search';
+const DEEPSEEK_URL   = 'https://api.deepseek.com/v1/chat/completions';
+const DEEPSEEK_MODEL = 'deepseek-chat'; // équivalent DeepSeek-V3
+
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+const CLAUDE_URL   = 'https://api.anthropic.com/v1/messages';
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'; // meilleure empathie FR, coût optimal
+
+const FT_TOKEN_URL    = 'https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire';
+const FT_SEARCH_URL   = 'https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search';
 const STRIPE_CHECKOUT = 'https://api.stripe.com/v1/checkout/sessions';
-
-// Hugging Face — endpoint OpenAI-compatible
-const HF_URL   = 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions';
-const HF_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3';
-
-// OpenRouter — Gemma-2-9B-IT (gratuit, aucun crédit requis)
-const OR_URL   = 'https://openrouter.ai/api/v1/chat/completions';
-const OR_MODEL = 'google/gemma-2-9b-it:free';
 
 /* ── Cache token France Travail ──────────────────────────────────────────── */
 let _ftToken = null;
@@ -59,7 +54,6 @@ export default {
     const origin = request.headers.get('Origin') || '';
     const url = new URL(request.url);
 
-    /* ── CORS headers ──────────────────────────────────────────────────── */
     const corsHeaders = {
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
@@ -69,22 +63,19 @@ export default {
       corsHeaders['Access-Control-Allow-Origin'] = origin;
     }
 
-    /* ── Preflight ─────────────────────────────────────────────────────── */
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    /* ── Blocage des origines inconnues ────────────────────────────────── */
     if (!corsHeaders['Access-Control-Allow-Origin']) {
       return jsonResp({ error: { message: 'Origin not allowed' } }, 403, corsHeaders);
     }
 
-    /* ── Routage ───────────────────────────────────────────────────────── */
     const path = url.pathname.replace(/\/$/, '') || '/';
 
     try {
       if (path === '' || path === '/') {
-        return await handleMultiProvider(request, env, corsHeaders);
+        return await handleChat(request, env, corsHeaders);
       }
       if (path === '/ft-search') {
         return await handleFranceTravail(request, env, corsHeaders);
@@ -104,65 +95,83 @@ export default {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ROUTE 1 — PROXY MULTI-PROVIDER (remplace l'ancien proxy Groq simple)
+   ROUTE 1 — CHAT : CLAUDE PRINCIPAL → DEEPSEEK → GROQ FALLBACK → LOCAL
 ═══════════════════════════════════════════════════════════════════════════ */
-async function handleMultiProvider(request, env, corsHeaders) {
+async function handleChat(request, env, corsHeaders) {
   if (request.method !== 'POST') return jsonResp({ error: 'Method not allowed' }, 405, corsHeaders);
 
   let payload;
   try { payload = await request.json(); }
   catch { return jsonResp({ error: 'Invalid JSON' }, 400, corsHeaders); }
 
-  // Extraire le flag isSynthesis (ajouté par le front-end) et le retirer du payload
+  // Flags internes front → worker (retirés avant l'envoi aux APIs)
   const isSynthesis = payload.isSynthesis === true;
   delete payload.isSynthesis;
+  delete payload.model; // le Worker choisit toujours le modèle
 
   const messages = payload.messages;
   if (!messages || !Array.isArray(messages)) {
     return jsonResp({ error: 'messages array required' }, 400, corsHeaders);
   }
 
+  // Paramètres recommandés (cahier des charges) — le front peut les surcharger
+  const max_tokens  = clampInt(payload.max_tokens, 50, 4000) ?? (isSynthesis ? 650 : 450);
+  const temperature = clampNum(payload.temperature, 0, 2)    ?? (isSynthesis ? 0.55 : 0.72);
+  const top_p       = clampNum(payload.top_p, 0, 1)          ?? 0.92;
+
   const errors = [];
 
-  // ─── 1. GROQ (principal) ───────────────────────────────────────────────
-  if (env.GROQ_API_KEY) {
+  // ─── 1. CLAUDE HAIKU (principal) ──────────────────────────────────────
+  if (env.ANTHROPIC_API_KEY) {
     try {
-      // Toutes les phases en 70b — meilleur suivi des instructions
-      const model = 'llama-3.3-70b-versatile';
+      // L'API Anthropic a un format différent d'OpenAI :
+      //   - le message "system" est un champ top-level séparé (pas dans messages[])
+      //   - headers : x-api-key + anthropic-version (pas Authorization: Bearer)
+      //   - réponse : data.content[0].text (pas data.choices[0].message.content)
+      const systemMsg = messages.find(m => m.role === 'system');
+      const chatMessages = messages.filter(m => m.role !== 'system');
 
-      const resp = await fetchWithTimeout(GROQ_URL, {
+      const anthropicBody = {
+        model: CLAUDE_MODEL,
+        max_tokens,
+        messages: chatMessages,
+      };
+      if (systemMsg) anthropicBody.system = systemMsg.content;
+
+      const resp = await fetchWithTimeout(CLAUDE_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+          'x-api-key': env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...payload, model, messages }),
+        body: JSON.stringify(anthropicBody),
       }, 30000);
 
       if (resp.ok) {
         const data = await resp.json();
-        const content = data.choices?.[0]?.message?.content;
+        const content = data.content?.[0]?.text;
         if (content) {
           return jsonResp({
             choices: [{ message: { content, role: 'assistant' } }],
-            provider: 'groq',
-            model,
+            provider: 'claude',
+            model: CLAUDE_MODEL,
           }, 200, corsHeaders);
         }
       }
 
       const errText = await resp.text();
-      errors.push(`Groq ${resp.status}: ${errText.substring(0, 200)}`);
-      console.warn('Groq failed:', resp.status, errText.substring(0, 200));
+      errors.push(`Claude ${resp.status}: ${errText.substring(0, 200)}`);
+      console.warn('Claude failed:', resp.status, errText.substring(0, 200));
     } catch (e) {
-      errors.push('Groq timeout/error: ' + e.message);
-      console.warn('Groq exception:', e.message);
+      errors.push('Claude timeout/error: ' + e.message);
+      console.warn('Claude exception:', e.message);
     }
   } else {
-    errors.push('Groq: GROQ_API_KEY not set');
+    errors.push('Claude: ANTHROPIC_API_KEY not set');
   }
 
-  // ─── 2. DEEPSEEK (fallback) ────────────────────────────────────────────
+  // ─── 2. DEEPSEEK (1er fallback) ───────────────────────────────────────
   if (env.DEEPSEEK_API_KEY) {
     try {
       const resp = await fetchWithTimeout(DEEPSEEK_URL, {
@@ -174,10 +183,11 @@ async function handleMultiProvider(request, env, corsHeaders) {
         body: JSON.stringify({
           model: DEEPSEEK_MODEL,
           messages,
-          max_tokens: payload.max_tokens || 500,
-          temperature: payload.temperature || 0.7,
+          max_tokens,
+          temperature,
+          top_p,
         }),
-      }, 30000);
+      }, 45000); // DeepSeek peut être plus lent que Groq — timeout large
 
       if (resp.ok) {
         const data = await resp.json();
@@ -202,91 +212,47 @@ async function handleMultiProvider(request, env, corsHeaders) {
     errors.push('DeepSeek: DEEPSEEK_API_KEY not set');
   }
 
-  // ─── 3. HUGGING FACE ───────────────────────────────────────────────────
-  if (env.HF_API_KEY) {
+  // ─── 3. GROQ (2e fallback) ────────────────────────────────────────────
+  if (env.GROQ_API_KEY) {
     try {
-      const resp = await fetchWithTimeout(HF_URL, {
+      // 70b réservé à la synthèse (quota), 8b pour la collecte
+      const model = isSynthesis ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
+
+      const resp = await fetchWithTimeout(GROQ_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${env.HF_API_KEY}`,
+          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: HF_MODEL,
-          messages,
-          max_tokens: payload.max_tokens || 420,
-          temperature: payload.temperature || 0.7,
-        }),
+        body: JSON.stringify({ model, messages, max_tokens, temperature, top_p }),
       }, 30000);
 
       if (resp.ok) {
         const data = await resp.json();
         const content = data.choices?.[0]?.message?.content;
         if (content) {
-          const enhanced = enhanceReply(content, messages);
+          // Filet de sécurité qualité pour le fallback (empathie + question)
+          const enhanced = isSynthesis ? content : enhanceReply(content, messages);
           return jsonResp({
             choices: [{ message: { content: enhanced, role: 'assistant' } }],
-            provider: 'huggingface',
-            model: HF_MODEL,
+            provider: 'groq',
+            model,
           }, 200, corsHeaders);
         }
       }
 
       const errText = await resp.text();
-      errors.push(`HuggingFace ${resp.status}: ${errText.substring(0, 200)}`);
-      console.warn('HuggingFace failed:', resp.status);
+      errors.push(`Groq ${resp.status}: ${errText.substring(0, 200)}`);
+      console.warn('Groq failed:', resp.status);
     } catch (e) {
-      errors.push('HuggingFace timeout/error: ' + e.message);
-      console.warn('HuggingFace exception:', e.message);
+      errors.push('Groq timeout/error: ' + e.message);
+      console.warn('Groq exception:', e.message);
     }
   } else {
-    errors.push('HuggingFace: HF_API_KEY not set');
+    errors.push('Groq: GROQ_API_KEY not set');
   }
 
-  // ─── 4. OPENROUTER ─────────────────────────────────────────────────────
-  if (env.OPENROUTER_API_KEY) {
-    try {
-      const resp = await fetchWithTimeout(OR_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://fazprod12-max.github.io/cynthia/',
-          'X-Title': 'CYNTH.IA',
-        },
-        body: JSON.stringify({
-          model: OR_MODEL,
-          messages,
-          max_tokens: payload.max_tokens || 420,
-          temperature: payload.temperature || 0.7,
-        }),
-      }, 30000);
-
-      if (resp.ok) {
-        const data = await resp.json();
-        const content = data.choices?.[0]?.message?.content;
-        if (content) {
-          const enhanced = enhanceReply(content, messages);
-          return jsonResp({
-            choices: [{ message: { content: enhanced, role: 'assistant' } }],
-            provider: 'openrouter',
-            model: OR_MODEL,
-          }, 200, corsHeaders);
-        }
-      }
-
-      const errText = await resp.text();
-      errors.push(`OpenRouter ${resp.status}: ${errText.substring(0, 200)}`);
-      console.warn('OpenRouter failed:', resp.status);
-    } catch (e) {
-      errors.push('OpenRouter timeout/error: ' + e.message);
-      console.warn('OpenRouter exception:', e.message);
-    }
-  } else {
-    errors.push('OpenRouter: OPENROUTER_API_KEY not set');
-  }
-
-  // ─── 5. FALLBACK LOCAL ─────────────────────────────────────────────────
+  // ─── 4. FALLBACK LOCAL ─────────────────────────────────────────────────
   console.warn('All providers failed. Errors:', errors);
   const fallbackContent = getFallbackReply(messages);
   return jsonResp({
@@ -297,10 +263,10 @@ async function handleMultiProvider(request, env, corsHeaders) {
   }, 200, corsHeaders);
 }
 
-/* ─── Compensations pour modèles secondaires (HF, OpenRouter) ───────────── */
+/* ─── Filet de sécurité qualité (fallback Groq uniquement) ───────────────── */
 /**
- * Si la réponse du modèle secondaire est trop courte ou manque d'empathie/question,
- * on la complète légèrement pour maintenir la qualité de l'expérience.
+ * DeepSeek est calibré par le prompt système ; le fallback Groq 8b peut
+ * oublier l'empathie ou la question. On complète a minima.
  */
 function enhanceReply(reply, messages) {
   if (!reply) return '';
@@ -309,7 +275,6 @@ function enhanceReply(reply, messages) {
   const lastUserMsg = messages.filter(m => m.role === 'user').pop()?.content || '';
   const emotion = detectEmotion(lastUserMsg);
 
-  // Si émotion forte détectée et l'IA n'a pas exprimé d'empathie
   if (emotion !== 'neutre') {
     const hasEmpathy = /comprend|entend|ressent|normal|humain|difficile|courage/i.test(enhanced);
     if (!hasEmpathy) {
@@ -317,12 +282,11 @@ function enhanceReply(reply, messages) {
     }
   }
 
-  // Si aucune question posée, en ajouter une ouverte contextuelle
   if (!enhanced.includes('?')) {
     if (emotion === 'peur') {
-      enhanced += ' Qu\'est-ce qui vous semblerait rassurant pour commencer ?';
+      enhanced += " Qu'est-ce qui vous semblerait rassurant pour commencer ?";
     } else if (emotion === 'doute') {
-      enhanced += ' Qu\'est-ce qui vous paraît le plus incertain, pour vous, en ce moment ?';
+      enhanced += " Qu'est-ce qui vous paraît le plus incertain, pour vous, en ce moment ?";
     } else {
       enhanced += " Qu'en pensez-vous ?";
     }
@@ -332,7 +296,7 @@ function enhanceReply(reply, messages) {
 }
 
 function detectEmotion(text) {
-  const t = text.toLowerCase();
+  const t = (text || '').toLowerCase();
   const patterns = {
     peur:      ['peur', 'angoisse', 'inquiet', 'stressé', 'panique', 'crainte', 'bloqué'],
     tristesse: ['triste', 'déçu', 'découragé', 'abattu', 'mélancolique', 'burnout'],
@@ -345,19 +309,17 @@ function detectEmotion(text) {
   return 'neutre';
 }
 
-/* ─── Fallback local amélioré ────────────────────────────────────────────── */
+/* ─── Fallback local contextuel ──────────────────────────────────────────── */
 /**
  * Génère une réponse contextuelle à partir des 3 derniers messages utilisateur.
- * Beaucoup plus pertinent que les anciennes réponses génériques fixes.
+ * Ordre de priorité : état émotionnel → famille → valeurs → financier → aspiration.
  */
 function getFallbackReply(messages) {
   const userMsgs = messages.filter(m => m.role === 'user');
   const recentContext = userMsgs.slice(-3).map(m => m.content).join(' ').toLowerCase();
   const count = userMsgs.length;
 
-  // Détection de thèmes prioritaires dans les derniers messages
-  // Ordre : état émotionnel → famille → valeurs → financier → aspiration
-  if (recentContext.includes('burnout') || recentContext.includes('épuisé') || recentContext.includes('plus l\'énergie')) {
+  if (recentContext.includes('burnout') || recentContext.includes('épuisé') || recentContext.includes("plus l'énergie")) {
     return "Ce que vous décrivez ressemble à un signal fort que quelque chose doit changer. Avant d'envisager la suite, qu'est-ce qui vous donnerait l'envie de vous lever le matin avec enthousiasme ?";
   }
   if (recentContext.includes('peur') || recentContext.includes('angoisse') || recentContext.includes('bloqué')) {
@@ -372,11 +334,10 @@ function getFallbackReply(messages) {
   if (recentContext.includes('financier') || recentContext.includes('argent') || recentContext.includes('salaire') || recentContext.includes('crédit')) {
     return "La question financière est réelle et légitime. Pour avancer sereinement, quel serait, selon vous, le minimum dont vous auriez besoin pour vous sentir en sécurité le temps d'une transition ?";
   }
-  if (recentContext.includes('passion') || recentContext.includes('envie') || recentContext.includes('rêve') || recentContext.includes('j\'aimerais')) {
+  if (recentContext.includes('passion') || recentContext.includes('envie') || recentContext.includes('rêve') || recentContext.includes("j'aimerais")) {
     return "Ce que vous décrivez là, c'est une piste précieuse. Qu'est-ce qui vous a jusqu'à présent retenu de l'explorer davantage ?";
   }
 
-  // Réponses adaptées selon la phase de la conversation
   if (count <= 2) {
     return "Je vous écoute pleinement. Pour mieux vous accompagner, pourriez-vous me décrire ce qui vous a amené à vous questionner sur votre parcours professionnel aujourd'hui ?";
   } else if (count <= 5) {
@@ -550,6 +511,18 @@ async function fetchWithTimeout(url, options, ms) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+function clampInt(v, min, max) {
+  const n = parseInt(v);
+  if (isNaN(n)) return null;
+  return Math.max(min, Math.min(max, n));
+}
+
+function clampNum(v, min, max) {
+  const n = parseFloat(v);
+  if (isNaN(n)) return null;
+  return Math.max(min, Math.min(max, n));
 }
 
 function jsonResp(data, status, corsHeaders = {}) {
