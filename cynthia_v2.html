@@ -2918,31 +2918,59 @@ async function callCynthAI(messages) {
     systemPrompt += `\n\n📌 R4 — SIGNAL FORT détecté dans le dernier message. Approfondis-le en priorité. Angle suggéré : "${signalAngle}" (adapte la formulation à ses mots exacts).`;
   }
 
-  // ── R10 — Anti-répétition : interdiction explicite de la dernière question ──
-  // ── R10 RENFORCÉ — Rotation forcée des angles de question ───────────────────
-  // Injecté EN FIN de prompt. Interdit + impose un angle précis à explorer.
+  // ── R10 v3 — Anti-répétition : interdiction + angle OBLIGATOIRE ─────────────
+  // Dernière instruction du prompt = poids maximal. Remplace tout angle suggéré avant.
   if (!wantSynthesis) {
     const _allAI = messages.filter(m => m.role === 'assistant');
     const _lastAIContent = _allAI[_allAI.length - 1]?.content || '';
+    // Extraire TOUTES les questions de la dernière réponse IA
     const _lastQs = (_lastAIContent.match(/[^.!?●→\n]*\?/g) || [])
       .map(q => q.trim()).filter(q => q.length > 12);
     const _lastQ = _lastQs[_lastQs.length - 1] || '';
-    // Liste de toutes les questions déjà posées (pour la liste d'interdits)
+    // Toutes les questions déjà posées sur les 5 derniers échanges
     const _allAskedQs = _allAI
       .flatMap(m => (m.content.match(/[^.!?●→\n]*\?/g) || []))
       .map(q => q.trim()).filter(q => q.length > 12).slice(-5);
-    // Angles par phase — rotation forcée pour éviter les questions génériques
+    // Angles OBLIGATOIRES par phase (rotation basée sur le nb de messages utilisateur)
     const _anglesByPhase = {
-      1: ["un moment précis où vous vous êtes senti vraiment utile", "ce que vos proches diraient de vous en 3 mots", "ce qui vous manque le plus dans votre travail actuel"],
-      2: ["vos freins concrets : qu'est-ce qui vous retient vraiment de changer ?", "comment vous imaginez votre journée idéale dans 3 ans", "ce que vous n'êtes plus prêt à accepter dans votre prochain poste"],
-      3: ["laquelle de ces pistes vous parle le plus à cet instant", "le premier pas concret que vous pourriez faire dès cette semaine"]
+      1: [
+        "ce que vos proches diraient de vous en 3 mots",
+        "ce qui vous manque le plus dans votre travail actuel",
+        "ce qui vous a le plus appris dans votre parcours jusqu'ici"
+      ],
+      2: [
+        "vos freins concrets : qu'est-ce qui vous retient vraiment de changer ?",
+        "comment vous imaginez votre journée idéale dans 3 ans",
+        "ce que vous n'êtes plus prêt à accepter dans votre prochain poste"
+      ],
+      3: [
+        "laquelle de ces pistes vous parle le plus à cet instant",
+        "le premier pas concret que vous pourriez faire dès cette semaine"
+      ]
     };
     const _phase = chatProfile.currentPhase || 1;
     const _angles = _anglesByPhase[_phase] || _anglesByPhase[1];
-    const _angleIdx = (messages.filter(m => m.role === 'user').length - 1) % _angles.length;
+    // Rotation sur nb messages UTILISATEUR (pas total) pour garantir la variété
+    const _uCount = messages.filter(m => m.role === 'user').length;
+    const _angleIdx = (_uCount - 1) % _angles.length;
     const _suggestedAngle = _angles[_angleIdx];
     if (_lastQ) {
-      systemPrompt += `\n\n🔴 ANTI-RÉPÉTITION (PRIORITÉ ABSOLUE) :\nQuestion interdite : "${_lastQ}"\nAutres interdites : ${_allAskedQs.slice(0,-1).map(q=>`"${q}"`).join(', ') || 'aucune encore'}\nAngle IMPOSÉ pour ta prochaine question : ${_suggestedAngle}.\nCommence ta réponse par une reformulation courte de ce que l'utilisateur vient de dire, PUIS pose ta question sur cet angle.`;
+      systemPrompt += `\n\n════════════════════════════════════════
+🔴🔴🔴 INSTRUCTION FINALE — PRIORITÉ ABSOLUE — ANNULE TOUT CE QUI PRÉCÈDE 🔴🔴🔴
+════════════════════════════════════════
+QUESTION STRICTEMENT INTERDITE (mot pour mot ET reformulation) :
+  ❌ "${_lastQ}"
+${_allAskedQs.slice(0, -1).length > 0 ? `AUTRES QUESTIONS INTERDITES :\n${_allAskedQs.slice(0, -1).map(q => `  ❌ "${q}"`).join('\n')}` : ''}
+ANGLE OBLIGATOIRE pour ta prochaine question (formule-le avec tes propres mots) :
+  ✅ ${_suggestedAngle}
+FORMAT OBLIGATOIRE :
+  1. Une phrase qui reformule ce que l'utilisateur vient de dire (15 mots max).
+  2. Une SEULE question sur l'angle ci-dessus.
+  3. Pas de liste. Pas de métier. Pas de conseil.
+════════════════════════════════════════`;
+    } else {
+      // Même sans question précédente détectée, imposer l'angle
+      systemPrompt += `\n\n🔴 INSTRUCTION FINALE : Angle OBLIGATOIRE pour ta prochaine question : ${_suggestedAngle}. Une reformulation (15 mots), une question sur cet angle. Pas de liste ni de métier.`;
     }
   }
 
@@ -2998,8 +3026,10 @@ async function callCynthAI(messages) {
   const resp = await fetchProxy({
     messages: apiMessages,
     max_tokens: maxTokens,
-    temperature: wantSynthesis ? 0.55 : 0.72,
-    top_p: 0.92,
+    temperature: wantSynthesis ? 0.55 : 0.65,  // réduit 0.72→0.65 : meilleur suivi des instructions
+    top_p: 0.90,
+    frequency_penalty: wantSynthesis ? 0.0 : 0.8,   // pénalise la répétition de tokens déjà apparus
+    presence_penalty:  wantSynthesis ? 0.0 : 0.4,   // encourage l'exploration de nouveaux sujets
     isSynthesis: wantSynthesis,   // le Worker s'en sert pour le choix de modèle fallback
   });
   if (!resp.ok) throw new Error('proxy-' + resp.status);
