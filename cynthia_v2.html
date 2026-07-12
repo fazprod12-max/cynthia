@@ -2918,21 +2918,18 @@ async function callCynthAI(messages) {
     systemPrompt += `\n\n📌 R4 — SIGNAL FORT détecté dans le dernier message. Approfondis-le en priorité. Angle suggéré : "${signalAngle}" (adapte la formulation à ses mots exacts).`;
   }
 
-  // ── R10 v4 — Question PRESCRITE EXACTE + Prefill assistant ──────────────────
-  // Double verrouillage : (1) question mot-pour-mot dans le prompt,
-  // (2) prefill assistant qui force la continuation vers cette question.
-  // Le modèle ne peut pas "oublier" une instruction qu'il est en train d'exécuter.
+  // ── R10 v5 — MODE REFORMULATION FORCÉE + question prescrite injectée en JS ───
+  // Architecture : le modèle génère UNE reformulation empathique courte (≤20 mots).
+  // La question prescrite est concaténée en JS — zéro dépendance sur le LLM pour la question.
+  let _r10PrescribedQ = '';
+  let _r10Active = false;
+
   if (!wantSynthesis) {
     const _allAI = messages.filter(m => m.role === 'assistant');
-    const _lastAIContent = _allAI[_allAI.length - 1]?.content || '';
-    const _lastQs = (_lastAIContent.match(/[^.!?●→\n]*\?/g) || [])
-      .map(q => q.trim()).filter(q => q.length > 12);
-    const _lastQ = _lastQs[_lastQs.length - 1] || '';
     const _allAskedQs = _allAI
       .flatMap(m => (m.content.match(/[^.!?●→\n]*\?/g) || []))
-      .map(q => q.trim()).filter(q => q.length > 12).slice(-6);
+      .map(q => q.trim()).filter(q => q.length > 12);
 
-    // ── Questions prescrites EXACTES par phase (rotation sur userMsgCount) ──
     const _exactQsByPhase = {
       1: [
         "En quels termes vos proches vous décriraient-ils spontanément ?",
@@ -2950,59 +2947,31 @@ async function callCynthAI(messages) {
       ]
     };
 
-    // ── Prefills par question prescrite — dirigent naturellement vers la question ──
-    const _prefillMap = {
-      "En quels termes vos proches vous décriraient-ils spontanément ?":
-        "Ce que vous partagez me donne un éclairage précieux. En pensant à ceux qui vous connaissent bien,",
-      "Qu'est-ce qui vous manque le plus dans votre quotidien professionnel actuel ?":
-        "Ce que vous décrivez est parlant. Dans votre quotidien de travail,",
-      "Qu'est-ce que ces années dans ce poste vous ont appris sur vous-même ?":
-        "Ces années de terrain ont forcément laissé des traces.",
-      "Concrètement, qu'est-ce qui vous retient encore de passer à l'action ?":
-        "Je vois ce qui vous attire dans ce changement. Ce qui m'intéresse maintenant,",
-      "Si vous vous projetiez dans 3 ans, comment ressemblerait une journée de travail idéale ?":
-        "Projetons-nous un instant. Dans 3 ans, si tout se passait comme vous le souhaitez,",
-      "Y a-t-il des conditions que vous n'êtes plus prêt à accepter dans un prochain poste ?":
-        "Il y a ce que vous cherchez — et il y a ce que vous ne voulez plus.",
-      "Parmi les pistes qu'on a évoquées, laquelle vous parle le plus en ce moment ?":
-        "On a exploré plusieurs directions ensemble. En ce moment précis,",
-      "Quel serait le premier pas concret que vous pourriez faire dès cette semaine ?":
-        "Vous avez une vision de ce qui vous anime. Concrètement,"
-    };
-
     const _phase = chatProfile.currentPhase || 1;
     const _exactQs = _exactQsByPhase[_phase] || _exactQsByPhase[1];
     const _uCount = messages.filter(m => m.role === 'user').length;
-    const _qIdx = (_uCount - 1) % _exactQs.length;
-    const _prescribedQ = _exactQs[_qIdx];
-    const _prefill = _prefillMap[_prescribedQ] || 'Ce que vous venez de partager est clair.';
 
-    // ── Injection système : question prescrite exacte ──────────────────────
-    const _forbiddenBlock = _lastQ
-      ? `❌ QUESTION INTERDITE (ni mot pour mot ni reformulée) : "${_lastQ}"\n`
-      : '';
-    const _otherForbidden = _allAskedQs.filter(q => q !== _lastQ).slice(-3);
-    const _otherBlock = _otherForbidden.length > 0
-      ? `❌ AUSSI INTERDITES : ${_otherForbidden.map(q => `"${q}"`).join(' / ')}\n`
-      : '';
+    // Anti-répétition : choisir la première question non encore posée dans ce cycle
+    const _askedLower = new Set(_allAskedQs.map(q => q.toLowerCase()));
+    let _qIdx = (_uCount - 1) % _exactQs.length;
+    for (let _i = 0; _i < _exactQs.length; _i++) {
+      const _candidate = _exactQs[(_qIdx + _i) % _exactQs.length];
+      if (!_askedLower.has(_candidate.toLowerCase())) {
+        _qIdx = (_qIdx + _i) % _exactQs.length;
+        break;
+      }
+    }
+
+    _r10PrescribedQ = _exactQs[_qIdx];
+    _r10Active = true;
 
     systemPrompt += `\n\n════════════════════════════════════════
-🔴 INSTRUCTION FINALE — ANNULE ET REMPLACE TOUT — PRIORITÉ ABSOLUE 🔴
-════════════════════════════════════════
-${_forbiddenBlock}${_otherBlock}
-✅ TA RÉPONSE DOIT SE TERMINER PAR CETTE QUESTION EXACTE (copie mot pour mot) :
-"${_prescribedQ}"
-
-FORMAT IMPÉRATIF :
-  → Continue la phrase déjà commencée ci-dessous (reformulation de l'utilisateur, 15 mots max).
-  → Termine OBLIGATOIREMENT par : "${_prescribedQ}"
-  → Rien d'autre. Zéro liste. Zéro conseil. Zéro autre question.
+🔴 MODE REFORMULATION — INSTRUCTION ABSOLUE 🔴
+Génère EXACTEMENT UNE phrase empathique de 10 à 20 mots.
+Reformule ou accueille ce que l'utilisateur vient de partager — avec ses propres mots si possible.
+INTERDIT : toute question. INTERDIT : tout texte après la phrase. INTERDIT : liste ou conseil.
+Format attendu : une seule phrase qui se termine par un point.
 ════════════════════════════════════════`;
-
-    // ── Prefill assistant : force la direction — le modèle CONTINUE ce texte ──
-    if (trimmed.length > 0 && trimmed[trimmed.length - 1].role === 'user') {
-      trimmed = [...trimmed, { role: 'assistant', content: _prefill }];
-    }
   }
 
   // ── Post-synthèse : approfondissement, plus de nouvelles listes ─────────────
@@ -3056,7 +3025,7 @@ FORMAT IMPÉRATIF :
 
   const resp = await fetchProxy({
     messages: apiMessages,
-    max_tokens: maxTokens,
+    max_tokens: _r10Active ? 80 : maxTokens,
     temperature: wantSynthesis ? 0.55 : 0.65,  // réduit 0.72→0.65 : meilleur suivi des instructions
     top_p: 0.90,
     frequency_penalty: wantSynthesis ? 0.0 : 0.8,   // pénalise la répétition de tokens déjà apparus
@@ -3066,6 +3035,20 @@ FORMAT IMPÉRATIF :
   if (!resp.ok) throw new Error('proxy-' + resp.status);
   const data = await resp.json();
   let reply = data.choices[0].message.content.trim();
+
+  // ── R10 v5 — Injection de la question prescrite ──────────────────────────────
+  // Groq retourne uniquement les tokens générés (pas le prefill).
+  // On assemble ici : reformulation courte du modèle + question prescrite en JS.
+  if (_r10Active && _r10PrescribedQ) {
+    let _reformulation = reply.trim();
+    // Si le modèle a quand même posé une question, on la tronque avant le "?"
+    const _qMark = _reformulation.indexOf('?');
+    if (_qMark !== -1) _reformulation = _reformulation.slice(0, _qMark).trim();
+    // S'assurer que la reformulation se termine proprement
+    if (_reformulation && !_reformulation.match(/[.!]$/)) _reformulation += '.';
+    // Assembler : reformulation + saut de ligne + question prescrite
+    reply = (_reformulation ? _reformulation + '\n\n' : '') + _r10PrescribedQ;
+  }
 
   // ── Verrouillage des flags UNIQUEMENT après une réponse réussie ─────────────
   // (si l'appel échoue, la synthèse sera retentée au tour suivant)
