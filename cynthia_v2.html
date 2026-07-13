@@ -3019,15 +3019,20 @@ async function callCynthAI(messages) {
     _r10Active = true;
 
     systemPrompt += `\n\n════════════════════════════════════════
-🔴 CADENCEUR COGNITIF — ÉTAPES 1 À 3 UNIQUEMENT 🔴
-La question sera ajoutée automatiquement. TOI, tu génères les 3 étapes suivantes :
+🔴 CADENCEUR COGNITIF — FORMAT STRICT 🔴
+Écris EXACTEMENT 3 phrases courtes. Pas de paragraphe. Pas d'explication. Chaque phrase = 1 ligne.
 
-Étape 1 — Miroir émotionnel : 1 phrase qui reprend 1-2 mots clés du client et les traduit en ressenti avec une image forte ou une opposition ("D'un côté... de l'autre..."). NE PAS répéter ses mots à l'identique — les TRADUIRE.
-Étape 2 — Synthèse éclair : 1 phrase percutante qui résume son dilemme en une formule mémorable.
-Étape 3 — Tension nommée : 1 phrase qui pointe sa contradiction intérieure et nomme l'émotion cachée (solitude fonctionnelle, résonance manquante, peur de l'inutilité, fierté blessée...).
+Phrase 1 — Image forte : traduis ce que le client vit en UNE métaphore ou opposition. Max 20 mots.
+Phrase 2 — Synthèse : résume son dilemme en UNE formule mémorable. Max 15 mots.
+Phrase 3 — Émotion nommée : nomme l'émotion cachée (solitude fonctionnelle / résonance manquante / peur de l'inutilité / fierté blessée). Max 15 mots. TERMINE par un point.
 
-TOTAL : 3 phrases maximum. Pas de question. Pas de liste. Pas de conseil. Pas d'emoji.
-INTERDIT : "Je comprends ce que vous traversez." / "Merci pour cette précision." / tout accusé de réception neutre.
+EXEMPLE DE SORTIE CORRECTE :
+"C'est comme si vous teniez la porte ouverte pour des gens qui tombent, sans pouvoir les retenir.
+Vous avez la compétence, mais elle sert un système que vous ne croyez plus.
+Ce que ça crée, c'est une solitude de conviction — être seule à voir ce que vous voyez."
+
+INTERDIT : plus de 3 phrases. Paragraphes. Questions. Listes. "Je comprends." "Merci pour cette précision."
+La question sera ajoutée automatiquement après — ne l'écris PAS.
 ════════════════════════════════════════`;
   }
 
@@ -3082,7 +3087,7 @@ INTERDIT : "Je comprends ce que vous traversez." / "Merci pour cette précision.
 
   const resp = await fetchProxy({
     messages: apiMessages,
-    max_tokens: _r10Active ? 160 : maxTokens,
+    max_tokens: _r10Active ? 200 : maxTokens,
     temperature: wantSynthesis ? 0.55 : 0.65,  // réduit 0.72→0.65 : meilleur suivi des instructions
     top_p: 0.90,
     frequency_penalty: wantSynthesis ? 0.0 : 0.8,   // pénalise la répétition de tokens déjà apparus
