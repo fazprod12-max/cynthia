@@ -3899,18 +3899,19 @@ Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant o
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      model:'llama-3.3-70b-versatile',
+      isSynthesis: true,           // → force Groq 70b si Claude indispo
       messages:[{role:'user',content:prompt}],
       max_tokens:3500,
       temperature:0.25,
       top_p:0.9
     })
   });
-  if (!resp.ok) throw new Error('groq-'+resp.status);
+  if (!resp.ok) throw new Error('proxy-'+resp.status);
   const data = await resp.json();
-  const raw = data.choices[0].message.content.trim();
+  const raw = data.choices?.[0]?.message?.content?.trim() || '';
+  // Extraire le JSON même si le modèle ajoute du texte autour
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('no-json');
+  if (!jsonMatch) throw new Error('no-json: ' + raw.substring(0, 100));
   return JSON.parse(jsonMatch[0]);
 }
 
