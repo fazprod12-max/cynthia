@@ -161,8 +161,8 @@ async function handleChat(request, env, corsHeaders) {
       }
 
       const errText = await resp.text();
-      errors.push(`Claude ${resp.status}: ${errText.substring(0, 200)}`);
-      console.warn('Claude failed:', resp.status, errText.substring(0, 200));
+      errors.push(`Claude ${resp.status}: ${errText.substring(0, 400)}`);
+      console.warn('Claude failed:', resp.status, errText.substring(0, 400));
     } catch (e) {
       errors.push('Claude timeout/error: ' + e.message);
       console.warn('Claude exception:', e.message);
