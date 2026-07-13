@@ -2901,10 +2901,14 @@ async function callCynthAI(messages) {
     systemPrompt += `\n\n🚫 RÈGLE R9/R12 — Pré-synthèse : il est INTERDIT de proposer le moindre métier, secteur ou piste professionnelle, et INTERDIT de proposer le rapport. Les pistes viennent uniquement lors de la synthèse. Si tu ressens l'envie de suggérer une direction, transforme-la en question ouverte.`;
   }
 
-  // ── R5 — Restitution intermédiaire (vers le 6e message, une seule fois) ─────
-  if (!restitutionDone && !wantSynthesis && !synthesisFired && userMsgCount >= 6) {
+  // ── R5 — MIROIR PROFESSIONNEL (exactement au tour 6, une seule fois) ────────
+  // On bypass R10 v5 pour ce tour : l'IA génère une synthèse haute valeur ajoutée
+  // qui reflète valeurs implicites, compétences transparentes et besoin central.
+  let _mirrorTurn = false;
+  if (!restitutionDone && !wantSynthesis && !synthesisFired && userMsgCount === 6) {
     restitutionDone = true;
-    systemPrompt += `\n\n📌 R5 — RESTITUTION INTERMÉDIAIRE MAINTENANT : commence ta réponse par un court résumé de ce que tu as compris jusqu'ici (situation, valeurs, freins — avec ses propres mots), puis demande-lui si ce résumé est juste. Une seule question : la demande de confirmation.`;
+    _mirrorTurn = true;
+    systemPrompt += `\n\n📌 R5 — MIROIR PROFESSIONNEL MAINTENANT. C'est le moment clé de la conversation. Écris 3 à 4 phrases naturelles et directes (ZÉRO liste, ZÉRO puce, ZÉRO titre). Synthétise ce que tu perçois de cette personne : ses valeurs profondes (même celles qu'elle n'a pas nommées explicitement), ses compétences implicites (celles qui transparaissent dans la façon dont elle parle sans qu'elle les nomme), et son besoin central non formulé. Utilise ses propres mots quand c'est possible. Sois précis et courageux — pas générique. Termine UNIQUEMENT par : "Est-ce que ça vous ressemble ?" et rien d'autre. Aucun métier, aucun conseil, aucune autre question.`;
   }
 
   // ── R3 — Réponse courte : creuser ────────────────────────────────────────────
@@ -3049,14 +3053,20 @@ Format attendu : une seule phrase qui se termine par un point.
   // ── R10 v5 — Injection de la question prescrite ──────────────────────────────
   // Transition pré-écrite (100% déterministe) + question prescrite injectée en JS.
   // Le LLM ne contrôle plus la reformulation → zéro question déguisée, zéro répétition.
-  if (_r10Active && _r10PrescribedQ) {
+  // Exception : au tour 6 (_mirrorTurn), l'IA génère elle-même le miroir professionnel.
+  if (_r10Active && _r10PrescribedQ && !_mirrorTurn) {
     const _transitions = [
       "Je vous entends.",
       "C'est important ce que vous partagez.",
       "Je comprends ce que vous traversez.",
       "Merci pour cette précision.",
       "Ce que vous décrivez résonne vraiment.",
-      "Je perçois ce que cela représente pour vous."
+      "Je perçois ce que cela représente pour vous.",
+      "Ce que vous venez de partager m'éclaire beaucoup.",
+      "C'est exactement le type de réflexion qui permet d'y voir plus clair.",
+      "Vous touchez quelque chose d'essentiel là.",
+      "C'est courageux de se poser ces questions.",
+      "On avance ensemble vers quelque chose de concret."
     ];
     const _uCountFinal = chatHistory.filter(m => m.role === 'user').length;
     const _transition = _transitions[(_uCountFinal - 1) % _transitions.length];
@@ -3796,6 +3806,56 @@ const METIERS_DB = [
 ];
 
 /* ══════════════════════════════════════════════════════════════
+   ENRICHISSEMENT METIERS — compétences détaillées, tension marché,
+   CPF précis, avenir, profils typiques (idée 2, 3, 4)
+══════════════════════════════════════════════════════════════ */
+const METIERS_EXTRA = {
+  'dev-web':        { competences_detaillees:['HTML/CSS/JavaScript (React ou Vue)','back-end (Node.js/Python/PHP)','bases de données SQL et NoSQL','versioning Git/GitHub','intégration d\'API REST','débogage et optimisation','méthodes Agile/Scrum'], tension:'haute', cpf_montant:'5 000€', cpf_duree:'6 mois', cpf_100:true,  avenir:'fort',   profils_from:['ingénieur','comptable','logisticien','étudiant reconversion'] },
+  'ux-designer':    { competences_detaillees:['interviews utilisateurs et personas','wireframing et prototypage (Figma)','cartographie des parcours utilisateurs','tests d\'utilisabilité','rédaction de spécifications UX','collaboration avec les développeurs','analyse des métriques UX'], tension:'moyenne', cpf_montant:'5 000€', cpf_duree:'6 à 12 mois', cpf_100:false, avenir:'fort',   profils_from:['graphiste','communication','chef de projet','marketing'] },
+  'data-analyst':   { competences_detaillees:['SQL et requêtage de bases de données','Python ou R pour l\'analyse','Excel avancé et Power BI','data visualisation (Tableau, Looker)','statistiques descriptives et inférentielles','nettoyage et préparation de données','présentation de résultats métier'], tension:'haute', cpf_montant:'5 000€', cpf_duree:'6 mois', cpf_100:true,  avenir:'fort',   profils_from:['comptable','contrôleur de gestion','ingénieur','chargé marketing'] },
+  'product-manager':{ competences_detaillees:['rédaction de spécifications produit (user stories)','animation d\'équipes pluridisciplinaires','priorisation de roadmap (RICE, MoSCoW)','gestion de backlog Agile (Jira)','analyse de métriques produit (KPIs)','conduite d\'entretiens utilisateurs','pilotage de cycles de livraison'], tension:'moyenne', cpf_montant:'4 000€', cpf_duree:'6 mois', cpf_100:false, avenir:'fort',   profils_from:['chef de projet','commercial B2B','développeur','consultant'] },
+  'community-manager':{ competences_detaillees:['création de contenu (texte, visuel, vidéo)','gestion de calendrier éditorial','animation et modération de communautés','analyse des statistiques réseaux sociaux','veille concurrentielle et e-réputation','outils de planification (Buffer, Hootsuite)','gestion de crise en ligne'], tension:'faible', cpf_montant:'2 000€', cpf_duree:'3 mois', cpf_100:false, avenir:'stable', profils_from:['communication','journaliste','graphiste','étudiant'] },
+  'cybersecurite':  { competences_detaillees:['analyse de vulnérabilités systèmes et réseaux','tests d\'intrusion (pentesting)','cryptographie et PKI appliqués','gestion des incidents de sécurité (SIEM)','conformité RGPD et ISO 27001','rédaction de politiques de sécurité','forensic numérique de base'], tension:'haute', cpf_montant:'5 000€', cpf_duree:'6 à 12 mois', cpf_100:true,  avenir:'fort',   profils_from:['développeur','ingénieur réseau','administrateur système','militaire'] },
+  'commercial':     { competences_detaillees:['prospection téléphonique et terrain','gestion d\'un portefeuille clients','négociation et techniques de closing','utilisation d\'un CRM (Salesforce, HubSpot)','rédaction et chiffrage d\'offres commerciales','analyse des besoins clients (découverte)','reporting et suivi de performance'], tension:'haute', cpf_montant:'3 000€', cpf_duree:'3 mois', cpf_100:false, avenir:'stable', profils_from:['enseignant','militaire','service client','communicant'] },
+  'entrepreneur':   { competences_detaillees:['élaboration d\'un business plan et modèle économique','recherche de financement (ACRE, BPI, love money)','gestion opérationnelle d\'une structure','marketing et acquisition client','management d\'équipe et culture','juridique de base (statuts, contrats, CGV)','pivot et adaptation stratégique'], tension:'variable', cpf_montant:'N/A', cpf_duree:'N/A', cpf_100:false, avenir:'fort',   profils_from:['commercial','consultant','chef de projet','tout profil avec une idée'] },
+  'agent-immobilier':{ competences_detaillees:['prospection et estimation de biens','conduite et valorisation de visites','négociation acheteur/vendeur','montage de dossiers de financement','droit immobilier de base (bail, compromis)','gestion d\'un réseau de prescripteurs','suivi client jusqu\'à la signature notariale'], tension:'moyenne', cpf_montant:'3 000€', cpf_duree:'3 mois', cpf_100:false, avenir:'stable', profils_from:['commercial','banquier','juriste','architecte'] },
+  'consultant':     { competences_detaillees:['diagnostic et analyse de problèmes complexes','rédaction de livrables (rapports, recommandations)','animation d\'ateliers et de réunions','gestion et fidélisation de la relation client','structuration de propositions commerciales','gestion de son temps et de ses priorités','vente de ses propres prestations (inbound/outbound)'], tension:'moyenne', cpf_montant:'2 000€', cpf_duree:'2 mois', cpf_100:false, avenir:'fort',   profils_from:['ingénieur','directeur','expert RH','expert métier senior'] },
+  'coach':          { competences_detaillees:['écoute active et questionnement puissant (GROW, CNV)','techniques de coaching certifiées ICF','fixation et suivi d\'objectifs mesurables','gestion des émotions et résistances au changement','animation de séances individuelles et collectives','marketing personnel et acquisition clients','gestion d\'un cabinet libéral (facturation, TVA)'], tension:'faible', cpf_montant:'3 500€', cpf_duree:'12 à 18 mois', cpf_100:false, avenir:'stable', profils_from:['RH','manager','formateur','thérapeute'] },
+  'formateur':      { competences_detaillees:['ingénierie pédagogique (conception de formation sur mesure)','animation de groupe d\'adultes (techniques d\'animation)','évaluation des acquis (quiz, mises en situation)','création de supports (slides, e-learning, FOAD)','adaptation au niveau et profil des apprenants','gestion de la dynamique de groupe','connaissance de la réforme formation professionnelle (CPF, OPCO)'], tension:'haute', cpf_montant:'5 000€', cpf_duree:'6 à 8 mois', cpf_100:true,  avenir:'stable', profils_from:['enseignant','expert métier','RH','manager'] },
+  'educateur':      { competences_detaillees:['accompagnement éducatif individualisé (PEI)','animation d\'activités socio-éducatives','rédaction de notes sociales et rapports éducatifs','travail en équipe pluridisciplinaire','gestion de situations de crise et conflits','connaissance des dispositifs de protection de l\'enfance','communication avec familles et institutions partenaires'], tension:'haute', cpf_montant:'Transition Pro (jusqu\'à 100%)', cpf_duree:'3 ans (DEES)', cpf_100:false, avenir:'stable', profils_from:['animateur','aide-soignant','assistant social','enseignant'] },
+  'assistant-social':{ competences_detaillees:['instruction de dossiers d\'aide sociale','évaluation des situations familiales complexes','orientation vers les dispositifs d\'aide existants','médiation entre usagers et institutions','rédaction de rapports sociaux pour les tribunaux','droit social et connaissance des prestations (RSA, AAH, APL)','coordination avec les services publics et associations'], tension:'haute', cpf_montant:'Transition Pro + Région', cpf_duree:'3 ans (DEASS)', cpf_100:false, avenir:'stable', profils_from:['secrétaire sociale','éducateur','animateur','infirmier'] },
+  'mediateur':      { competences_detaillees:['techniques de médiation (CNV, écoute active, reformulation)','gestion de conflits interpersonnels et organisationnels','animation de réunions multipartites neutres','rédaction de protocoles d\'accord et de médiation','impartialité et neutralité en situation tendue','connaissance du cadre légal de la médiation','suivi post-médiation et mesure des résultats'], tension:'faible', cpf_montant:'2 500€', cpf_duree:'6 mois', cpf_100:false, avenir:'stable', profils_from:['juriste','RH','travailleur social','manager'] },
+  'infirmier':      { competences_detaillees:['soins infirmiers techniques (pansements, injections, perfusions)','administration et surveillance des traitements médicamenteux','surveillance des paramètres vitaux et alertes','gestion des urgences et des situations critiques','rédaction des transmissions (SOAP, Kardex)','coordination avec l\'équipe médicale pluridisciplinaire','éducation thérapeutique du patient et de l\'entourage'], tension:'haute', cpf_montant:'Financement Région/CHU/ANFH (intégral)', cpf_duree:'3 ans (IFSI)', cpf_100:true,  avenir:'fort',   profils_from:['aide-soignant','ambulancier','préparateur pharmacie','tout profil soignant'] },
+  'aide-soignant':  { competences_detaillees:['soins d\'hygiène et de confort (toilette, habillage)','aide à la mobilisation et prévention des escarres','aide à l\'alimentation et à l\'hydratation','surveillance de l\'état de santé et transmissions','utilisation du matériel médical (lève-personne, fauteuil)','accompagnement et soutien psychologique de base','respect des protocoles d\'hygiène hospitalière'], tension:'haute', cpf_montant:'CPF intégral (~5 000€)', cpf_duree:'10 à 12 mois (DEAS)', cpf_100:true,  avenir:'fort',   profils_from:['tout profil sans diplôme requis','auxiliaire de vie','agent hospitalier','reconversion rapide'] },
+  'kine':           { competences_detaillees:['bilan clinique et diagnostic kinésithérapique','rééducation musculaire, articulaire et neurologique','techniques manuelles (massages, mobilisations, étirements)','électrothérapie, ultrasons et cryothérapie','rédaction de bilans et comptes-rendus médicaux','éducation du patient à la posture et à l\'ergonomie','gestion d\'un cabinet libéral (cotation, facturation CPAM)'], tension:'haute', cpf_montant:'Bourses sur critères sociaux', cpf_duree:'4 ans (MKDE + DE)', cpf_100:false, avenir:'fort',   profils_from:['aide-soignant','sportif de haut niveau','infirmier','préparateur physique'] },
+  'sophrologie':    { competences_detaillees:['techniques de relaxation (sophrologie caycédienne)','gestion du stress et des émotions par la sophrologie','animation de séances individuelles et collectives','protocoles adaptés (enfants, sportifs, entreprises)','marketing personnel et acquisition de clientèle','gestion administrative d\'un cabinet libéral','suivi et fidélisation des clients'], tension:'faible', cpf_montant:'CPF partiel (1 500–2 500€)', cpf_duree:'1 à 2 ans', cpf_100:false, avenir:'stable', profils_from:['infirmier','RH','coach','sportif'] },
+  'nutritionniste': { competences_detaillees:['analyse des habitudes alimentaires et bilan nutritionnel','élaboration de plans alimentaires personnalisés','éducation diététique et thérapeutique','prise en charge des pathologies (diabète, obésité, TCA)','suivi et réévaluation des objectifs','rédaction de fiches pratiques et supports patients','collaboration avec l\'équipe médicale'], tension:'moyenne', cpf_montant:'CPF partiel (~3 000€)', cpf_duree:'2 à 3 ans (BTS Diététique)', cpf_100:false, avenir:'stable', profils_from:['infirmier','sportif','cuisine','sciences biologiques'] },
+  'graphiste':      { competences_detaillees:['maîtrise Adobe (Illustrator, Photoshop, InDesign)','création d\'identités visuelles (logo, charte graphique)','mise en page print et digital (flyers, affiches, web)','motion design (After Effects, Premiere)','gestion et respect des briefs clients','livraison de fichiers aux normes impression/web','veille tendances graphiques et typographiques'], tension:'faible', cpf_montant:'AFDAS jusqu\'à 5 000€', cpf_duree:'6 à 12 mois', cpf_100:false, avenir:'stable', profils_from:['photographe','communication','architecte intérieur','artiste autodidacte'] },
+  'photographe':    { competences_detaillees:['maîtrise technique (exposition, composition, lumière naturelle et studio)','retouche photo (Lightroom, Photoshop)','direction de sujets lors des séances','archivage et gestion des fichiers RAW','gestion commerciale et facturation clients','marketing personnel et réseaux sociaux','spécialisation (portrait, produit, événementiel, architecture)'], tension:'faible', cpf_montant:'AFDAS (~3 000€)', cpf_duree:'3 à 6 mois', cpf_100:false, avenir:'risque',  profils_from:['graphiste','vidéaste','journaliste','artiste'] },
+  'videaste':       { competences_detaillees:['prise de vue et cadrage (caméra, drone, smartphone)','montage vidéo (Premiere Pro, DaVinci Resolve)','étalonnage colorimétrique','animation graphique (After Effects, motion graphics)','mixage audio et correction sonore','création de contenu YouTube et réseaux sociaux','gestion de projets audiovisuels (brief, tournage, livraison)'], tension:'moyenne', cpf_montant:'AFDAS (~4 000€)', cpf_duree:'6 mois', cpf_100:false, avenir:'stable', profils_from:['graphiste','photographe','community manager','journaliste'] },
+  'redacteur':      { competences_detaillees:['rédaction de contenus web optimisés SEO','maîtrise des bases du SEO (mots-clés, structure, maillage interne)','création de pages de vente (copywriting persuasif)','gestion d\'un calendrier éditorial','recherche documentaire et vérification des sources','adaptation du ton et du style selon la marque','relecture, correction et respect des délais'], tension:'moyenne', cpf_montant:'2 000–3 000€', cpf_duree:'3 à 6 mois', cpf_100:false, avenir:'stable', profils_from:['journaliste','enseignant','communication','marketing'] },
+  'archi-interieur':{ competences_detaillees:['conception de plans et espaces (AutoCAD, SketchUp)','sélection de matériaux, mobilier et finitions','gestion de chantier (corps de métiers, délais, budget)','rendu 3D et visualisation (3ds Max, Lumion, Enscape)','gestion de la relation client et prise de brief','connaissance du droit de la construction (DTU, permis)','présentation et argumentation de projets'], tension:'faible', cpf_montant:'3 000–5 000€', cpf_duree:'1 à 3 ans', cpf_100:false, avenir:'stable', profils_from:['architecte','graphiste','paysagiste','décorateur autodidacte'] },
+  'electricien':    { competences_detaillees:['lecture de plans et schémas électriques','pose et raccordement d\'installations électriques (HTA/BT)','diagnostic et dépannage de pannes électriques','habilitations électriques obligatoires (BR, B2V, H)','respect des normes NF C 15-100','installation de systèmes domotiques et bornes IRVE','chiffrage de devis et gestion d\'un chantier'], tension:'haute', cpf_montant:'CPF intégral via OPCO (~5 000€)', cpf_duree:'1 an', cpf_100:true,  avenir:'fort',   profils_from:['plombier','menuisier','reconversion terrain','armée/gendarmerie'] },
+  'plombier':       { competences_detaillees:['pose et entretien d\'installations sanitaires (eau froide, chaude)','soudure (cuivre, acier, PVC, multicouche)','lecture de plans techniques de plomberie','diagnostic et dépannage de pannes','installation de systèmes de chauffage (PAC, chaudière, plancher chauffant)','chiffrage, devis et facturation chantier','respect des normes DTU plomberie'], tension:'haute', cpf_montant:'CPF intégral via OPCO (~5 000€)', cpf_duree:'1 an', cpf_100:true,  avenir:'fort',   profils_from:['électricien','menuisier','aide BTP','reconversion manuelle'] },
+  'menuisier':      { competences_detaillees:['lecture de plans et cotes de menuiserie','travail du bois (machines stationnaires et outils manuels)','assemblage, collage et finitions (ponçage, vitrification)','pose et installation (fenêtres, portes, escaliers, parquet)','mesure précise et réalisation de gabarits','connaissance des essences de bois et panneaux dérivés','chiffrage de devis et gestion des approvisionnements'], tension:'haute', cpf_montant:'CPF intégral via OPCO (~4 000€)', cpf_duree:'1 an', cpf_100:true,  avenir:'fort',   profils_from:['bricoleur reconversion','artisan tous corps','architecte intérieur','électricien'] },
+  'chef-cuisinier': { competences_detaillees:['maîtrise des techniques culinaires (cuisson, sauces, découpe)','gestion des stocks, commandes et relations fournisseurs','élaboration de menus selon saison et budget','management d\'équipe en cuisine (brigade)','respect strict des normes HACCP','création culinaire et adaptation aux régimes alimentaires','gestion des coûts matières et de la rentabilité'], tension:'haute', cpf_montant:'CPF/CFA (~3 000€)', cpf_duree:'1 à 2 ans', cpf_100:false, avenir:'stable', profils_from:['tout profil passionné cuisine','restauration','artisan','agri-bio'] },
+  'coiffeur':       { competences_detaillees:['coupes hommes, femmes et enfants','techniques de coloration (balayage, mèches, couleur ton sur ton)','soins capillaires (kératine, botox, soin profond)','mise en forme et coiffage (lissage, brushing, chignons)','accueil, conseil et écoute du client','vente de produits capillaires additionnels','gestion de planning et encaissement en salon'], tension:'faible', cpf_montant:'CFA (~2 000€)', cpf_duree:'2 ans (BP Coiffure)', cpf_100:false, avenir:'stable', profils_from:['esthéticien','tout profil manuel et contact humain','reconversion service'] },
+  'paysagiste':     { competences_detaillees:['conception de jardins et espaces verts (plan, 3D végétal)','connaissance des végétaux, associations et saisonnalité','travaux de plantation, engazonnement et entretien','maçonnerie paysagère (allées, murs, terrasses, bassins)','utilisation d\'engins (tracteur, tondeuse pro, mini-pelle)','gestion d\'équipe sur chantier','chiffrage et suivi de devis clients'], tension:'moyenne', cpf_montant:'CPF/OPCO (~3 000€)', cpf_duree:'1 à 2 ans', cpf_100:false, avenir:'fort',   profils_from:['agriculteur','jardinier amateur','architecte intérieur','BTP'] },
+  'eco-conseiller': { competences_detaillees:['réalisation de bilans carbone (GES scope 1/2/3)','rédaction de rapports RSE et DPEF','animation de démarches de certification (ISO 14001, B Corp)','veille réglementaire environnementale (CSRD, taxinomie UE)','conduite de projets de transition écologique','communication interne et formation RSE','mesure d\'impact et tableaux de bord ESG'], tension:'haute', cpf_montant:'Transition Pro (~5 000€)', cpf_duree:'6 mois à 2 ans', cpf_100:false, avenir:'fort',   profils_from:['ingénieur','juriste','consultant','communicant','militant associatif'] },
+  'agriculture-bio':{ competences_detaillees:['techniques culturales biologiques (rotation, association)','gestion de la fertilité du sol (compostage, engrais verts)','protection des cultures sans pesticides de synthèse','utilisation et entretien du matériel agricole','commercialisation en circuits courts (AMAP, marchés, restaurateurs)','gestion comptable et administrative d\'une exploitation','connaissance de la réglementation agriculture biologique (AB, Demeter)'], tension:'faible', cpf_montant:'JA / MSA / FEADER (subventions)', cpf_duree:'1 à 2 ans (BPREA)', cpf_100:false, avenir:'stable', profils_from:['jardinier passionné','cuisinier','ingénieur agri','reconversion radicale'] },
+  'enseignant':     { competences_detaillees:['maîtrise approfondie d\'une discipline académique','préparation, structuration et animation de cours','évaluation des élèves et construction d\'outils d\'évaluation','gestion de classe et de la dynamique de groupe','différenciation pédagogique (adaptation aux profils)','communication avec les familles et les équipes pédagogiques','connaissance des programmes et référentiels nationaux (BO)'], tension:'haute', cpf_montant:'Financement Éducation Nationale (INSPE)', cpf_duree:'Master MEEF 2 ans + concours', cpf_100:true,  avenir:'stable', profils_from:['tout expert souhaitant transmettre','formateur','documentaliste','chercheur'] },
+  'orthophoniste':  { competences_detaillees:['bilan orthophonique (évaluation langage oral, écrit, parole, déglutition)','rééducation des troubles du langage (dyslexie, dysphasie, bégaiement)','prise en charge des troubles de la déglutition','techniques de rééducation adaptées à chaque patient','rédaction de bilans et comptes-rendus pour les médecins','travail en équipe pluridisciplinaire (pédiatres, psychologues, ORL)','gestion d\'un cabinet libéral (cotation AMO, CPAM)'], tension:'haute', cpf_montant:'Bourses Régions', cpf_duree:'5 ans (CFUO + concours)', cpf_100:false, avenir:'fort',   profils_from:['instituteur','psychologue','infirmier','kiné'] },
+  'animateur-formation':{ competences_detaillees:['animation d\'activités loisirs et culturelles (enfants, ados, adultes)','gestion de groupe et régulation des conflits','conception de programmes d\'animation et de projets pédagogiques','gestion de budget événementiel','encadrement de sorties, séjours et camps','partenariats avec collectivités et associations','rédaction de projets pédagogiques et bilans d\'activité'], tension:'faible', cpf_montant:'CPF (~2 000€)', cpf_duree:'1 an (BPJEPS)', cpf_100:false, avenir:'stable', profils_from:['enseignant','éducateur','sportif','tout profil humain et créatif'] },
+  'rh':             { competences_detaillees:['recrutement complet (sourcing, entretiens, sélection, intégration)','administration du personnel (contrats, paie, gestion des absences)','formation et développement des compétences (GPEC, plan de formation)','gestion des relations sociales (IRP, NAO, négociation)','utilisation d\'un SIRH (Workday, SAP HR, Silae)','droit du travail appliqué (rupture, disciplinaire, AT)','marque employeur et gestion RH de crise'], tension:'moyenne', cpf_montant:'CPF/alternance (~4 000€)', cpf_duree:'1 à 2 ans', cpf_100:false, avenir:'stable', profils_from:['juriste','commercial','manager expérimenté','psychologue du travail'] },
+  'comptable':      { competences_detaillees:['tenue de la comptabilité générale et analytique','déclarations fiscales (TVA, IS, BIC, liasse fiscale)','clôture des comptes annuels et états financiers','gestion de trésorerie et prévisions','établissement des bulletins de paie (si multi-compétence)','audit et contrôle interne de base','maîtrise de logiciels comptables (Sage, Cegid, QuickBooks)'], tension:'faible', cpf_montant:'CPF/alternance (~3 000€)', cpf_duree:'2 à 5 ans (DCG/DSCG)', cpf_100:false, avenir:'risque',  profils_from:['gestionnaire','assistante administrative','banquier','contrôleur de gestion'] },
+  'juriste':        { competences_detaillees:['rédaction d\'actes juridiques (contrats, statuts, mises en demeure)','recherche jurisprudentielle et doctrine','conseil juridique aux entreprises ou particuliers','plaidoirie et représentation en justice (si avocat)','veille législative et réglementaire','négociation et gestion de litiges à l\'amiable','maîtrise des procédures civiles et commerciales'], tension:'faible', cpf_montant:'Bourses sur concours', cpf_duree:'Master Droit + CRFPA (5 ans)', cpf_100:false, avenir:'stable', profils_from:['assistant juridique','notaire','RH','manager ayant besoin du droit'] },
+  'journaliste':    { competences_detaillees:['enquête et vérification des sources (fact-checking)','rédaction multi-formats (article, reportage, podcast, vidéo)','conduite d\'interviews (face-à-face, téléphone, visio)','gestion des délais de bouclage sous pression','maîtrise des CMS et outils de production numérique','réseaux sociaux journalistiques et gestion d\'une audience','connaissance du droit de la presse et de la diffamation'], tension:'faible', cpf_montant:'CPF (~3 000€)', cpf_duree:'2 à 3 ans (école reconnue EJCAM)', cpf_100:false, avenir:'risque',  profils_from:['communicant','blogueur','rédacteur','vidéaste'] },
+  'charge-comm':    { competences_detaillees:['élaboration d\'une stratégie de communication 360°','rédaction de contenus multicanaux (web, print, réseaux, relations presse)','organisation d\'événements internes et externes','gestion budgétaire de la communication','outils de communication numérique (Canva, MailChimp, Hootsuite)','relations médias et rédaction de communiqués de presse','reporting et analyse des actions de communication'], tension:'faible', cpf_montant:'CPF (~3 000€)', cpf_duree:'1 à 2 ans', cpf_100:false, avenir:'stable', profils_from:['marketing','rédacteur web','journaliste','community manager'] },
+  'logisticien':    { competences_detaillees:['gestion des stocks et inventaires (WMS, ERP SAP/Oracle)','coordination transport multimodal et expéditions','planification des flux de marchandises (S&OP)','gestion des fournisseurs et appels d\'offres achats','optimisation des coûts logistiques et du taux de service','gestion des douanes et réglementations import/export','pilotage d\'indicateurs logistiques (KPIs, tableaux de bord)'], tension:'haute', cpf_montant:'CPF (~3 000–4 000€)', cpf_duree:'6 mois à 1 an', cpf_100:false, avenir:'stable', profils_from:['militaire','manager opérationnel','acheteur','chef de projet'] },
+  'manager-projet': { competences_detaillees:['planification de projet (GANTT, jalons, livrables, WBS)','gestion des risques et des imprévus (matrice AMDEC)','animation d\'équipes pluridisciplinaires','communication avec les parties prenantes (sponsors, comités)','suivi budgétaire et gestion des ressources','rédaction de cahiers des charges, comptes-rendus et RACI','maîtrise d\'outils PM (Jira, Asana, MS Project, Monday)'], tension:'haute', cpf_montant:'CPF PMP/PRINCE2 (~3 000–5 000€)', cpf_duree:'3 à 6 mois', cpf_100:false, avenir:'fort',   profils_from:['ingénieur','consultant','chef de chantier BTP','commercial senior'] }
+};
+
+/* ══════════════════════════════════════════════════════════════
    GÉNÉRATION DU RAPPORT IA
 ══════════════════════════════════════════════════════════════ */
 async function generateOrientationReport() {
@@ -3805,8 +3865,24 @@ async function generateOrientationReport() {
     .map(m => (m.role === 'user' ? 'Client' : 'CYNTH.IA') + ' : ' + m.content)
     .join('\n\n');
 
+  // Enrichissement avec METIERS_EXTRA pour le matching compétences transférables
   const metiersList = METIERS_DB
-    .map(m => `${m.id}|${m.titre}|${m.secteur}|${m.competences.join(',')}|${m.passions.join(',')}|${m.valeurs.join(',')}`)
+    .map(m => {
+      const ex = METIERS_EXTRA[m.id] || {};
+      return [
+        m.id,
+        m.titre,
+        m.secteur,
+        'competences_cles:' + (ex.competences_detaillees || m.competences).join(' / '),
+        'tension_marche:' + (ex.tension || '?'),
+        'avenir:' + (ex.avenir || '?'),
+        'cpf:' + (ex.cpf_montant || m.financement) + ' / ' + (ex.cpf_duree || ''),
+        'cpf_100:' + (ex.cpf_100 ? 'oui' : 'non'),
+        'profils_types:' + (ex.profils_from || []).join(','),
+        'salaire_debut:' + m.salaire_debut,
+        'salaire_exp:' + m.salaire_exp
+      ].join('|');
+    })
     .join('\n');
 
   const prompt = `Tu es une experte senior en orientation professionnelle avec 20 ans d'expérience, formée en psychologie humaniste, Big Five (OCEAN), théorie de l'autodétermination et approche orientée solution. Analyse cette conversation profonde et génère un rapport d'orientation complet sur 4 pages.
@@ -3814,7 +3890,7 @@ async function generateOrientationReport() {
 CONVERSATION INTÉGRALE :
 ${conversationText}
 
-BASE DE DONNÉES MÉTIERS (format: id|titre|secteur|compétences|passions|valeurs) :
+BASE DE DONNÉES MÉTIERS ENRICHIE (format: id|titre|secteur|competences_cles|tension_marche|avenir|cpf|cpf_100|profils_types|salaire_debut|salaire_exp) :
 ${metiersList}
 
 RÈGLES D'ANALYSE :
@@ -3824,6 +3900,8 @@ RÈGLES D'ANALYSE :
 4. Le plan d'action doit être CONCRET — pas de vœux pieux, des étapes actionnables avec des délais réels
 5. Les ressources doivent être RÉELLES et ACCESSIBLES depuis la France / Suisse selon le contexte
 6. Si tu ne connais pas l'âge exact, mets null
+7. MATCHING COMPÉTENCES TRANSFÉRABLES : Pour chaque métier recommandé, analyse les competences_cles du métier et identifie lesquelles la personne possède déjà (explicitement ou implicitement d'après la conversation). Dans "atouts", liste UNIQUEMENT les compétences qu'elle a déjà. Dans "developper", liste UNIQUEMENT les compétences manquantes. Si cpf_100=oui, propose une formation CPF pour combler ces lacunes.
+8. MARCHÉ : Utilise tension_marche (haute/moyenne/basse) et avenir (fort/stable/risque) pour contextualiser chaque recommandation — dis franchement si le marché est porteur ou difficile.
 
 Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant ou après) :
 {
@@ -3862,8 +3940,11 @@ Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant o
       "score": 94,
       "pourquoi": "2-3 phrases expliquant SPÉCIFIQUEMENT pourquoi ce métier correspond à CE que cette personne a dit. Citez ses propres mots.",
       "alignement_valeurs": "Comment ce métier répond à ses valeurs et besoins non négociables",
-      "atouts": ["atout concret 1 — ce qu'elle a déjà", "atout 2", "atout 3"],
-      "developper": ["compétence/connaissance à acquérir 1", "compétence 2"],
+      "atouts": ["compétence qu'elle possède déjà, directement applicable à ce métier (ex: 'animation de groupe — déjà pratiquée dans son poste actuel')", "atout 2 issu de la conversation", "atout 3"],
+      "developper": ["compétence manquante à acquérir — si finançable CPF, le préciser (ex: 'maîtrise de Python → formation CPF ~5 000€ / 6 mois')", "compétence 2 à développer"],
+      "tension_marche": "haute / moyenne / basse — copié depuis la base",
+      "avenir_secteur": "fort / stable / risque — avec 1 phrase d'explication concrète",
+      "cpf_info": "Montant CPF disponible et durée si cpf_100=oui, sinon 'Financement partiel possible'",
       "premier_pas": "Action ultra-concrète à faire CETTE SEMAINE (pas vague — précis : 'Regarder 3 témoignages de X sur LinkedIn', 'Appeler le CIO de votre ville', 'S'inscrire à l'événement Y')",
       "salaire_debut": "copie depuis la base",
       "salaire_exp": "copie depuis la base",
@@ -4051,13 +4132,19 @@ function downloadRapport(){
   };
 
   const careerCards = (data.top_metiers||[]).map((m,i)=>{
-    // Sécurité anti-hallucination : données factuelles toujours depuis METIERS_DB locale
+    // Sécurité anti-hallucination : données factuelles toujours depuis METIERS_DB/METIERS_EXTRA locales
     const db = METIERS_DB.find(x => x.id === m.id) || {};
-    const salaire_debut = db.salaire_debut || m.salaire_debut || '—';
-    const salaire_exp   = db.salaire_exp   || m.salaire_exp   || '—';
-    const marche        = db.marche        || m.marche        || '—';
-    const formation     = db.formation     || m.formation     || '—';
-    const financement   = db.financement   || m.financement   || '—';
+    const ex = METIERS_EXTRA[m.id] || {};
+    const salaire_debut  = db.salaire_debut  || m.salaire_debut  || '—';
+    const salaire_exp    = db.salaire_exp    || m.salaire_exp    || '—';
+    const marche         = db.marche         || m.marche         || '—';
+    const formation      = db.formation      || m.formation      || '—';
+    const financement    = db.financement    || m.financement    || '—';
+    // Nouveaux champs enrichis (depuis METIERS_EXTRA, fallback vers réponse IA)
+    if (!m.tension_marche && ex.tension) m.tension_marche = ex.tension;
+    if (!m.avenir_secteur && ex.avenir)  m.avenir_secteur = ex.avenir;
+    if (!m.cpf_info && ex.cpf_100) m.cpf_info = `${ex.cpf_montant||''}${ex.cpf_duree?' / '+ex.cpf_duree:''}`.trim() || 'CPF 100%';
+    else if (!m.cpf_info && ex.cpf_montant) m.cpf_info = ex.cpf_montant;
     return `
 <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:1px solid #e8e0ff;box-shadow:0 4px 24px rgba(143,188,139,.07);page-break-inside:avoid;">
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
@@ -4084,6 +4171,21 @@ function downloadRapport(){
       ${(m.developper||[]).map(d=>`<div style="display:inline-block;padding:5px 12px;background:#dbeafe;color:#1e40af;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;">${d}</div>`).join('')}
     </div>
   </div>
+
+  ${(m.tension_marche||m.avenir_secteur||m.cpf_info) ? `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+    ${m.tension_marche ? `<div style="border-radius:8px;padding:10px 12px;background:${m.tension_marche.toLowerCase().includes('haute')?'#f0fdf4':'#fafaf9'};border:1px solid ${m.tension_marche.toLowerCase().includes('haute')?'#bbf7d0':'#e2e8f0'};">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:3px;">⚡ Tension marché</div>
+      <div style="font-size:12px;font-weight:700;color:${m.tension_marche.toLowerCase().includes('haute')?'#15803d':m.tension_marche.toLowerCase().includes('basse')?'#b45309':'#1e40af'};">${m.tension_marche}</div>
+    </div>` : ''}
+    ${m.avenir_secteur ? `<div style="border-radius:8px;padding:10px 12px;background:${m.avenir_secteur.toLowerCase().startsWith('fort')?'#eff6ff':m.avenir_secteur.toLowerCase().startsWith('risque')?'#fff7ed':'#fafaf9'};border:1px solid ${m.avenir_secteur.toLowerCase().startsWith('fort')?'#bfdbfe':m.avenir_secteur.toLowerCase().startsWith('risque')?'#fed7aa':'#e2e8f0'};">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:3px;">🔮 Avenir secteur</div>
+      <div style="font-size:12px;font-weight:700;color:${m.avenir_secteur.toLowerCase().startsWith('fort')?'#1d4ed8':m.avenir_secteur.toLowerCase().startsWith('risque')?'#c2410c':'#374151'};">${m.avenir_secteur}</div>
+    </div>` : ''}
+    ${m.cpf_info ? `<div style="border-radius:8px;padding:10px 12px;background:#fdf4ff;border:1px solid #e9d5ff;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:3px;">🎓 CPF</div>
+      <div style="font-size:12px;font-weight:700;color:#7e22ce;">${m.cpf_info}</div>
+    </div>` : ''}
+  </div>` : ''}
 
   <div style="display:grid;grid-template-columns:repeat(3,1fr);border-radius:10px;overflow:hidden;border:1px solid #e8e0ff;margin-bottom:14px;">
     <div style="padding:12px 14px;background:#fafaf9;border-right:1px solid #e8e0ff;">
