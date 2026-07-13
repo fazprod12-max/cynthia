@@ -1,11 +1,10 @@
 /**
- * CYNTH.IA — Worker Proxy v5.0 (Claude principal + DeepSeek + Groq fallback)
+ * CYNTH.IA — Worker Proxy v5.1 (Groq principal + DeepSeek fallback)
  *
  * Route principale POST / — cascade :
- *   1. Claude    (claude-haiku-4-5 — provider principal, meilleure empathie FR)
- *   2. DeepSeek  (deepseek-chat / DeepSeek-V3 — 1er fallback)
- *   3. Groq      (fallback : llama-3.3-70b synthèse / llama-3.1-8b collecte)
- *   4. Fallback local (réponses contextuelles codées — le service ne tombe jamais)
+ *   1. Groq      (llama-3.3-70b synthèse / llama-3.1-8b collecte — provider principal)
+ *   2. DeepSeek  (deepseek-chat / DeepSeek-V3 — fallback)
+ *   3. Fallback local (réponses contextuelles codées — le service ne tombe jamais)
  *
  * Autres routes (inchangées) :
  *   POST /ft-search        → proxy France Travail
@@ -13,9 +12,8 @@
  *   GET  /verify-session   → vérifie un paiement Stripe
  *
  * Secrets à configurer (wrangler secret put <NOM>) :
- *   ANTHROPIC_API_KEY   — clé API Claude (OBLIGATOIRE — console.anthropic.com)
+ *   GROQ_API_KEY        — clé API Groq (provider principal — console.groq.com)
  *   DEEPSEEK_API_KEY    — clé API DeepSeek (fallback — platform.deepseek.com)
- *   GROQ_API_KEY        — clé API Groq (fallback — console.groq.com)
  *   FT_CLIENT_ID        — Client ID France Travail (optionnel)
  *   FT_CLIENT_SECRET    — Client Secret France Travail (optionnel)
  *   STRIPE_SECRET_KEY   — sk_live_xxx (optionnel, mode production)
@@ -30,13 +28,10 @@ const ALLOWED_ORIGINS = [
 ];
 
 /* ── URLs des API partenaires ────────────────────────────────────────────── */
-const DEEPSEEK_URL   = 'https://api.deepseek.com/v1/chat/completions';
-const DEEPSEEK_MODEL = 'deepseek-chat'; // équivalent DeepSeek-V3
-
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-const CLAUDE_URL   = 'https://api.anthropic.com/v1/messages';
-const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'; // meilleure empathie FR, coût optimal
+const DEEPSEEK_URL   = 'https://api.deepseek.com/v1/chat/completions';
+const DEEPSEEK_MODEL = 'deepseek-chat'; // équivalent DeepSeek-V3
 
 const FT_TOKEN_URL    = 'https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire';
 const FT_SEARCH_URL   = 'https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search';
@@ -95,7 +90,7 @@ export default {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ROUTE 1 — CHAT : CLAUDE PRINCIPAL → DEEPSEEK → GROQ FALLBACK → LOCAL
+   ROUTE 1 — CHAT : GROQ PRINCIPAL → DEEPSEEK FALLBACK → LOCAL
 ═══════════════════════════════════════════════════════════════════════════ */
 async function handleChat(request, env, corsHeaders) {
   if (request.method !== 'POST') return jsonResp({ error: 'Method not allowed' }, 405, corsHeaders);
@@ -121,57 +116,45 @@ async function handleChat(request, env, corsHeaders) {
 
   const errors = [];
 
-  // ─── 1. CLAUDE HAIKU (principal) ──────────────────────────────────────
-  if (env.ANTHROPIC_API_KEY) {
+  // ─── 1. GROQ (provider principal) ─────────────────────────────────────
+  if (env.GROQ_API_KEY) {
     try {
-      // L'API Anthropic a un format différent d'OpenAI :
-      //   - le message "system" est un champ top-level séparé (pas dans messages[])
-      //   - headers : x-api-key + anthropic-version (pas Authorization: Bearer)
-      //   - réponse : data.content[0].text (pas data.choices[0].message.content)
-      const systemMsg = messages.find(m => m.role === 'system');
-      const chatMessages = messages.filter(m => m.role !== 'system');
+      // 70b réservé à la synthèse (quota RPM), 8b ultra-rapide pour la collecte
+      const model = isSynthesis ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
 
-      const anthropicBody = {
-        model: CLAUDE_MODEL,
-        max_tokens,
-        messages: chatMessages,
-      };
-      if (systemMsg) anthropicBody.system = systemMsg.content;
-
-      const resp = await fetchWithTimeout(CLAUDE_URL, {
+      const resp = await fetchWithTimeout(GROQ_URL, {
         method: 'POST',
         headers: {
-          'x-api-key': env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
+          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(anthropicBody),
+        body: JSON.stringify({ model, messages, max_tokens, temperature, top_p }),
       }, 30000);
 
       if (resp.ok) {
         const data = await resp.json();
-        const content = data.content?.[0]?.text;
+        const content = data.choices?.[0]?.message?.content;
         if (content) {
           return jsonResp({
             choices: [{ message: { content, role: 'assistant' } }],
-            provider: 'claude',
-            model: CLAUDE_MODEL,
+            provider: 'groq',
+            model,
           }, 200, corsHeaders);
         }
       }
 
       const errText = await resp.text();
-      errors.push(`Claude ${resp.status}: ${errText.substring(0, 400)}`);
-      console.warn('Claude failed:', resp.status, errText.substring(0, 400));
+      errors.push(`Groq ${resp.status}: ${errText.substring(0, 200)}`);
+      console.warn('Groq failed:', resp.status);
     } catch (e) {
-      errors.push('Claude timeout/error: ' + e.message);
-      console.warn('Claude exception:', e.message);
+      errors.push('Groq timeout/error: ' + e.message);
+      console.warn('Groq exception:', e.message);
     }
   } else {
-    errors.push('Claude: ANTHROPIC_API_KEY not set');
+    errors.push('Groq: GROQ_API_KEY not set');
   }
 
-  // ─── 2. DEEPSEEK (1er fallback) ───────────────────────────────────────
+  // ─── 2. DEEPSEEK (fallback) ───────────────────────────────────────────
   if (env.DEEPSEEK_API_KEY) {
     try {
       const resp = await fetchWithTimeout(DEEPSEEK_URL, {
@@ -187,7 +170,7 @@ async function handleChat(request, env, corsHeaders) {
           temperature,
           top_p,
         }),
-      }, 45000); // DeepSeek peut être plus lent que Groq — timeout large
+      }, 45000);
 
       if (resp.ok) {
         const data = await resp.json();
@@ -212,47 +195,7 @@ async function handleChat(request, env, corsHeaders) {
     errors.push('DeepSeek: DEEPSEEK_API_KEY not set');
   }
 
-  // ─── 3. GROQ (2e fallback) ────────────────────────────────────────────
-  if (env.GROQ_API_KEY) {
-    try {
-      // 70b réservé à la synthèse (quota), 8b pour la collecte
-      const model = isSynthesis ? 'llama-3.3-70b-versatile' : 'llama-3.1-8b-instant';
-
-      const resp = await fetchWithTimeout(GROQ_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ model, messages, max_tokens, temperature, top_p }),
-      }, 30000);
-
-      if (resp.ok) {
-        const data = await resp.json();
-        const content = data.choices?.[0]?.message?.content;
-        if (content) {
-          // Filet de sécurité qualité pour le fallback (empathie + question)
-          const enhanced = isSynthesis ? content : enhanceReply(content, messages);
-          return jsonResp({
-            choices: [{ message: { content: enhanced, role: 'assistant' } }],
-            provider: 'groq',
-            model,
-          }, 200, corsHeaders);
-        }
-      }
-
-      const errText = await resp.text();
-      errors.push(`Groq ${resp.status}: ${errText.substring(0, 200)}`);
-      console.warn('Groq failed:', resp.status);
-    } catch (e) {
-      errors.push('Groq timeout/error: ' + e.message);
-      console.warn('Groq exception:', e.message);
-    }
-  } else {
-    errors.push('Groq: GROQ_API_KEY not set');
-  }
-
-  // ─── 4. FALLBACK LOCAL ─────────────────────────────────────────────────
+  // ─── 3. FALLBACK LOCAL ─────────────────────────────────────────────────
   console.warn('All providers failed. Errors:', errors);
   const fallbackContent = getFallbackReply(messages);
   return jsonResp({
@@ -261,52 +204,6 @@ async function handleChat(request, env, corsHeaders) {
     _errors: errors,
     _note: 'Tous les providers ont échoué — réponse locale',
   }, 200, corsHeaders);
-}
-
-/* ─── Filet de sécurité qualité (fallback Groq uniquement) ───────────────── */
-/**
- * DeepSeek est calibré par le prompt système ; le fallback Groq 8b peut
- * oublier l'empathie ou la question. On complète a minima.
- */
-function enhanceReply(reply, messages) {
-  if (!reply) return '';
-  let enhanced = reply.trim();
-
-  const lastUserMsg = messages.filter(m => m.role === 'user').pop()?.content || '';
-  const emotion = detectEmotion(lastUserMsg);
-
-  if (emotion !== 'neutre') {
-    const hasEmpathy = /comprend|entend|ressent|normal|humain|difficile|courage/i.test(enhanced);
-    if (!hasEmpathy) {
-      enhanced = 'Je comprends ce que vous ressentez. ' + enhanced;
-    }
-  }
-
-  if (!enhanced.includes('?')) {
-    if (emotion === 'peur') {
-      enhanced += " Qu'est-ce qui vous semblerait rassurant pour commencer ?";
-    } else if (emotion === 'doute') {
-      enhanced += " Qu'est-ce qui vous paraît le plus incertain, pour vous, en ce moment ?";
-    } else {
-      enhanced += " Qu'en pensez-vous ?";
-    }
-  }
-
-  return enhanced;
-}
-
-function detectEmotion(text) {
-  const t = (text || '').toLowerCase();
-  const patterns = {
-    peur:      ['peur', 'angoisse', 'inquiet', 'stressé', 'panique', 'crainte', 'bloqué'],
-    tristesse: ['triste', 'déçu', 'découragé', 'abattu', 'mélancolique', 'burnout'],
-    colere:    ['colère', 'énervé', 'frustré', 'injuste', 'révolté', 'marre'],
-    doute:     ['doute', 'hésite', 'incertain', 'pas sûr', 'peut-être', 'je ne sais pas'],
-  };
-  for (const [emotion, words] of Object.entries(patterns)) {
-    if (words.some(w => t.includes(w))) return emotion;
-  }
-  return 'neutre';
 }
 
 /* ─── Fallback local contextuel ──────────────────────────────────────────── */
