@@ -2934,19 +2934,41 @@ async function callCynthAI(messages) {
       .flatMap(m => (m.content.match(/[^.!?●→\n]*\?/g) || []))
       .map(q => q.trim()).filter(q => q.length > 12);
 
+    // ── Adaptation R10 selon les réponses du questionnaire pré-chat ─────────
+    const _q = quizAnswers || {};
+    const _motivStr = (_q.motivations && _q.motivations.length > 0)
+      ? _q.motivations.map(m => _QUIZ_MOTIV[m] || m).join(' et ')
+      : '';
+
     const _exactQsByPhase = {
       1: [
-        "En quels termes vos proches vous décriraient-ils spontanément ?",
-        "Qu'est-ce qui vous manque le plus dans votre quotidien professionnel actuel ?",
+        // Q1 — Forces : si talents connus → approfondissement, sinon découverte
+        (_q.talents && _q.talents.trim())
+          ? `Vous m'avez dit être naturellement doué(e) pour « ${_q.talents.trim()} » — dans quel contexte professionnel est-ce que ça s'est manifesté le plus clairement ?`
+          : "En quels termes vos proches vous décriraient-ils spontanément ?",
+
+        // Q2 — Manque pro : si motivations connues → on identifie le décalage concret
+        _motivStr
+          ? `Vous avez mentionné que ce qui vous motive c'est ${_motivStr} — qu'est-ce qui dans votre quotidien actuel va à l'encontre de ça ?`
+          : "Qu'est-ce qui vous manque le plus dans votre quotidien professionnel actuel ?",
+
         "Qu'est-ce que ces années dans ce poste vous ont appris sur vous-même ?"
       ],
       2: [
-        "Concrètement, qu'est-ce qui vous retient encore de passer à l'action ?",
+        // Q4 — Frein : si frein connu → on approfondit, on ne redécouvre pas
+        (_q.frein && _QUIZ_FREIN[_q.frein])
+          ? `Vous m'avez confié que ce qui vous retient c'est ${_QUIZ_FREIN[_q.frein]} — qu'est-ce qui concrètement vous aiderait à dépasser ça ?`
+          : "Concrètement, qu'est-ce qui vous retient encore de passer à l'action ?",
+
         "Si vous vous projetiez dans 3 ans, comment ressemblerait une journée de travail idéale ?",
         "Y a-t-il des conditions que vous n'êtes plus prêt à accepter dans un prochain poste ?"
       ],
       3: [
-        "Parmi les pistes qu'on a évoquées, laquelle vous parle le plus en ce moment ?",
+        // Q7 — Piste : si métier de rêve mentionné → on y revient en lumière de la conversation
+        (_q.metierReve && _q.metierReve.trim())
+          ? `Vous avez mentionné « ${_q.metierReve.trim()} » comme métier de rêve — maintenant qu'on a exploré ensemble, est-ce que vous y revenez ou est-ce qu'une autre direction vous attire davantage ?`
+          : "Parmi les pistes qu'on a évoquées, laquelle vous parle le plus en ce moment ?",
+
         "Quel serait le premier pas concret que vous pourriez faire dès cette semaine ?"
       ]
     };
