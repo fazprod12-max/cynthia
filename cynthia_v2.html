@@ -2727,7 +2727,7 @@ CE QUE TU NE DIS JAMAIS
 "Je comprends ce que vous traversez" → tue la relation
 "Merci pour cette précision" → sonnerie de chatbot
 "C'est excellent !" / "Génial !" → si tu valorises, dis plutôt "C'est une prise de conscience importante"
-Deux questions dans la même réponse → tu attends avant d'avancer
+Deux questions dans la même réponse → INTERDIT. Une seule phrase avec un point d'interrogation par réponse, sans exception. Même sous forme de "est-ce X ou Y ?" — c'est deux questions déguisées en une.
 La même ouverture de phrase deux échanges de suite
 Des listes ou des puces dans tes réponses conversationnelles
 "Je vous laisse réfléchir" ou toute formule qui mime le silence — le silence n'est pas une phrase
@@ -2859,11 +2859,11 @@ async function callCynthAI(messages) {
     trimmed = [...intro, ...recent];
   }
 
-  // ── R9 — Déclenchement de la synthèse : entre 12 et 14 messages utilisateur ──
+  // ── R9 — Déclenchement de la synthèse : entre 9 et 12 messages utilisateur ──
   const hasDeepProfile = chatProfile.valeurs.length > 0 || chatProfile.forces.length > 0 || chatProfile.freins.length > 0;
   const wantSynthesis = !synthesisFired && (
-    userMsgCount >= 14 ||
-    (hasDeepProfile && userMsgCount >= 12)
+    userMsgCount >= 12 ||
+    (hasDeepProfile && userMsgCount >= 9)
   );
 
   // ── Phase courante (3 phases : Découverte → Exploration → Co-construction) ──
@@ -2976,7 +2976,7 @@ async function callCynthAI(messages) {
 
   const resp = await fetchProxy({
     messages: apiMessages,
-    max_tokens: 280,
+    max_tokens: maxTokens,
     temperature: wantSynthesis ? 0.55 : 0.65,  // réduit 0.72→0.65 : meilleur suivi des instructions
     top_p: 0.90,
     frequency_penalty: wantSynthesis ? 0.0 : 0.8,   // pénalise la répétition de tokens déjà apparus
@@ -3364,7 +3364,7 @@ async function sendChatMsg() {
     }
 
     // ── Options post-synthèse ─────────────────────────────────────────────────
-    if (synthesisFired && _wasSynthFired && !_optionsShown) {
+    if (synthesisFired && !_wasSynthFired && !_optionsShown) {
       _optionsShown = true;
       setTimeout(() => {
         const options = "Pour la suite, trois possibilités s'offrent à vous :\n\n1. Approfondir une piste — posez-moi directement vos questions sur l'un de ces métiers.\n2. Générer votre rapport complet — 5 métiers détaillés, plan d'action sur 6 mois, salaires, financements (bouton « Terminer » en haut de la fenêtre).\n3. Parler à un professionnel du métier — disponible juste après la génération du rapport.";
