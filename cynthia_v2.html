@@ -2819,10 +2819,10 @@ let synthesisFired = false;
 
 // ── APPEL IA — DeepSeek via Worker (cascade DeepSeek → Groq → local) ──────────
 
-// R3 — Détection de réponse courte : force une question de suivi
+// R3 — Détection de réponse courte : force une question de suivi (seuil élargi pour vraie profondeur)
 function isShortAnswer(text) {
   const t = (text || '').trim();
-  return t.length > 0 && (t.length < 25 || t.split(/\s+/).length <= 3);
+  return t.length > 0 && (t.length < 80 || t.split(/\s+/).length <= 12);
 }
 
 // R4 — Détection des signaux forts (mots émotionnellement chargés)
@@ -2859,16 +2859,17 @@ async function callCynthAI(messages) {
     trimmed = [...intro, ...recent];
   }
 
-  // ── R9 — Déclenchement de la synthèse : entre 9 et 12 messages utilisateur ──
+  // ── R9 — Déclenchement de la synthèse : 20 messages min (15 si profil riche) ──
+  // Objectif : 20-30 min de vraie conversation avant de proposer des pistes.
   const hasDeepProfile = chatProfile.valeurs.length > 0 || chatProfile.forces.length > 0 || chatProfile.freins.length > 0;
   const wantSynthesis = !synthesisFired && (
-    userMsgCount >= 12 ||
-    (hasDeepProfile && userMsgCount >= 9)
+    userMsgCount >= 20 ||
+    (hasDeepProfile && userMsgCount >= 15)
   );
 
   // ── Phase courante (3 phases : Découverte → Exploration → Co-construction) ──
-  if (synthesisFired || wantSynthesis || userMsgCount >= 11) chatProfile.currentPhase = 3;
-  else if (userMsgCount >= 6) chatProfile.currentPhase = 2;
+  if (synthesisFired || wantSynthesis || userMsgCount >= 18) chatProfile.currentPhase = 3;
+  else if (userMsgCount >= 9) chatProfile.currentPhase = 2;
   else chatProfile.currentPhase = 1;
 
   // ── Profil connu (enrichit le contexte de l'IA) ─────────────────────────────
@@ -2894,8 +2895,8 @@ async function callCynthAI(messages) {
     systemPrompt += `\n\n🚫 RÈGLE R9/R12 — Pré-synthèse : il est INTERDIT de proposer le moindre métier, secteur ou piste professionnelle, et INTERDIT de proposer le rapport. Les pistes viennent uniquement lors de la synthèse. Si tu ressens l'envie de suggérer une direction, transforme-la en question ouverte.`;
   }
 
-  // ── Collecte silencieuse — filet de sécurité après le tour 5 ───────────────
-  if (!wantSynthesis && userMsgCount === 5 && (!chatProfile.age || chatProfile.valeurs.length === 0)) {
+  // ── Collecte silencieuse — filet de sécurité après le tour 8 ───────────────
+  if (!wantSynthesis && userMsgCount === 8 && (!chatProfile.age || chatProfile.valeurs.length === 0)) {
     systemPrompt += `\n\n📌 COLLECTE SILENCIEUSE : tu n'as pas encore de données sur l'âge, le secteur ou les valeurs profondes de cette personne. Dans les prochains échanges, intègre naturellement une question qui permet d'obtenir au moins l'un de ces éléments — sans que ça ressemble à un formulaire. Un seul élément suffit pour ce tour.`;
   }
 
@@ -2903,7 +2904,7 @@ async function callCynthAI(messages) {
   // On bypass R10 v5 pour ce tour : l'IA génère une synthèse haute valeur ajoutée
   // qui reflète valeurs implicites, compétences transparentes et besoin central.
   let _mirrorTurn = false;
-  if (!restitutionDone && !wantSynthesis && !synthesisFired && userMsgCount === 6) {
+  if (!restitutionDone && !wantSynthesis && !synthesisFired && userMsgCount === 10) {
     restitutionDone = true;
     _mirrorTurn = true;
     systemPrompt += `\n\n📌 R5 — MIROIR PROFESSIONNEL MAINTENANT. C'est le moment clé de la conversation. Écris 3 à 4 phrases naturelles et directes (ZÉRO liste, ZÉRO puce, ZÉRO titre). Synthétise ce que tu perçois de cette personne : ses valeurs profondes (même celles qu'elle n'a pas nommées explicitement), ses compétences implicites (celles qui transparaissent dans la façon dont elle parle sans qu'elle les nomme), et son besoin central non formulé. Utilise ses propres mots quand c'est possible. Sois précis et courageux — pas générique. Termine UNIQUEMENT par : "Est-ce que ça vous ressemble ?" et rien d'autre. Aucun métier, aucun conseil, aucune autre question.`;
@@ -3952,19 +3953,26 @@ function buildFallbackReport() {
       ...m,
       score: Math.max(72, 88 - i * 6),
       pourquoi: (() => {
+        // Priorité 1 : texte extrait mot-à-mot depuis la synthèse Cynthia (le plus personnalisé)
+        if (m._synthPourquoi) return m._synthPourquoi;
+
         const forces = chatProfile.forces || [];
         const valeurs = chatProfile.valeurs || [];
         const name = chatProfile.prenom ? chatProfile.prenom + ', votre' : 'Votre';
-        // Trouver la compétence ou valeur du métier qui correspond au profil
+
+        // Priorité 2 : overlap entre compétences/valeurs du métier et profil utilisateur
         const overlap = [...m.competences, ...(m.valeurs || []), ...(m.passions || [])]
           .find(k => valeurs.some(v => k.toLowerCase().includes(v.toLowerCase()) || v.toLowerCase().includes(k.toLowerCase()))
                   || forces.some(f => k.toLowerCase().includes(f.toLowerCase()) || f.toLowerCase().includes(k.toLowerCase())));
-        const forceStr = forces[i % Math.max(forces.length, 1)] || forces[0] || null;
+
+        // Priorité 3 : fallback — force distincte par carte + valeurs
+        const distinctForce = forces[i % Math.max(forces.length, 1)] || forces[0] || null;
         const valStr = valeurs.slice(0, 2).join(' et ') || 'le sens et l\'impact';
+
         if (overlap) {
-          return `${name} profil résonne avec ce métier notamment sur "${overlap}" — une compétence clé que votre expérience a déjà développée. Vos valeurs autour de ${valStr} en font une piste sérieuse.`;
+          return `${name} profil résonne avec ce métier notamment sur "${overlap}" — une compétence clé que votre parcours a déjà développée. Vos valeurs autour de ${valStr} en font une piste sérieuse.`;
         }
-        return `${name} profil${forceStr ? ` — notamment votre ${forceStr} —` : ''} et vos valeurs autour de ${valStr} s'alignent naturellement avec ce métier. C'est une piste sérieuse à explorer.`;
+        return `${name} profil${distinctForce ? ` — notamment votre ${distinctForce} —` : ''} et vos valeurs autour de ${valStr} s'alignent naturellement avec ce métier. C'est une piste sérieuse à explorer.`;
       })(),
       atouts: m.competences.slice(0, 2),
       developper: ['Réseau professionnel dans ce secteur', 'Formation certifiante ciblée'],
@@ -3979,42 +3987,72 @@ function buildFallbackReport() {
   };
 }
 
-// BUG #7 — Capture les métiers proposés par Cynthia en synthèse
-// Les parse depuis le texte libre (lignes ● Titre) et les fait correspondre à METIERS_DB
+// BUG #7 — Capture les métiers ET leur "pourquoi" depuis la synthèse Cynthia
+// Parse les lignes ● Titre et les lignes → Pourquoi qui suivent
 function _captureSynthMetiers(synthText) {
   _synthMetiers = null;
   if (!synthText) return;
 
-  // Extraire les titres sur les lignes commençant par ● ou •
   const lines = synthText.split('\n');
-  const rawTitles = [];
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (/^[●•▶►-]/.test(trimmed)) {
-      // Supprimer le marqueur et nettoyer
-      const title = trimmed.replace(/^[●•▶►-]\s*/, '').split(/\n|→|:/)[0].trim();
-      if (title.length > 3) rawTitles.push(title.toLowerCase());
+  const rawEntries = []; // { title: string, pourquoi: string|null }
+
+  for (let idx = 0; idx < lines.length; idx++) {
+    const trimmed = lines[idx].trim();
+    if (!/^[●•▶►]/.test(trimmed)) continue;
+
+    // Ligne type : "● Chargé RSE → Pourquoi vous : votre sens de l'impact..."
+    const withoutBullet = trimmed.replace(/^[●•▶►]\s*/, '');
+    const arrowIdx = withoutBullet.indexOf('→');
+    const colonIdx = withoutBullet.indexOf(':');
+
+    let title = '';
+    let pourquoi = null;
+
+    if (arrowIdx > -1) {
+      title = withoutBullet.substring(0, arrowIdx).trim();
+      const afterArrow = withoutBullet.substring(arrowIdx + 1).trim()
+        .replace(/^pourquoi\s*(vous\s*)?:?\s*/i, '').trim();
+      if (afterArrow.length > 10) pourquoi = afterArrow;
+    } else if (colonIdx > -1 && colonIdx < 40) {
+      title = withoutBullet.substring(0, colonIdx).trim();
+    } else {
+      title = withoutBullet.split(/\n/)[0].trim();
     }
+
+    // Chercher le "Pourquoi vous" sur les lignes suivantes si pas encore trouvé
+    if (!pourquoi) {
+      for (let j = idx + 1; j <= Math.min(idx + 4, lines.length - 1); j++) {
+        const next = lines[j].trim();
+        if (/^[●•▶►]/.test(next)) break; // nouvelle carte = stop
+        const pqMatch = next.match(/^→?\s*(?:pourquoi\s*(?:vous\s*)?:?\s*)?(.{15,})/i);
+        if (pqMatch && next.includes('→') || /pourquoi/i.test(next)) {
+          pourquoi = next.replace(/^→\s*/, '').replace(/^pourquoi\s*(vous\s*)?:?\s*/i, '').trim();
+          break;
+        }
+      }
+    }
+
+    if (title.length > 3) rawEntries.push({ title: title.toLowerCase(), pourquoi });
   }
-  if (rawTitles.length === 0) return;
+
+  if (rawEntries.length === 0) return;
 
   // Associer à METIERS_DB par correspondance partielle de titre
   const matched = [];
-  for (const raw of rawTitles) {
-    // Chercher dans METIERS_DB un titre qui contient ou est contenu dans le titre extrait
-    const words = raw.split(/[\s\/,]+/).filter(w => w.length > 3);
+  for (const entry of rawEntries) {
+    const words = entry.title.split(/[\s\/,]+/).filter(w => w.length > 3);
     const found = METIERS_DB.find(m => {
       const mLow = m.titre.toLowerCase();
-      return mLow.includes(raw) || raw.includes(mLow) ||
+      return mLow.includes(entry.title) || entry.title.includes(mLow) ||
              words.some(w => mLow.includes(w));
     });
     if (found && !matched.find(x => x.id === found.id)) {
-      matched.push(found);
+      // Attacher le "pourquoi" extrait directement depuis les mots de Cynthia
+      matched.push({ ...found, _synthPourquoi: entry.pourquoi || null });
     }
     if (matched.length >= 3) break;
   }
 
-  // Garder seulement si on a trouvé au moins 2 correspondances fiables
   _synthMetiers = matched.length >= 2 ? matched : null;
 }
 
