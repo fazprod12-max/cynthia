@@ -2936,7 +2936,7 @@ async function callCynthAI(messages) {
   if (wantSynthesis) {
     // Générer dynamiquement la liste de TOUS les métiers disponibles dans notre base
     const _allTitres = METIERS_DB.map(m => `  • ${m.titre} [${m.secteur}]`).join('\n');
-    systemPrompt += `\n\n🔴 PHASE 3 — SYNTHÈSE MAINTENANT. Tu as suffisamment exploré. INTERDICTION de poser une nouvelle question d'exploration. Produis :\n1. Une restitution complète et personnelle : parcours, valeurs, forces, freins — avec SES propres mots (3-4 phrases).\n2. TROIS métiers principaux, chacun au format :\n● [Titre du métier]\n→ Pourquoi vous : [lien direct avec ce qu'il/elle a dit — cite ses mots]\n→ Premier pas : [action ultra-concrète réalisable CETTE semaine]\n3. DEUX pistes complémentaires à explorer, plus courtes :\n● [Titre de la piste] — [une phrase : pourquoi elle mérite d'être explorée]\n4. Termine par : "Parmi ces pistes, laquelle vous parle le plus en ce moment ?"\nAucun salaire chiffré : les données précises sont réservées au rapport.\n\n🎯 CONTRAINTE ABSOLUE — LISTE DES 100 MÉTIERS AUTORISÉS : Tu dois OBLIGATOIREMENT choisir tes 3 métiers principaux ET tes 2 pistes UNIQUEMENT parmi cette liste (utilise le titre exact ou très proche) — explore toute la liste et choisis ce qui correspond LE MIEUX au profil de CETTE personne, pas aux métiers habituels :\n${_allTitres}`;
+    systemPrompt += `\n\n🔴 PHASE 3 — SYNTHÈSE MAINTENANT. Tu as suffisamment exploré. INTERDICTION de poser une nouvelle question d'exploration. Produis :\n1. Une restitution complète et personnelle : parcours, valeurs, forces, freins — avec SES propres mots (3-4 phrases).\n2. TROIS métiers principaux, chacun au format :\n● [Titre du métier]\n→ Pourquoi vous : [lien direct avec ce qu'il/elle a dit — cite ses mots]\n→ Premier pas : [action ultra-concrète réalisable CETTE semaine, DIFFÉRENTE pour chaque métier]\n3. DEUX pistes complémentaires à explorer, plus courtes :\n● [Titre de la piste] — [une phrase : pourquoi elle mérite d'être explorée]\n4. Termine par : "Parmi ces pistes, laquelle vous parle le plus en ce moment ?"\nAucun salaire chiffré : les données précises sont réservées au rapport.\n\n🚫 ANTI-HALLUCINATION : Ne cite QUE des compétences, expériences et traits EXPLICITEMENT mentionnés dans la conversation. Ne jamais inférer ou inventer des compétences ou expériences non mentionnées. Si la personne n'a pas parlé d'écriture → pas de métier lié à l'écriture. Si elle n'a pas parlé de gestion → pas de métier lié à la gestion.\n\n⚡ PREMIER PAS : Chaque "Premier pas" DOIT être spécifique au métier et différent des autres. Varie les actions : contacter un professionnel du secteur sur LinkedIn, tester un outil gratuit spécifique au métier, regarder 3 portfolios de professionnels, rejoindre une communauté en ligne, lancer un micro-projet de weekend, etc. Jamais le même texte pour deux cartes.\n\n🎯 CONTRAINTE ABSOLUE — LISTE DES 100 MÉTIERS AUTORISÉS : Tu dois OBLIGATOIREMENT choisir tes 3 métiers principaux ET tes 2 pistes UNIQUEMENT parmi cette liste (utilise le titre exact ou très proche) — explore toute la liste et choisis ce qui correspond LE MIEUX au profil de CETTE personne, pas aux métiers habituels :\n${_allTitres}`;
   }
 
   // ── R8 — Contrôle du prénom (cooldown 1 fois sur 2) ─────────────────────────
@@ -3016,21 +3016,23 @@ async function callCynthAI(messages) {
 [2 phrases personnelles sur le profil de la personne, avec ses propres mots]
 
 ● [Titre exact parmi la liste ci-dessous]
-→ Pourquoi vous : [cite ses mots, 1 phrase]
-→ Premier pas : [action concrète cette semaine]
+→ Pourquoi vous : [cite ses mots exacts issus de la conversation, 1 phrase]
+→ Premier pas : [action concrète cette semaine, SPÉCIFIQUE à ce métier]
 
 ● [Titre exact]
-→ Pourquoi vous : [cite ses mots]
-→ Premier pas : [action concrète]
+→ Pourquoi vous : [cite ses mots exacts issus de la conversation]
+→ Premier pas : [action concrète DIFFÉRENTE du premier pas précédent]
 
 ● [Titre exact]
-→ Pourquoi vous : [cite ses mots]
-→ Premier pas : [action concrète]
+→ Pourquoi vous : [cite ses mots exacts issus de la conversation]
+→ Premier pas : [action concrète DIFFÉRENTE des premiers pas précédents]
 
 ● [Piste] — [pourquoi en 1 phrase]
 ● [Piste] — [pourquoi en 1 phrase]
 
 Parmi ces pistes, laquelle vous parle le plus en ce moment ?
+
+🚫 RÈGLE ABSOLUE : Ne cite QUE des compétences EXPLICITEMENT mentionnées dans la conversation. Ne jamais inventer ou inférer des compétences non mentionnées. Premier pas = action différente pour chaque carte.
 
 TITRES AUTORISÉS (utilise uniquement ces titres, mot pour mot) :
 ${_allTitresRetry}`;
@@ -3905,6 +3907,11 @@ async function generateOrientationReport() {
     .map(m => (m.role === 'user' ? 'Client' : 'CYNTH.IA') + ' : ' + m.content)
     .join('\n\n');
 
+  // Récupère le métier rêvé depuis le questionnaire (si rempli)
+  const _dreamJob = (window.CYNTH_CONTEXT && window.CYNTH_CONTEXT.dreamJob && window.CYNTH_CONTEXT.dreamJob.trim())
+    ? window.CYNTH_CONTEXT.dreamJob.trim()
+    : '';
+
   // Enrichissement avec METIERS_EXTRA pour le matching compétences transférables
   const metiersList = METIERS_DB
     .map(m => {
@@ -3942,6 +3949,7 @@ RÈGLES D'ANALYSE :
 6. Si tu ne connais pas l'âge exact, mets null
 7. MATCHING COMPÉTENCES TRANSFÉRABLES : Pour chaque métier recommandé, analyse les competences_cles du métier et identifie lesquelles la personne possède déjà (explicitement ou implicitement d'après la conversation). Dans "atouts", liste UNIQUEMENT les compétences qu'elle a déjà. Dans "developper", liste UNIQUEMENT les compétences manquantes. Si cpf_100=oui, propose une formation CPF pour combler ces lacunes.
 8. MARCHÉ : Utilise tension_marche (haute/moyenne/basse) et avenir (fort/stable/risque) pour contextualiser chaque recommandation — dis franchement si le marché est porteur ou difficile.
+9. ANTI-HALLUCINATION : Ne cite QUE des compétences et expériences EXPLICITEMENT mentionnées dans la conversation. Ne jamais inférer des compétences non évoquées.${_dreamJob ? `\n10. MÉTIER RÊVÉ OBLIGATOIRE : L'utilisateur a mentionné "${_dreamJob}" comme métier de rêve ou aspiration. Tu DOIS inclure ce métier exact (ou un cousin direct, c'est-à-dire une déclinaison réaliste du même domaine) parmi les 5 top_metiers. Si ce métier n'existe pas dans la base, utilise le métier le plus proche et explique le lien. Ce métier doit figurer dans les 3 "principal" si le profil le justifie.` : ''}
 
 Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant ou après) :
 {
@@ -4619,7 +4627,7 @@ h2{font-size:30px;font-weight:900;color:#0a0a1a;letter-spacing:-1px;margin-botto
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 .pbox{background:#faf9ff;border-radius:12px;padding:18px 20px;border:1px solid #e8e0ff;}
 .pbox-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#8FBC8B;margin-bottom:12px;}
-.tag{display:inline-block;padding:5px 13px;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;}
+.tag{display:inline-block;padding:5px 13px;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;white-space:nowrap;}
 .tag-g{background:#dcfce7;color:#166534;}
 .tag-p{background:#f3e8ff;color:#6b21a8;}
 .tag-b{background:#dbeafe;color:#1e40af;}
