@@ -3010,8 +3010,17 @@ async function callCynthAI(messages) {
       console.warn('[CYNTH] Synthèse sans bullets — retry #' + _synthRetryCount);
 
       // Prompt ultra-court et directif — pas de bla-bla, juste le format
+      // ⚠️ CRITIQUE : le retry doit conserver TOUT le contexte du profil (questionnaire +
+      // valeurs/forces détectées + récapitulatif intégral des messages utilisateur).
+      // Sans ça, le LLM perd le fil (ex: boulangère → propose Développeur Web par défaut).
       const _allTitresRetry = METIERS_DB.map(m => `• ${m.titre}`).join('\n');
+      const _allUserMsgsRetry = messages.filter(m => m.role === 'user').map((m, i) => `${i + 1}. ${m.content}`).join('\n');
       const retrySystemPrompt = `Tu es Cynthia, experte en orientation. FORMAT STRICT — réponds UNIQUEMENT ainsi, sans rien ajouter avant ou après :
+
+${profileContext ? `📋 PROFIL CONNU : ${profileContext.trim()}\n\n` : ''}${_qCtxStr ? `🎯 DONNÉES COLLECTÉES EN AMONT (questionnaire) :\n${_qCtxStr}\n\n` : ''}📝 RÉCAPITULATIF INTÉGRAL DES MESSAGES DE L'UTILISATEUR (dans l'ordre, à utiliser en priorité pour choisir les métiers) :
+${_allUserMsgsRetry}
+
+⚠️ Base-toi sur CE récapitulatif complet, pas seulement les derniers échanges. Si l'utilisateur a mentionné un métier de ses rêves dans les données collectées, il DOIT figurer parmi tes propositions.
 
 [2 phrases personnelles sur le profil de la personne, avec ses propres mots]
 
