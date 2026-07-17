@@ -64,11 +64,16 @@ button{font-family:inherit;}
    DEMO NAV
 ════════════════════════════════════════ */
 .demo-bar{
+  /* Masquée par défaut en production — évite qu'un clic accidentel appelle
+     resetQuiz() et efface les réponses du questionnaire (metierReve, etc.)
+     en pleine conversation. Activable via ?debug=1 dans l'URL (voir script). */
+  display:none;
   position:fixed;top:0;width:100%;z-index:600;
   background:rgba(13,31,21,.9);backdrop-filter:blur(20px);
   border-bottom:1px solid rgba(143,188,139,.2);
-  display:flex;gap:6px;align-items:center;padding:8px 20px;
+  gap:6px;align-items:center;padding:8px 20px;
 }
+.demo-bar.debug-visible{display:flex;}
 .demo-bar button{
   padding:5px 14px;border-radius:50px;font-size:11px;font-weight:600;
   cursor:pointer;border:1px solid rgba(250,243,224,.1);
@@ -2343,6 +2348,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (hc) setTimeout(() => animateCounter(hc, 14, 1400), 1200);
 });
 
+// ── DEMO BAR — masquée en prod, activable via ?debug=1 (évite un clic accidentel
+// sur "③ Questionnaire" qui appellerait resetQuiz() et effacerait les réponses). ──
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    if (new URLSearchParams(location.search).get('debug') === '1') {
+      const bar = document.querySelector('.demo-bar');
+      if (bar) bar.classList.add('debug-visible');
+    }
+  } catch (e) {}
+});
+
 /* ── FAQ ACCORDION ── */
 function toggleFaq(id) {
   const item = document.getElementById(id);
@@ -3917,8 +3933,9 @@ async function generateOrientationReport() {
     .join('\n\n');
 
   // Récupère le métier rêvé depuis le questionnaire (si rempli)
-  const _dreamJob = (window.CYNTH_CONTEXT && window.CYNTH_CONTEXT.dreamJob && window.CYNTH_CONTEXT.dreamJob.trim())
-    ? window.CYNTH_CONTEXT.dreamJob.trim()
+  // NOTE : les réponses du questionnaire vivent dans `quizAnswers` (pas de window.CYNTH_CONTEXT — n'existe pas dans ce code).
+  const _dreamJob = (typeof quizAnswers !== 'undefined' && quizAnswers.metierReve && quizAnswers.metierReve.trim())
+    ? quizAnswers.metierReve.trim()
     : '';
 
   // Enrichissement avec METIERS_EXTRA pour le matching compétences transférables
