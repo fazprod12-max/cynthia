@@ -2816,6 +2816,7 @@ let chatProfile = {
 let usedQs = new Set();
 // Flag : synthèse déjà envoyée — évite la boucle infinie post-synthèse
 let synthesisFired = false;
+let _synthRetryCount = 0; // Nombre de retry synthèse déjà tentés (max 1)
 
 // ── APPEL IA — DeepSeek via Worker (cascade DeepSeek → Groq → local) ──────────
 
@@ -3001,6 +3002,61 @@ async function callCynthAI(messages) {
       reply = 'Voilà ce que je retiens de notre échange, et ce que je vois pour vous :\n\n' + reply;
     }
     _captureSynthMetiers(reply); // BUG #7 — mémoriser les métiers proposés par Cynthia
+
+    // ── RETRY SYNTHÈSE si LLM a ignoré le format ● ──────────────────────────
+    // Détection : pas de bullets OU _synthMetiers null après capture
+    if (!_synthMetiers && _synthRetryCount < 1) {
+      _synthRetryCount++;
+      console.warn('[CYNTH] Synthèse sans bullets — retry #' + _synthRetryCount);
+
+      // Prompt ultra-court et directif — pas de bla-bla, juste le format
+      const _allTitresRetry = METIERS_DB.map(m => `• ${m.titre}`).join('\n');
+      const retrySystemPrompt = `Tu es Cynthia, experte en orientation. FORMAT STRICT — réponds UNIQUEMENT ainsi, sans rien ajouter avant ou après :
+
+[2 phrases personnelles sur le profil de la personne, avec ses propres mots]
+
+● [Titre exact parmi la liste ci-dessous]
+→ Pourquoi vous : [cite ses mots, 1 phrase]
+→ Premier pas : [action concrète cette semaine]
+
+● [Titre exact]
+→ Pourquoi vous : [cite ses mots]
+→ Premier pas : [action concrète]
+
+● [Titre exact]
+→ Pourquoi vous : [cite ses mots]
+→ Premier pas : [action concrète]
+
+● [Piste] — [pourquoi en 1 phrase]
+● [Piste] — [pourquoi en 1 phrase]
+
+Parmi ces pistes, laquelle vous parle le plus en ce moment ?
+
+TITRES AUTORISÉS (utilise uniquement ces titres, mot pour mot) :
+${_allTitresRetry}`;
+
+      try {
+        const retryResp = await fetchProxy({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: retrySystemPrompt },
+            ...trimmed.slice(-8) // contexte récent seulement
+          ],
+          max_tokens: 750,
+          temperature: 0.4
+        });
+        if (retryResp.ok) {
+          const retryData = await retryResp.json();
+          const retryReply = retryData.choices?.[0]?.message?.content?.trim();
+          if (retryReply && retryReply.includes('●')) {
+            _captureSynthMetiers(retryReply);
+            return retryReply; // remplace la réponse originale
+          }
+        }
+      } catch(e) {
+        console.warn('[CYNTH] Retry synthèse échoué :', e);
+      }
+    }
   }
   return reply;
 }
@@ -3142,6 +3198,7 @@ async function startChatMode() {
   };
   usedQs = new Set();
   synthesisFired = false;
+  _synthRetryCount = 0;
   restitutionDone = false;
   _optionsShown = false;
   _fbTurn = 0;
@@ -4279,6 +4336,62 @@ function _freinsLeviers(freins) {
   });
 }
 
+/* ── HELPERS FICHE MÉTIER — Journée type & Témoignage ── */
+function _buildJourneeType(m) {
+  const s = m.secteur || '';
+  const map = [
+    ['Digital & Tech',       'Standup d\'équipe le matin, puis immersion dans les données, le code ou les outils digitaux. L\'après-midi alterne résolution de problèmes techniques et échanges avec les parties prenantes. Beaucoup d\'autonomie, souvent en remote partiel.'],
+    ['Santé',                'Briefing avec l\'équipe, puis accompagnement direct de personnes, rédaction de compte-rendus et coordination pluridisciplinaire. Chaque journée est différente selon les situations rencontrées.'],
+    ['Formation',            'Préparation des séquences pédagogiques, animation de sessions (présentiel ou distanciel), puis débrief sur ce qui a fonctionné. La relation avec les apprenants est le cœur de chaque journée.'],
+    ['Éducation',            'Préparation des séquences pédagogiques, animation de sessions (présentiel ou distanciel), puis débrief sur ce qui a fonctionné.'],
+    ['Commercial',           'Prospection le matin, rendez-vous clients l\'après-midi, suivi CRM en fin de journée. L\'énergie vient des échanges humains et des objectifs atteints.'],
+    ['Marketing',            'Analyse des performances des campagnes, création de contenus, échanges avec les équipes produit. Un équilibre entre data et créativité.'],
+    ['Conseil',              'Rencontres avec clients ou bénéficiaires, analyse de leurs situations, co-construction de solutions. Chaque journée est unique selon les personnes accompagnées.'],
+    ['Accompagnement',       'Entretiens individuels, suivi de parcours, coordination avec les partenaires. Le moteur : voir les gens progresser grâce à votre écoute.'],
+    ['Artisanat',            'Début tôt, en atelier ou sur le terrain. La satisfaction est tangible : voir avancer un projet concret. Clientèle directe, chaque pièce ou chantier est unique.'],
+    ['Créatif',              'Inspiration et recherche le matin, production créative l\'après-midi. Alternance entre phases de travail solitaire et sessions de validation client.'],
+    ['Bâtiment',             'Chantier ou bureau selon les phases de projet. Coordination d\'équipes, gestion des délais, et satisfaction de voir votre travail prendre forme dans l\'espace.'],
+    ['Architecture',         'Réunions clients, conception sur logiciel, suivi de chantier. Créativité et rigueur technique en permanence.'],
+    ['Sport',                'Séances avec vos clients ou patients, suivi de leurs progrès, conception de programmes adaptés. La progression visible des personnes accompagnées est votre récompense quotidienne.'],
+    ['Bien-être',            'Accompagnement de personnes vers plus d\'équilibre, consultations individuelles, formations. Un travail profondément humain qui vous ressource autant qu\'il ressource vos clients.'],
+    ['Finance',              'Analyse de données financières, échanges avec clients ou direction, suivi des indicateurs clés. Vous êtes le garant de la rigueur et de la vision long terme.'],
+    ['Gestion',              'Réunions de pilotage, tableaux de bord, arbitrages budgétaires. Vous donnez de la lisibilité là où il y avait de l\'opacité.'],
+    ['Juridique',            'Analyse de documents, conseil à vos clients ou services internes, rédaction d\'avis. La complexité des situations est une source constante de stimulation.'],
+    ['Compliance',           'Veille réglementaire, audits internes, formation des équipes. Vous êtes le garde-fou qui permet à l\'entreprise d\'avancer sereinement.'],
+    ['Transport',            'Journée structurée, sens aigu des responsabilités. Vous assurez la sécurité et la ponctualité — en autonomie et avec précision.'],
+    ['Événementiel',         'Coordination logistique, contacts fournisseurs et clients, préparation des détails. Le jour J, vous orchestrez tout pour créer une expérience mémorable.'],
+    ['Tourisme',             'Accueil de groupes ou clients individuels, organisation de programmes, résolution de problèmes en temps réel. Vous créez des souvenirs pour les autres.'],
+    ['Immobilier',           'Visites de biens, négociations, suivi administratif des dossiers. Un mélange d\'écoute active, de conseil et de rigueur juridique.'],
+    ['Social',               'Entretiens, visites à domicile ou en structures, rédaction de rapports. Vous aidez des personnes vulnérables à retrouver autonomie et dignité.'],
+    ['Entrepreneuriat',      'Pas de journée type — c\'est justement ça la liberté. Prospection, création, gestion, et itération constante selon vos priorités du moment.'],
+  ];
+  const match = map.find(([k]) => s.includes(k));
+  if (match) return match[1];
+  const comp = (m.competences||[]).slice(0,2).join(' et ');
+  return `Votre journée combine ${comp||'missions variées'} avec des moments d\'échange et de réflexion. L\'autonomie et la diversité des situations rendent chaque journée différente.`;
+}
+
+function _buildTemoignage(m) {
+  const s = m.secteur || '';
+  if (s.includes('Digital') || s.includes('Tech'))
+    return { texte: '"J\'avais peur de ne pas être assez technique. Six mois après ma reconversion, je réalise que ma vraie valeur ajoutée c\'est comprendre les besoins humains — et ça, aucun algorithme ne peut le faire."', auteur: 'Ancienne commerciale → Data Analyst' };
+  if (s.includes('Santé') || s.includes('Social'))
+    return { texte: '"C\'est le seul métier où je rentre chez moi en ayant l\'impression d\'avoir vraiment compté pour quelqu\'un aujourd\'hui."', auteur: 'Reconverti depuis la comptabilité' };
+  if (s.includes('Formation') || s.includes('Éducation'))
+    return { texte: '"Transmettre ce que j\'ai mis 15 ans à apprendre, et voir les yeux de quelqu\'un s\'allumer — c\'est exactement ce qui me manquait dans mon ancien poste."', auteur: 'Ex-ingénieur → Formateur professionnel' };
+  if (s.includes('Conseil') || s.includes('Accompagnement'))
+    return { texte: '"J\'accompagne des gens qui vivent exactement ce que j\'ai vécu. C\'est ma légitimité et ma force au quotidien."', auteur: 'Ex-DRH → Conseillère en évolution professionnelle' };
+  if (s.includes('Créatif') || s.includes('Culture'))
+    return { texte: '"Je pensais que la créativité ne pouvait pas être un vrai métier. Aujourd\'hui je suis payé(e) pour faire ce que je faisais le soir pour décompresser."', auteur: 'Ex-comptable → Créatrice de contenu' };
+  if (s.includes('Sport') || s.includes('Bien-être'))
+    return { texte: '"Chaque client qui retrouve de l\'énergie ou de la confiance en son corps me rappelle pourquoi j\'ai tout quitté pour faire ça."', auteur: 'Ex-cadre → Coach sportif certifié' };
+  if (s.includes('Artisanat') || s.includes('Bâtiment'))
+    return { texte: '"Travailler de mes mains et voir le résultat concret à la fin de la journée — ça n\'a pas de prix après 10 ans derrière un écran."', auteur: 'Ex-manager → Artisan' };
+  if (s.includes('Entrepreneuriat') || s.includes('Immobilier') || s.includes('Commercial'))
+    return { texte: '"La liberté de construire quelque chose à mon image, avec mes valeurs — c\'est plus du tout du travail, c\'est ma vie."', auteur: 'Ex-salarié → Entrepreneur' };
+  return { texte: '"Je ne pensais pas qu\'il était possible de trouver un métier qui corresponde autant à ce que je suis vraiment."', auteur: 'Reconverti(e) via CYNTH.IA' };
+}
+
 /* ── RAPPORT PDF PREMIUM ── */
 function printRapport() {
   const frame = document.getElementById('rapport-frame');
@@ -4439,8 +4552,33 @@ function downloadRapport(){
     <span style="font-size:18px;flex-shrink:0;">⚡</span>
     <div style="font-size:13px;color:#78350f;line-height:1.5;"><strong>Premier pas cette semaine :</strong> ${m.premier_pas}</div>
   </div>
+
+  <button onclick="openFiche(${i})" style="margin-top:14px;width:100%;padding:11px 0;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.3px;">
+    📋 Voir la fiche complète — journée type, témoignage, lien CPF
+  </button>
 </div>`;
   }).join('');
+
+  // ── Données fiches pour la modal (journée type + témoignage + CPF) ──
+  const fichesData = JSON.stringify((data.top_metiers||[]).map(m => {
+    const db = METIERS_DB.find(x => x.id === m.id) || {};
+    const tem = _buildTemoignage(db.secteur ? db : m);
+    const cpfQ = encodeURIComponent(m.titre || '');
+    return {
+      titre: m.titre,
+      secteur: m.secteur,
+      journee: _buildJourneeType(db.secteur ? db : m),
+      temoignage: tem.texte,
+      temoignage_auteur: tem.auteur,
+      formation: db.formation || m.formation || '',
+      financement: db.financement || m.financement || '',
+      salaire_debut: db.salaire_debut || m.salaire_debut || '',
+      salaire_exp: db.salaire_exp || m.salaire_exp || '',
+      marche: db.marche || m.marche || '',
+      cpf_url: 'https://www.moncompteformation.gouv.fr/espace-prive/html/#/formation/recherche?q=' + cpfQ,
+      premier_pas: m.premier_pas || ''
+    };
+  })).replace(/`/g, '\\`').replace(/<\/script>/gi, '<\\/script>');
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -4506,6 +4644,33 @@ h2{font-size:30px;font-weight:900;color:#0a0a1a;letter-spacing:-1px;margin-botto
   .sheet{margin:0;padding:52px 56px;}
   @page{margin:0;size:A4;}
 }
+/* ── MODAL FICHE MÉTIER ── */
+.fiche-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,30,.72);z-index:9999;backdrop-filter:blur(4px);animation:fadeIn .2s ease;}
+.fiche-overlay.open{display:flex;align-items:center;justify-content:center;}
+.fiche-modal{background:#fff;border-radius:20px;width:min(680px,92vw);max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.35);position:relative;}
+.fiche-header{background:linear-gradient(135deg,#1a0533,#0a1a40);color:#fff;padding:28px 32px 24px;border-radius:20px 20px 0 0;}
+.fiche-header h2{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3;}
+.fiche-header .secteur-tag{display:inline-block;background:rgba(255,255,255,.15);color:#d4b5fb;padding:3px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:1px;}
+.fiche-close{position:absolute;top:16px;right:18px;background:rgba(255,255,255,.12);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.fiche-close:hover{background:rgba(255,255,255,.25);}
+.fiche-body{padding:28px 32px;}
+.fiche-section{margin-bottom:24px;}
+.fiche-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#7c3aed;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.fiche-section-title::before{content:'';display:block;width:16px;height:2px;background:#7c3aed;border-radius:1px;}
+.fiche-journee{background:#f9f7ff;border-radius:12px;padding:16px 18px;font-size:13.5px;color:#2a2a4a;line-height:1.75;}
+.fiche-temoignage{background:linear-gradient(135deg,#fff7ed,#fef3c7);border-left:4px solid #f59e0b;border-radius:0 12px 12px 0;padding:16px 20px;}
+.fiche-temoignage blockquote{font-size:14px;font-style:italic;color:#1a1a2e;line-height:1.7;margin-bottom:6px;}
+.fiche-temoignage cite{font-size:11px;color:#92400e;font-weight:700;font-style:normal;}
+.fiche-salaires{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.fiche-sal-box{background:#f9f7ff;border-radius:10px;padding:12px 14px;text-align:center;}
+.fiche-sal-box .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:4px;}
+.fiche-sal-box .value{font-size:13px;font-weight:800;color:#1a1a2e;}
+.fiche-formation{font-size:13px;color:#374151;line-height:1.8;}
+.fiche-formation strong{color:#1a1a2e;}
+.fiche-cpf-btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;margin-top:6px;transition:opacity .15s;}
+.fiche-cpf-btn:hover{opacity:.9;}
+.fiche-premier-pas{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;padding:16px 18px;border-left:3px solid #f59e0b;font-size:13px;color:#78350f;line-height:1.6;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 <body>
@@ -4751,6 +4916,76 @@ h2{font-size:30px;font-weight:900;color:#0a0a1a;letter-spacing:-1px;margin-botto
     <span style="color:#c4b5fd;">cynth.ia</span> · Powered by Groq / Llama 3.3
   </div>
 </div>
+
+<!-- ── MODAL FICHE MÉTIER ── -->
+<div class="fiche-overlay" id="ficheOverlay" onclick="if(event.target===this)closeFiche()">
+  <div class="fiche-modal" id="ficheModal">
+    <div class="fiche-header" id="ficheHeader">
+      <button class="fiche-close" onclick="closeFiche()">✕</button>
+      <h2 id="fiche-titre">—</h2>
+      <span class="secteur-tag" id="fiche-secteur">—</span>
+    </div>
+    <div class="fiche-body">
+      <div class="fiche-section">
+        <div class="fiche-section-title">🗓️ Journée type</div>
+        <div class="fiche-journee" id="fiche-journee">—</div>
+      </div>
+      <div class="fiche-section">
+        <div class="fiche-section-title">💬 Témoignage</div>
+        <div class="fiche-temoignage">
+          <blockquote id="fiche-temoignage">—</blockquote>
+          <cite id="fiche-auteur">—</cite>
+        </div>
+      </div>
+      <div class="fiche-section">
+        <div class="fiche-section-title">💰 Rémunération</div>
+        <div class="fiche-salaires">
+          <div class="fiche-sal-box"><div class="label">Débutant</div><div class="value" id="fiche-sal-debut">—</div></div>
+          <div class="fiche-sal-box"><div class="label">Confirmé</div><div class="value" id="fiche-sal-exp">—</div></div>
+          <div class="fiche-sal-box"><div class="label">Marché</div><div class="value" id="fiche-marche">—</div></div>
+        </div>
+      </div>
+      <div class="fiche-section">
+        <div class="fiche-section-title">🎓 Formation & Financement</div>
+        <div class="fiche-formation" id="fiche-formation">—</div>
+        <a id="fiche-cpf-btn" class="fiche-cpf-btn" href="#" target="_blank" rel="noopener">
+          🔍 Rechercher les formations CPF pour ce métier →
+        </a>
+      </div>
+      <div class="fiche-section">
+        <div class="fiche-section-title">⚡ Premier pas cette semaine</div>
+        <div class="fiche-premier-pas" id="fiche-premier-pas">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _fiches = ${fichesData};
+function openFiche(idx) {
+  var f = _fiches[idx];
+  if (!f) return;
+  document.getElementById('fiche-titre').textContent = f.titre;
+  document.getElementById('fiche-secteur').textContent = f.secteur;
+  document.getElementById('fiche-journee').textContent = f.journee;
+  document.getElementById('fiche-temoignage').textContent = f.temoignage;
+  document.getElementById('fiche-auteur').textContent = '— ' + f.temoignage_auteur;
+  document.getElementById('fiche-sal-debut').textContent = f.salaire_debut || '—';
+  document.getElementById('fiche-sal-exp').textContent = f.salaire_exp || '—';
+  document.getElementById('fiche-marche').textContent = f.marche || '—';
+  document.getElementById('fiche-formation').innerHTML = '<strong>Formation :</strong> ' + (f.formation||'—') + '<br><strong>Financement :</strong> ' + (f.financement||'—');
+  document.getElementById('fiche-cpf-btn').href = f.cpf_url;
+  document.getElementById('fiche-premier-pas').textContent = f.premier_pas || '—';
+  var overlay = document.getElementById('ficheOverlay');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeFiche() {
+  document.getElementById('ficheOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeFiche(); });
+</script>
 
 </body>
 </html>`;
