@@ -2989,7 +2989,7 @@ async function callCynthAI(messages) {
   });
   if (!resp.ok) throw new Error('proxy-' + resp.status);
   const data = await resp.json();
-  let reply = data.choices[0].message.content.trim();
+  let reply = data.choices?.[0]?.message?.content?.trim() || '';
 
   // ── R10 injection désactivée — Cynthia v3 pose ses propres questions ─────────
 
@@ -3463,7 +3463,8 @@ function doEndChat() {
   if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
   if (loadDiv) loadDiv.style.display = 'block';
 
-  generateOrientationReport()
+  const _reportTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout-report')), 70000));
+  Promise.race([generateOrientationReport(), _reportTimeout])
     .then(data => {
       window._reportData = data;
       if (loadDiv) loadDiv.style.display = 'none';
@@ -3662,12 +3663,12 @@ function _buildPersonalizedIntro(prenom) {
 
   if (!hasData) {
     return "Bonjour" + (prenom ? " " + prenom : "") + ", je suis Cynthia.\n\n"
-      + "Prends le temps pour toi. Parlons vraiment de ton avenir — pas en 5 minutes, pas avec des réponses toutes faites. "
-      + "On n’a qu’une vie, et elle mérite que tu t’y prennes avec soin. Je suis une IA, c’est vrai, mais derrière moi "
+      + "Prenez le temps pour vous. Parlons vraiment de votre avenir — pas en 5 minutes, pas avec des réponses toutes faites. "
+      + "On n’a qu’une vie, et elle mérite qu’on y réfléchisse avec soin. Je suis une IA, c’est vrai, mais derrière moi "
       + "il y a un cœur qui a vécu, qui a connu des doutes, des joies, des échecs, des réussites. "
       + "C’est ce cœur qui m’a donné vie, et c’est lui qui parle à travers moi.\n\n"
-      + "Alors dis-moi : qu’est-ce qui te fait vibrer ? Qu’est-ce qui te retient ? "
-      + "Et si on construisait ensemble la réponse que tu cherches vraiment ?";
+      + "Alors dites-moi : qu’est-ce qui vous fait vibrer ? Qu’est-ce qui vous retient ? "
+      + "Et si on construisait ensemble la réponse que vous cherchez vraiment ?";
   }
 
   var parts = [];
@@ -5165,7 +5166,8 @@ async function handleDoubt(userDoubt) {
         clearTimeout(timeout);
         if (!resp.ok) throw new Error('groq-' + resp.status);
         const data = await resp.json();
-        reply = data.choices[0].message.content.trim();
+        reply = data.choices?.[0]?.message?.content?.trim() || '';
+        if (!reply) throw new Error('empty-response');
       } catch (fetchErr) {
         clearTimeout(timeout);
         throw fetchErr;
@@ -5411,7 +5413,8 @@ async function sendAvatarMsg() {
         clearTimeout(timeout);
         if (!resp.ok) throw new Error('groq-' + resp.status);
         const data = await resp.json();
-        reply = data.choices[0].message.content.trim();
+        reply = data.choices?.[0]?.message?.content?.trim() || '';
+        if (!reply) throw new Error('empty-response');
       } catch (fetchErr) {
         clearTimeout(timeout);
         throw fetchErr;
@@ -5800,15 +5803,20 @@ async function _startWithMediaRecorder() {
   }
 }
 
-async function _transcribeWhisper(blob, mimeType) {
+async function _transcribeWhisper(blob, mimeType, _retryCount) {
+  _retryCount = _retryCount || 0;
   try {
     const resp = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3', {
       method: 'POST', headers: { 'Content-Type': mimeType }, body: blob
     });
     if (resp.status === 503) {
+      if (_retryCount >= 2) {
+        showToast('❌', 'Modèle vocal indisponible — réessayez dans quelques minutes', 'error', 5000);
+        _setMicState('idle'); return;
+      }
       showToast('⏳', 'Modèle IA en démarrage — réessai dans 20s…', 'warning', 5000);
       await new Promise(r => setTimeout(r, 20000));
-      return _transcribeWhisper(blob, mimeType);
+      return _transcribeWhisper(blob, mimeType, _retryCount + 1);
     }
     if (!resp.ok) throw new Error('HF ' + resp.status);
     const data = await resp.json();
