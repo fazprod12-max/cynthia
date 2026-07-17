@@ -2953,8 +2953,8 @@ async function callCynthAI(messages) {
 
   const apiMessages = [{ role: 'system', content: systemPrompt }, ...trimmed];
 
-  // ── Paramètres (cahier des charges) : collecte 450 tok / 0.72 — synthèse 650 tok / 0.55 ──
-  const maxTokens = wantSynthesis ? 650 : 450;
+  // ── Paramètres (cahier des charges) : collecte 450 tok / 0.72 — synthèse 850 tok / 0.55 ──
+  const maxTokens = wantSynthesis ? 850 : 450;
 
   // ── Fetch avec backoff exponentiel sur 429 ──────────────────────────────────
   async function fetchProxy(body) {
@@ -2997,6 +2997,7 @@ async function callCynthAI(messages) {
     if (!reply.includes('●')) {
       reply = 'Voilà ce que je retiens de notre échange, et ce que je vois pour vous :\n\n' + reply;
     }
+    _captureSynthMetiers(reply); // BUG #7 — mémoriser les métiers proposés par Cynthia
   }
   return reply;
 }
@@ -3124,6 +3125,7 @@ function _getFbReply(msg, prenom) {
 let _fbTurn = 0;
 let _synthesisDone = false;
 let _fbPostTurn = 0;
+let _synthMetiers = null; // métiers proposés par Cynthia en synthèse (BUG #7)
 
 // ── CHAT ENGINE PRINCIPAL ──────────────────────────────────────────────────────
 
@@ -3143,6 +3145,7 @@ async function startChatMode() {
   _synthesisDone = false;
   _fbPostTurn = 0;
   _fbUsed = new Set();
+  _synthMetiers = null;
 
   const msgs = document.getElementById('chat-msgs');
   if (msgs) msgs.innerHTML = '';
@@ -3915,7 +3918,10 @@ function buildFallbackReport() {
     return { ...m, _kw: kw };
   });
   scored.sort((a, b) => b._kw - a._kw);
-  const picks = scored.slice(0, 3);
+  // BUG #7 — Prioriser les métiers proposés par Cynthia en synthèse si disponibles
+  const picks = (_synthMetiers && _synthMetiers.length >= 2)
+    ? [..._synthMetiers, ...scored.filter(m => !_synthMetiers.find(s => s.id === m.id))].slice(0, 3)
+    : scored.slice(0, 3);
 
   // Profil adapté aux signaux détectés
   const hasStress   = /stress|épuis|burnout|marre|bout du rouleau|craqu|viré|licenci/.test(conversation);
@@ -3945,7 +3951,16 @@ function buildFallbackReport() {
     top_metiers: picks.map((m, i) => ({
       ...m,
       score: Math.max(72, 88 - i * 6),
-      pourquoi: `Ce métier résonne avec les éléments clés de votre conversation : les compétences que vous avez mentionnées et les valeurs qui semblent importantes pour vous. C'est une piste à explorer sérieusement.`,
+      pourquoi: (() => {
+        const v = chatProfile.valeurs && chatProfile.valeurs.length > 0
+          ? chatProfile.valeurs.slice(0, 2).join(' et ')
+          : 'le sens et l\'impact';
+        const f = chatProfile.forces && chatProfile.forces.length > 0
+          ? chatProfile.forces[0] : null;
+        const name = chatProfile.prenom ? chatProfile.prenom + ', votre' : 'Votre';
+        const fStr = f ? ` — notamment votre ${f} —` : '';
+        return `${name} profil${fStr} et vos valeurs autour de ${v} s'alignent naturellement avec ce métier. C'est une piste sérieuse à explorer selon votre parcours.`;
+      })(),
       atouts: m.competences.slice(0, 2),
       developper: ['Réseau professionnel dans ce secteur', 'Formation certifiante ciblée'],
       premier_pas: `Regarder 3 témoignages de ${m.titre}s sur YouTube ou LinkedIn cette semaine — pour voir si ça vous parle vraiment.`
@@ -3957,6 +3972,45 @@ function buildFallbackReport() {
     },
     message_fin: `${prenom ? prenom + ', vous avez' : 'Vous avez'} eu le courage de faire cette démarche — c'est loin d'être anodin. Ce rapport est un point de départ, pas une destination. La voie que vous cherchez existe, et elle vous ressemble. Faites confiance au processus, une étape à la fois.`
   };
+}
+
+// BUG #7 — Capture les métiers proposés par Cynthia en synthèse
+// Les parse depuis le texte libre (lignes ● Titre) et les fait correspondre à METIERS_DB
+function _captureSynthMetiers(synthText) {
+  _synthMetiers = null;
+  if (!synthText) return;
+
+  // Extraire les titres sur les lignes commençant par ● ou •
+  const lines = synthText.split('\n');
+  const rawTitles = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^[●•▶►-]/.test(trimmed)) {
+      // Supprimer le marqueur et nettoyer
+      const title = trimmed.replace(/^[●•▶►-]\s*/, '').split(/\n|→|:/)[0].trim();
+      if (title.length > 3) rawTitles.push(title.toLowerCase());
+    }
+  }
+  if (rawTitles.length === 0) return;
+
+  // Associer à METIERS_DB par correspondance partielle de titre
+  const matched = [];
+  for (const raw of rawTitles) {
+    // Chercher dans METIERS_DB un titre qui contient ou est contenu dans le titre extrait
+    const words = raw.split(/[\s\/,]+/).filter(w => w.length > 3);
+    const found = METIERS_DB.find(m => {
+      const mLow = m.titre.toLowerCase();
+      return mLow.includes(raw) || raw.includes(mLow) ||
+             words.some(w => mLow.includes(w));
+    });
+    if (found && !matched.find(x => x.id === found.id)) {
+      matched.push(found);
+    }
+    if (matched.length >= 3) break;
+  }
+
+  // Garder seulement si on a trouvé au moins 2 correspondances fiables
+  _synthMetiers = matched.length >= 2 ? matched : null;
 }
 
 /* ── RAPPORT PDF PREMIUM ── */
