@@ -4114,19 +4114,29 @@ function _captureSynthMetiers(synthText) {
 
   // Sauvegarder les pourquois positionnels — utilisés même sans match METIERS_DB
   _synthPourquois = rawEntries.slice(0, 5)
-    .filter(e => e.title.length < 60)          // exclure les "pistes complémentaires" longues
+    .filter(e => e.title.length < 90)          // exclure les "pistes complémentaires" longues
     .map(e => e.pourquoi || null);
 
-  // Associer à METIERS_DB par correspondance partielle de titre
+  // Associer à METIERS_DB par meilleur score de correspondance (évite faux positifs)
   const matched = [];
   for (const entry of rawEntries) {
-    if (entry.title.length >= 60) continue;    // skip pistes complémentaires
-    const words = entry.title.split(/[\s\/,]+/).filter(w => w.length > 3);
-    const found = METIERS_DB.find(m => {
+    if (entry.title.length >= 90) continue;    // skip pistes complémentaires (longues descriptions)
+    // Mots significatifs (≥5 chars) pour éviter que "coach","data","rse" matchent n'importe quoi
+    const words = entry.title.split(/[\s\/,]+/).filter(w => w.length >= 5);
+    let bestMatch = null;
+    let bestScore = 0;
+    for (const m of METIERS_DB) {
       const mLow = m.titre.toLowerCase();
-      return mLow.includes(entry.title) || entry.title.includes(mLow) ||
-             words.some(w => mLow.includes(w));
-    });
+      // Correspondance exacte ou quasi-exacte = priorité absolue
+      if (mLow === entry.title || mLow.includes(entry.title) || entry.title.includes(mLow)) {
+        bestMatch = m; bestScore = 999; break;
+      }
+      // Score = nb de mots communs significatifs
+      const score = words.filter(w => mLow.includes(w)).length;
+      if (score > bestScore) { bestScore = score; bestMatch = m; }
+    }
+    // Exiger au moins 2 mots communs pour éviter les faux positifs
+    const found = bestScore >= 2 ? bestMatch : null;
     if (found && !matched.find(x => x.id === found.id)) {
       // Attacher le "pourquoi" extrait directement depuis les mots de Cynthia
       matched.push({ ...found, _synthPourquoi: entry.pourquoi || null });
