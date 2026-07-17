@@ -3952,14 +3952,19 @@ function buildFallbackReport() {
       ...m,
       score: Math.max(72, 88 - i * 6),
       pourquoi: (() => {
-        const v = chatProfile.valeurs && chatProfile.valeurs.length > 0
-          ? chatProfile.valeurs.slice(0, 2).join(' et ')
-          : 'le sens et l\'impact';
-        const f = chatProfile.forces && chatProfile.forces.length > 0
-          ? chatProfile.forces[0] : null;
+        const forces = chatProfile.forces || [];
+        const valeurs = chatProfile.valeurs || [];
         const name = chatProfile.prenom ? chatProfile.prenom + ', votre' : 'Votre';
-        const fStr = f ? ` — notamment votre ${f} —` : '';
-        return `${name} profil${fStr} et vos valeurs autour de ${v} s'alignent naturellement avec ce métier. C'est une piste sérieuse à explorer selon votre parcours.`;
+        // Trouver la compétence ou valeur du métier qui correspond au profil
+        const overlap = [...m.competences, ...(m.valeurs || []), ...(m.passions || [])]
+          .find(k => valeurs.some(v => k.toLowerCase().includes(v.toLowerCase()) || v.toLowerCase().includes(k.toLowerCase()))
+                  || forces.some(f => k.toLowerCase().includes(f.toLowerCase()) || f.toLowerCase().includes(k.toLowerCase())));
+        const forceStr = forces[i % Math.max(forces.length, 1)] || forces[0] || null;
+        const valStr = valeurs.slice(0, 2).join(' et ') || 'le sens et l\'impact';
+        if (overlap) {
+          return `${name} profil résonne avec ce métier notamment sur "${overlap}" — une compétence clé que votre expérience a déjà développée. Vos valeurs autour de ${valStr} en font une piste sérieuse.`;
+        }
+        return `${name} profil${forceStr ? ` — notamment votre ${forceStr} —` : ''} et vos valeurs autour de ${valStr} s'alignent naturellement avec ce métier. C'est une piste sérieuse à explorer.`;
       })(),
       atouts: m.competences.slice(0, 2),
       developper: ['Réseau professionnel dans ce secteur', 'Formation certifiante ciblée'],
