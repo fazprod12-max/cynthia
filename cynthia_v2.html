@@ -3953,7 +3953,9 @@ function buildFallbackReport() {
       ...m,
       score: Math.max(72, 88 - i * 6),
       pourquoi: (() => {
-        // Priorité 1 : texte extrait mot-à-mot depuis la synthèse Cynthia (le plus personnalisé)
+        // Priorité 0 : pourquoi positionnel extrait depuis la synthèse (même sans match METIERS_DB)
+        if (window._synthPourquois && _synthPourquois[i]) return _synthPourquois[i];
+        // Priorité 1 : texte extrait via _synthMetiers._synthPourquoi (match METIERS_DB)
         if (m._synthPourquoi) return m._synthPourquoi;
 
         const forces = chatProfile.forces || [];
@@ -3989,8 +3991,11 @@ function buildFallbackReport() {
 
 // BUG #7 — Capture les métiers ET leur "pourquoi" depuis la synthèse Cynthia
 // Parse les lignes ● Titre et les lignes → Pourquoi qui suivent
+// _synthPourquois[] = pourquoi positionnels extraits, utilisés même si pas de match METIERS_DB
+let _synthPourquois = [];
 function _captureSynthMetiers(synthText) {
   _synthMetiers = null;
+  _synthPourquois = [];
   if (!synthText) return;
 
   const lines = synthText.split('\n');
@@ -4037,9 +4042,15 @@ function _captureSynthMetiers(synthText) {
 
   if (rawEntries.length === 0) return;
 
+  // Sauvegarder les pourquois positionnels — utilisés même sans match METIERS_DB
+  _synthPourquois = rawEntries.slice(0, 5)
+    .filter(e => e.title.length < 60)          // exclure les "pistes complémentaires" longues
+    .map(e => e.pourquoi || null);
+
   // Associer à METIERS_DB par correspondance partielle de titre
   const matched = [];
   for (const entry of rawEntries) {
+    if (entry.title.length >= 60) continue;    // skip pistes complémentaires
     const words = entry.title.split(/[\s\/,]+/).filter(w => w.length > 3);
     const found = METIERS_DB.find(m => {
       const mLow = m.titre.toLowerCase();
