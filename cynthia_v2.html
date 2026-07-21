@@ -3958,15 +3958,13 @@ async function generateOrientationReport() {
     })
     .join('\n');
 
-  const prompt = `Tu es une experte senior en orientation professionnelle avec 20 ans d'expérience, formée en psychologie humaniste, Big Five (OCEAN), théorie de l'autodétermination et approche orientée solution. Analyse cette conversation profonde et génère un rapport d'orientation complet sur 4 pages.
-
-CONVERSATION INTÉGRALE :
+  const dataBlock = `CONVERSATION INTÉGRALE :
 ${conversationText}
 
 BASE DE DONNÉES MÉTIERS ENRICHIE (format: id|titre|secteur|competences_cles|tension_marche|avenir|cpf|cpf_100|profils_types|salaire_debut|salaire_exp) :
-${metiersList}
+${metiersList}`;
 
-RÈGLES D'ANALYSE :
+  const rulesAndSchema = `RÈGLES D'ANALYSE :
 1. Identifie CE QUE LA PERSONNE A DIT MOT POUR MOT — ses vrais mots, ses vraies peurs, ses vraies envies, ses moments d'alignement
 2. Sélectionne EXACTEMENT 5 métiers : les 3 PLUS adaptés à son profil (champ "type": "principal") puis 2 pistes complémentaires à explorer (champ "type": "piste")
 3. Chaque "pourquoi" DOIT citer des éléments réels de la conversation (reprend ses propres mots)
@@ -4050,24 +4048,64 @@ Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant o
   "message_fin": "Message d'encouragement personnalisé de 3-4 phrases. Reprend leur histoire spécifique, nomme quelque chose de précis qu'ils ont dit, célèbre le courage de cette démarche, donne une vraie chaleur humaine — pas un message générique."
 }`;
 
-  const resp = await fetch(GROQ_PROXY_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      isSynthesis: true,           // → force Groq 70b si Claude indispo
-      messages:[{role:'user',content:prompt}],
-      max_tokens:3500,
-      temperature:0.25,
-      top_p:0.9
-    })
-  });
-  if (!resp.ok) throw new Error('proxy-'+resp.status);
-  const data = await resp.json();
-  const raw = data.choices?.[0]?.message?.content?.trim() || '';
-  // Extraire le JSON même si le modèle ajoute du texte autour
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('no-json: ' + raw.substring(0, 100));
-  return JSON.parse(jsonMatch[0]);
+  // BUG FIX v5.3 — le rapport échouait quasi systématiquement (prose au lieu de JSON) car
+  // tout partait dans un seul message role:'user' très long (conversation + 100 métiers +
+  // schéma JSON complet) : le modèle "dérive" en langage naturel avant la fin du prompt,
+  // surtout sur des conversations chargées émotionnellement. Fix :
+  //  1) séparer un vrai message `system` (instruction de format, courte, jamais noyée)
+  //     d'un message `user` (les données) — le system prompt pèse plus sur le comportement
+  //  2) renforcer la consigne de fin de prompt (recency bias)
+  //  3) ajouter UN retry automatique avec un prompt plus court et plus strict si le 1er
+  //     essai ne produit pas de JSON exploitable (même logique que le retry de synthèse)
+  const systemPromptReport = `Tu es une experte senior en orientation professionnelle avec 20 ans d'expérience, formée en psychologie humaniste, Big Five (OCEAN), théorie de l'autodétermination et approche orientée solution.
+
+RÈGLE ABSOLUE DE FORMAT : tu réponds TOUJOURS et UNIQUEMENT avec un objet JSON valide. Jamais de texte avant, jamais de texte après, jamais de balises markdown \`\`\`json. Ta réponse complète commence par le caractère { et se termine par le caractère }. Même si le sujet de la conversation est sensible, émotionnel ou difficile, tu ne réagis JAMAIS en langage naturel — tu restructures ce que tu ressens directement DANS les champs texte du JSON (ex: dans "message_fin" ou "recadrage"). Le JSON EST ta réponse, il n'y a rien d'autre.`;
+
+  const userPromptReport = `${dataBlock}
+
+${rulesAndSchema}
+
+⚠️ RAPPEL FINAL AVANT DE RÉPONDRE : ta réponse doit être EXCLUSIVEMENT l'objet JSON ci-dessus, rempli avec les vraies données de cette conversation. Pas une seule phrase avant. Pas une seule phrase après. Le tout premier caractère de ta réponse doit être { et le dernier doit être }.`;
+
+  async function _callReportModel(sysP, usrP, maxTok) {
+    const resp = await fetch(GROQ_PROXY_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        isSynthesis: true,           // → force Groq 70b si Claude indispo
+        // BUG FIX v5.3 : JSON Object Mode natif de Groq — l'API garantit une sortie
+        // syntaxiquement JSON (ou une erreur), le modèle ne peut plus "dériver" en prose.
+        // Supporté par llama-3.3-70b-versatile. Le worker forward ce flag vers Groq/DeepSeek.
+        wantJsonMode: true,
+        messages:[{role:'system',content:sysP},{role:'user',content:usrP}],
+        max_tokens:3500,
+        temperature:0.25,
+        top_p:0.9
+      })
+    });
+    if (!resp.ok) throw new Error('proxy-'+resp.status);
+    const data = await resp.json();
+    const raw = data.choices?.[0]?.message?.content?.trim() || '';
+    // Extraire le JSON même si le modèle ajoute du texte autour
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('no-json: ' + raw.substring(0, 120));
+    return JSON.parse(jsonMatch[0]);
+  }
+
+  try {
+    return await _callReportModel(systemPromptReport, userPromptReport, 3500);
+  } catch (e1) {
+    console.warn('generateOrientationReport: 1er essai échoué, retry strict —', e1.message);
+    // Retry : prompt beaucoup plus court et directif, sans reformuler tout le contexte
+    // émotionnel en tête — on force un mode "générateur JSON" pur.
+    const retrySystem = `Tu es un générateur JSON strict pour un rapport d'orientation professionnelle. Tu ne parles JAMAIS en langage naturel, tu n'exprimes JAMAIS d'empathie en dehors des champs texte du JSON. Ta unique sortie est un objet JSON valide, rien d'autre — pas de préambule, pas de phrase de transition, pas de markdown.`;
+    const retryUser = `${dataBlock}
+
+${rulesAndSchema}
+
+RÉPONDS UNIQUEMENT PAR LE JSON. Premier caractère : {. Dernier caractère : }. Aucun texte autour, aucune exception.`;
+    return await _callReportModel(retrySystem, retryUser, 3500);
+  }
 }
 
 function buildFallbackReport() {
