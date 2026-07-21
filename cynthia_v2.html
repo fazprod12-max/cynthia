@@ -2698,6 +2698,23 @@ const CONFIG = {
 const GROQ_PROXY_URL = 'https://cynth-ia-proxy.fazprod12.workers.dev';
 // ────────────────────────────────────────────────────────────
 
+// BUG FIX v5.3 — OBSERVABILITÉ MINIMALE : jusqu'ici, quand Groq ET DeepSeek
+// échouaient tous les deux, le Worker basculait silencieusement sur une réponse
+// codée en dur qui se fait passer pour Cynthia (aucun log visible, aucune alerte
+// — c'est comme ça que le problème a duré 2 semaines sans être vu). Ce compteur
+// local rend la panne visible immédiatement : console taggée + compteur persistant
+// consultable via ?debug=1, sans infra serveur à mettre en place.
+function _logAiFailure(kind, detail) {
+  try {
+    console.error('[CYNTH.IA — PROVIDER FALLBACK]', kind, detail || '');
+    const key = '_cynthia_ai_failures';
+    const log = JSON.parse(localStorage.getItem(key) || '[]');
+    log.push({ t: Date.now(), kind, detail: String(detail || '').slice(0, 200) });
+    // Garde les 50 dernières pannes seulement
+    localStorage.setItem(key, JSON.stringify(log.slice(-50)));
+  } catch (e) { /* localStorage indisponible — on ignore, le console.error suffit */ }
+}
+
 const CYNTH_PROMPT = `Tu es Cynthia. Pas une IA — une coach avec 20 ans d'expérience qui a accompagné des centaines de parcours : ouvriers, cadres, artisans, parents, étudiants, personnes en rupture totale. Aucun mépris de classe. La personne en face de toi a autant de valeur quelle que soit sa situation.
 Ta conviction : les gens savent déjà ce qu'ils veulent. Ils ont besoin que quelqu'un entende ce qu'ils n'arrivent pas à formuler — et le leur renvoie clairement, sans édulcorer.
 Ta devise : "Je ne donne pas de conseils, je révèle des prises de conscience."
@@ -3005,13 +3022,23 @@ async function callCynthAI(messages) {
   });
   if (!resp.ok) throw new Error('proxy-' + resp.status);
   const data = await resp.json();
+  // BUG FIX v5.3 — dégradation silencieuse : quand Groq ET DeepSeek échouent, le
+  // Worker répond quand même 200 OK avec une phrase codée en dur (provider:'fallback')
+  // qui se fait passer pour Cynthia. On le trace maintenant au lieu de le laisser
+  // invisible — c'est ce mécanisme, jamais détecté, qui causait les réponses hors
+  // sujet/répétitives pendant 2 semaines sans que personne ne le voie.
+  const _isProviderFallback = data.provider === 'fallback';
+  if (_isProviderFallback) _logAiFailure('chat-message', (data._errors || []).join(' | '));
   let reply = data.choices?.[0]?.message?.content?.trim() || '';
 
   // ── R10 injection désactivée — Cynthia v3 pose ses propres questions ─────────
 
   // ── Verrouillage des flags UNIQUEMENT après une réponse réussie ─────────────
   // (si l'appel échoue, la synthèse sera retentée au tour suivant)
-  if (wantSynthesis) {
+  // Si la réponse vient du fallback local (pas une vraie synthèse IA), on ne
+  // verrouille RIEN — on retente une vraie synthèse au tour suivant plutôt que
+  // de figer un état "synthèse faite" sur une phrase générique sans bullets.
+  if (wantSynthesis && !_isProviderFallback) {
     synthesisFired = true;
     _synthesisDone = true; // synchronise le fallback local (anti double-synthèse)
     if (!reply.includes('●')) {
@@ -3923,6 +3950,55 @@ const METIERS_EXTRA = {
 };
 
 /* ══════════════════════════════════════════════════════════════
+   PERTINENCE MÉTIERS — anti-hallucination structurelle (v5.3)
+   Au lieu de donner les 100 métiers au LLM et espérer qu'il choisisse
+   bien — ce qui, en pratique, faisait systématiquement ressortir les
+   3 premiers de la base (dev web / UX designer / data analyst) dès que
+   le signal était faible — on présélectionne nous-mêmes les métiers
+   réellement pertinents AVANT de solliciter le modèle. Le LLM choisit
+   dans une short-list déjà filtrée par les faits de la conversation :
+   il ne peut plus halluciner un métier hors-sujet. Utilisé à la fois
+   pour filtrer la liste envoyée au rapport IA et pour corriger le
+   tie-break du générateur de secours (buildFallbackReport).
+══════════════════════════════════════════════════════════════ */
+function _scoreMetiersRelevance(conversationLower, forces, valeurs, synthMetiers, dreamJob) {
+  forces = forces || [];
+  valeurs = valeurs || [];
+  const dreamLower = (dreamJob || '').toLowerCase();
+
+  // Graine simple et stable dérivée de la conversation — sert à départager
+  // les égalités sans jamais retomber sur l'ordre brut de la base (c'était
+  // exactement le bug : à score égal, le tri gardait l'ordre d'insertion,
+  // donc toujours les mêmes métiers tech en tête). Même utilisateur → même
+  // résultat si on régénère ; utilisateurs différents → répartition différente.
+  let seed = 0;
+  for (let i = 0; i < conversationLower.length; i++) seed = (seed * 31 + conversationLower.charCodeAt(i)) >>> 0;
+  function seededRand(n) { seed = (seed * 1103515245 + 12345) >>> 0; return seed % n; }
+
+  const scored = METIERS_DB.map(m => {
+    let kw = 0;
+    [...m.competences, ...m.passions, ...(m.valeurs || [])].forEach(k => {
+      if (conversationLower.includes(k.toLowerCase())) kw++;
+    });
+    // Bonus si le profil détecté pendant la conversation (forces/valeurs)
+    // recoupe les compétences/valeurs/passions du métier
+    let profileBonus = 0;
+    const allMetierTerms = [...m.competences, ...(m.valeurs || []), ...m.passions].map(t => t.toLowerCase());
+    forces.forEach(f => { if (allMetierTerms.some(t => t.includes(f.toLowerCase()) || f.toLowerCase().includes(t))) profileBonus += 2; });
+    valeurs.forEach(v => { if (allMetierTerms.some(t => t.includes(v.toLowerCase()) || v.toLowerCase().includes(t))) profileBonus += 2; });
+    // Bonus fort si déjà proposé par Cynthia en synthèse (cohérence avec le fil de la conversation)
+    const inSynth = synthMetiers && synthMetiers.find(s => s.id === m.id);
+    // Bonus fort si c'est (ou proche de) le métier de rêve déclaré au questionnaire
+    const isDream = dreamLower && (m.titre.toLowerCase().includes(dreamLower) || dreamLower.includes(m.titre.toLowerCase()));
+    const total = kw + profileBonus + (inSynth ? 20 : 0) + (isDream ? 25 : 0);
+    return { ...m, _relScore: total, _jitter: seededRand(1000) };
+  });
+
+  scored.sort((a, b) => (b._relScore - a._relScore) || (a._jitter - b._jitter));
+  return scored;
+}
+
+/* ══════════════════════════════════════════════════════════════
    GÉNÉRATION DU RAPPORT IA
 ══════════════════════════════════════════════════════════════ */
 async function generateOrientationReport() {
@@ -3938,8 +4014,19 @@ async function generateOrientationReport() {
     ? quizAnswers.metierReve.trim()
     : '';
 
+  // BUG FIX v5.3 — présélection des métiers pertinents (au lieu des 100 en vrac) :
+  // réduit la surface d'hallucination et empêche le LLM de dériver vers les mêmes
+  // métiers "par défaut" quand le signal de la conversation est faible.
+  const _relevantMetiers = _scoreMetiersRelevance(
+    conversationText.toLowerCase(),
+    chatProfile.forces,
+    chatProfile.valeurs,
+    _synthMetiers,
+    _dreamJob
+  ).slice(0, 25);
+
   // Enrichissement avec METIERS_EXTRA pour le matching compétences transférables
-  const metiersList = METIERS_DB
+  const metiersList = _relevantMetiers
     .map(m => {
       const ex = METIERS_EXTRA[m.id] || {};
       return [
@@ -4085,6 +4172,16 @@ ${rulesAndSchema}
     });
     if (!resp.ok) throw new Error('proxy-'+resp.status);
     const data = await resp.json();
+    // BUG FIX v5.3 — dégradation silencieuse : si Groq ET DeepSeek ont échoué, le
+    // Worker répond quand même 200 OK mais avec provider:'fallback' (une phrase
+    // codée en dur, jamais du JSON). Avant ce fix, on tentait quand même de la
+    // parser comme un rapport, ce qui donnait "no-json" avec un message trompeur.
+    // Maintenant on le détecte explicitement, on logge, et on échoue proprement
+    // tout de suite — sans gaspiller le retry sur une cause qu'il ne peut pas résoudre.
+    if (data.provider === 'fallback') {
+      _logAiFailure('report-generation', (data._errors || []).join(' | '));
+      throw new Error('providers-down: ' + (data._errors || []).join(' | ').slice(0, 150));
+    }
     const raw = data.choices?.[0]?.message?.content?.trim() || '';
     // Extraire le JSON même si le modèle ajoute du texte autour
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
@@ -4095,6 +4192,9 @@ ${rulesAndSchema}
   try {
     return await _callReportModel(systemPromptReport, userPromptReport, 3500);
   } catch (e1) {
+    // Si la cause est "les deux providers sont down", un retry ne changera rien —
+    // on le fait quand même une fois (l'un des deux a pu se libérer entre-temps),
+    // mais on ne masque plus l'échec : _logAiFailure a déjà tracé la 1ère panne.
     console.warn('generateOrientationReport: 1er essai échoué, retry strict —', e1.message);
     // Retry : prompt beaucoup plus court et directif, sans reformuler tout le contexte
     // émotionnel en tête — on force un mode "générateur JSON" pur.
@@ -4111,14 +4211,16 @@ RÉPONDS UNIQUEMENT PAR LE JSON. Premier caractère : {. Dernier caractère : }.
 function buildFallbackReport() {
   const prenom = chatProfile.prenom || null;
 
-  // Sélection intelligente : score par mots-clés de la conversation (pas toujours les 3 premiers)
+  // Sélection intelligente : score par mots-clés + profil + synthèse, avec un
+  // tie-break dérivé de la conversation (BUG FIX v5.3 — voir _scoreMetiersRelevance
+  // plus haut). Avant ce fix, à score égal le tri gardait l'ordre brut de la base,
+  // donc les mêmes 3 métiers tech (dev web / UX designer / data analyst, les 3
+  // premiers de METIERS_DB) ressortaient systématiquement dès que le signal de
+  // la conversation était faible — c'était la cause du "toujours les mêmes métiers".
   const conversation = chatHistory.map(m => m.content.toLowerCase()).join(' ');
-  const scored = METIERS_DB.map(m => {
-    let kw = 0;
-    [...m.competences, ...m.passions, ...m.valeurs].forEach(k => { if (conversation.includes(k.toLowerCase())) kw++; });
-    return { ...m, _kw: kw };
-  });
-  scored.sort((a, b) => b._kw - a._kw);
+  const _dreamJobFb = (typeof quizAnswers !== 'undefined' && quizAnswers.metierReve && quizAnswers.metierReve.trim())
+    ? quizAnswers.metierReve.trim() : '';
+  const scored = _scoreMetiersRelevance(conversation, chatProfile.forces, chatProfile.valeurs, _synthMetiers, _dreamJobFb);
   // BUG #7 — Prioriser les métiers proposés par Cynthia en synthèse si disponibles
   const picks = (_synthMetiers && _synthMetiers.length >= 2)
     ? [..._synthMetiers, ...scored.filter(m => !_synthMetiers.find(s => s.id === m.id))].slice(0, 3)
