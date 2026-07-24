@@ -3289,7 +3289,7 @@ function doEndChat() {
   if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
   if (loadDiv) loadDiv.style.display = 'block';
 
-  const _reportTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout-report')), 70000));
+  const _reportTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout-report')), 95000));
   Promise.race([generateOrientationReport(), _reportTimeout])
     .then(data => {
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
@@ -3968,7 +3968,7 @@ function buildFallbackReport() {
   // donc les mêmes 3 métiers tech (dev web / UX designer / data analyst, les 3
   // premiers de METIERS_DB) ressortaient systématiquement dès que le signal de
   // la conversation était faible — c'était la cause du "toujours les mêmes métiers".
-  const conversation = chatHistory.map(m => m.content.toLowerCase()).join(' ');
+  const conversation = chatHistory.filter(m => m.role === 'user').map(m => m.content.toLowerCase()).join(' ');
   const _dreamJobFb = (typeof quizAnswers !== 'undefined' && quizAnswers.metierReve && quizAnswers.metierReve.trim())
     ? quizAnswers.metierReve.trim() : '';
   const scored = _scoreMetiersRelevance(conversation, chatProfile.forces, chatProfile.valeurs, _synthMetiers, _dreamJobFb);
