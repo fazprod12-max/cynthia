@@ -3820,7 +3820,9 @@ Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant o
     "resume": "Portrait psychologique personnalisé en 4-5 phrases. Reprend les VRAIS mots de la personne, sa situation réelle, ce qui la caractérise profondément. Utilise les données de la conversation — pas un portrait générique.",
     "traits_dominants": ["trait 1 avec exemple tiré de la conversation", "trait 2", "trait 3"],
     "intelligences_cles": ["intelligence dominante 1 (ex: interpersonnelle, linguistique, logique...)", "intelligence 2"],
-    "style_travail": "Brève description du style de travail préféré (environnement, rythme, relation aux autres)"
+    "style_travail": "Brève description du style de travail préféré (environnement, rythme, relation aux autres)",
+    "big_five": {"ouverture": entier_0_100, "rigueur": entier_0_100, "extraversion": entier_0_100, "amabilite": entier_0_100, "stabilite": entier_0_100},
+    "citation_forte": "UNE phrase verbatim marquante dite par la personne (ses mots exacts), qui résume son état d'esprit — ou null si rien de fort"
   },
   "valeurs_professionnelles": {
     "cles": ["valeur 1 — lien direct avec la conversation", "valeur 2", "valeur 3"],
@@ -4342,583 +4344,164 @@ function downloadRapport(){
   const date = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
   const refNum = 'CYN-' + Date.now().toString(36).toUpperCase().slice(-6);
 
-  // ── Calcul profil RIASEC depuis la conversation ──
-  const conv = chatHistory.map(m => m.content.toLowerCase()).join(' ');
-  const riasecKw = {
-    R: ['technique','pratique','concret','mains','construire','réparer','outil','mécanique','physique','terrain','artisan','fabriquer'],
-    I: ['analyser','comprendre','recherche','données','problème','logique','stratégie','étude','science','curiosité','tester','explorer'],
-    A: ['créer','créatif','art','design','musique','expression','imagination','esthétique','écrire','visuel','photo','vidéo','mode'],
-    S: ['aider','accompagner','équipe','humain','enseigner','soin','écouter','relation','social','communauté','enfants','patients'],
-    E: ['diriger','convaincre','gérer','vendre','entreprise','leadership','persuader','commercial','projet','résultat','lancer','développer'],
-    C: ['organiser','process','planifier','détail','structure','méthode','administratif','règle','précision','tableau','chiffres','gestion']
+  // ── Rapport premium (maquette emeraude, 6 sections) — alimente par le JSON reel ──
+  const P = data.profil_personnalite || {};
+  const V = data.valeurs_professionnelles || {};
+  const F = data.forces_identifiees || {};
+  const FR = data.freins || {};
+  const RES = data.ressources_utiles || {};
+  const esc = s => (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const arrOf = a => Array.isArray(a) ? a.filter(Boolean) : [];
+  const liList = a => arrOf(a).map(x=>`<li>${esc(x)}</li>`).join('');
+  const tagList = (a,cls) => arrOf(a).map(x=>`<span class="tag ${cls||''}">${esc(x)}</span>`).join('');
+
+  const bf = (P.big_five && typeof P.big_five==='object') ? P.big_five : null;
+  let portraitLeft = '';
+  if (bf) {
+    const dims = [['Ouverture',bf.ouverture],['Rigueur',bf.rigueur!=null?bf.rigueur:bf.conscience],['Extraversion',bf.extraversion],['Amabilité',bf.amabilite!=null?bf.amabilite:bf['amabilité']],['Stabilité émotionnelle',bf.stabilite!=null?bf.stabilite:bf['stabilité']]];
+    const bars = dims.filter(d=>d[1]!=null && !isNaN(Number(d[1]))).map(function(d){var val=Math.max(15,Math.min(99,Math.round(Number(d[1])||60)));return `<div class="trait"><div class="tt"><span>${d[0]}</span><span>${val} %</span></div><div class="bar"><span style="width:${val}%"></span></div></div>`;}).join('');
+    if (bars) portraitLeft = `<div><div class="minilabel">Profil de personnalité · approche Big Five</div>${bars}</div>`;
+  }
+  if (!portraitLeft && arrOf(P.traits_dominants).length) portraitLeft = `<div><div class="minilabel">Vos traits dominants</div><div class="tags">${tagList(P.traits_dominants)}</div></div>`;
+  const portraitRight = `${arrOf(P.intelligences_cles).length?`<div class="callout"><div class="minilabel">Intelligences dominantes</div><div class="tags">${tagList(P.intelligences_cles)}</div></div>`:''}${P.style_travail?`<div class="callout"><div class="minilabel">Votre style de travail</div><p class="body" style="margin:0;font-size:.94rem">${esc(P.style_travail)}</p></div>`:''}`;
+  const portraitBody = String(P.resume||'').split(/\n\n+/).filter(Boolean).map(x=>`<p class="body">${esc(x)}</p>`).join('') || (data.situation?`<p class="body">${esc(data.situation)}</p>`:'');
+  const citRaw = P.citation_forte || data.citation_forte;
+  const citation = (citRaw && String(citRaw).trim() && String(citRaw).toLowerCase()!=='null') ? `<div class="lead-quote">« ${esc(citRaw)} »</div>` : '';
+  const portraitGrid = (portraitLeft||portraitRight) ? `<div class="grid2" style="margin-top:26px"><div>${portraitLeft}</div><div style="display:grid;gap:14px;align-content:start">${portraitRight}</div></div>` : '';
+  const section1 = (portraitBody||portraitGrid||citation) ? `<div class="pad"><h2 class="sec"><span class="snum">1</span> Qui vous êtes</h2><div class="sec-sub">Un portrait tiré de vos propres mots, pas d'un modèle générique.</div>${citation}${portraitBody}${portraitGrid}</div><div class="divider"></div>` : '';
+
+  const valBlock = `${arrOf(V.cles).length?`<div class="minilabel">Vos valeurs clés</div><div class="tags" style="margin-bottom:18px">${tagList(V.cles)}</div>`:''}${arrOf(V.besoins_non_negociables).length?`<div class="minilabel">Non négociable pour vous</div><div class="tags" style="margin-bottom:18px">${tagList(V.besoins_non_negociables,'g')}</div>`:''}${arrOf(V.a_eviter).length?`<div class="minilabel">À éviter absolument</div><div class="tags">${tagList(V.a_eviter,'c')}</div>`:''}`;
+  const forceBlock = `${arrOf(F.naturelles).length?`<div class="minilabel">Vos forces naturelles</div><ul class="mlist plus" style="margin-bottom:18px">${liList(F.naturelles)}</ul>`:''}${F.moment_alignement?`<div class="callout" style="background:var(--emerald-soft);border:none"><div class="minilabel">Votre moment d'alignement</div><p class="body" style="margin:0;font-size:.94rem">${esc(F.moment_alignement)}</p></div>`:''}`;
+  const freinTxt = [arrOf(FR.identifies).join(' '), FR.recadrage].filter(Boolean).join(' ');
+  const freinBlock = freinTxt ? `<div class="callout" style="margin-top:22px;border-color:var(--coral)"><div class="minilabel" style="color:#C6402F">Votre frein, et ce qu'il révèle vraiment</div><p class="body" style="margin:0;font-size:.95rem">${esc(freinTxt)}</p></div>` : '';
+  const section2 = (valBlock||forceBlock||freinBlock) ? `<div class="pad"><h2 class="sec"><span class="snum">2</span> Ce qui vous porte</h2><div class="sec-sub">Vos valeurs profondes et les forces sur lesquelles bâtir.</div><div class="grid2"><div>${valBlock}</div><div>${forceBlock}</div></div>${freinBlock}</div><div class="divider"></div>` : '';
+
+  const metiers = arrOf(data.top_metiers);
+  const isPrinc = m => (m.type||'principal')==='principal';
+  const metierCard = function(m){
+    const db = METIERS_DB.find(x=>x.id===m.id)||{};
+    const ex = METIERS_EXTRA[m.id]||{};
+    const sd = db.salaire_debut||m.salaire_debut||'';
+    const se = db.salaire_exp||m.salaire_exp||'';
+    const marche = db.marche||m.marche||m.tension_marche||'';
+    const formation = db.formation||m.formation||'';
+    const tension = String(m.tension_marche||ex.tension||'').toLowerCase();
+    const score = Math.round(Number(m.score)||85);
+    const why = esc(m.pourquoi||'');
+    if (!isPrinc(m)) return `<div class="metier piste"><div class="rank">À explorer</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">compatible</div></div></div><p class="why" style="margin-bottom:0">${why}</p></div>`;
+    const salChip = (sd||se)?`<span class="chipm sal">${esc([sd,se].filter(Boolean).join(' → '))}</span>`:'';
+    const mcls = (tension.includes('haute')||/pénurie|porteur/i.test(marche))?'p':(/stable/i.test(marche)?'s':'p');
+    const marcheChip = marche?`<span class="chipm ${mcls}">${esc(marche)}</span>`:'';
+    const formChip = formation?`<span class="chipm">${esc(formation)}</span>`:'';
+    const first = m.premier_pas?`<div class="firststep"><b>Premier pas cette semaine :</b> ${esc(m.premier_pas)}</div>`:'';
+    const at = arrOf(m.atouts).length?`<div><div class="minilabel">Ce que vous avez déjà</div><ul class="mlist plus">${liList(m.atouts)}</ul></div>`:'';
+    const dv = arrOf(m.developper).length?`<div><div class="minilabel">À développer</div><ul class="mlist dev">${liList(m.developper)}</ul></div>`:'';
+    const grid = (at||dv)?`<div class="mgrid">${at}${dv}</div>`:'';
+    return `<div class="metier principal"><div class="rank">Piste principale</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">compatible</div></div></div><p class="why">${why}</p>${grid}<div class="mfoot">${salChip}${marcheChip}${formChip}</div>${first}</div>`;
   };
-  const riasecNames = {R:'Réaliste',I:'Investigateur',A:'Artistique',S:'Social',E:'Entreprenant',C:'Conventionnel'};
-  const riasecColors = {R:'#ef4444',I:'#3b82f6',A:'#8b5cf6',S:'#10b981',E:'#f59e0b',C:'#D4B896'};
-  const riasecDesc = {
-    R:'Aime le concret, l\'action, les résultats tangibles',
-    I:'Aime comprendre, analyser, résoudre des problèmes',
-    A:'Aime créer, innover, s\'exprimer librement',
-    S:'Aime aider, enseigner, travailler avec les autres',
-    E:'Aime diriger, convaincre, développer des projets',
-    C:'Aime organiser, structurer, être dans la précision'
-  };
-  const riasecScores = {};
-  Object.keys(riasecKw).forEach(k => {
-    riasecScores[k] = riasecKw[k].filter(w => conv.includes(w)).length + 1;
-  });
-  const riasecMax = Math.max(...Object.values(riasecScores));
-  const riasecPct = {};
-  Object.keys(riasecScores).forEach(k => {
-    riasecPct[k] = Math.max(15, Math.round((riasecScores[k] / riasecMax) * 100));
-  });
-  const riasecSorted = Object.entries(riasecPct).sort((a,b) => b[1]-a[1]);
-  const topRiasec = riasecSorted.slice(0,3).map(([k]) => k).join('');
+  const metiersHtml = metiers.filter(isPrinc).map(metierCard).join('') + metiers.filter(function(m){return !isPrinc(m);}).map(metierCard).join('');
+  const section3 = metiersHtml ? `<div class="pad"><h2 class="sec"><span class="snum">3</span> Vos métiers, alignés sur le marché suisse</h2><div class="sec-sub">Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.</div>${metiersHtml}</div><div class="divider"></div>` : '';
 
-  const riasecBars = riasecSorted.map(([k,v]) => `
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
-      <div style="width:30px;height:30px;border-radius:8px;background:${riasecColors[k]}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <span style="font-size:12px;font-weight:900;color:${riasecColors[k]};">${k}</span>
-      </div>
-      <div style="flex:1;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${riasecNames[k]}</span>
-          <span style="font-size:12px;font-weight:800;color:${riasecColors[k]};">${v}%</span>
-        </div>
-        <div style="height:7px;background:#f0e8ff;border-radius:100px;overflow:hidden;">
-          <div style="width:${v}%;height:100%;background:linear-gradient(90deg,${riasecColors[k]},${riasecColors[k]}aa);border-radius:100px;"></div>
-        </div>
-        <div style="font-size:11px;color:#888;margin-top:4px;">${riasecDesc[k]}</div>
-      </div>
-    </div>`).join('');
+  const planSrc = (data.plan_action_6_mois && Object.keys(data.plan_action_6_mois).length) ? data.plan_action_6_mois : (data.plan_action||{});
+  const planItems = [['Cette semaine',planSrc.semaine1],['Semaines 2 à 4',planSrc.semaine2_4],['Mois 1',planSrc.mois1],['Mois 2',planSrc.mois2],['Mois 3',planSrc.mois3],['Mois 4 à 5',planSrc.mois4_5],['Mois 6',planSrc.mois6]].filter(function(x){return x[1];}).map(function(x){return `<div class="item"><div class="when">${esc(x[0])}</div><div class="what">${esc(x[1])}</div></div>`;}).join('');
+  const section4 = planItems ? `<div class="pad"><h2 class="sec"><span class="snum">4</span> Votre plan, semaine par semaine</h2><div class="sec-sub">Pas des vœux pieux. Des étapes concrètes, avec des délais réels.</div><div class="tl">${planItems}</div></div><div class="divider"></div>` : '';
 
-  const scoreBadge = s => {
-    const col = s>=90?'#10b981':s>=75?'#f59e0b':'#6366f1';
-    return `<span style="font-size:13px;font-weight:700;color:${col};">${s}% match</span>`;
-  };
+  const resCol = (label,arr)=>arrOf(arr).length?`<div><div class="minilabel">${label}</div><ul>${liList(arr)}</ul></div>`:'';
+  const resHtml = resCol('Financer votre formation',RES.financement)+resCol('S\'orienter et se former',RES.formations)+resCol('Explorer le métier',[].concat(arrOf(RES.reseaux),arrOf(RES.outils)))+resCol('Communautés',RES.communautes);
+  const section5 = resHtml ? `<div class="pad"><h2 class="sec"><span class="snum">5</span> Vos ressources en Suisse</h2><div class="sec-sub">Des dispositifs réels et accessibles depuis la Suisse romande.</div><div class="res">${resHtml}</div></div><div class="divider"></div>` : '';
 
-  const careerCards = (data.top_metiers||[]).map((m,i)=>{
-    // Sécurité anti-hallucination : données factuelles toujours depuis METIERS_DB/METIERS_EXTRA locales
-    const db = METIERS_DB.find(x => x.id === m.id) || {};
-    const ex = METIERS_EXTRA[m.id] || {};
-    const salaire_debut  = db.salaire_debut  || m.salaire_debut  || '—';
-    const salaire_exp    = db.salaire_exp    || m.salaire_exp    || '—';
-    const marche         = db.marche         || m.marche         || '—';
-    const formation      = db.formation      || m.formation      || '—';
-    const financement    = db.financement    || m.financement    || '—';
-    // Nouveaux champs enrichis (depuis METIERS_EXTRA, fallback vers réponse IA)
-    if (!m.tension_marche && ex.tension) m.tension_marche = ex.tension;
-    if (!m.avenir_secteur && ex.avenir)  m.avenir_secteur = ex.avenir;
-    if (!m.financement_info) m.financement_info = (db.financement || ex.voie_adulte || '').trim();
-    return `
-<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:1px solid #e8e0ff;box-shadow:0 4px 24px rgba(143,188,139,.07);page-break-inside:avoid;">
-  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;">
-    <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#8FBC8B,#4A7C59);color:#fff;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div>
-    <div style="flex:1;">
-      <div style="font-size:20px;font-weight:800;color:#0a0a1a;letter-spacing:-.5px;margin-bottom:4px;">${m.titre}</div>
-      <span style="font-size:11px;font-weight:700;padding:3px 12px;background:#f3e8ff;color:#8FBC8B;border-radius:100px;letter-spacing:.5px;">${m.secteur}</span>
-    </div>
-    <div style="text-align:center;">${scoreBadge(m.score||85)}</div>
-  </div>
+  const section6 = data.message_fin ? `<div class="pad"><div class="msgfin"><div class="minilabel">Un mot pour la suite</div><p>${esc(data.message_fin)}</p><div class="signature"><div class="orb"></div><div><b>Cynthia</b><small>Votre coach d'orientation</small></div></div></div></div>` : '';
 
-  <div style="background:linear-gradient(135deg,#f5f0ff,#eef8ff);border-radius:12px;padding:18px;margin-bottom:18px;border-left:4px solid #8FBC8B;">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#8FBC8B;margin-bottom:8px;">🎯 Pourquoi ce métier vous correspond</div>
-    <p style="font-size:14px;color:#2a2a4a;line-height:1.65;">${m.pourquoi}</p>
-  </div>
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>
+:root{--cream:#FAF6F0;--cream2:#F1E9DC;--ink:#0E2A24;--ink2:#0A211C;--muted:#5C6B64;--emerald:#1FB488;--emerald-d:#12876A;--emerald-soft:#E7F4EE;--coral:#FF6F5E;--gold:#E8A93C;--gold-soft:#FBF0D8;--coral-soft:#FFE9E4;--line:#E8E1D6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:#EFE7DB;line-height:1.62;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;line-height:1.12}
+.doc{max-width:860px;margin:28px auto;background:var(--cream);box-shadow:0 30px 80px -30px rgba(14,42,36,.5)}
+.pad{padding:44px 56px}
+.cover{background:linear-gradient(150deg,var(--ink),var(--ink2));color:#fff;padding:56px;position:relative;overflow:hidden}
+.cover .glow{position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(31,180,136,.45),transparent 66%);top:-120px;right:-90px;filter:blur(20px)}
+.cover .glow2{position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,111,94,.35),transparent 66%);bottom:-100px;left:-60px;filter:blur(20px)}
+.brandline{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk';font-weight:600;font-size:1.05rem;position:relative}
+.brandline .orb{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7FF0CE,var(--emerald))}
+.cover .label{margin-top:44px;font-family:'Space Grotesk';letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;color:#8FB8AC;position:relative}
+.cover h1{font-size:2.9rem;font-weight:700;margin:10px 0 6px;position:relative}
+.cover .who{color:#B7D2C8;font-size:1.05rem;position:relative}
+.cover .meta{margin-top:36px;display:flex;gap:26px;flex-wrap:wrap;position:relative;font-size:.86rem;color:#8FB8AC}
+.cover .meta b{color:#fff;font-weight:600;display:block;font-family:'Space Grotesk'}
+.snum{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:var(--emerald-soft);color:var(--emerald-d);font-family:'Space Grotesk';font-weight:700;font-size:.9rem;margin-right:12px}
+h2.sec{font-size:1.55rem;display:flex;align-items:center;margin-bottom:8px}
+.sec-sub{color:var(--muted);font-size:.96rem;margin-bottom:26px;padding-left:42px}
+.divider{height:1px;background:var(--line);margin:0 56px}
+.lead-quote{background:var(--emerald-soft);border-radius:16px;padding:22px 24px;font-size:1.05rem;color:var(--ink);margin-bottom:24px;border-left:4px solid var(--emerald)}
+p.body{font-size:1rem;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.trait{margin-bottom:14px}
+.trait .tt{display:flex;justify-content:space-between;font-size:.92rem;margin-bottom:5px;font-weight:500}
+.trait .tt span:last-child{color:var(--emerald-d);font-family:'Space Grotesk';font-weight:600}
+.bar{height:9px;border-radius:100px;background:#EAE3D7;overflow:hidden}
+.bar span{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--emerald),var(--emerald-d))}
+.minilabel{font-family:'Space Grotesk';font-weight:600;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--emerald-d);margin-bottom:12px}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{background:var(--cream2);border-radius:100px;padding:8px 14px;font-size:.86rem;font-weight:500}
+.tag.c{background:var(--coral-soft);color:#C6402F}
+.tag.g{background:var(--gold-soft);color:#8A6100}
+.callout{border:1px solid var(--line);border-radius:16px;padding:22px 24px;background:#fff;margin-bottom:14px}
+.callout .minilabel{margin-bottom:8px}
+.metier{border:1px solid var(--line);border-radius:18px;background:#fff;padding:26px;margin-bottom:18px;position:relative;overflow:hidden}
+.metier.principal{border-color:var(--emerald)}
+.metier .rank{position:absolute;top:0;right:0;background:var(--emerald);color:#fff;font-family:'Space Grotesk';font-weight:600;font-size:.74rem;padding:6px 14px;border-bottom-left-radius:12px}
+.metier.piste .rank{background:var(--gold)}
+.mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px}
+.metier h3{font-size:1.28rem}
+.msec{color:var(--muted);font-size:.86rem;margin-bottom:16px}
+.score{text-align:center;flex-shrink:0;margin-top:22px}
+.score .n{font-family:'Space Grotesk';font-weight:700;font-size:1.7rem;color:var(--emerald-d);line-height:1}
+.score .l{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.why{font-size:.98rem;margin-bottom:18px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.mgrid .minilabel{margin-bottom:8px}
+.mlist{list-style:none;font-size:.9rem;display:grid;gap:6px}
+.mlist li{display:flex;gap:8px}
+.mlist.plus li::before{content:"✓";color:var(--emerald);font-weight:700}
+.mlist.dev li::before{content:"→";color:var(--coral);font-weight:700}
+.mfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:16px}
+.chipm{font-size:.8rem;font-weight:600;padding:6px 12px;border-radius:100px;background:var(--cream2)}
+.chipm.sal{background:var(--ink);color:#fff;font-family:'Space Grotesk'}
+.chipm.p{background:var(--emerald-soft);color:var(--emerald-d)}
+.chipm.s{background:var(--gold-soft);color:#8A6100}
+.firststep{margin-top:16px;background:var(--coral-soft);border-radius:12px;padding:14px 16px;font-size:.92rem}
+.firststep b{color:#C6402F;font-family:'Space Grotesk'}
+.tl{position:relative;margin-left:8px;padding-left:28px;border-left:2px solid var(--emerald-soft)}
+.tl .item{position:relative;margin-bottom:20px}
+.tl .item::before{content:"";position:absolute;left:-35px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--emerald);border:3px solid var(--cream)}
+.tl .when{font-family:'Space Grotesk';font-weight:600;color:var(--emerald-d);font-size:.9rem;margin-bottom:2px}
+.tl .what{font-size:.96rem}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.res .minilabel{margin-bottom:10px}
+.res ul{list-style:none;display:grid;gap:7px;font-size:.9rem}
+.res li{display:flex;gap:8px}
+.res li::before{content:"•";color:var(--emerald);font-weight:700}
+.msgfin{background:linear-gradient(135deg,var(--emerald-soft),var(--coral-soft));border-radius:20px;padding:34px 36px}
+.msgfin .minilabel{margin-bottom:10px}
+.msgfin p{font-size:1.08rem;line-height:1.7}
+.signature{margin-top:20px;display:flex;align-items:center;gap:11px}
+.signature .orb{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#8CF3D2,var(--emerald) 55%,var(--emerald-d))}
+.signature b{font-family:'Space Grotesk'}
+.signature small{color:var(--muted);display:block}
+footer{text-align:center;color:var(--muted);font-size:.82rem;padding:26px 56px 40px}
+footer .disc{font-size:.76rem;opacity:.85;margin-top:8px}
+@media print{body{background:#fff}.doc{box-shadow:none;margin:0;max-width:100%}}
+</style></head><body><div class="doc">
+<div class="cover"><div class="glow"></div><div class="glow2"></div><div class="brandline"><span class="orb"></span>Cynth.IA</div><div class="label">Rapport d'orientation personnalisé</div><h1>${esc(prenom)}</h1><div class="who">Préparé pour vous, à partir de votre conversation avec Cynthia.</div><div class="meta"><div><b>${esc(date)}</b>Établi le</div><div><b>${esc(refNum)}</b>Référence</div><div><b>Suisse romande</b>Marché de référence</div></div></div>
+${section1}${section2}${section3}${section4}${section5}${section6}
+<footer>Cynth.IA · Rapport d'aide à la réflexion professionnelle<div class="disc">Cynth.IA est un outil d'aide à la décision, non un conseiller agréé. Les salaires et tensions du marché sont des fourchettes indicatives (sources publiques suisses), à affiner selon le canton et l'employeur.</div></footer>
+</div></body></html>`;
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-    <div style="background:#f0fdf4;border-radius:10px;padding:16px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#15803d;margin-bottom:10px;">✅ Vos atouts déjà là</div>
-      ${(m.atouts||[]).map(a=>`<div style="display:inline-block;padding:5px 12px;background:#dcfce7;color:#166534;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;">${a}</div>`).join('')}
-    </div>
-    <div style="background:#eff6ff;border-radius:10px;padding:16px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;margin-bottom:10px;">📈 À développer</div>
-      ${(m.developper||[]).map(d=>`<div style="display:inline-block;padding:5px 12px;background:#dbeafe;color:#1e40af;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;">${d}</div>`).join('')}
-    </div>
-  </div>
-
-  ${(m.tension_marche||m.avenir_secteur||m.financement_info) ? `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-    ${m.tension_marche ? `<div style="border-radius:8px;padding:10px 12px;background:${m.tension_marche.toLowerCase().includes('haute')?'#f0fdf4':'#fafaf9'};border:1px solid ${m.tension_marche.toLowerCase().includes('haute')?'#bbf7d0':'#e2e8f0'};">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:3px;">⚡ Tension marché</div>
-      <div style="font-size:12px;font-weight:700;color:${m.tension_marche.toLowerCase().includes('haute')?'#15803d':m.tension_marche.toLowerCase().includes('basse')?'#b45309':'#1e40af'};">${m.tension_marche}</div>
-    </div>` : ''}
-    ${m.avenir_secteur ? `<div style="border-radius:8px;padding:10px 12px;background:${m.avenir_secteur.toLowerCase().startsWith('fort')?'#eff6ff':m.avenir_secteur.toLowerCase().startsWith('risque')?'#fff7ed':'#fafaf9'};border:1px solid ${m.avenir_secteur.toLowerCase().startsWith('fort')?'#bfdbfe':m.avenir_secteur.toLowerCase().startsWith('risque')?'#fed7aa':'#e2e8f0'};">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:3px;">🔮 Avenir secteur</div>
-      <div style="font-size:12px;font-weight:700;color:${m.avenir_secteur.toLowerCase().startsWith('fort')?'#1d4ed8':m.avenir_secteur.toLowerCase().startsWith('risque')?'#c2410c':'#374151'};">${m.avenir_secteur}</div>
-    </div>` : ''}
-    ${m.financement_info ? `<div style="border-radius:8px;padding:10px 12px;background:#eafaf3;border:1px solid #b9e6d3;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:3px;">🎓 Financement</div>
-      <div style="font-size:12px;font-weight:700;color:#12876A;">${m.financement_info}</div>
-    </div>` : ''}
-  </div>` : ''}
-
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-radius:10px;overflow:hidden;border:1px solid #e8e0ff;margin-bottom:14px;">
-    <div style="padding:12px 14px;background:#fafaf9;border-right:1px solid #e8e0ff;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:3px;">Salaire débutant</div>
-      <div style="font-size:13px;font-weight:700;color:#0a0a1a;">${salaire_debut}</div>
-    </div>
-    <div style="padding:12px 14px;background:#fafaf9;border-right:1px solid #e8e0ff;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:3px;">Salaire confirmé</div>
-      <div style="font-size:13px;font-weight:700;color:#0a0a1a;">${salaire_exp}</div>
-    </div>
-    <div style="padding:12px 14px;background:#fafaf9;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:3px;">Marché emploi</div>
-      <div style="font-size:13px;font-weight:700;color:#0a0a1a;">${marche}</div>
-    </div>
-  </div>
-
-  <div style="font-size:13px;color:#444;line-height:1.9;margin-bottom:12px;">
-    <strong>Formation :</strong> ${formation}<br>
-    <strong>Financement :</strong> ${financement}
-  </div>
-
-  <div style="display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:10px;padding:14px 16px;border-left:3px solid #f59e0b;">
-    <span style="font-size:18px;flex-shrink:0;">⚡</span>
-    <div style="font-size:13px;color:#78350f;line-height:1.5;"><strong>Premier pas cette semaine :</strong> ${m.premier_pas}</div>
-  </div>
-
-  <button onclick="openFiche(${i})" style="margin-top:14px;width:100%;padding:11px 0;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.3px;">
-    📋 Voir la fiche complète — journée type, témoignage, formations
-  </button>
-</div>`;
-  }).join('');
-
-  // ── Données fiches pour la modal (journée type + témoignage + formations) ──
-  const fichesData = JSON.stringify((data.top_metiers||[]).map(m => {
-    const db = METIERS_DB.find(x => x.id === m.id) || {};
-    const tem = _buildTemoignage(db.secteur ? db : m);
-    const cpfQ = encodeURIComponent(m.titre || '');
-    return {
-      titre: m.titre,
-      secteur: m.secteur,
-      journee: _buildJourneeType(db.secteur ? db : m),
-      temoignage: tem.texte,
-      temoignage_auteur: tem.auteur,
-      formation: db.formation || m.formation || '',
-      financement: db.financement || m.financement || '',
-      salaire_debut: db.salaire_debut || m.salaire_debut || '',
-      salaire_exp: db.salaire_exp || m.salaire_exp || '',
-      marche: db.marche || m.marche || '',
-      cpf_url: 'https://www.orientation.ch/fr/professions?keyword=' + cpfQ,
-      premier_pas: m.premier_pas || ''
-    };
-  })).replace(/`/g, '\\`').replace(/<\/script>/gi, '<\\/script>');
-
-  const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rapport CYNTH.IA — ${prenom}</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',-apple-system,sans-serif;background:#f4f1ff;color:#1a1a2e;font-size:14px;line-height:1.6;}
-.cover{min-height:100vh;background:linear-gradient(150deg,#07020f 0%,#1a0533 40%,#0a1a40 100%);display:flex;flex-direction:column;padding:72px 80px;position:relative;overflow:hidden;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-.cover::before{content:'';position:absolute;top:-180px;right:-180px;width:560px;height:560px;background:radial-gradient(circle,rgba(143,188,139,.35) 0%,transparent 70%);pointer-events:none;}
-.cover::after{content:'';position:absolute;bottom:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(212,184,150,.2) 0%,transparent 70%);pointer-events:none;}
-.cover-orb{position:absolute;top:50%;left:60%;transform:translate(-50%,-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(143,188,139,.12) 0%,transparent 65%);pointer-events:none;}
-.cover-logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:auto;opacity:.7;position:relative;z-index:1;}
-.cover-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:60px;position:relative;z-index:1;}
-.cover-badge{background:rgba(143,188,139,.15);border:1px solid rgba(143,188,139,.3);color:rgba(143,188,139,.9);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 16px;border-radius:100px;}
-.cover-eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(143,188,139,.9);margin-bottom:16px;position:relative;z-index:1;}
-.cover-headline{font-size:64px;font-weight:900;line-height:1.0;letter-spacing:-3px;margin-bottom:16px;position:relative;z-index:1;}
-.cover-headline span:first-child{color:#fff;}
-.cover-headline .name{background:linear-gradient(90deg,#C9A97A 0%,#D4B896 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;}
-.cover-desc{font-size:15px;color:rgba(250,243,224,.45);max-width:500px;line-height:1.7;margin-bottom:56px;margin-top:16px;position:relative;z-index:1;}
-.cover-pills{display:flex;gap:10px;margin-bottom:56px;position:relative;z-index:1;flex-wrap:wrap;}
-.cpill{padding:8px 16px;border-radius:100px;font-size:12px;font-weight:700;border:1px solid;letter-spacing:.2px;}
-.cover-footer{display:flex;gap:48px;padding-top:40px;border-top:1px solid rgba(250,243,224,.08);position:relative;z-index:1;}
-.cmeta-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(250,243,224,.25);margin-bottom:5px;}
-.cmeta-val{font-size:13px;color:rgba(250,243,224,.65);font-weight:600;}
-.sheet{max-width:820px;margin:32px auto;background:#fff;border-radius:20px;padding:52px 56px;box-shadow:0 8px 48px rgba(0,0,0,.08);page-break-after:always;}
-.sheet-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:2px solid #8FBC8B;margin-bottom:36px;}
-.sheet-logo{font-size:15px;font-weight:900;color:#8FBC8B;letter-spacing:-.5px;}
-.sheet-ref{font-size:11px;color:#bbb;letter-spacing:1px;}
-h2{font-size:30px;font-weight:900;color:#0a0a1a;letter-spacing:-1px;margin-bottom:6px;}
-.section-sub{font-size:15px;color:#777;margin-bottom:28px;}
-.profile-quote{background:linear-gradient(135deg,#f5f0ff,#eef8ff);border-radius:14px;padding:26px 30px;border-left:5px solid #8FBC8B;margin-bottom:24px;}
-.profile-quote p{font-size:15px;color:#2a2a4a;line-height:1.8;font-style:italic;}
-.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-.pbox{background:#faf9ff;border-radius:12px;padding:18px 20px;border:1px solid #e8e0ff;}
-.pbox-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#8FBC8B;margin-bottom:12px;}
-.tag{display:inline-block;padding:5px 13px;border-radius:100px;font-size:12px;font-weight:600;margin:3px 3px 3px 0;white-space:nowrap;}
-.tag-g{background:#dcfce7;color:#166534;}
-.tag-p{background:#f3e8ff;color:#6b21a8;}
-.tag-b{background:#dbeafe;color:#1e40af;}
-.riasec-box{background:#faf9ff;border-radius:14px;padding:24px 26px;border:1px solid #e8e0ff;margin-bottom:16px;}
-.riasec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#8FBC8B;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
-.riasec-code{display:inline-block;background:linear-gradient(135deg,#8FBC8B,#4A7C59);color:#fff;font-size:11px;font-weight:900;letter-spacing:2px;padding:3px 10px;border-radius:6px;}
-.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
-.acard{background:#faf9ff;border-radius:12px;padding:22px;border:1px solid #e8e0ff;border-top:3px solid #8FBC8B;}
-.acard-period{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#8FBC8B;margin-bottom:12px;}
-.acard-text{font-size:14px;color:#2a2a4a;line-height:1.65;}
-.checklist{margin-top:14px;display:flex;flex-direction:column;gap:6px;}
-.check-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#555;line-height:1.5;}
-.check-box{width:14px;height:14px;border:2px solid #8FBC8B;border-radius:3px;flex-shrink:0;margin-top:1px;}
-.msg-finale{background:linear-gradient(150deg,#07020f,#1a0533);border-radius:16px;padding:40px;text-align:center;margin-bottom:24px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-.msg-finale .mlogo{font-size:18px;font-weight:900;color:rgba(250,243,224,.55);margin-bottom:20px;letter-spacing:-1px;}
-.msg-finale p{font-size:15px;line-height:1.8;color:rgba(250,243,224,.82);max-width:520px;margin:0 auto;}
-.next-step-box{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;padding:20px 22px;border-left:4px solid #f59e0b;margin-bottom:24px;}
-.next-step-box p{font-size:13px;color:#78350f;line-height:1.6;}
-.rep-footer{text-align:center;padding:24px;border-top:1px solid #e8e0ff;color:#bbb;font-size:11px;line-height:2;}
-@media print{
-  body{background:#fff;}
-  .cover,.sheet{box-shadow:none;border-radius:0;}
-  .sheet{margin:0;padding:52px 56px;}
-  @page{margin:0;size:A4;}
-}
-/* ── MODAL FICHE MÉTIER ── */
-.fiche-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,30,.72);z-index:9999;backdrop-filter:blur(4px);animation:fadeIn .2s ease;}
-.fiche-overlay.open{display:flex;align-items:center;justify-content:center;}
-.fiche-modal{background:#fff;border-radius:20px;width:min(680px,92vw);max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.35);position:relative;}
-.fiche-header{background:linear-gradient(135deg,#1a0533,#0a1a40);color:#fff;padding:28px 32px 24px;border-radius:20px 20px 0 0;}
-.fiche-header h2{font-size:20px;font-weight:800;margin-bottom:6px;line-height:1.3;}
-.fiche-header .secteur-tag{display:inline-block;background:rgba(255,255,255,.15);color:#d4b5fb;padding:3px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:1px;}
-.fiche-close{position:absolute;top:16px;right:18px;background:rgba(255,255,255,.12);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-.fiche-close:hover{background:rgba(255,255,255,.25);}
-.fiche-body{padding:28px 32px;}
-.fiche-section{margin-bottom:24px;}
-.fiche-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#7c3aed;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.fiche-section-title::before{content:'';display:block;width:16px;height:2px;background:#7c3aed;border-radius:1px;}
-.fiche-journee{background:#f9f7ff;border-radius:12px;padding:16px 18px;font-size:13.5px;color:#2a2a4a;line-height:1.75;}
-.fiche-temoignage{background:linear-gradient(135deg,#fff7ed,#fef3c7);border-left:4px solid #f59e0b;border-radius:0 12px 12px 0;padding:16px 20px;}
-.fiche-temoignage blockquote{font-size:14px;font-style:italic;color:#1a1a2e;line-height:1.7;margin-bottom:6px;}
-.fiche-temoignage cite{font-size:11px;color:#92400e;font-weight:700;font-style:normal;}
-.fiche-salaires{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
-.fiche-sal-box{background:#f9f7ff;border-radius:10px;padding:12px 14px;text-align:center;}
-.fiche-sal-box .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:4px;}
-.fiche-sal-box .value{font-size:13px;font-weight:800;color:#1a1a2e;}
-.fiche-formation{font-size:13px;color:#374151;line-height:1.8;}
-.fiche-formation strong{color:#1a1a2e;}
-.fiche-cpf-btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;margin-top:6px;transition:opacity .15s;}
-.fiche-cpf-btn:hover{opacity:.9;}
-.fiche-premier-pas{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:12px;padding:16px 18px;border-left:3px solid #f59e0b;font-size:13px;color:#78350f;line-height:1.6;}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-</style>
-</head>
-<body>
-
-<!-- PAGE 1 — COUVERTURE PREMIUM -->
-<div class="cover">
-  <div class="cover-orb"></div>
-  <div class="cover-top">
-    <div class="cover-logo">CYNTH.IA</div>
-    <div class="cover-badge">Rapport confidentiel</div>
-  </div>
-  <div class="cover-eyebrow">Rapport d'orientation personnalisé</div>
-  <div class="cover-headline">
-    <span>Votre voie,</span>
-    <span class="name">${prenom}.</span>
-  </div>
-  <p class="cover-desc">Ce rapport est unique — généré à partir de ce que vous avez dit, pas d'un questionnaire. Il reflète vos vraies forces, vos vraies envies, et des pistes que vous pouvez vraiment emprunter.</p>
-  <div class="cover-pills">
-    <span class="cpill" style="background:rgba(143,188,139,.1);border-color:rgba(143,188,139,.25);color:rgba(143,188,139,.9);">🧠 Profil RIASEC <strong>${topRiasec}</strong></span>
-    <span class="cpill" style="background:rgba(143,188,139,.08);border-color:rgba(143,188,139,.2);color:rgba(143,188,139,.85);">✅ ${METIERS_DB.length} métiers analysés</span>
-    <span class="cpill" style="background:rgba(212,184,150,.08);border-color:rgba(212,184,150,.2);color:rgba(212,184,150,.85);">🎯 3 pistes avec financements suisses</span>
-  </div>
-  <div class="cover-footer">
-    <div><div class="cmeta-label">Date</div><div class="cmeta-val">${date}</div></div>
-    <div><div class="cmeta-label">Référence</div><div class="cmeta-val">${refNum}</div></div>
-    <div><div class="cmeta-label">Préparé par</div><div class="cmeta-val">CYNTH.IA · IA</div></div>
-  </div>
-</div>
-
-<!-- PAGE 2 — VOTRE PROFIL + RIASEC -->
-<div class="sheet">
-  <div class="sheet-header">
-    <div class="sheet-logo">CYNTH.IA</div>
-    <div class="sheet-ref">Réf. ${refNum} · Page 2/4</div>
-  </div>
-  <h2>Votre profil</h2>
-  <p class="section-sub">Ce que CYNTH.IA a identifié à travers votre conversation.</p>
-
-  <div class="profile-quote"><p>${data.profil_resume}</p></div>
-
-  <div class="profile-grid">
-    <div class="pbox">
-      <div class="pbox-label">Vos forces identifiées</div>
-      ${(data.forces||[]).map(f=>`<span class="tag tag-g">${f}</span>`).join('')}
-    </div>
-    <div class="pbox">
-      <div class="pbox-label">Vos valeurs professionnelles</div>
-      ${(data.valeurs||[]).map(v=>`<span class="tag tag-p">${v}</span>`).join('')}
-    </div>
-  </div>
-
-  <div class="riasec-box">
-    <div class="riasec-title">🧠 Votre profil RIASEC &nbsp;<span class="riasec-code">${topRiasec}</span></div>
-    ${riasecBars}
-  </div>
-
-  <div class="pbox" style="background:#faf9ff;">
-    <div class="pbox-label">Situation actuelle</div>
-    <p style="color:#444;font-size:14px;line-height:1.7;">${data.situation}</p>
-  </div>
-</div>
-
-<!-- PAGE 3 — PISTES MÉTIER -->
-<div class="sheet">
-  <div class="sheet-header">
-    <div class="sheet-logo">CYNTH.IA</div>
-    <div class="sheet-ref">Réf. ${refNum} · Page 3/4</div>
-  </div>
-  <h2>Vos pistes professionnelles</h2>
-  <p class="section-sub">Sélectionnées parmi ${METIERS_DB.length} métiers selon votre profil RIASEC <strong style="color:#8FBC8B;">${topRiasec}</strong> et vos valeurs.</p>
-
-  ${careerCards}
-</div>
-
-<!-- PAGE 4 — PLAN D'ACTION -->
-<div class="sheet" style="page-break-after:auto;">
-  <div class="sheet-header">
-    <div class="sheet-logo">CYNTH.IA</div>
-    <div class="sheet-ref">Réf. ${refNum} · Page 4/4</div>
-  </div>
-  <h2>Votre plan d'action</h2>
-  <p class="section-sub">Des étapes concrètes pour passer de la réflexion à l'action — une étape à la fois.</p>
-
-  <div class="action-grid">
-    <div class="acard">
-      <div class="acard-period">⚡ Cette semaine</div>
-      <div class="acard-text">${(data.plan_action||{}).semaine1||'Explorez les fiches métiers de ce rapport et choisissez celui qui vous attire le plus.'}</div>
-      <div class="checklist">
-        <div class="check-item"><div class="check-box"></div><span>Lire les 3 fiches en détail</span></div>
-        <div class="check-item"><div class="check-box"></div><span>Noter votre piste préférée</span></div>
-        <div class="check-item"><div class="check-box"></div><span>En parler à une personne de confiance</span></div>
-      </div>
-    </div>
-    <div class="acard">
-      <div class="acard-period">📅 Dans 1 mois</div>
-      <div class="acard-text">${(data.plan_action||{}).mois1||'Prenez contact avec un professionnel du secteur qui vous attire. LinkedIn est votre meilleur outil.'}</div>
-      <div class="checklist">
-        <div class="check-item"><div class="check-box"></div><span>1 conversation informelle (café virtuel)</span></div>
-        <div class="check-item"><div class="check-box"></div><span>Vérifier les formations sur orientation.ch</span></div>
-        <div class="check-item"><div class="check-box"></div><span>Contacter l'OrTra / l'ORP de votre canton</span></div>
-      </div>
-    </div>
-    <div class="acard">
-      <div class="acard-period">🎯 Dans 3 mois</div>
-      <div class="acard-text">${(data.plan_action||{}).mois3||'Démarrez une formation ou une action concrète. Vous aurez assez d\'informations pour décider.'}</div>
-      <div class="checklist">
-        <div class="check-item"><div class="check-box"></div><span>Formation inscrite ou en cours</span></div>
-        <div class="check-item"><div class="check-box"></div><span>Réseau professionnel activé</span></div>
-        <div class="check-item"><div class="check-box"></div><span>Bilan de compétences si utile</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="next-step-box">
-    <p><strong>💡 Ressources à explorer :</strong> orientation.ch (le portail officiel des métiers et formations) · viamia.ch (bilan gratuit dès 40 ans) · votre ORP et les chèques de formation cantonaux · jobup.ch et LinkedIn pour le réseau et les offres.</p>
-  </div>
-
-  ${(() => {
-    /* ── SPRINT 2 : 4 sections professionnelles ── */
-    const userConv  = chatHistory.filter(m => m.role==='user').map(m=>m.content).join(' ');
-    const fullConv  = chatHistory.map(m=>m.content).join(' ');
-    const citations = _extractCitations(chatHistory);
-    const { scores: oceanScores, names: oceanNames, colors: oceanColors, descs: oceanDescs } = _computeOCEAN(fullConv);
-    const { etre, faire } = _splitCompetences(chatProfile.forces || data.forces || [], userConv);
-    const freinsLev = _freinsLeviers(chatProfile.freins || []);
-
-    /* ── Bloc 1 : Ce que vous avez dit — citations en gras ── */
-    const citaHTML = citations.length === 0 ? '' : `
-    <div style="margin:40px 0;page-break-inside:avoid;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-        <div style="width:36px;height:36px;border-radius:10px;background:#fef3c710;display:flex;align-items:center;justify-content:center;font-size:18px;">💬</div>
-        <div>
-          <div style="font-size:11px;font-weight:800;color:#d97706;letter-spacing:2px;text-transform:uppercase;">Ce que vous avez dit</div>
-          <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-top:2px;">Vos mots, au cœur de votre rapport</div>
-        </div>
-      </div>
-      <p style="font-size:13px;color:#6b7280;margin-bottom:16px;">Ces phrases, extraites mot pour mot de votre conversation avec Cynthia, révèlent ce qui vous anime vraiment.</p>
-      <div style="display:grid;gap:12px;">
-        ${citations.map(c => `
-        <div style="background:linear-gradient(135deg,#fef9f0,#fefce8);border-left:4px solid #f59e0b;border-radius:0 12px 12px 0;padding:14px 18px;">
-          <span style="font-size:15px;color:#1a1a2e;line-height:1.6;font-style:italic;">"${c}"</span>
-        </div>`).join('')}
-      </div>
-    </div>`;
-
-    /* ── Bloc 2 : Savoir-être / Savoir-faire ── */
-    const compHTML = (etre.length + faire.length === 0) ? '' : `
-    <div style="margin:40px 0;page-break-inside:avoid;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-        <div style="width:36px;height:36px;border-radius:10px;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:18px;">🧩</div>
-        <div>
-          <div style="font-size:11px;font-weight:800;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;">Votre profil de compétences</div>
-          <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-top:2px;">Savoir-être & Savoir-faire identifiés</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:14px;padding:20px;">
-          <div style="font-size:12px;font-weight:800;color:#7c3aed;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">🌱 Savoir-être</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            ${etre.map(s=>`<span style="background:#ede9fe;color:#6d28d9;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">${s}</span>`).join('')}
-            ${etre.length===0?'<span style="color:#9ca3af;font-size:12px;">À compléter lors de la conversation</span>':''}
-          </div>
-        </div>
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:20px;">
-          <div style="font-size:12px;font-weight:800;color:#15803d;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">⚙️ Savoir-faire</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            ${faire.map(s=>`<span style="background:#dcfce7;color:#15803d;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;">${s}</span>`).join('')}
-            ${faire.length===0?'<span style="color:#9ca3af;font-size:12px;">À compléter lors de la conversation</span>':''}
-          </div>
-        </div>
-      </div>
-    </div>`;
-
-    /* ── Bloc 3 : Big Five OCEAN ── */
-    const oceanEntries = Object.entries(oceanScores).sort((a,b)=>b[1]-a[1]);
-    const oceanBars = oceanEntries.map(([k,v])=>`
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
-        <div style="width:32px;height:32px;border-radius:8px;background:${oceanColors[k]}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span style="font-size:11px;font-weight:900;color:${oceanColors[k]};">${k}</span>
-        </div>
-        <div style="flex:1;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${oceanNames[k]}</span>
-            <span style="font-size:12px;font-weight:800;color:${oceanColors[k]};">${v}%</span>
-          </div>
-          <div style="height:7px;background:#f3f4f6;border-radius:100px;overflow:hidden;">
-            <div style="width:${v}%;height:100%;background:linear-gradient(90deg,${oceanColors[k]},${oceanColors[k]}99);border-radius:100px;"></div>
-          </div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:3px;">${oceanDescs[k]}</div>
-        </div>
-      </div>`).join('');
-    const bigFiveHTML = `
-    <div style="margin:40px 0;page-break-inside:avoid;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-        <div style="width:36px;height:36px;border-radius:10px;background:#f0f9ff;display:flex;align-items:center;justify-content:center;font-size:18px;">🧬</div>
-        <div>
-          <div style="font-size:11px;font-weight:800;color:#0284c7;letter-spacing:2px;text-transform:uppercase;">Personnalité professionnelle</div>
-          <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-top:2px;">Profil Big Five — modèle OCEAN</div>
-        </div>
-      </div>
-      <p style="font-size:12px;color:#9ca3af;margin-bottom:18px;">Calculé à partir des mots et expressions utilisés dans votre conversation avec Cynthia.</p>
-      <div style="background:#fafafa;border:1px solid #f0f0f0;border-radius:14px;padding:20px;">
-        ${oceanBars}
-      </div>
-    </div>`;
-
-    /* ── Bloc 4 : Freins + Leviers ── */
-    const freinsHTML = freinsLev.length === 0 ? '' : `
-    <div style="margin:40px 0;page-break-inside:avoid;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-        <div style="width:36px;height:36px;border-radius:10px;background:#fff1f2;display:flex;align-items:center;justify-content:center;font-size:18px;">🔓</div>
-        <div>
-          <div style="font-size:11px;font-weight:800;color:#e11d48;letter-spacing:2px;text-transform:uppercase;">Vos blocages & solutions</div>
-          <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-top:2px;">Freins identifiés — Leviers concrets</div>
-        </div>
-      </div>
-      <div style="display:grid;gap:12px;">
-        ${freinsLev.map(fl=>`
-        <div style="display:grid;grid-template-columns:1fr 2fr;gap:0;border-radius:12px;overflow:hidden;border:1px solid #fecdd3;">
-          <div style="background:#fff1f2;padding:16px;display:flex;flex-direction:column;justify-content:center;">
-            <div style="font-size:22px;margin-bottom:6px;">${fl.icone}</div>
-            <div style="font-size:13px;font-weight:700;color:#be123c;">${fl.frein}</div>
-          </div>
-          <div style="background:#fff;padding:16px;">
-            <div style="font-size:11px;font-weight:800;color:#10b981;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">💡 Levier</div>
-            <div style="font-size:13px;color:#374151;line-height:1.6;">${fl.levier}</div>
-          </div>
-        </div>`).join('')}
-      </div>
-    </div>`;
-
-    return citaHTML + compHTML + bigFiveHTML + freinsHTML;
-  })()}
-
-  <div class="msg-finale">
-    <div class="mlogo">CYNTH.IA</div>
-    <p>${data.message_fin}</p>
-  </div>
-
-  <div class="rep-footer">
-    CYNTH.IA — Intelligence Artificielle d'Orientation Professionnelle<br>
-    Document personnel et confidentiel · Réf. <strong>${refNum}</strong> · Généré le ${date}<br>
-    <span style="color:#c4b5fd;">cynth.ia</span> · Powered by Groq / Llama 3.3
-  </div>
-</div>
-
-<!-- ── MODAL FICHE MÉTIER ── -->
-<div class="fiche-overlay" id="ficheOverlay" onclick="if(event.target===this)closeFiche()">
-  <div class="fiche-modal" id="ficheModal">
-    <div class="fiche-header" id="ficheHeader">
-      <button class="fiche-close" onclick="closeFiche()">✕</button>
-      <h2 id="fiche-titre">—</h2>
-      <span class="secteur-tag" id="fiche-secteur">—</span>
-    </div>
-    <div class="fiche-body">
-      <div class="fiche-section">
-        <div class="fiche-section-title">🗓️ Journée type</div>
-        <div class="fiche-journee" id="fiche-journee">—</div>
-      </div>
-      <div class="fiche-section">
-        <div class="fiche-section-title">💬 Témoignage</div>
-        <div class="fiche-temoignage">
-          <blockquote id="fiche-temoignage">—</blockquote>
-          <cite id="fiche-auteur">—</cite>
-        </div>
-      </div>
-      <div class="fiche-section">
-        <div class="fiche-section-title">💰 Rémunération</div>
-        <div class="fiche-salaires">
-          <div class="fiche-sal-box"><div class="label">Débutant</div><div class="value" id="fiche-sal-debut">—</div></div>
-          <div class="fiche-sal-box"><div class="label">Confirmé</div><div class="value" id="fiche-sal-exp">—</div></div>
-          <div class="fiche-sal-box"><div class="label">Marché</div><div class="value" id="fiche-marche">—</div></div>
-        </div>
-      </div>
-      <div class="fiche-section">
-        <div class="fiche-section-title">🎓 Formation & Financement</div>
-        <div class="fiche-formation" id="fiche-formation">—</div>
-        <a id="fiche-cpf-btn" class="fiche-cpf-btn" href="#" target="_blank" rel="noopener">
-          🔍 Voir les formations sur orientation.ch →
-        </a>
-      </div>
-      <div class="fiche-section">
-        <div class="fiche-section-title">⚡ Premier pas cette semaine</div>
-        <div class="fiche-premier-pas" id="fiche-premier-pas">—</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-var _fiches = ${fichesData};
-function openFiche(idx) {
-  var f = _fiches[idx];
-  if (!f) return;
-  document.getElementById('fiche-titre').textContent = f.titre;
-  document.getElementById('fiche-secteur').textContent = f.secteur;
-  document.getElementById('fiche-journee').textContent = f.journee;
-  document.getElementById('fiche-temoignage').textContent = f.temoignage;
-  document.getElementById('fiche-auteur').textContent = '— ' + f.temoignage_auteur;
-  document.getElementById('fiche-sal-debut').textContent = f.salaire_debut || '—';
-  document.getElementById('fiche-sal-exp').textContent = f.salaire_exp || '—';
-  document.getElementById('fiche-marche').textContent = f.marche || '—';
-  document.getElementById('fiche-formation').innerHTML = '<strong>Formation :</strong> ' + (f.formation||'—') + '<br><strong>Financement :</strong> ' + (f.financement||'—');
-  document.getElementById('fiche-cpf-btn').href = f.cpf_url;
-  document.getElementById('fiche-premier-pas').textContent = f.premier_pas || '—';
-  var overlay = document.getElementById('ficheOverlay');
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeFiche() {
-  document.getElementById('ficheOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeFiche(); });
-<\/script>
-
-</body>
-</html>`;
-
-  // ── Affichage in-page — jamais bloqué par les popup blockers ──
   const overlay = document.getElementById('rapport-overlay');
-  const frame   = document.getElementById('rapport-frame');
+  const frame = document.getElementById('rapport-frame');
   document.body.style.overflow = 'hidden';
   overlay.style.display = 'block';
-  // srcdoc : isolation CSS totale, aucun conflit, universel
   frame.srcdoc = html;
   showToast('📄','Rapport prêt ! Cliquez "Enregistrer en PDF" pour le sauvegarder.','success',6000);
 }
