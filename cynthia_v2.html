@@ -2519,7 +2519,7 @@ Change de forme, ne commence pas deux fois pareil :
 INTERDIT : enchaîner les "qu'est-ce que ça vous fait / qu'est-ce que vous ressentez". Une émotion forte, tu la nommes UNE fois, puis tu reviens au concret.
 
 TA VOIX (vivante, pas plate)
-Chaleur réelle, jamais de miel. Phrases courtes qui tapent juste. Tu réagis à ce qu'elle dit — un "ça, c'est parlant", une observation — tu n'es pas qu'une machine à questions. Tu reprends SON vocabulaire. Tu peux glisser un avis en une phrase, puis rendre la main. Tu commences en "vous" et tu GARDES ce registre toute la conversation ; tu ne passes au "tu" que si la personne te tutoie d'abord, et alors tu gardes le "tu" jusqu'au bout. Jamais d'aller-retour vous/tu.
+Chaleur réelle, jamais de miel. Phrases courtes qui tapent juste. Tu réagis à ce qu'elle dit — un "ça, c'est parlant", une observation — tu n'es pas qu'une machine à questions. Tu reprends SON vocabulaire. Tu peux glisser un avis en une phrase, puis rendre la main. Tu commences en "vous" et tu GARDES ce registre par défaut. Si la personne TE tutoie (elle t'écrit « tu »), ne bascule pas toute seule : demande-lui d'abord, une seule fois et en une phrase légère, si vous pouvez vous tutoyer (par ex. « Je vois qu'on se tutoie, ça me va, on continue comme ça ? » ou « On peut se tutoyer si vous préférez. »). Tu ne passes au "tu" que si elle accepte ; ensuite tu gardes le "tu" jusqu'au bout. Tant qu'elle n'a pas dit oui, tu restes en "vous". Jamais d'aller-retour vous/tu.
 Si elle répond en moins de 8 mots : ne change pas de sujet, fais-la préciser avec un exemple.
 
 T'ADAPTER À CHAQUE PERSONNE (ton vrai talent — le plus important)
@@ -2538,6 +2538,7 @@ L'ARC (fais-le avancer, ne stagne jamais)
 Tu ne proposes AUCUN métier pendant l'entretien (ça vient à la synthèse finale) — mais tout ce que tu récoltes sert à en trouver un.
 
 CE QUE TU NE FAIS JAMAIS
+- Le tiret cadratin ou demi-cadratin (— ou –). JAMAIS. À la place : une virgule, un point, ou deux-points. Le tiret long fait « écrit par une IA », et ça casse tout.
 - Deux questions dans une réponse.
 - Reposer une question déjà répondue, ou retourner autour du même thème.
 - La même ouverture de phrase deux fois de suite.
@@ -2606,6 +2607,34 @@ function sanitizeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+// ── ANTI-TIRET CADRATIN ───────────────────────────────────────────────────────
+// Le tiret cadratin/demi-cadratin (— –) fait « écrit par une IA ». Faouzi n'en veut
+// nulle part. Claude (et llama) en mettent partout. On les retire de tout ce que dit
+// Cynthia et on recolle proprement la ponctuation. Ne touche PAS aux traits d'union
+// des mots (sang-froid, week-end) : on ne vise que — et –.
+function stripDash(t) {
+  if (!t) return t;
+  return String(t)
+    .replace(/\s*—\s*/g, ', ')              // tiret cadratin : toujours (jamais une plage)
+    .replace(/\s+–\s+/g, ', ')              // demi-cadratin : SEULEMENT s'il est espacé (préserve « 5 000–6 500 »)
+    .replace(/([.!?:;])\s*,\s*/g, '$1 ')    // ponctuation forte + virgule parasite
+    .replace(/\s*,\s*([.!?:;])/g, '$1')     // virgule parasite avant ponctuation
+    .replace(/,\s*,/g, ',')                  // doubles virgules
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+// Applique stripDash récursivement à toutes les chaînes d'un objet (pour le rapport).
+function deepStripDash(v) {
+  if (typeof v === 'string') return stripDash(v);
+  if (Array.isArray(v)) return v.map(deepStripDash);
+  if (v && typeof v === 'object') {
+    for (var k in v) { if (Object.prototype.hasOwnProperty.call(v, k)) v[k] = deepStripDash(v[k]); }
+    return v;
+  }
+  return v;
 }
 
 // ── LIMITATION HISTORIQUE ─────────────────────────────────────────────────────
@@ -3055,7 +3084,7 @@ async function startChatMode() {
 
   const prenom = userName ? userName : '';
   // Message d'intro personnalisé selon les réponses du questionnaire
-  const intro = _buildPersonalizedIntro(prenom);
+  const intro = stripDash(_buildPersonalizedIntro(prenom));
 
   addChatBubble('ai', intro);
   chatHistory.push({ role: 'assistant', content: intro });
@@ -3128,7 +3157,7 @@ function addChatBubble(role, text) {
   const now = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
   const wrap = document.createElement('div');
   wrap.className = 'cb ' + (role === 'user' ? 'user' : 'ai');
-  const textFormatted = formatChatText(text);
+  const textFormatted = formatChatText(role === 'ai' ? stripDash(text) : text);
   if (role === 'ai') {
     wrap.innerHTML = `<div class="cb-av">✦</div><div style="flex:1"><div class="cb-text">${textFormatted}</div><div class="cb-time">${now}</div></div>`;
   } else {
@@ -3239,6 +3268,8 @@ async function sendChatMsg() {
     if (!reply || typeof reply !== 'string' || !reply.trim()) {
       reply = _getFbReply(text, chatProfile.prenom) || "Je vous entends. Pouvez-vous me dire un peu plus ?";
     }
+    // Purge des tirets cadratins à la source (affichage ET historique envoyé au modèle)
+    reply = stripDash(reply);
 
     // ── Mise à jour du profil ─────────────────────────────────────────────────
     chatProfile._emotionTurns++;
@@ -3265,7 +3296,7 @@ async function sendChatMsg() {
     if (synthesisFired && !_wasSynthFired && !_optionsShown) {
       _optionsShown = true;
       setTimeout(() => {
-        const options = "Pour la suite, trois possibilités s'offrent à vous :\n\n1. Approfondir une piste — posez-moi directement vos questions sur l'un de ces métiers.\n2. Générer votre rapport complet — 5 métiers détaillés, plan d'action sur 6 mois, salaires, financements (bouton « Terminer » en haut de la fenêtre).\n3. Parler à un professionnel du métier — disponible juste après la génération du rapport.";
+        const options = "Pour la suite, trois possibilités s'offrent à vous :\n\n1. Approfondir une piste : posez-moi directement vos questions sur l'un de ces métiers.\n2. Générer votre rapport complet : 5 métiers détaillés, plan d'action sur 6 mois, salaires, financements (bouton « Terminer » en haut de la fenêtre).\n3. Parler à un professionnel du métier, disponible juste après la génération du rapport.";
         addChatBubble('ai', options);
         chatHistory.push({ role: 'assistant', content: options });
       }, 1800);
@@ -3302,7 +3333,7 @@ function doEndChat() {
   Promise.race([generateOrientationReport(), _reportTimeout])
     .then(data => {
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
-      window._reportData = data;
+      window._reportData = deepStripDash(data);
       if (loadDiv) loadDiv.style.display = 'none';
       // Bouton rapport — comportement selon CONFIG.RAPPORT_GRATUIT (test / production)
       if (btn) {
@@ -3328,7 +3359,7 @@ function doEndChat() {
     })
     .catch(e => {
       console.warn('Report gen error:', e);
-      window._reportData = buildFallbackReport();
+      window._reportData = deepStripDash(buildFallbackReport());
       if (loadDiv) loadDiv.style.display = 'none';
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📋 Aperçu du rapport'; }
       renderMetiersSection((window._reportData.top_metiers) || []);
