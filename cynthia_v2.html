@@ -1463,6 +1463,13 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 }
 
 </style>
+<!-- Extraction du texte des CV, côté navigateur (le fichier ne quitte jamais l'appareil) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+  // pdf.js a besoin de connaître son worker (même version que la lib ci-dessus)
+  if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }
+</script>
 </head>
 <body class="beta-open">
 
@@ -1780,7 +1787,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         </div>
         <!-- MODIF V3 - CONCURRENT : sécurité CV -->
         <div style="margin-top:10px;padding:10px 14px;background:var(--c-emerald-soft);border:1px solid transparent;border-radius:10px;font-size:11.5px;color:var(--c-muted);line-height:1.6;">
-          🔒 Votre CV est chiffré et supprimé automatiquement après génération du rapport. Aucune donnée conservée au-delà de 48h. <strong style="color:var(--c-emerald-d);">Le CV ne sert pas à entraîner l'IA.</strong>
+          🔒 Votre CV est lu directement dans votre navigateur pour personnaliser l'entretien : le fichier lui-même n'est jamais envoyé ni stocké sur nos serveurs. Seul le texte extrait est transmis à l'IA pour l'analyse. <strong style="color:var(--c-emerald-d);">Il ne sert pas à entraîner l'IA.</strong>
         </div>
       </div>
       <div class="pa-guarantees">
@@ -2300,17 +2307,63 @@ setInterval(()=>{
   if(t)t.textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
 },1000);
 
-/* ── CV UPLOAD ── */
-function handleCV(input){if(input.files[0])cvReady(input.files[0].name);}
-function handleDrop(e){const f=e.dataTransfer.files[0];if(f)cvReady(f.name);}
-function cvReady(name){
-  const z=document.getElementById('upload-zone');
-  z.style.borderColor='var(--green)';z.style.background='rgba(143,188,139,.05)';
-  document.getElementById('uz-icon').textContent='✅';
-  document.getElementById('uz-text').textContent=name;
-  document.getElementById('uz-text').style.color='#8FBC8B';
-  document.getElementById('uz-hint').textContent="CV chargé — CYNTH.IA connaîtra votre parcours";
+/* ── CV UPLOAD (extraction réelle du texte, 100% côté navigateur) ── */
+let _cvText = ''; // texte extrait du CV — injecté dans le contexte de Cynthia + le rapport
+
+function handleCV(input){ if(input.files && input.files[0]) _processCv(input.files[0]); }
+function handleDrop(e){ if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) _processCv(e.dataTransfer.files[0]); }
+
+// Extrait le texte d'un PDF (pdf.js) ou d'un .docx (mammoth), dans le navigateur.
+async function _extractCvText(file){
+  const name = (file.name||'').toLowerCase();
+  const buf = await file.arrayBuffer();
+  if (name.endsWith('.pdf')) {
+    if (!window.pdfjsLib) throw new Error('lib');
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let txt = '';
+    const maxPages = Math.min(pdf.numPages, 8);
+    for (let p=1; p<=maxPages; p++){ const page = await pdf.getPage(p); const c = await page.getTextContent(); txt += c.items.map(it=>it.str).join(' ') + '\n'; }
+    return txt.replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  }
+  if (name.endsWith('.docx')) {
+    if (!window.mammoth) throw new Error('lib');
+    const r = await mammoth.extractRawText({ arrayBuffer: buf });
+    return (r.value||'').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  }
+  if (name.endsWith('.doc')) throw new Error('old-doc');
+  return (await file.text()).replace(/[ \t]+/g,' ').trim();
 }
+
+async function _processCv(file){
+  if (file.size > 5*1024*1024) { _cvText=''; _cvUi('error', file.name, 'Fichier trop lourd (max 5 Mo).'); return; }
+  _cvUi('loading', file.name);
+  try {
+    const txt = await _extractCvText(file);
+    if (!txt || txt.length < 40) { _cvText=''; _cvUi('error', file.name, "Texte illisible (CV scanné en image ?). Vous pouvez continuer sans, ou envoyer un PDF texte / Word."); return; }
+    _cvText = txt.slice(0, 8000); // garde-fou taille (tokens)
+    _cvUi('ok', file.name);
+  } catch(err){
+    _cvText = '';
+    const msg = (err && err.message === 'old-doc')
+      ? "Format .doc ancien non lu. Exportez en PDF ou .docx."
+      : "Lecture impossible pour l'instant. Vous pouvez continuer sans CV.";
+    _cvUi('error', file.name, msg);
+  }
+}
+
+function _cvUi(state, name, msg){
+  const z=document.getElementById('upload-zone');
+  const icon=document.getElementById('uz-icon');
+  const text=document.getElementById('uz-text');
+  const hint=document.getElementById('uz-hint');
+  if(!z||!icon||!text||!hint) return;
+  if(state==='loading'){ icon.textContent='⏳'; text.textContent=name; text.style.color=''; hint.textContent='Lecture du CV en cours…'; return; }
+  if(state==='ok'){ z.style.borderColor='var(--green)'; z.style.background='rgba(143,188,139,.05)'; icon.textContent='✅'; text.textContent=name; text.style.color='#8FBC8B'; hint.textContent='CV lu, Cynthia connaît votre parcours'; return; }
+  z.style.borderColor='#d9534f'; z.style.background='rgba(217,83,79,.05)'; icon.textContent='⚠️'; text.textContent=name||'CV'; text.style.color='#d9534f'; hint.textContent = msg || 'Lecture impossible.';
+}
+
+// Compat si un ancien appel cvReady(name) traîne quelque part
+function cvReady(name){ _cvUi('ok', name); }
 
 /* ── CHAT ANIMATION ── */
 setTimeout(()=>{
@@ -2720,6 +2773,7 @@ async function callCynthAI(messages) {
   if (chatProfile.forces.length > 0)  profileContext += `Forces détectées : ${chatProfile.forces.join(', ')}. `;
   if (chatProfile.freins.length > 0)  profileContext += `Freins exprimés : ${chatProfile.freins.join(', ')}. `;
   let systemPrompt = CYNTH_PROMPT + (profileContext ? `\n\n📋 PROFIL CONNU : ${profileContext.trim()}` : '');
+  if (_cvText) systemPrompt += `\n\n📄 CV DE LA PERSONNE (texte réel extrait de son CV — sers-t'en pour ancrer tes questions sur son vrai parcours et ses vraies compétences ; ne le récite pas, rebondis dessus) :\n${_cvText.slice(0, 4000)}`;
 
   // ── Contexte questionnaire (si rempli avant le chat) ────────────────────────
   const _qCtxStr = _buildQuizContext();
@@ -3833,15 +3887,18 @@ async function generateOrientationReport() {
     })
     .join('\n');
 
+  const _cvForReport = _cvText
+    ? `\n\nCV DE LA PERSONNE (texte réel extrait de son CV — ses postes, années d'expérience, formations et compétences comptent comme DITS par la personne ; croise-les avec la conversation) :\n${_cvText.slice(0, 6000)}\n`
+    : '';
   const dataBlock = `CONVERSATION INTÉGRALE :
-${conversationText}
+${conversationText}${_cvForReport}
 
 BASE DE DONNÉES MÉTIERS SUISSE (format: id|titre|secteur|competences_cles|tension_marche|avenir|financement|voie_adulte|ou_recrute|profils_types|salaire_debut|salaire_exp) :
 ${metiersList}`;
 
   const rulesAndSchema = `RÈGLES D'ANALYSE :
 0. ADRESSE-TOI TOUJOURS À LA PERSONNE EN "VOUS" — jamais à la 3e personne, jamais son prénom comme sujet. Écris "Vous aimez aider les gens", PAS "Marc aime aider les gens" ni "il ressent". TOUS les champs texte (resume, style_travail, moment_alignement, freins, pourquoi, alignement_valeurs, message_fin) s'adressent directement à la personne.
-1. Identifie CE QUE LA PERSONNE A DIT MOT POUR MOT — ses vrais mots, ses vraies peurs, ses vraies envies, ses moments d'alignement
+1. Identifie CE QUE LA PERSONNE A DIT MOT POUR MOT — ses vrais mots, ses vraies peurs, ses vraies envies, ses moments d'alignement. Si un CV a été fourni (section CV DE LA PERSONNE), traite son contenu comme des faits dits par la personne : postes réels, années d'expérience, formations obtenues, compétences maîtrisées — appuie-toi dessus en priorité.
 2. Sélectionne EXACTEMENT 5 métiers : les 3 PLUS adaptés à son profil (champ "type": "principal") puis 2 pistes complémentaires à explorer (champ "type": "piste") — les 5 métiers sont TOUS DIFFÉRENTS, jamais deux fois le même titre (ni en principal ni en piste)
 3. Chaque "pourquoi" DOIT citer des éléments réels de la conversation (reprend ses propres mots)
 4. Le plan d'action doit être CONCRET — pas de vœux pieux, des étapes actionnables avec des délais réels
