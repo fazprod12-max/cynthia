@@ -3383,7 +3383,7 @@ function doEndChat() {
   if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
   if (loadDiv) loadDiv.style.display = 'block';
 
-  const _reportTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout-report')), 95000));
+  const _reportTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout-report')), 120000));
   Promise.race([generateOrientationReport(), _reportTimeout])
     .then(data => {
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
@@ -4037,23 +4037,79 @@ ${rulesAndSchema}
     return JSON.parse(jsonMatch[0]);
   }
 
-  try {
-    return await _callReportModel(systemPromptReport, userPromptReport, 3500);
-  } catch (e1) {
-    // Si la cause est "les deux providers sont down", un retry ne changera rien —
-    // on le fait quand même une fois (l'un des deux a pu se libérer entre-temps),
-    // mais on ne masque plus l'échec : _logAiFailure a déjà tracé la 1ère panne.
-    console.warn('generateOrientationReport: 1er essai échoué, retry strict —', e1.message);
-    // Retry : prompt beaucoup plus court et directif, sans reformuler tout le contexte
-    // émotionnel en tête — on force un mode "générateur JSON" pur.
-    const retrySystem = `Tu es un générateur JSON strict pour un rapport d'orientation professionnelle. Tu ne parles JAMAIS en langage naturel, tu n'exprimes JAMAIS d'empathie en dehors des champs texte du JSON. Ta unique sortie est un objet JSON valide, rien d'autre — pas de préambule, pas de phrase de transition, pas de markdown.`;
-    const retryUser = `${dataBlock}
+  // ── GÉNÉRATION MULTI-APPELS (fiabilité 100%) ─────────────────────────────
+  // Un seul gros appel tronquait le JSON (dépassement du plafond de tokens de sortie).
+  // On découpe en 4 appels COURTS et parallèles : aucun ne peut tronquer. Chaque
+  // partie a son retry (dans _part) et son fallback PAR SECTION — le rapport sort
+  // donc toujours complet, même si un morceau échoue. (Les variables dataBlock /
+  // rulesAndSchema ci-dessus sont conservées mais ne servent plus qu'au contexte.)
+  const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}`;
+  const fmtRule = 'Adresse-toi TOUJOURS à la personne en "vous". JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV.';
 
-${rulesAndSchema}
-
-RÉPONDS UNIQUEMENT PAR LE JSON. Premier caractère : {. Dernier caractère : }. Aucun texte autour, aucune exception.`;
-    return await _callReportModel(retrySystem, retryUser, 3500);
+  async function _part(context, instruction, schema) {
+    const sys = `Tu es une experte senior en orientation professionnelle en Suisse romande. ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien avant, rien après, pas de markdown. Premier caractère {, dernier }.`;
+    const usr = `${context}\n\n${instruction}\n\nRéponds UNIQUEMENT avec cet objet JSON, rempli avec les vraies données de cette personne :\n${schema}\n\nRAPPEL : uniquement le JSON. Premier caractère {, dernier }.`;
+    try { return await _callReportModel(sys, usr, 3500); }
+    catch (e) { return await _callReportModel(sys, usr, 3500); } // 1 retry
   }
+
+  const pProfil = _part(convBlock,
+    'Dresse le portrait humain de la personne, ancré dans ses mots. parcours_recap : si un CV est fourni, résume son parcours réel (postes, années, formations) ; sinon, résume la conversation en reprenant ses mots forts. big_five = 5 entiers 0-100. savoir_faire = compétences techniques/métier concrètes ; savoir_etre = qualités humaines et comportementales qu\'elle a montrées.',
+    '{"situation":"1 phrase","parcours_recap":"3-4 phrases","profil_personnalite":{"resume":"3-4 phrases avec ses mots","big_five":{"ouverture":0,"rigueur":0,"extraversion":0,"amabilite":0,"stabilite":0},"citation_forte":"verbatim marquant ou null","style_travail":"1-2 phrases","traits_dominants":["","",""],"intelligences_cles":["",""]},"savoir_faire":["","","",""],"savoir_etre":["","","",""],"valeurs_professionnelles":{"cles":["","",""],"besoins_non_negociables":["",""],"a_eviter":["",""]},"forces_identifiees":{"naturelles":["","",""],"moment_alignement":""},"freins":{"identifies":[""],"recadrage":""}}');
+
+  const pActions = _part(convBlock,
+    'Produis les éléments actionnables côté personne. moteurs = ce qui la fait vraiment avancer, avec une courte explication. environnement_ideal = type d\'équipe, rythme, autonomie, taille de structure. competences_a_ajouter = compétences précises à acquérir ou à mettre en avant pour sa cible (avec la voie suisse si pertinent). cv_bullets = 3 puces PRÊTES À COLLER dans un CV ou LinkedIn, formulées de façon pro, chiffrées si possible, tirées de son vécu réel. pitch = 3-4 phrases à la première personne pour expliquer sa reconversion en entretien.',
+    '{"moteurs":["moteur : explication courte","",""],"environnement_ideal":"2-3 phrases concrètes","competences_a_ajouter":["","",""],"cv_bullets":["","",""],"pitch":"3-4 phrases (je...)"}');
+
+  const pMetiers = _part(dataBlock,
+    `Choisis EXACTEMENT 5 métiers dans la BASE DE DONNÉES MÉTIERS ci-dessus, TOUS DIFFÉRENTS : 3 de type "principal" (les plus adaptés) puis 2 de type "piste". Pour chacun : pourquoi (cite ses mots), atouts (competences_cles qu\'elle possède DÉJÀ), developper (competences_cles qui manquent + la voie de formation suisse pour les combler), route_formation (formation suisse concrète : intitulé + durée + coût approximatif en CHF + qui finance), premier_pas (action précise cette semaine). Recopie salaire_debut, salaire_exp et tension_marche SANS les modifier.${_dreamJob ? ' La personne aspire à "'+_dreamJob+'" : inclus ce métier (ou le plus proche de la base) dans les 5.' : ''}`,
+    '{"top_metiers":[{"id":"id-exact-de-la-base","type":"principal","titre":"","secteur":"","score":90,"pourquoi":"2-3 phrases avec ses mots","atouts":["","",""],"developper":["compétence + voie suisse",""],"route_formation":"formation + durée + coût CHF approx + financement","tension_marche":"copie de la base","salaire_debut":"copie de la base","salaire_exp":"copie de la base","premier_pas":"action concrète cette semaine"}]}');
+
+  const pPlan = _part(convBlock,
+    'Construis un plan d\'action réaliste sur 6 mois (étapes concrètes et datées, adaptées à SA situation réelle), des ressources suisses réelles, et un message de fin chaleureux qui reprend un détail précis qu\'elle a dit.',
+    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
+
+  const [rProfil, rActions, rMetiers, rPlan] = await Promise.all([
+    pProfil.catch(function(){return null;}),
+    pActions.catch(function(){return null;}),
+    pMetiers.catch(function(){return null;}),
+    pPlan.catch(function(){return null;})
+  ]);
+
+  // Si TOUS les appels ont échoué → on laisse le catch de doEndChat basculer sur le
+  // rapport de secours complet. Sinon on assemble, en comblant SECTION PAR SECTION.
+  if (!rProfil && !rActions && !rMetiers && !rPlan) throw new Error('all-parts-failed');
+
+  const _fb = buildFallbackReport();
+  const _pf = rProfil || {};
+  const _ac = rActions || {};
+  const _mt = (rMetiers && Array.isArray(rMetiers.top_metiers) && rMetiers.top_metiers.length) ? rMetiers : { top_metiers: _fb.top_metiers };
+  const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal','ORP / assurance-chômage','Confédération — 50% des cours pour examens fédéraux'], formations:['orientation.ch — fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
+
+  return {
+    prenom: chatProfile.prenom || _pf.prenom || null,
+    age: null,
+    situation: _pf.situation || _fb.situation,
+    parcours_recap: _pf.parcours_recap || '',
+    profil_personnalite: _pf.profil_personnalite || {},
+    savoir_faire: _pf.savoir_faire || [],
+    savoir_etre: _pf.savoir_etre || [],
+    valeurs_professionnelles: _pf.valeurs_professionnelles || {},
+    forces_identifiees: _pf.forces_identifiees || {},
+    freins: _pf.freins || {},
+    moteurs: _ac.moteurs || [],
+    environnement_ideal: _ac.environnement_ideal || '',
+    competences_a_ajouter: _ac.competences_a_ajouter || [],
+    cv_bullets: _ac.cv_bullets || [],
+    pitch: _ac.pitch || '',
+    top_metiers: _mt.top_metiers || [],
+    plan_action_6_mois: _pl.plan_action_6_mois || {},
+    ressources_utiles: _pl.ressources_utiles || {},
+    message_fin: _pl.message_fin || _fb.message_fin,
+    forces: _pf.savoir_faire || _fb.forces,
+    valeurs: (_pf.valeurs_professionnelles && _pf.valeurs_professionnelles.cles) || _fb.valeurs,
+    profil_resume: (_pf.profil_personnalite && _pf.profil_personnalite.resume) || _fb.profil_resume
+  };
 }
 
 function buildFallbackReport() {
@@ -4465,14 +4521,40 @@ function downloadRapport(){
   const citRaw = P.citation_forte || data.citation_forte;
   const citation = (citRaw && String(citRaw).trim() && String(citRaw).toLowerCase()!=='null') ? `<div class="lead-quote">« ${esc(citRaw)} »</div>` : '';
   const portraitGrid = (portraitLeft||portraitRight) ? `<div class="grid2" style="margin-top:26px"><div>${portraitLeft}</div><div style="display:grid;gap:14px;align-content:start">${portraitRight}</div></div>` : '';
-  const section1 = (portraitBody||portraitGrid||citation) ? `<div class="pad"><h2 class="sec"><span class="snum">1</span> Qui vous êtes</h2><div class="sec-sub">Un portrait tiré de vos propres mots, pas d'un modèle générique.</div>${citation}${portraitBody}${portraitGrid}</div><div class="divider"></div>` : '';
+  // Numérotation dynamique : seules les sections non vides reçoivent un numéro.
+  let _sn = 0;
+  const secWrap = (title, sub, inner) => inner ? `<div class="pad"><h2 class="sec"><span class="snum">${++_sn}</span> ${title}</h2>${sub?`<div class="sec-sub">${sub}</div>`:''}${inner}</div><div class="divider"></div>` : '';
 
+  // ── Votre parcours (CV si présent, sinon récap de la conversation) ──
+  const parcoursInner = data.parcours_recap ? String(data.parcours_recap).split(/\n\n+/).filter(Boolean).map(x=>`<p class="body">${esc(x)}</p>`).join('') : '';
+  const secParcours = secWrap('Votre parcours', _cvText ? "D'où vous partez, d'après votre CV et notre échange." : "D'où vous partez, dans vos propres mots.", parcoursInner);
+
+  // ── Qui vous êtes (portrait + Big Five) ──
+  const secQui = secWrap('Qui vous êtes', "Un portrait tiré de vos propres mots, pas d'un modèle générique.", (portraitBody||portraitGrid||citation)?`${citation}${portraitBody}${portraitGrid}`:'');
+
+  // ── Ce qui vous porte (valeurs, forces, moteurs, environnement, frein) ──
   const valBlock = `${arrOf(V.cles).length?`<div class="minilabel">Vos valeurs clés</div><div class="tags" style="margin-bottom:18px">${tagList(V.cles)}</div>`:''}${arrOf(V.besoins_non_negociables).length?`<div class="minilabel">Non négociable pour vous</div><div class="tags" style="margin-bottom:18px">${tagList(V.besoins_non_negociables,'g')}</div>`:''}${arrOf(V.a_eviter).length?`<div class="minilabel">À éviter absolument</div><div class="tags">${tagList(V.a_eviter,'c')}</div>`:''}`;
   const forceBlock = `${arrOf(F.naturelles).length?`<div class="minilabel">Vos forces naturelles</div><ul class="mlist plus" style="margin-bottom:18px">${liList(F.naturelles)}</ul>`:''}${F.moment_alignement?`<div class="callout" style="background:var(--emerald-soft);border:none"><div class="minilabel">Votre moment d'alignement</div><p class="body" style="margin:0;font-size:.94rem">${esc(F.moment_alignement)}</p></div>`:''}`;
+  const moteursBlock = arrOf(data.moteurs).length?`<div style="margin-top:22px"><div class="minilabel">Vos moteurs de motivation</div><ul class="mlist plus">${liList(data.moteurs)}</ul></div>`:'';
+  const envBlock = data.environnement_ideal?`<div class="callout" style="margin-top:22px"><div class="minilabel">Votre environnement de travail idéal</div><p class="body" style="margin:0;font-size:.94rem">${esc(data.environnement_ideal)}</p></div>`:'';
   const _fid = arrOf(FR.identifies).map(function(x){return String(x).replace(/[.;\s]+$/,'');}).filter(Boolean).join('. '); const freinTxt = [_fid, FR.recadrage].filter(Boolean).join('. ').replace(/\.\s*\./g,'.').trim();
   const freinBlock = freinTxt ? `<div class="callout" style="margin-top:22px;border-color:var(--coral)"><div class="minilabel" style="color:#C6402F">Votre frein, et ce qu'il révèle vraiment</div><p class="body" style="margin:0;font-size:.95rem">${esc(freinTxt)}</p></div>` : '';
-  const section2 = (valBlock||forceBlock||freinBlock) ? `<div class="pad"><h2 class="sec"><span class="snum">2</span> Ce qui vous porte</h2><div class="sec-sub">Vos valeurs profondes et les forces sur lesquelles bâtir.</div><div class="grid2"><div>${valBlock}</div><div>${forceBlock}</div></div>${freinBlock}</div><div class="divider"></div>` : '';
+  const porteGrid = (valBlock||forceBlock) ? `<div class="grid2"><div>${valBlock}</div><div>${forceBlock}</div></div>` : '';
+  const secPorte = secWrap('Ce qui vous porte', 'Vos valeurs, vos moteurs, et les forces sur lesquelles bâtir.', (porteGrid||moteursBlock||envBlock||freinBlock)?`${porteGrid}${moteursBlock}${envBlock}${freinBlock}`:'');
 
+  // ── Vos savoir-faire et savoir-être ──
+  const _sfaire = arrOf(data.savoir_faire), _setre = arrOf(data.savoir_etre);
+  const savoirInner = (_sfaire.length||_setre.length) ? `<div class="grid2"><div>${_sfaire.length?`<div class="minilabel">Vos savoir-faire</div><ul class="mlist plus">${liList(_sfaire)}</ul>`:''}</div><div>${_setre.length?`<div class="minilabel">Vos savoir-être</div><ul class="mlist plus">${liList(_setre)}</ul>`:''}</div></div>` : '';
+  const secSavoir = secWrap('Vos savoir-faire et savoir-être', 'Ce que vous savez faire, et la manière dont vous le faites.', savoirInner);
+
+  // ── Booster votre CV et votre candidature ──
+  const _compAdd = arrOf(data.competences_a_ajouter), _cvB = arrOf(data.cv_bullets);
+  const compBlock = _compAdd.length?`<div><div class="minilabel">Compétences à acquérir ou mettre en avant</div><ul class="mlist dev">${liList(_compAdd)}</ul></div>`:'';
+  const cvBulletsBlock = _cvB.length?`<div class="callout" style="margin-top:18px"><div class="minilabel">Prêt à coller dans votre CV ou LinkedIn</div><ul class="mlist plus">${liList(_cvB)}</ul></div>`:'';
+  const pitchBlock = data.pitch?`<div class="minilabel" style="margin-top:22px">Votre pitch de reconversion</div><div class="lead-quote" style="margin-bottom:0">${esc(data.pitch)}</div>`:'';
+  const secCV = secWrap('Booster votre CV et votre candidature', "Des éléments prêts à réutiliser dès aujourd'hui.", (compBlock||cvBulletsBlock||pitchBlock)?`${compBlock}${cvBulletsBlock}${pitchBlock}`:'');
+
+  // ── Vos métiers ──
   const metiers = arrOf(data.top_metiers);
   const isPrinc = m => (m.type||'principal')==='principal';
   const metierCard = function(m){
@@ -4485,27 +4567,32 @@ function downloadRapport(){
     const tension = String(m.tension_marche||ex.tension||'').toLowerCase();
     const score = Math.round(Number(m.score)||85);
     const why = esc(m.pourquoi||'');
+    const jobUrl = 'https://www.jobup.ch/fr/emplois/?term='+encodeURIComponent(m.titre||'');
+    const jobChip = `<a class="chipm" href="${jobUrl}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--ink)">Voir les offres ↗</a>`;
     if (!isPrinc(m)) return `<div class="metier piste"><div class="rank">À explorer</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">compatible</div></div></div><p class="why" style="margin-bottom:0">${why}</p></div>`;
     const salChip = (sd||se)?`<span class="chipm sal">${esc([sd,se].filter(Boolean).join(' → '))}</span>`:'';
     const mcls = (tension.includes('haute')||/pénurie|porteur/i.test(marche))?'p':(/stable/i.test(marche)?'s':'p');
     const marcheChip = marche?`<span class="chipm ${mcls}">${esc(marche)}</span>`:'';
     const formChip = formation?`<span class="chipm">${esc(formation)}</span>`:'';
     const first = m.premier_pas?`<div class="firststep"><b>Premier pas cette semaine :</b> ${esc(m.premier_pas)}</div>`:'';
+    const route = m.route_formation?`<div class="firststep" style="background:var(--emerald-soft);margin-top:10px"><b style="color:var(--emerald-d)">Se former :</b> ${esc(m.route_formation)}</div>`:'';
     const at = arrOf(m.atouts).length?`<div><div class="minilabel">Ce que vous avez déjà</div><ul class="mlist plus">${liList(m.atouts)}</ul></div>`:'';
     const dv = arrOf(m.developper).length?`<div><div class="minilabel">À développer</div><ul class="mlist dev">${liList(m.developper)}</ul></div>`:'';
     const grid = (at||dv)?`<div class="mgrid">${at}${dv}</div>`:'';
-    return `<div class="metier principal"><div class="rank">Piste principale</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">compatible</div></div></div><p class="why">${why}</p>${grid}<div class="mfoot">${salChip}${marcheChip}${formChip}</div>${first}</div>`;
+    return `<div class="metier principal"><div class="rank">Piste principale</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">compatible</div></div></div><p class="why">${why}</p>${grid}<div class="mfoot">${salChip}${marcheChip}${formChip}${jobChip}</div>${first}${route}</div>`;
   };
   const metiersHtml = metiers.filter(isPrinc).map(metierCard).join('') + metiers.filter(function(m){return !isPrinc(m);}).map(metierCard).join('');
-  const section3 = metiersHtml ? `<div class="pad"><h2 class="sec"><span class="snum">3</span> Vos métiers, alignés sur le marché suisse</h2><div class="sec-sub">Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.</div>${metiersHtml}</div><div class="divider"></div>` : '';
+  const secMetiers = secWrap('Vos métiers, alignés sur le marché suisse', 'Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.', metiersHtml);
 
+  // ── Votre plan ──
   const planSrc = (data.plan_action_6_mois && Object.keys(data.plan_action_6_mois).length) ? data.plan_action_6_mois : (data.plan_action||{});
   const planItems = [['Cette semaine',planSrc.semaine1],['Semaines 2 à 4',planSrc.semaine2_4],['Mois 1',planSrc.mois1],['Mois 2',planSrc.mois2],['Mois 3',planSrc.mois3],['Mois 4 à 5',planSrc.mois4_5],['Mois 6',planSrc.mois6]].filter(function(x){return x[1];}).map(function(x){return `<div class="item"><div class="when">${esc(x[0])}</div><div class="what">${esc(x[1])}</div></div>`;}).join('');
-  const section4 = planItems ? `<div class="pad"><h2 class="sec"><span class="snum">4</span> Votre plan, semaine par semaine</h2><div class="sec-sub">Pas des vœux pieux. Des étapes concrètes, avec des délais réels.</div><div class="tl">${planItems}</div></div><div class="divider"></div>` : '';
+  const secPlan = secWrap('Votre plan, semaine par semaine', 'Pas des vœux pieux. Des étapes concrètes, avec des délais réels.', planItems?`<div class="tl">${planItems}</div>`:'');
 
+  // ── Vos ressources ──
   const resCol = (label,arr)=>arrOf(arr).length?`<div><div class="minilabel">${label}</div><ul>${liList(arr)}</ul></div>`:'';
   const resHtml = resCol('Financer votre formation',RES.financement)+resCol('S\'orienter et se former',RES.formations)+resCol('Explorer le métier',[].concat(arrOf(RES.reseaux),arrOf(RES.outils)))+resCol('Communautés',RES.communautes);
-  const section5 = resHtml ? `<div class="pad"><h2 class="sec"><span class="snum">5</span> Vos ressources en Suisse</h2><div class="sec-sub">Des dispositifs réels et accessibles depuis la Suisse romande.</div><div class="res">${resHtml}</div></div><div class="divider"></div>` : '';
+  const secRes = secWrap('Vos ressources en Suisse', 'Des dispositifs réels et accessibles depuis la Suisse romande.', resHtml?`<div class="res">${resHtml}</div>`:'');
 
   const section6 = data.message_fin ? `<div class="pad"><div class="msgfin"><div class="minilabel">Un mot pour la suite</div><p>${esc(data.message_fin)}</p><div class="signature"><div class="orb"></div><div><b>Cynthia</b><small>Votre coach d'orientation</small></div></div></div></div>` : '';
 
@@ -4591,7 +4678,7 @@ footer .disc{font-size:.76rem;opacity:.85;margin-top:8px}
 @media print{body{background:#fff}.doc{box-shadow:none;margin:0;max-width:100%}}
 </style></head><body><div class="doc">
 <div class="cover"><div class="glow"></div><div class="glow2"></div><div class="brandline"><span class="orb"></span>Cynth.IA</div><div class="label">Rapport d'orientation personnalisé</div><h1>${esc(prenom)}</h1><div class="who">Préparé pour vous, à partir de votre conversation avec Cynthia.</div><div class="meta"><div><b>${esc(date)}</b>Établi le</div><div><b>${esc(refNum)}</b>Référence</div><div><b>Suisse romande</b>Marché de référence</div></div></div>
-${section1}${section2}${section3}${section4}${section5}${section6}
+${secParcours}${secQui}${secPorte}${secSavoir}${secCV}${secMetiers}${secPlan}${secRes}${section6}
 <footer>Cynth.IA · Rapport d'aide à la réflexion professionnelle<div class="disc">Cynth.IA est un outil d'aide à la décision, non un conseiller agréé. Les salaires et tensions du marché sont des fourchettes indicatives (sources publiques suisses), à affiner selon le canton et l'employeur.</div></footer>
 </div></body></html>`;
 
