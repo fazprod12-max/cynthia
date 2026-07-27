@@ -4044,7 +4044,7 @@ ${rulesAndSchema}
   // donc toujours complet, même si un morceau échoue. (Les variables dataBlock /
   // rulesAndSchema ci-dessus sont conservées mais ne servent plus qu'au contexte.)
   const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}`;
-  const fmtRule = 'Adresse-toi TOUJOURS à la personne en "vous". JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV.';
+  const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV.';
 
   async function _part(context, instruction, schema) {
     const sys = `Tu es une experte senior en orientation professionnelle en Suisse romande. ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien avant, rien après, pas de markdown. Premier caractère {, dernier }.`;
