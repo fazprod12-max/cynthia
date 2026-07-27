@@ -11,7 +11,7 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="theme-color" content="#C8974A">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='32' fill='%230E2A24'/><path d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/><path d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/></svg>">
 <title>CYNTH.IA — Retrouvez votre voie en 20 minutes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1014,10 +1014,24 @@ footer{
   padding:18px 24px;border-bottom:1px solid var(--c-line);
   background:var(--c-cream);flex-shrink:0;
 }
+/* ══════════════════════════════════════════════════════════════════════
+   LOGO CYNTH.IA — l'étoile qui guide (rose des vents)
+   Un seul dessin, décliné partout : avatar du chat, bulles, page d'accueil,
+   rapport, favicon. Vectoriel intégré au fichier : net à toutes les tailles,
+   aucun fichier image à héberger.
+   --cyn-mark  = étoile crème sur disque vert profond (avatars)
+   --cyn-star  = étoile émeraude seule (point du logo écrit)
+══════════════════════════════════════════════════════════════════════ */
+:root{
+  --cyn-mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230E2A24'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/%3E%3C/svg%3E");
+  --cyn-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 3 Q34.5 27 61 32 Q34.5 37 32 61 Q29.5 37 3 32 Q29.5 27 32 3 Z' fill='%2312876A'/%3E%3C/svg%3E");
+}
+.cyn-mark{background:var(--cyn-mark) center/contain no-repeat!important;}
+
 .chat-av{
   width:44px;height:44px;border-radius:50%;
-  background:radial-gradient(circle at 34% 30%,#8CF3D2,var(--c-emerald) 55%,var(--c-emerald-d));
-  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+  background:var(--cyn-mark) center/contain no-repeat;
+  display:flex;align-items:center;justify-content:center;font-size:0;flex-shrink:0;
 }
 .chat-head-info{flex:1;}
 .chat-head-name{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--c-ink);font-size:16px;}
@@ -1060,7 +1074,7 @@ footer{
 .cb{display:flex;gap:10px;align-items:flex-end;max-width:85%;}
 .cb.user{align-self:flex-end;flex-direction:row-reverse;}
 .cb.ai{align-self:flex-start;}
-.cb-av{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#8CF3D2,var(--c-emerald) 55%,var(--c-emerald-d));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.cb-av{width:32px;height:32px;border-radius:50%;background:var(--cyn-mark) center/contain no-repeat;display:flex;align-items:center;justify-content:center;font-size:0;color:transparent;flex-shrink:0;}
 .cb-text{
   padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.55;
   max-width:100%;word-wrap:break-word;
@@ -1518,7 +1532,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-wrap{max-width:1140px;margin:0 auto;padding:0 24px;}
   .lp-nav{display:flex;align-items:center;justify-content:space-between;height:74px;position:sticky;top:0;z-index:50;background:rgba(250,246,240,.82);backdrop-filter:blur(12px);border-bottom:1px solid rgba(232,225,214,.7);}
   .lp-logo{font-family:'Space Grotesk';font-size:1.45rem;font-weight:700;color:var(--c-ink);display:flex;align-items:center;gap:9px;}
-  .lp-logo .lp-dot{width:12px;height:12px;border-radius:50%;background:var(--c-coral);box-shadow:0 0 0 4px var(--c-coral-soft);}
+  .lp-logo .lp-dot{width:.58em;height:.58em;border-radius:0;background:var(--cyn-star) center/contain no-repeat;box-shadow:none;flex-shrink:0;}
   .lp-links{display:flex;gap:28px;align-items:center;font-size:.95rem;font-weight:500;color:var(--c-muted);}
   .lp-links a{color:inherit;text-decoration:none;cursor:pointer;} .lp-links a:hover{color:var(--c-ink);}
   .lp-btn{display:inline-flex;align-items:center;gap:8px;font-family:'Space Grotesk';font-weight:600;border-radius:100px;padding:13px 26px;font-size:.98rem;cursor:pointer;border:none;transition:transform .18s,box-shadow .25s;}
@@ -1539,7 +1553,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-reassure span{display:flex;align-items:center;gap:6px;} .lp-reassure b{color:var(--c-emerald-d);}
   .lp-chatcard{background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-radius:26px;box-shadow:0 30px 70px -28px rgba(14,42,36,.5);padding:24px;border:1px solid rgba(255,255,255,.8);}
   .lp-ctop{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--c-line);margin-bottom:16px;}
-  .lp-orb{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#8CF3D2,var(--c-emerald) 55%,var(--c-emerald-d));flex-shrink:0;}
+  .lp-orb{width:44px;height:44px;border-radius:50%;background:var(--cyn-mark) center/contain no-repeat;flex-shrink:0;}
   .lp-who{font-family:'Space Grotesk';font-weight:600;font-size:1rem;} .lp-cstat{font-size:.78rem;color:var(--c-emerald-d);font-weight:600;}
   .lp-stream{min-height:200px;display:flex;flex-direction:column;gap:10px;}
   .lp-bub{padding:12px 16px;border-radius:16px;font-size:.93rem;max-width:86%;opacity:0;transform:translateY(8px);animation:lppop .45s ease forwards;}
@@ -1633,7 +1647,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 <div class="lp-content">
 
   <nav class="lp-nav lp-wrap" style="max-width:none;padding-left:max(24px,calc((100% - 1140px)/2 + 24px));padding-right:max(24px,calc((100% - 1140px)/2 + 24px));">
-    <div class="lp-logo"><span class="lp-dot"></span>Cynth<span class="lp-accent">.IA</span></div>
+    <div class="lp-logo">Cynth<span class="lp-dot"></span><span class="lp-accent">IA</span></div>
     <div class="lp-links">
       <a onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Comment ça marche</a>
       <a onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Le rapport</a>
@@ -1789,7 +1803,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   </div></section>
 
   <footer class="lp-foot"><div class="lp-wrap lp-foot-row">
-    <div class="lp-logo" style="font-size:1.2rem;"><span class="lp-dot"></span>Cynth<span class="lp-accent">.IA</span></div>
+    <div class="lp-logo" style="font-size:1.2rem;">Cynth<span class="lp-dot"></span><span class="lp-accent">IA</span></div>
     <div class="lp-foot-links">
       <a onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Comment ça marche</a>
       <a onclick="document.getElementById('lp-tarif').scrollIntoView({behavior:'smooth'})">Tarif</a>
@@ -2018,7 +2032,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <div class="chat-page">
     <div class="chat-card">
       <div class="chat-head">
-        <div class="chat-av">🎙</div>
+        <div class="chat-av" aria-label="Cynthia"></div>
         <div class="chat-head-info">
           <div class="chat-head-name">CYNTH.IA</div>
           <div class="chat-head-st"><span class="chat-head-dot"></span><span id="chat-head-status">En ligne</span></div>
@@ -3370,7 +3384,7 @@ function addChatBubble(role, text) {
   wrap.className = 'cb ' + (role === 'user' ? 'user' : 'ai');
   const textFormatted = formatChatText(role === 'ai' ? stripDash(text) : text);
   if (role === 'ai') {
-    wrap.innerHTML = `<div class="cb-av">✦</div><div style="flex:1"><div class="cb-text">${textFormatted}</div><div class="cb-time">${now}</div></div>`;
+    wrap.innerHTML = `<div class="cb-av" aria-label="Cynthia"></div><div style="flex:1"><div class="cb-text">${textFormatted}</div><div class="cb-time">${now}</div></div>`;
   } else {
     wrap.innerHTML = `<div><div class="cb-text">${textFormatted}</div><div class="cb-time" style="text-align:right">${now}</div></div>`;
   }
@@ -4763,8 +4777,9 @@ h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;line-he
 .cover{background:linear-gradient(150deg,var(--ink),var(--ink2));color:#fff;padding:56px;position:relative;overflow:hidden}
 .cover .glow{position:absolute;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(31,180,136,.45),transparent 66%);top:-120px;right:-90px;filter:blur(20px)}
 .cover .glow2{position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,111,94,.35),transparent 66%);bottom:-100px;left:-60px;filter:blur(20px)}
-.brandline{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk';font-weight:600;font-size:1.05rem;position:relative}
-.brandline .orb{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7FF0CE,var(--emerald))}
+.brandline{display:flex;align-items:center;gap:0;font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;letter-spacing:-.02em;position:relative}
+.brandline .orb{width:.58em;height:.58em;margin:0 .1em;flex-shrink:0;border-radius:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 3 Q34.5 27 61 32 Q34.5 37 32 61 Q29.5 37 3 32 Q29.5 27 32 3 Z' fill='%233EE0AE'/%3E%3C/svg%3E") center/contain no-repeat}
+.brandline .ia{color:#3EE0AE}
 .cover .label{margin-top:44px;font-family:'Space Grotesk';letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;color:#8FB8AC;position:relative}
 .cover h1{font-size:2.9rem;font-weight:700;margin:10px 0 6px;position:relative}
 .cover .who{color:#B7D2C8;font-size:1.05rem;position:relative}
@@ -4827,14 +4842,14 @@ p.body{font-size:1rem;margin-bottom:14px}
 .msgfin .minilabel{margin-bottom:10px}
 .msgfin p{font-size:1.08rem;line-height:1.7}
 .signature{margin-top:20px;display:flex;align-items:center;gap:11px}
-.signature .orb{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#8CF3D2,var(--emerald) 55%,var(--emerald-d))}
+.signature .orb{width:36px;height:36px;border-radius:50%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230E2A24'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/%3E%3C/svg%3E") center/contain no-repeat}
 .signature b{font-family:'Space Grotesk'}
 .signature small{color:var(--muted);display:block}
 footer{text-align:center;color:var(--muted);font-size:.82rem;padding:26px 56px 40px}
 footer .disc{font-size:.76rem;opacity:.85;margin-top:8px}
 @media print{body{background:#fff}.doc{box-shadow:none;margin:0;max-width:100%}}
 </style></head><body><div class="doc">
-<div class="cover"><div class="glow"></div><div class="glow2"></div><div class="brandline"><span class="orb"></span>Cynth.IA</div><div class="label">Rapport d'orientation personnalisé</div><h1>${esc(prenom)}</h1><div class="who">Préparé pour vous, à partir de votre conversation avec Cynthia.</div><div class="meta"><div><b>${esc(date)}</b>Établi le</div><div><b>${esc(refNum)}</b>Référence</div><div><b>Suisse romande</b>Marché de référence</div></div></div>
+<div class="cover"><div class="glow"></div><div class="glow2"></div><div class="brandline">Cynth<span class="orb"></span><span class="ia">IA</span></div><div class="label">Rapport d'orientation personnalisé</div><h1>${esc(prenom)}</h1><div class="who">Préparé pour vous, à partir de votre conversation avec Cynthia.</div><div class="meta"><div><b>${esc(date)}</b>Établi le</div><div><b>${esc(refNum)}</b>Référence</div><div><b>Suisse romande</b>Marché de référence</div></div></div>
 ${secParcours}${secQui}${secPorte}${secSavoir}${secCV}${secMetiers}${secPlan}${secRes}${section6}
 <footer>Cynth.IA · Rapport d'aide à la réflexion professionnelle<div class="disc">Cynth.IA est un outil d'aide à la décision, non un conseiller agréé. Les salaires et tensions du marché sont des fourchettes indicatives (sources publiques suisses), à affiner selon le canton et l'employeur.</div></footer>
 </div></body></html>`;
