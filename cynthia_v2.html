@@ -1600,12 +1600,14 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-vsno{color:var(--c-muted);justify-content:center;text-align:center;font-size:.86rem;}
   .lp-vsyes{color:var(--c-emerald-d);font-weight:600;justify-content:center;text-align:center;background:var(--c-emerald-soft);font-size:.86rem;}
   @media(max-width:640px){
+    .lp-vshead{display:none!important;}
     .lp-vsrow{grid-template-columns:1fr;}
     .lp-vsrow>div{padding:10px 14px;}
     .lp-vsrow>div:first-child{padding-top:16px;background:var(--c-cream2,#F1E9DC);}
-    .lp-vsno::before{content:"IA généraliste : ";font-weight:600;color:var(--c-ink);}
-    .lp-vsyes::before{content:"Cynthia : ";font-weight:700;}
-    .lp-vsno,.lp-vsyes{justify-content:flex-start;text-align:left;}
+    .lp-vsno::before{content:"IA généraliste :\00a0";font-weight:600;color:var(--c-ink);}
+    .lp-vsyes::before{content:"Cynthia :\00a0";font-weight:700;}
+    .lp-vsno,.lp-vsyes{justify-content:flex-start;text-align:left;align-items:flex-start;}
+    .lp-vsrow:first-of-type{border-top:none;}
   }
   .lp-row{display:flex;justify-content:center;gap:14px;margin-top:30px;flex-wrap:wrap;}
   .lp-pill{background:rgba(255,255,255,.8);border-radius:15px;padding:15px 20px;font-size:.9rem;text-align:left;max-width:235px;}
@@ -1698,7 +1700,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section id="lp-vs" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>« Je pourrais demander <span class="lp-pop">à une IA gratuite</span> »</h2><p>Vous pouvez, et parfois ça aide. Voici honnêtement ce qui change.</p></div>
     <div class="lp-rv" style="max-width:760px;margin:0 auto;border:1px solid var(--c-line);border-radius:18px;overflow:hidden;background:#fff;">
-      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0;font-family:'Space Grotesk';font-weight:600;font-size:.82rem;background:var(--c-ink);color:#fff;">
+      <div class="lp-vshead" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0;font-family:'Space Grotesk';font-weight:600;font-size:.82rem;background:var(--c-ink);color:#fff;">
         <div style="padding:14px 16px;"></div>
         <div style="padding:14px 10px;text-align:center;">IA généraliste</div>
         <div style="padding:14px 10px;text-align:center;background:var(--c-emerald-d);">Cynthia</div>
