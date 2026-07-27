@@ -1593,6 +1593,20 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-rfoot .lp-fn{font-size:.92rem;color:var(--c-muted);} .lp-rfoot .lp-fn b{color:var(--c-ink);}
   .lp-band{background:linear-gradient(135deg,var(--c-emerald-soft),var(--c-coral-soft));border-radius:34px;padding:56px 44px;text-align:center;}
   .lp-band h2{font-size:2rem;margin-bottom:16px;} .lp-band>p{color:var(--c-ink);font-size:1.1rem;max-width:62ch;margin:0 auto;opacity:.82;}
+  /* Tableau comparatif honnête (IA généraliste vs Cynthia) */
+  .lp-vsrow{display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid var(--c-line);font-size:.92rem;}
+  .lp-vsrow>div{padding:15px 16px;display:flex;align-items:center;}
+  .lp-vsrow>div:first-child{font-weight:600;}
+  .lp-vsno{color:var(--c-muted);justify-content:center;text-align:center;font-size:.86rem;}
+  .lp-vsyes{color:var(--c-emerald-d);font-weight:600;justify-content:center;text-align:center;background:var(--c-emerald-soft);font-size:.86rem;}
+  @media(max-width:640px){
+    .lp-vsrow{grid-template-columns:1fr;}
+    .lp-vsrow>div{padding:10px 14px;}
+    .lp-vsrow>div:first-child{padding-top:16px;background:var(--c-cream2,#F1E9DC);}
+    .lp-vsno::before{content:"IA généraliste : ";font-weight:600;color:var(--c-ink);}
+    .lp-vsyes::before{content:"Cynthia : ";font-weight:700;}
+    .lp-vsno,.lp-vsyes{justify-content:flex-start;text-align:left;}
+  }
   .lp-row{display:flex;justify-content:center;gap:14px;margin-top:30px;flex-wrap:wrap;}
   .lp-pill{background:rgba(255,255,255,.8);border-radius:15px;padding:15px 20px;font-size:.9rem;text-align:left;max-width:235px;}
   .lp-pill b{font-family:'Space Grotesk';display:block;margin-bottom:3px;}
@@ -1629,8 +1643,8 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section class="lp-hero"><div class="lp-wrap lp-hgrid">
     <div>
       <span class="lp-eyebrow"><span class="lp-live"></span> Votre premier pas, maintenant</span>
-      <h1>Et si vous trouviez <span class="lp-rot"><span class="lp-w" id="lp-rotw">votre voie</span></span><br>en 20 minutes&nbsp;?</h1>
-      <p class="lp-lead">Cynthia est la coach IA qui vous aide à y voir clair sur vous et votre avenir, par une vraie conversation, quand vous voulez.</p>
+      <h1>Vous savez que ça doit changer.<br><span class="lp-accent">Reste à savoir vers quoi.</span></h1>
+      <p class="lp-lead">Pas un test de personnalité. Une vraie conversation, qui finit par un rapport que vous gardez. Disponible maintenant, sans rendez-vous.</p>
       <div class="lp-hcta">
         <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer maintenant →</button>
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Voir comment ça marche</button>
@@ -1645,11 +1659,11 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 
   <section class="lp-sec" style="text-align:center;padding:80px 0;"><div class="lp-wrap">
     <div class="lp-rv" style="color:var(--c-emerald-d);font-family:'Space Grotesk';font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.8rem;margin-bottom:20px;">Ce que Cynthia révèle</div>
-    <h2 class="lp-rv" style="font-size:2.7rem;max-width:20ch;margin:0 auto;line-height:1.12;">La bonne question n'est pas <span class="lp-pop" style="white-space:nowrap;">«&nbsp;quel métier&nbsp;?&nbsp;»</span>, mais <span class="lp-accent" style="white-space:nowrap;">«&nbsp;qui êtes-vous vraiment&nbsp;?&nbsp;»</span></h2>
+    <h2 class="lp-rv" style="font-size:2.7rem;max-width:22ch;margin:0 auto;line-height:1.12;">On ne trouve pas un métier <span class="lp-pop">dans une liste.</span><br>On le trouve en comprenant <span class="lp-accent">ce qu'on sait déjà faire.</span></h2>
   </div></section>
 
   <section class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Le premier pas, enfin <span class="lp-pop">accessible</span></h2><p>Ni un questionnaire froid, ni un bilan à 2 000 CHF sur trois mois. Juste une conversation qui vous fait avancer.</p></div>
+    <div class="lp-sechead lp-rv"><h2>Le premier pas, <span class="lp-pop">sans attendre trois mois</span></h2><p>Un bilan de compétences en Suisse, c'est 280 CHF la séance et près de 2 000 CHF au total, étalés sur trois mois. viamia est gratuit, mais réservé aux 40 ans et plus. Entre les deux, il n'y avait rien. Cynthia, c'est ce rien-là qu'elle vient combler.</p></div>
     <div class="lp-cards">
       <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Immédiat</h3><p>Disponible 24/7, sans rendez-vous ni liste d'attente. Vous commencez quand l'envie est là.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Une vraie conversation</h3><p>Cynthia vous écoute et rebondit sur vos mots. Pas une grille de cases à cocher.</p></div>
@@ -1661,14 +1675,44 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:66px 40px;">
     <div class="lp-sechead lp-rv"><h2>Comment ça marche</h2><p>Trois étapes, une vingtaine de minutes, une direction claire.</p></div>
     <div class="lp-steps">
-      <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Vous discutez</h3><p>Vous racontez où vous en êtes à Cynthia. Elle pose les bonnes questions, sans jugement.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle révèle</h3><p>Cynthia met en lumière vos forces, vos valeurs et les pistes de métiers qui vous correspondent vraiment.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Vous avancez</h3><p>Vous recevez un rapport clair : vos métiers, le marché suisse, et vos premiers pas concrets.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Vous racontez</h3><p>Votre parcours, ce qui vous pèse, ce que vous savez faire. Sans jugement, à votre rythme.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle creuse</h3><p>Cynthia pose les questions qu'un conseiller poserait. Elle relève ce que vous ne voyez plus.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Vous repartez avec un plan</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et par quoi commencer.</p></div>
     </div>
   </div></div></section>
 
+  <!-- ── PREUVE : Cynthia connaît vraiment la Suisse (montrer, pas promettre) ── -->
+  <section id="lp-preuve" class="lp-sec"><div class="lp-wrap">
+    <div class="lp-sechead lp-rv"><h2>Elle connaît <span class="lp-accent">le terrain suisse</span></h2><p>Un extrait réel. C'est la question qu'un conseiller pose en premier ici, et que les outils génériques ne posent jamais.</p></div>
+    <div class="lp-chatcard lp-rv" style="max-width:640px;margin:0 auto;">
+      <div class="lp-ctop"><div class="lp-orb"></div><div><div class="lp-who">Cynthia</div><div class="lp-cstat">● en ligne · vous écoute</div></div></div>
+      <div class="lp-stream">
+        <div class="lp-bub me">J'ai 54 ans, je suis responsable administrative depuis 23 ans. Mon service va être restructuré et j'ai peur de ne plus retrouver d'emploi à mon âge.</div>
+        <div class="lp-bub ai">Je comprends que cette restructuration vous inquiète, c'est légitime à 54 ans. Avant de parler des freins, j'aimerais savoir : dans ces 23 ans, avez-vous des certifications formelles (CFC, brevet, diplôme) ou votre légitimité vient surtout de l'expérience accumulée sur le terrain ?</div>
+      </div>
+    </div>
+    <p class="lp-rv" style="text-align:center;max-width:60ch;margin:22px auto 0;color:var(--c-muted);font-size:.95rem;">Pourquoi cette question compte : en Suisse, une longue expérience sans titre peut être validée par l'article 32 et déboucher sur un CFC, sans refaire tout un apprentissage. Beaucoup de gens l'ignorent.</p>
+  </div></section>
+
+  <!-- ── COMPARAISON HONNÊTE avec une IA généraliste ── -->
+  <section id="lp-vs" class="lp-sec"><div class="lp-wrap">
+    <div class="lp-sechead lp-rv"><h2>« Je pourrais demander <span class="lp-pop">à une IA gratuite</span> »</h2><p>Vous pouvez, et parfois ça aide. Voici honnêtement ce qui change.</p></div>
+    <div class="lp-rv" style="max-width:760px;margin:0 auto;border:1px solid var(--c-line);border-radius:18px;overflow:hidden;background:#fff;">
+      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0;font-family:'Space Grotesk';font-weight:600;font-size:.82rem;background:var(--c-ink);color:#fff;">
+        <div style="padding:14px 16px;"></div>
+        <div style="padding:14px 10px;text-align:center;">IA généraliste</div>
+        <div style="padding:14px 10px;text-align:center;background:var(--c-emerald-d);">Cynthia</div>
+      </div>
+      <div class="lp-vsrow"><div>Connaît le CFC, le brevet fédéral, l'article 32</div><div class="lp-vsno">Souvent confondu avec le système français</div><div class="lp-vsyes">Oui, c'est sa base</div></div>
+      <div class="lp-vsrow"><div>Salaires suisses en CHF</div><div class="lp-vsno">Approximatifs</div><div class="lp-vsyes">Fourchettes issues de sources suisses</div></div>
+      <div class="lp-vsrow"><div>Qui mène l'échange</div><div class="lp-vsno">Vous, si vous savez quoi demander</div><div class="lp-vsyes">Elle, comme un conseiller</div></div>
+      <div class="lp-vsrow"><div>Vous dire ce qui ne colle pas</div><div class="lp-vsno">Rarement, elle abonde</div><div class="lp-vsyes">Oui, franchement</div></div>
+      <div class="lp-vsrow"><div>Ce qu'il vous reste après</div><div class="lp-vsno">Une conversation qui se perd</div><div class="lp-vsyes">Un rapport que vous gardez</div></div>
+    </div>
+  </div></section>
+
   <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>À la fin de la conversation, Cynthia condense tout dans un rapport clair et actionnable. Voici ce qu'il contient.</p></div>
+    <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
     <div class="lp-report lp-rv">
       <div class="lp-rhead"><div><div class="lp-rtitle">Rapport d'orientation</div><div class="lp-rsub">Exemple · PDF, 4 pages · prêt en 20 min</div></div><span class="lp-rbadge">100 % personnalisé</span></div>
       <div class="lp-rgrid">
@@ -1697,12 +1741,12 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   </div></section>
 
   <section id="lp-difference" class="lp-sec"><div class="lp-wrap"><div class="lp-band lp-rv">
-    <h2>Entre le gratuit public et le bilan à 2 000 CHF,<br><span class="lp-accent">il manquait le premier pas.</span></h2>
-    <p>L'orientation publique est précieuse, mais souvent réservée aux 40 ans et plus, sur rendez-vous. Le bilan privé est complet, mais long et coûteux. Cynthia occupe l'espace du milieu : le déclic instantané et abordable, pour tout le monde.</p>
+    <h2>Et si vous n'entrez <span class="lp-accent">dans aucune case&nbsp;?</span></h2>
+    <p>viamia est une belle prestation, gratuite et sérieuse. Mais elle est réservée aux 40 ans et plus, et elle n'est pas ouverte aux personnes au chômage, à l'AI ou à l'aide sociale. Beaucoup de gens se retrouvent donc sans rien. C'est pour eux, d'abord, que Cynthia existe.</p>
     <div class="lp-row">
-      <div class="lp-pill"><b>Orientation publique</b>Gratuit · souvent 40 ans et plus · sur rendez-vous</div>
-      <div class="lp-pill us"><b>Cynthia</b>Instantané · tout âge · abordable</div>
-      <div class="lp-pill"><b>Bilan privé</b>Complet · plusieurs semaines · dès 1 900 CHF</div>
+      <div class="lp-pill"><b>Orientation publique</b>Gratuite et sérieuse · dès 40 ans · sur rendez-vous · pas ouverte à tous</div>
+      <div class="lp-pill us"><b>Cynthia</b>Tout de suite · à tout âge · sans conditions d'accès</div>
+      <div class="lp-pill"><b>Bilan privé</b>Complet et humain · 280 CHF la séance · près de 2 000 CHF sur 3 mois</div>
     </div>
   </div></div></section>
 
@@ -1724,9 +1768,21 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     </div></div>
   </div></section>
 
+  <!-- ── HONNÊTETÉ : chaque limite formulée comme une raison de faire confiance ── -->
+  <section id="lp-franc" class="lp-sec"><div class="lp-wrap"><div class="lp-band lp-rv">
+    <h2>On préfère <span class="lp-accent">vous le dire franchement</span></h2>
+    <p>Vous allez nous confier des choses personnelles. Autant commencer par être clairs.</p>
+    <div class="lp-row" style="margin-top:26px;">
+      <div class="lp-pill"><b>Oui, Cynthia est une intelligence artificielle</b>C'est pour ça qu'elle est là ce soir à 23h, sans rendez-vous, sans liste d'attente, et sans les 2 000 CHF d'un bilan.</div>
+      <div class="lp-pill"><b>Elle vous dira ce que vos proches n'osent pas</b>Votre entourage vous encourage, c'est normal. Cynthia, elle, regarde vos réponses en face. Si une piste ne tient pas, elle le dit maintenant. Pas dans deux ans.</div>
+      <div class="lp-pill"><b>Vous n'arriverez plus jamais en disant « je ne sais pas »</b>Chez un conseiller, à l'ORP ou en entretien, vous saurez enfin nommer ce que vous savez faire et vers quoi vous allez. C'est là que ça bascule.</div>
+      <div class="lp-pill us"><b>Ce qu'elle fait le mieux</b>Transformer un flou qui traîne depuis des mois en une direction claire, et un premier pas à faire cette semaine.</div>
+    </div>
+  </div></div></section>
+
   <section class="lp-final"><div class="lp-wrap">
-    <h2 class="lp-rv">Et si vous saviez, ce soir,<br><span class="lp-pop">vers quoi aller&nbsp;?</span></h2>
-    <p class="lp-rv">Vingt minutes avec Cynthia peuvent changer la direction de votre année.</p>
+    <h2 class="lp-rv">Vingt minutes.<br><span class="lp-pop">Et vous saurez.</span></h2>
+    <p class="lp-rv">Dans vingt minutes, vous en saurez plus sur votre avenir qu'en deux ans à y penser le dimanche soir.</p>
     <div class="lp-rv"><button class="lp-btn lp-btn-primary" style="padding:17px 36px;font-size:1.05rem;" onclick="gp('preappel')">Commencer maintenant →</button></div>
   </div></section>
 
