@@ -771,8 +771,11 @@ footer{
   padding:44px 48px;max-width:520px;width:100%;
   transform:scale(.93) translateY(14px);
   transition:all .35s cubic-bezier(.16,1,.3,1);
-  position:relative;overflow:hidden;
+  position:relative;overflow-y:auto;overflow-x:hidden;
+  max-height:86vh; /* textes légaux longs : la fenêtre défile au lieu de déborder */
 }
+.modal-box h4{font-size:15px;font-weight:700;color:var(--txt);margin:18px 0 6px;letter-spacing:-.3px;}
+.modal-box .legal-date{font-size:12px;color:var(--txt3);margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);}
 .modal-overlay.show .modal-box{transform:scale(1) translateY(0);}
 .modal-box::before{
   content:'';position:absolute;top:-1px;left:0;right:0;height:2px;
@@ -1479,7 +1482,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <div class="bb-text">
     <span>🧪</span>
     <span class="bb-pill">BÊTA</span>
-    <span>PHASE DE TEST — Service <strong>100% GRATUIT jusqu'au 31/12/2026</strong> · Données fictives · Rejoignez les premiers testeurs !</span>
+    <span>PHASE DE TEST — Service <strong>100% GRATUIT jusqu'au 31/12/2026</strong> · Rejoignez les premiers testeurs !</span>
   </div>
   <button class="bb-close" onclick="closeBetaBanner()" title="Fermer">✕</button>
 </div>
@@ -1981,7 +1984,13 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
           <input type="text" class="chat-input" id="chat-input" placeholder="Écrivez votre message et appuyez sur Entrée..." maxlength="500"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}">
           <span id="mic-timer"></span>
+          <!-- MICRO DÉSACTIVÉ (juillet 2026, raison juridique) : la transcription envoyait
+               l'enregistrement vocal à l'API publique HuggingFace, sans clé, sans contrat de
+               sous-traitance et sans mention dans la politique de confidentialité. Un
+               enregistrement de voix est une donnée personnelle sensible. À réactiver
+               seulement avec un prestataire déclaré + contrat + mention explicite.
           <button id="mic-async-btn" onclick="toggleMicAsync()" title="Parler (max 2 min)">🎤</button>
+          -->
           <button class="chat-send" id="chat-send-btn" onclick="sendChatMsg()" title="Envoyer">↑</button>
         </div>
         <div class="chat-hint">Entrée pour envoyer · CYNTH.IA analyse vos réponses pour construire votre profil</div>
@@ -2397,6 +2406,24 @@ function showToast(icon,msg,type='info',duration=3500){
   toastTimer=setTimeout(()=>{t.classList.remove('show');},duration);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   ⚠️ INFOS LÉGALES — LE SEUL ENDROIT À MODIFIER
+   Remplace les deux valeurs ci-dessous par tes vraies coordonnées AVANT
+   d'ouvrir le site au public. Elles alimentent automatiquement la politique
+   de confidentialité et les conditions d'utilisation.
+   - exploitant : ton nom complet (ou le nom de ta société quand elle existera)
+   - email      : une adresse que tu relèves vraiment (obligation légale :
+                  les gens doivent pouvoir exercer leurs droits)
+══════════════════════════════════════════════════════════════════════════ */
+const LEGAL = {
+  exploitant: 'Faouzi Samhoud',
+  lieu: 'Genève, Suisse',
+  email: 'faouzi.samhoud@mail.ch',
+  version: '2.0',
+  maj: '27 juillet 2026',
+  for_juridique: 'Genève, Suisse'
+};
+
 /* ── MODAL SYSTEM ── */
 let currentModalContent='';
 function showModal(type){
@@ -2437,24 +2464,80 @@ function showModal(type){
       <div class="modal-tag">✉️ Contact</div>
       <h3>Nous contacter</h3>
       <p>Pour toute question sur CYNTH.IA, une suggestion, un bug ou un partenariat :</p>
-      <p style="margin:16px 0;font-size:16px;font-weight:700;color:var(--v4);">contact@cynthia.ai</p>
-      <p style="font-size:13px;color:var(--txt3);">Réponse garantie sous 48h (jours ouvrés). Pour les demandes B2B, utilisez "Professionnels" dans le menu.</p>
-      <button class="mcta" onclick="showToast('📋','Email copié : contact@cynthia.ai','success');closeModal();">Copier l'email</button>`,
+      <p style="margin:16px 0;font-size:16px;font-weight:700;color:var(--v4);">${LEGAL.email}</p>
+      <p style="font-size:13px;color:var(--txt3);">Nous répondons sous quelques jours ouvrés. Pour les demandes professionnelles, utilisez "Professionnels" dans le menu.</p>
+      <button class="mcta" onclick="showToast('📋','Email : ${LEGAL.email}','success');closeModal();">Voir l'email</button>`,
     confidentialite:`
       <div class="modal-tag">🔒 Confidentialité</div>
       <h3>Politique de confidentialité</h3>
-      <p>Vos données ne sont jamais vendues, jamais partagées avec des tiers.</p>
-      <p><strong style="color:var(--txt);">Ce que nous collectons :</strong> email, prénom, contenu de votre entretien vocal, CV si uploadé.</p>
-      <p><strong style="color:var(--txt);">Durée de conservation :</strong> 6 mois pour les données d'entretien, 3 ans pour l'email (marketing opt-in uniquement).</p>
-      <p><strong style="color:var(--txt);">Vos droits :</strong> accès, rectification, suppression sur simple email à contact@cynthia.ai.</p>
-      <p style="font-size:13px;color:var(--txt3);margin-top:12px;">Conformité RGPD · Données hébergées en Europe (AWS Frankfurt)</p>`,
+      <p>Vous nous confiez des choses personnelles sur votre travail et vos envies. Voici, sans jargon, ce qui se passe vraiment avec ce que vous écrivez.</p>
+
+      <h4>Qui est responsable</h4>
+      <p>${LEGAL.exploitant}, ${LEGAL.lieu}. Pour toute question ou demande : <strong style="color:var(--txt);">${LEGAL.email}</strong></p>
+
+      <h4>Ce que nous traitons</h4>
+      <p>• Votre prénom, si vous le donnez (facultatif)<br>
+      • Votre email, si vous le donnez (facultatif)<br>
+      • Ce que vous écrivez pendant la conversation<br>
+      • Le texte de votre CV, si vous en déposez un</p>
+
+      <h4>Votre CV ne quitte pas votre appareil</h4>
+      <p>Le fichier est lu directement dans votre navigateur. Il n'est ni envoyé, ni stocké chez nous. Seul le <em>texte</em> qui en est extrait est transmis à l'IA pour préparer votre analyse.</p>
+
+      <h4>Où vont vos données</h4>
+      <p>Votre texte passe par notre serveur relais (Cloudflare), qui ne fait que transmettre sans rien enregistrer, puis va vers le service d'intelligence artificielle qui rédige les réponses et votre rapport : <strong style="color:var(--txt);">Anthropic</strong> (États-Unis), avec <strong style="color:var(--txt);">Groq</strong> (États-Unis) en secours. D'après les conditions professionnelles de ces prestataires, les données envoyées par cette voie ne servent pas à entraîner leurs modèles.</p>
+
+      <h4>Ce que nous ne faisons pas</h4>
+      <p>• Nous ne vendons jamais vos données<br>
+      • Aucune publicité, aucun traceur publicitaire, aucun outil de mesure d'audience<br>
+      • Nous ne constituons aucun fichier de vos entretiens</p>
+
+      <h4>Combien de temps c'est gardé</h4>
+      <p>Rien n'est conservé sur nos serveurs : nous n'avons pas de base de données d'entretiens. Votre conversation vit dans votre navigateur le temps de la session. Vous fermez l'onglet, elle disparaît. Votre rapport, c'est à vous de l'enregistrer si vous voulez le garder.</p>
+
+      <h4>Ce qui reste sur votre appareil</h4>
+      <p>Quelques éléments techniques sont enregistrés dans la mémoire de votre navigateur (par exemple un compteur, l'historique d'une discussion métier, ou le fait que vous ayez payé). Vous pouvez tout effacer à tout moment en supprimant les données de ce site dans votre navigateur.</p>
+
+      <h4>Transferts hors de Suisse</h4>
+      <p>Les services ci-dessus sont établis aux États-Unis. Ces transferts s'appuient sur les garanties contractuelles proposées par ces prestataires (clauses de protection des données). Si cela vous pose problème, n'utilisez pas le service.</p>
+
+      <h4>Autres services techniques</h4>
+      <p>Les polices d'écriture (Google Fonts) et certaines bibliothèques d'affichage sont chargées depuis des serveurs externes, qui reçoivent votre adresse IP. Si vous payez, le paiement est traité par Stripe, qui gère lui-même vos données bancaires : nous ne voyons jamais votre numéro de carte.</p>
+
+      <h4>Vos droits</h4>
+      <p>Conformément à la loi suisse sur la protection des données (nLPD) et au RGPD européen, vous pouvez demander l'accès, la correction ou la suppression de vos données, vous opposer à leur traitement, ou retirer votre accord. Écrivez à ${LEGAL.email}. En pratique, comme nous ne conservons rien de votre entretien, il n'y a généralement rien à supprimer chez nous.</p>
+      <p>Vous pouvez aussi vous adresser au Préposé fédéral à la protection des données et à la transparence (PFPDT) si vous estimez que vos droits ne sont pas respectés.</p>
+
+      <h4>Âge minimum</h4>
+      <p>Le service est destiné aux personnes de 16 ans et plus.</p>
+
+      <div class="legal-date">Version ${LEGAL.version} du ${LEGAL.maj}. Nous mettrons ce texte à jour si nos outils changent.</div>`,
     cgu:`
-      <div class="modal-tag">📄 CGU</div>
-      <h3>Conditions générales d'utilisation</h3>
-      <p>CYNTH.IA est un outil d'aide à la réflexion professionnelle. Il ne remplace pas un conseiller en évolution professionnelle agréé (CEP).</p>
-      <p><strong style="color:var(--txt);">Utilisation :</strong> Le service est réservé aux personnes majeures résidant en France. Gratuit pendant la période bêta.</p>
-      <p><strong style="color:var(--txt);">Responsabilité :</strong> Les pistes proposées sont indicatives. CYNTH.IA n'est pas responsable des décisions prises sur la base de l'entretien.</p>
-      <p style="font-size:13px;color:var(--txt3);margin-top:12px;">Version 1.0 — Juin 2026 · Droit applicable : droit français · Tribunal compétent : Paris</p>`
+      <div class="modal-tag">📄 Conditions</div>
+      <h3>Conditions d'utilisation</h3>
+
+      <h4>Ce qu'est Cynth.IA</h4>
+      <p>Un outil d'aide à la réflexion professionnelle, animé par une intelligence artificielle. Il vous aide à y voir plus clair et à explorer des pistes de métiers en Suisse.</p>
+
+      <h4>Ce qu'il n'est pas</h4>
+      <p>Cynth.IA n'est pas un service d'orientation officiel, ni un conseil juridique, médical ou financier. Il ne remplace pas un conseiller en orientation agréé, ni les prestations publiques comme viamia ou votre office d'orientation cantonal.</p>
+
+      <h4>L'IA peut se tromper</h4>
+      <p>Les métiers, salaires, formations et financements indiqués sont des repères, pas des garanties. Vérifiez toujours les informations importantes auprès des sources officielles : orientation.ch, votre office cantonal d'orientation, votre ORP, ou l'école concernée.</p>
+
+      <h4>Qui peut l'utiliser</h4>
+      <p>Les personnes de 16 ans et plus. Le service est pensé pour le marché du travail suisse et proposé en français. Pendant la phase de test, il est gratuit.</p>
+
+      <h4>Vos décisions restent les vôtres</h4>
+      <p>Vous restez seul décideur de votre parcours. ${LEGAL.exploitant} ne peut être tenu responsable des choix faits à la suite d'un entretien ou d'un rapport, ni d'éventuelles interruptions du service.</p>
+
+      <h4>Usage correct</h4>
+      <p>Merci de ne pas utiliser le service pour y déposer des données sensibles inutiles (santé, religion, opinions politiques), ni pour nuire à autrui ou perturber le fonctionnement du site.</p>
+
+      <h4>Contenu</h4>
+      <p>Le contenu du site (textes, fiches métiers, design) appartient à son auteur. Le rapport généré vous appartient : vous en faites ce que vous voulez.</p>
+
+      <div class="legal-date">Version ${LEGAL.version} du ${LEGAL.maj} · Droit suisse · For juridique : ${LEGAL.for_juridique}</div>`
   };
   currentModalContent=type;
   const overlay=document.getElementById('modal-overlay');
