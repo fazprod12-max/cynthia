@@ -1624,14 +1624,6 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-so b{opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s cubic-bezier(.19,1,.22,1);}
   .cyn-stag.in .lp-so b{opacity:1;transform:none;transition-delay:.1s;}
 
-  /* 2d. PARAGRAPHES ligne par ligne (l'œil suit, on lit sans y penser) */
-  .cyn-lines{overflow:hidden;}
-  .cyn-lines>i{display:block;font-style:normal;transform:translateY(102%);opacity:0;
-    transition:transform .85s cubic-bezier(.19,1,.22,1),opacity .6s ease;}
-  .cyn-lines.in>i{transform:none;opacity:1;}
-  .cyn-lines.in>i:nth-child(2){transition-delay:.09s}
-  .cyn-lines.in>i:nth-child(3){transition-delay:.18s}
-
   /* 4. EFFET PROJECTEUR : la carte survolée s'illumine, les autres s'estompent */
   .cyn-spot:hover>*{opacity:.5;transition:opacity .35s ease;}
   .cyn-spot>*:hover{opacity:1!important;}
@@ -1652,7 +1644,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   @media(prefers-reduced-motion:reduce){
     .lp-rv,.cyn-stag>*,.lp-hero .lp-lead,.lp-hero .lp-hcta,.lp-hero .lp-reassure,
     .lp-hero .lp-eyebrow,.lp-hero .lp-chatcard,.lp-orb,.lp-hero h1 .ln i,
-    .cyn-lines>i,.lp-so b{
+    .lp-so b{
       opacity:1!important;transform:none!important;transition:none!important;filter:none!important;}
     .lp-card:hover,.lp-step:hover,.lp-btn:hover{transform:none!important;}
     .cyn-spot:hover>*{opacity:1!important;filter:none!important;}
@@ -1973,34 +1965,13 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     if(hero){ if(_calme){ hero.classList.add('lit'); } else { setTimeout(function(){ hero.classList.add('lit'); },90); } }
   }catch(e){}
 
-  // Découpe les paragraphes clés en lignes, pour qu'elles montent l'une après
-  // l'autre. On mesure les vraies lignes affichées, donc ça s'adapte au mobile.
-  try{
-    if(!_calme){
-      document.querySelectorAll('#page-landing .lp-band>p, #page-landing .lp-sechead>p').forEach(function(p){
-        if(p.querySelector('i')) return;
-        var mots=p.textContent.trim().split(/\s+/);
-        if(mots.length<6) return;
-        // on reconstruit mot par mot pour détecter les changements de ligne
-        p.innerHTML='';
-        var probe=[];
-        mots.forEach(function(m,i){ var s=document.createElement('span'); s.textContent=m+(i<mots.length-1?' ':''); p.appendChild(s); probe.push(s); });
-        var lignes=[], cur=[], top=null;
-        probe.forEach(function(s){
-          var t=Math.round(s.offsetTop);
-          if(top===null) top=t;
-          if(t!==top){ lignes.push(cur); cur=[]; top=t; }
-          cur.push(s.textContent);
-        });
-        if(cur.length) lignes.push(cur);
-        if(lignes.length<2 || lignes.length>4){ p.textContent=mots.join(' '); return; }
-        p.innerHTML='';
-        p.classList.add('cyn-lines');
-        lignes.forEach(function(l){ var i2=document.createElement('i'); i2.textContent=l.join(''); p.appendChild(i2); });
-        io.observe(p);
-      });
-    }
-  }catch(e){}
+  // NOTE : on n'anime PAS les paragraphes ligne par ligne.
+  // Testé, puis retiré : découper un paragraphe en lignes oblige à mesurer les
+  // retours à la ligne à un instant donné, puis chaque ligne devient un bloc
+  // qui se recoupe tout seul. Résultat : des mots orphelins en fin de ligne
+  // (« ... près de 2 000 / CHF »), et un rendu différent selon la largeur de
+  // l'écran ou le moment où la police finit de charger. Trop fragile pour une
+  // page de vente. Les paragraphes montent donc en bloc, avec le reste.
 
   // Profondeur douce au défilement : les auras bougent un peu moins vite que
   // la page. Ça crée un relief, comme plusieurs plans dans une image.
