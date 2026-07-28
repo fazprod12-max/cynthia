@@ -1531,8 +1531,9 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-content{position:relative;z-index:1;}
   .lp-wrap{max-width:1140px;margin:0 auto;padding:0 24px;}
   .lp-nav{display:flex;align-items:center;justify-content:space-between;height:74px;position:sticky;top:0;z-index:50;background:rgba(250,246,240,.82);backdrop-filter:blur(12px);border-bottom:1px solid rgba(232,225,214,.7);}
-  .lp-logo{font-family:'Space Grotesk';font-size:1.45rem;font-weight:700;color:var(--c-ink);display:flex;align-items:center;gap:9px;}
-  .lp-logo .lp-dot{width:.58em;height:.58em;border-radius:0;background:var(--cyn-star) center/contain no-repeat;box-shadow:none;flex-shrink:0;}
+  .lp-logo{font-family:'Space Grotesk';font-size:1.45rem;font-weight:700;color:var(--c-ink);display:flex;align-items:center;gap:0;letter-spacing:-.02em;}
+  /* L'étoile EST le point de « Cynth.IA » : elle doit être collée aux lettres, pas flotter. */
+  .lp-logo .lp-dot{width:.42em;height:.42em;margin:0 .06em;border-radius:0;background:var(--cyn-star) center/contain no-repeat;box-shadow:none;flex-shrink:0;}
   .lp-links{display:flex;gap:28px;align-items:center;font-size:.95rem;font-weight:500;color:var(--c-muted);}
   .lp-links a{color:inherit;text-decoration:none;cursor:pointer;} .lp-links a:hover{color:var(--c-ink);}
   .lp-btn{display:inline-flex;align-items:center;gap:8px;font-family:'Space Grotesk';font-weight:600;border-radius:100px;padding:13px 26px;font-size:.98rem;cursor:pointer;border:none;transition:transform .18s,box-shadow .25s;}
