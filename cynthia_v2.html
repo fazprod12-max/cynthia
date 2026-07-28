@@ -2865,24 +2865,42 @@ CE QUE TU NE FAIS JAMAIS
 🚫 HORS-SUJET : "Moi, c'est l'orientation professionnelle — c'est là que je peux vraiment t'aider. Qu'est-ce qui coince dans ton parcours ?"`;
 
 
+/* ══════════════════════════════════════════════════════════════════════════
+   DÉTECTION DE MANIPULATION — resserrée après un FAUX POSITIF en test réel.
+   Bug trouvé : une secrétaire médicale racontait avoir mis en place un
+   « nouveau système de rendez-vous » → l'ancien motif /nouveau (système|prompt)/
+   se déclenchait et Cynthia répondait « je suis votre conseillère et je le
+   reste », en pleine confidence. Catastrophique pour la confiance.
+   Autres pièges retirés, très courants dans une conversation de carrière :
+   « je joue le rôle de médiatrice », « je fais semblant d'être motivée ».
+   RÈGLE : ne déclencher que si la phrase vise EXPLICITEMENT l'assistante
+   (ses instructions, son rôle d'IA), jamais sur du vocabulaire de travail.
+══════════════════════════════════════════════════════════════════════════ */
 function detectJailbreak(text) {
-  const t = text.toLowerCase();
+  // On compare sur un texte « aplati » : sans accents, apostrophes uniformisées.
+  // Sinon quelqu'un qui écrit vite et sans accents passe à travers le filtre.
+  const t = String(text || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')  // retire les accents
+    .replace(/['’`]/g, ' ')                             // apostrophes → espace
+    .replace(/\s+/g, ' ');
   return [
-    /ignore (tes |les |toutes les |vos )?instructions/,
-    /oublie (tes |les |toutes les |vos )?instructions/,
-    /tu es (maintenant|désormais) (un|une)/,
-    /agis comme (si tu étais|un|une)/,
-    /joue le r[oô]le/,
-    /fais semblant d'[eê]tre/,
-    /nouveau (syst[eè]me|prompt)/,
+    /(ignore|ignorez|oublie|oubliez)\s+(tes|les|toutes les|vos|ces|toute)?\s*(instructions|consignes|regles|directives)/,
+    /(tu es|vous etes)\s+(maintenant|desormais)\s+(un|une)\s+(ia|assistant|chatbot|bot|hacker|pirate|developpeur)/,
+    /(agis|agissez|comporte toi|comportez vous)\s+comme\s+si\s+(tu etais|vous etiez)/,
+    /(agis|agissez|comporte toi)\s+comme\s+(un|une)\s+(ia|assistant|chatbot|bot|hacker|pirate|developpeur)/,
+    /joue[rz]?\s+le\s+role\s+d\s*(un|une)?\s*(ia|assistant|chatbot|bot|hacker|pirate|developpeur)/,
+    /fais\s+semblant\s+d\s*etre\s+(un|une)?\s*(ia|assistant|chatbot|bot)/,
+    /(nouveau|new)\s+(system\s*prompt|prompt\s*systeme)/,
+    /nouvelles?\s+instructions?\s*:/,
     /new system prompt/,
     /ignore previous/,
     /disregard (all|your)/,
     /jailbreak/,
     /dan mode/,
     /prompt injection/,
-    /system:/,
-    /\[INST\]/
+    /(revele|montre|affiche)\s+(moi\s+)?(tes|vos)\s+(instructions|consignes|regles|prompt)/,
+    /\[inst\]/
   ].some(p => p.test(t));
 }
 
