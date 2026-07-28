@@ -1525,9 +1525,24 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp .lp-accent{color:var(--c-emerald-d);} .lp .lp-pop{color:var(--c-coral);}
   .lp-aura{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
   .lp-blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.4;}
-  .lp-b1{width:520px;height:520px;background:radial-gradient(circle,#7FE6C4,transparent 65%);top:-160px;left:-120px;}
-  .lp-b2{width:460px;height:460px;background:radial-gradient(circle,#FFB3A6,transparent 65%);top:8%;right:-140px;}
-  .lp-b3{width:420px;height:420px;background:radial-gradient(circle,#FFD98A,transparent 65%);bottom:-120px;left:30%;opacity:.28;}
+  /* ══════════════════════════════════════════════════════════════════
+     LES AURAS — le vert qui se fond dans le crème, décliné sur TOUTE la page.
+     Règles de composition (comme on pose des lumières sur un plateau) :
+     · on alterne les côtés pour faire descendre l'œil en zigzag
+     · jamais deux fois la même intensité ni la même taille
+     · le vert domine (c'est la marque), le corail réchauffe les moments humains
+     · les auras les plus fortes marquent les 3 endroits qui comptent :
+       l'accueil, la preuve, et l'appel final
+  ══════════════════════════════════════════════════════════════════ */
+  .lp-b1{width:560px;height:560px;background:radial-gradient(circle,#7FE6C4,transparent 65%);top:-170px;left:-130px;opacity:.46;}
+  .lp-b2{width:460px;height:460px;background:radial-gradient(circle,#FFB3A6,transparent 65%);top:6%;right:-150px;opacity:.34;}
+  .lp-b3{width:400px;height:400px;background:radial-gradient(circle,#7FE6C4,transparent 66%);top:19%;right:-120px;opacity:.3;}
+  .lp-b4{width:520px;height:520px;background:radial-gradient(circle,#8FEFD0,transparent 64%);top:31%;left:-180px;opacity:.38;}
+  .lp-b5{width:360px;height:360px;background:radial-gradient(circle,#FFD98A,transparent 66%);top:44%;right:-90px;opacity:.22;}
+  .lp-b6{width:600px;height:600px;background:radial-gradient(circle,#7FE6C4,transparent 63%);top:55%;left:-200px;opacity:.34;}
+  .lp-b7{width:440px;height:440px;background:radial-gradient(circle,#FFB3A6,transparent 65%);top:68%;right:-160px;opacity:.28;}
+  .lp-b8{width:520px;height:520px;background:radial-gradient(circle,#8FEFD0,transparent 64%);top:79%;left:-140px;opacity:.36;}
+  .lp-b9{width:680px;height:680px;background:radial-gradient(circle,#7FE6C4,transparent 62%);bottom:-220px;left:50%;transform:translateX(-50%);opacity:.42;}
   .lp-content{position:relative;z-index:1;}
   .lp-wrap{max-width:1140px;margin:0 auto;padding:0 24px;}
   .lp-nav{display:flex;align-items:center;justify-content:space-between;height:74px;position:sticky;top:0;z-index:50;background:rgba(250,246,240,.82);backdrop-filter:blur(12px);border-bottom:1px solid rgba(232,225,214,.7);}
@@ -1592,12 +1607,35 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-hero .lp-chatcard{opacity:0;transform:translateY(24px) scale(.985);transition:opacity .9s cubic-bezier(.19,1,.22,1),transform .9s cubic-bezier(.19,1,.22,1);transition-delay:.25s}
   .lp-hero.lit .lp-chatcard{opacity:1;transform:none;}
 
-  /* 2. DÉCALAGE : les enfants d'un groupe arrivent l'un après l'autre */
-  .cyn-stag>*{opacity:0;transform:translateY(20px);transition:opacity .65s cubic-bezier(.19,1,.22,1),transform .65s cubic-bezier(.19,1,.22,1);}
-  .cyn-stag.in>*{opacity:1;transform:none;}
-  .cyn-stag.in>*:nth-child(1){transition-delay:.04s}.cyn-stag.in>*:nth-child(2){transition-delay:.12s}
-  .cyn-stag.in>*:nth-child(3){transition-delay:.2s}.cyn-stag.in>*:nth-child(4){transition-delay:.28s}
-  .cyn-stag.in>*:nth-child(5){transition-delay:.36s}.cyn-stag.in>*:nth-child(6){transition-delay:.44s}
+  /* 2. DÉCALAGE + MISE AU POINT : les cartes arrivent floues et légèrement
+     plus petites, puis deviennent nettes et se posent. Effet caméra. */
+  .cyn-stag>*{opacity:0;transform:translateY(34px) scale(.965);filter:blur(7px);
+    transition:opacity .8s cubic-bezier(.19,1,.22,1),transform .8s cubic-bezier(.19,1,.22,1),filter .7s ease-out;}
+  .cyn-stag.in>*{opacity:1;transform:none;filter:blur(0);}
+  .cyn-stag.in>*:nth-child(1){transition-delay:.05s}.cyn-stag.in>*:nth-child(2){transition-delay:.17s}
+  .cyn-stag.in>*:nth-child(3){transition-delay:.29s}.cyn-stag.in>*:nth-child(4){transition-delay:.41s}
+  .cyn-stag.in>*:nth-child(5){transition-delay:.53s}.cyn-stag.in>*:nth-child(6){transition-delay:.65s}
+  .cyn-stag.in>*:nth-child(7){transition-delay:.77s}.cyn-stag.in>*:nth-child(8){transition-delay:.89s}
+
+  /* 2b. MISE AU POINT sur les blocs seuls (titres de section, encadrés) */
+  .lp-rv{filter:blur(6px);transition:opacity .8s cubic-bezier(.19,1,.22,1),transform .8s cubic-bezier(.19,1,.22,1),filter .7s ease-out;}
+  .lp-rv.in{filter:blur(0);}
+
+  /* 2c. LES NUMÉROS s'allument avant leur texte (donne du rythme) */
+  .lp-so b{opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s cubic-bezier(.19,1,.22,1);}
+  .cyn-stag.in .lp-so b{opacity:1;transform:none;transition-delay:.1s;}
+
+  /* 2d. PARAGRAPHES ligne par ligne (l'œil suit, on lit sans y penser) */
+  .cyn-lines{overflow:hidden;}
+  .cyn-lines>i{display:block;font-style:normal;transform:translateY(102%);opacity:0;
+    transition:transform .85s cubic-bezier(.19,1,.22,1),opacity .6s ease;}
+  .cyn-lines.in>i{transform:none;opacity:1;}
+  .cyn-lines.in>i:nth-child(2){transition-delay:.09s}
+  .cyn-lines.in>i:nth-child(3){transition-delay:.18s}
+
+  /* 4. EFFET PROJECTEUR : la carte survolée s'illumine, les autres s'estompent */
+  .cyn-spot:hover>*{opacity:.55;filter:saturate(.75);transition:opacity .35s ease,filter .35s ease;}
+  .cyn-spot>*:hover{opacity:1!important;filter:none!important;}
 
   /* 3. L'AIGUILLE TROUVE LE NORD : l'étoile se stabilise en arrivant */
   .lp-orb{transform:rotate(-130deg) scale(.8);opacity:0;transition:transform 1.3s cubic-bezier(.16,1.1,.24,1),opacity .6s ease;}
@@ -1614,9 +1652,12 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
      Certaines personnes ont des vertiges avec le mouvement. On les écoute. */
   @media(prefers-reduced-motion:reduce){
     .lp-rv,.cyn-stag>*,.lp-hero .lp-lead,.lp-hero .lp-hcta,.lp-hero .lp-reassure,
-    .lp-hero .lp-eyebrow,.lp-hero .lp-chatcard,.lp-orb,.lp-hero h1 .ln i{
-      opacity:1!important;transform:none!important;transition:none!important;}
+    .lp-hero .lp-eyebrow,.lp-hero .lp-chatcard,.lp-orb,.lp-hero h1 .ln i,
+    .cyn-lines>i,.lp-so b{
+      opacity:1!important;transform:none!important;transition:none!important;filter:none!important;}
     .lp-card:hover,.lp-step:hover,.lp-btn:hover{transform:none!important;}
+    .cyn-spot:hover>*{opacity:1!important;filter:none!important;}
+    .lp-aura{transform:none!important;}
   }
   .lp-sec{padding:78px 0;} .lp-sechead{text-align:center;max-width:640px;margin:0 auto 46px;}
   .lp-sechead h2{font-size:2.4rem;margin-bottom:13px;} .lp-sechead p{color:var(--c-muted);font-size:1.06rem;}
@@ -1706,7 +1747,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 </style>
 
 <div class="lp">
-<div class="lp-aura"><div class="lp-blob lp-b1"></div><div class="lp-blob lp-b2"></div><div class="lp-blob lp-b3"></div></div>
+<div class="lp-aura"><div class="lp-blob lp-b1"></div><div class="lp-blob lp-b2"></div><div class="lp-blob lp-b3"></div><div class="lp-blob lp-b4"></div><div class="lp-blob lp-b5"></div><div class="lp-blob lp-b6"></div><div class="lp-blob lp-b7"></div><div class="lp-blob lp-b8"></div><div class="lp-blob lp-b9"></div></div>
 <div class="lp-content">
 
   <nav class="lp-nav lp-wrap" style="max-width:none;padding-left:max(24px,calc((100% - 1140px)/2 + 24px));padding-right:max(24px,calc((100% - 1140px)/2 + 24px));">
@@ -1743,7 +1784,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 
   <section class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Le premier pas, <span class="lp-pop">sans attendre trois mois</span></h2><p>Un bilan de compétences en Suisse, c'est 280 CHF la séance et près de 2 000 CHF au total, étalés sur trois mois. viamia est gratuit, mais réservé aux 40 ans et plus. Entre les deux, il n'y avait rien. Cynthia, c'est ce rien-là qu'elle vient combler.</p></div>
-    <div class="lp-cards cyn-stag">
+    <div class="lp-cards cyn-stag cyn-spot">
       <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Immédiat</h3><p>Disponible 24/7, sans rendez-vous ni liste d'attente. Vous commencez quand l'envie est là.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Une vraie conversation</h3><p>Cynthia vous écoute et rebondit sur vos mots. Pas une grille de cases à cocher.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic g">🎯</div><h3>Concret</h3><p>Vous repartez avec des métiers qui vous ressemblent et un premier pas à faire cette semaine.</p></div>
@@ -1753,7 +1794,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 
   <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:66px 40px;">
     <div class="lp-sechead lp-rv"><h2>Comment ça marche</h2><p>Trois étapes, et vous savez par quoi commencer.</p></div>
-    <div class="lp-steps cyn-stag">
+    <div class="lp-steps cyn-stag cyn-spot">
       <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Vous racontez</h3><p>Votre parcours, ce qui vous pèse, ce que vous savez faire. Sans jugement, à votre rythme.</p></div>
       <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle creuse</h3><p>Cynthia pose les questions qu'un conseiller poserait. Elle relève ce que vous ne voyez plus.</p></div>
       <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Vous repartez avec un plan</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et par quoi commencer.</p></div>
@@ -1794,7 +1835,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
 
     <!-- SOMMAIRE : les 8 sections réelles du rapport -->
-    <div class="lp-somm cyn-stag">
+    <div class="lp-somm cyn-stag cyn-spot">
       <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
       <div class="lp-so"><b>02</b>Qui vous êtes<span>Votre portrait et votre profil de personnalité chiffré</span></div>
       <div class="lp-so"><b>03</b>Ce qui vous porte<span>Vos valeurs, vos moteurs, votre environnement idéal</span></div>
@@ -1843,7 +1884,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section id="lp-difference" class="lp-sec"><div class="lp-wrap"><div class="lp-band lp-rv">
     <h2>Ce n'est pas vous, <span class="lp-accent">le problème.</span></h2>
     <p>Si vous ne savez pas où vous en êtes, ce n'est pas un manque de volonté. C'est qu'on ne nous apprend jamais à se connaître sur le marché du travail, et que peu de gens prennent vraiment le temps de vous guider. Cynthia prend ce temps.</p>
-    <div class="lp-row cyn-stag">
+    <div class="lp-row cyn-stag cyn-spot">
       <div class="lp-pill"><b>Vous trouver</b>Mettre des mots sur ce que vous savez faire, et sur ce qui vous fait vraiment avancer.</div>
       <div class="lp-pill"><b>Vous guider</b>Vous montrer les chemins possibles ici, et par lequel commencer.</div>
       <div class="lp-pill us"><b>Sortir la meilleure version de vous</b>Dans le marché professionnel suisse, avec vos vraies compétences.</div>
@@ -1858,12 +1899,12 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       <div class="lp-amount"><span data-cyn-count="49">49</span>.–<small> CHF</small></div>
       <div class="lp-psub">Un paiement unique · sans engagement</div>
       <ul>
-        <li><i>✓</i> Une conversation complète avec Cynthia</li>
-        <li><i>✓</i> Un rapport de <b>8 sections</b> à télécharger et garder</li>
-        <li><i>✓</i> Votre portrait, vos moteurs, vos savoir-faire et savoir-être</li>
-        <li><i>✓</i> <b>Des phrases prêtes à coller dans votre CV</b> et votre pitch de reconversion</li>
-        <li><i>✓</i> 5 métiers suisses : salaires en CHF, formations chiffrées, financements</li>
-        <li><i>✓</i> Votre plan sur 6 mois et vos premiers pas concrets</li>
+        <li><i>✓</i><span>Une conversation complète avec Cynthia</span></li>
+        <li><i>✓</i><span>Un rapport de <b>8 sections</b> à télécharger et garder</span></li>
+        <li><i>✓</i><span>Votre portrait, vos moteurs, vos savoir-faire et savoir-être</span></li>
+        <li><i>✓</i><span><b>Des phrases prêtes à coller dans votre CV</b> et votre pitch de reconversion</span></li>
+        <li><i>✓</i><span>5 métiers suisses : salaires en CHF, formations chiffrées, financements</span></li>
+        <li><i>✓</i><span>Votre plan sur 6 mois et vos premiers pas concrets</span></li>
       </ul>
       <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon parcours →</button>
     </div></div>
@@ -1931,6 +1972,54 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   try{
     var hero=document.querySelector('#page-landing .lp-hero');
     if(hero){ if(_calme){ hero.classList.add('lit'); } else { setTimeout(function(){ hero.classList.add('lit'); },90); } }
+  }catch(e){}
+
+  // Découpe les paragraphes clés en lignes, pour qu'elles montent l'une après
+  // l'autre. On mesure les vraies lignes affichées, donc ça s'adapte au mobile.
+  try{
+    if(!_calme){
+      document.querySelectorAll('#page-landing .lp-band>p, #page-landing .lp-sechead>p').forEach(function(p){
+        if(p.querySelector('i')) return;
+        var mots=p.textContent.trim().split(/\s+/);
+        if(mots.length<6) return;
+        // on reconstruit mot par mot pour détecter les changements de ligne
+        p.innerHTML='';
+        var probe=[];
+        mots.forEach(function(m,i){ var s=document.createElement('span'); s.textContent=m+(i<mots.length-1?' ':''); p.appendChild(s); probe.push(s); });
+        var lignes=[], cur=[], top=null;
+        probe.forEach(function(s){
+          var t=Math.round(s.offsetTop);
+          if(top===null) top=t;
+          if(t!==top){ lignes.push(cur); cur=[]; top=t; }
+          cur.push(s.textContent);
+        });
+        if(cur.length) lignes.push(cur);
+        if(lignes.length<2 || lignes.length>4){ p.textContent=mots.join(' '); return; }
+        p.innerHTML='';
+        p.classList.add('cyn-lines');
+        lignes.forEach(function(l){ var i2=document.createElement('i'); i2.textContent=l.join(''); p.appendChild(i2); });
+        io.observe(p);
+      });
+    }
+  }catch(e){}
+
+  // Profondeur douce au défilement : les auras bougent un peu moins vite que
+  // la page. Ça crée un relief, comme plusieurs plans dans une image.
+  try{
+    if(!_calme){
+      var aura=document.querySelector('#page-landing .lp-aura');
+      var scroller=document.getElementById('page-landing');
+      if(aura && scroller){
+        var tick=false;
+        scroller.addEventListener('scroll', function(){
+          if(tick) return; tick=true;
+          requestAnimationFrame(function(){
+            aura.style.transform='translateY('+(scroller.scrollTop*0.12)+'px)';
+            tick=false;
+          });
+        }, {passive:true});
+      }
+    }
   }catch(e){}
 
   // Les chiffres comptent quand on arrive dessus (l'écart de prix se ressent)
