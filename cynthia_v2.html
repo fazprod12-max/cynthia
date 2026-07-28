@@ -2102,6 +2102,11 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         var surScroll=function(){ if(!attente){ attente=true; requestAnimationFrame(peindre); } };
         window.addEventListener('scroll',surScroll,{passive:true});
         window.addEventListener('resize',surScroll,{passive:true});
+        // Un onglet ouvert en arrière-plan est gelé par le navigateur (aucune image calculée).
+        // Au retour sur l'onglet, et une fois les polices chargées, on repeint sans attendre un scroll.
+        document.addEventListener('visibilitychange',function(){ if(!document.hidden) surScroll(); });
+        window.addEventListener('load',surScroll);
+        if(document.fonts && document.fonts.ready) document.fonts.ready.then(surScroll).catch(function(){});
         peindre();
       }
     }
