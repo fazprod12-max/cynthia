@@ -1569,8 +1569,55 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-chip{background:#fff;border:1.5px solid var(--c-line);border-radius:100px;padding:7px 13px;font-size:.82rem;font-weight:600;color:var(--c-emerald-d);opacity:0;transform:scale(.9);animation:lppop2 .4s ease forwards;}
   .lp-chip.hot{background:var(--c-coral-soft);border-color:transparent;color:#C6402F;}
   @keyframes lppop2{to{opacity:1;transform:scale(1);}}
-  .lp-rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);}
+  /* ══════════════════════════════════════════════════════════════════
+     SYSTÈME D'ANIMATION — sobre, déclenché une seule fois à l'arrivée.
+     Rien ne bouge en permanence : le site est calme au repos.
+     Courbe "cyn-ease" = décélération douce avec une fin posée.
+  ══════════════════════════════════════════════════════════════════ */
+  .lp-rv{opacity:0;transform:translateY(26px);transition:opacity .75s cubic-bezier(.19,1,.22,1),transform .75s cubic-bezier(.19,1,.22,1);}
   .lp-rv.in{opacity:1;transform:none;}
+
+  /* 1. TITRE ligne par ligne : chaque ligne monte depuis le bas */
+  /* padding + marge négative : évite que les jambes des lettres (q, j, p) soient coupées */
+  .lp-hero h1 .ln{display:block;overflow:hidden;padding-bottom:.14em;margin-bottom:-.14em;}
+  .lp-hero h1 .ln i{display:block;font-style:normal;transform:translateY(105%);transition:transform .9s cubic-bezier(.19,1,.22,1);}
+  .lp-hero.lit h1 .ln i{transform:translateY(0);}
+  .lp-hero.lit h1 .ln:nth-child(2) i{transition-delay:.12s;}
+  /* le reste du hero suit, décalé */
+  .lp-hero .lp-lead,.lp-hero .lp-hcta,.lp-hero .lp-reassure,.lp-hero .lp-eyebrow{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.19,1,.22,1),transform .7s cubic-bezier(.19,1,.22,1);}
+  .lp-hero.lit .lp-eyebrow{opacity:1;transform:none;transition-delay:.05s}
+  .lp-hero.lit .lp-lead{opacity:1;transform:none;transition-delay:.3s}
+  .lp-hero.lit .lp-hcta{opacity:1;transform:none;transition-delay:.42s}
+  .lp-hero.lit .lp-reassure{opacity:1;transform:none;transition-delay:.52s}
+  .lp-hero .lp-chatcard{opacity:0;transform:translateY(24px) scale(.985);transition:opacity .9s cubic-bezier(.19,1,.22,1),transform .9s cubic-bezier(.19,1,.22,1);transition-delay:.25s}
+  .lp-hero.lit .lp-chatcard{opacity:1;transform:none;}
+
+  /* 2. DÉCALAGE : les enfants d'un groupe arrivent l'un après l'autre */
+  .cyn-stag>*{opacity:0;transform:translateY(20px);transition:opacity .65s cubic-bezier(.19,1,.22,1),transform .65s cubic-bezier(.19,1,.22,1);}
+  .cyn-stag.in>*{opacity:1;transform:none;}
+  .cyn-stag.in>*:nth-child(1){transition-delay:.04s}.cyn-stag.in>*:nth-child(2){transition-delay:.12s}
+  .cyn-stag.in>*:nth-child(3){transition-delay:.2s}.cyn-stag.in>*:nth-child(4){transition-delay:.28s}
+  .cyn-stag.in>*:nth-child(5){transition-delay:.36s}.cyn-stag.in>*:nth-child(6){transition-delay:.44s}
+
+  /* 3. L'AIGUILLE TROUVE LE NORD : l'étoile se stabilise en arrivant */
+  .lp-orb{transform:rotate(-130deg) scale(.8);opacity:0;transition:transform 1.3s cubic-bezier(.16,1.1,.24,1),opacity .6s ease;}
+  .lp-hero.lit .lp-orb,.in .lp-orb,.lp-orb.in{transform:none;opacity:1;}
+
+  /* 5. CARTES : soulèvement avec un léger rebond */
+  .lp-card,.lp-step,.lp-pill{transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s;}
+  .lp-card:hover,.lp-step:hover{transform:translateY(-5px);box-shadow:0 16px 32px -14px rgba(14,42,36,.26);}
+  .lp-btn{transition:transform .22s cubic-bezier(.34,1.4,.5,1),box-shadow .28s;}
+  .lp-btn:hover{transform:translateY(-2px);}
+  .lp-btn:active{transform:translateY(0) scale(.975);}
+
+  /* ACCESSIBILITÉ : si la personne a demandé moins d'animations, tout se fige.
+     Certaines personnes ont des vertiges avec le mouvement. On les écoute. */
+  @media(prefers-reduced-motion:reduce){
+    .lp-rv,.cyn-stag>*,.lp-hero .lp-lead,.lp-hero .lp-hcta,.lp-hero .lp-reassure,
+    .lp-hero .lp-eyebrow,.lp-hero .lp-chatcard,.lp-orb,.lp-hero h1 .ln i{
+      opacity:1!important;transform:none!important;transition:none!important;}
+    .lp-card:hover,.lp-step:hover,.lp-btn:hover{transform:none!important;}
+  }
   .lp-sec{padding:78px 0;} .lp-sechead{text-align:center;max-width:640px;margin:0 auto 46px;}
   .lp-sechead h2{font-size:2.4rem;margin-bottom:13px;} .lp-sechead p{color:var(--c-muted);font-size:1.06rem;}
   .lp-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
@@ -1660,7 +1707,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section class="lp-hero"><div class="lp-wrap lp-hgrid">
     <div>
       <span class="lp-eyebrow"><span class="lp-live"></span> Votre premier pas, maintenant</span>
-      <h1>Vous savez que ça doit changer.<br><span class="lp-accent">Reste à savoir vers quoi.</span></h1>
+      <h1><span class="ln"><i>Vous savez que ça doit changer.</i></span><span class="ln"><i class="lp-accent">Reste à savoir vers quoi.</i></span></h1>
       <p class="lp-lead">Pas un test de personnalité. Une vraie conversation, qui finit par un rapport que vous gardez. Disponible maintenant, sans rendez-vous.</p>
       <div class="lp-hcta">
         <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer maintenant →</button>
@@ -1681,7 +1728,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 
   <section class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Le premier pas, <span class="lp-pop">sans attendre trois mois</span></h2><p>Un bilan de compétences en Suisse, c'est 280 CHF la séance et près de 2 000 CHF au total, étalés sur trois mois. viamia est gratuit, mais réservé aux 40 ans et plus. Entre les deux, il n'y avait rien. Cynthia, c'est ce rien-là qu'elle vient combler.</p></div>
-    <div class="lp-cards">
+    <div class="lp-cards cyn-stag">
       <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Immédiat</h3><p>Disponible 24/7, sans rendez-vous ni liste d'attente. Vous commencez quand l'envie est là.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Une vraie conversation</h3><p>Cynthia vous écoute et rebondit sur vos mots. Pas une grille de cases à cocher.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic g">🎯</div><h3>Concret</h3><p>Vous repartez avec des métiers qui vous ressemblent et un premier pas à faire cette semaine.</p></div>
@@ -1691,7 +1738,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 
   <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:66px 40px;">
     <div class="lp-sechead lp-rv"><h2>Comment ça marche</h2><p>Trois étapes, une vingtaine de minutes, une direction claire.</p></div>
-    <div class="lp-steps">
+    <div class="lp-steps cyn-stag">
       <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Vous racontez</h3><p>Votre parcours, ce qui vous pèse, ce que vous savez faire. Sans jugement, à votre rythme.</p></div>
       <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle creuse</h3><p>Cynthia pose les questions qu'un conseiller poserait. Elle relève ce que vous ne voyez plus.</p></div>
       <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Vous repartez avec un plan</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et par quoi commencer.</p></div>
@@ -1760,7 +1807,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section id="lp-difference" class="lp-sec"><div class="lp-wrap"><div class="lp-band lp-rv">
     <h2>Et si vous n'entrez <span class="lp-accent">dans aucune case&nbsp;?</span></h2>
     <p>viamia est une belle prestation, gratuite et sérieuse. Mais elle est réservée aux 40 ans et plus, et elle n'est pas ouverte aux personnes au chômage, à l'AI ou à l'aide sociale. Beaucoup de gens se retrouvent donc sans rien. C'est pour eux, d'abord, que Cynthia existe.</p>
-    <div class="lp-row">
+    <div class="lp-row cyn-stag">
       <div class="lp-pill"><b>Orientation publique</b>Gratuite et sérieuse · dès 40 ans · sur rendez-vous · pas ouverte à tous</div>
       <div class="lp-pill us"><b>Cynthia</b>Tout de suite · à tout âge · sans conditions d'accès</div>
       <div class="lp-pill"><b>Bilan privé</b>Complet et humain · 280 CHF la séance · près de 2 000 CHF sur 3 mois</div>
@@ -1772,7 +1819,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     <div class="lp-price-wrap lp-rv"><div class="lp-price">
       <span class="lp-ptag">Le plus choisi</span>
       <h3>Parcours complet</h3>
-      <div class="lp-amount">49.–<small> CHF</small></div>
+      <div class="lp-amount"><span data-cyn-count="49">49</span>.–<small> CHF</small></div>
       <div class="lp-psub">Un paiement unique · sans engagement</div>
       <ul>
         <li><i>✓</i> Une conversation complète avec Cynthia</li>
@@ -1789,7 +1836,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section id="lp-franc" class="lp-sec"><div class="lp-wrap"><div class="lp-band lp-rv">
     <h2>On préfère <span class="lp-accent">vous le dire franchement</span></h2>
     <p>Vous allez nous confier des choses personnelles. Autant commencer par être clairs.</p>
-    <div class="lp-row" style="margin-top:26px;">
+    <div class="lp-row cyn-stag" style="margin-top:26px;">
       <div class="lp-pill"><b>Oui, Cynthia est une intelligence artificielle</b>C'est pour ça qu'elle est là ce soir à 23h, sans rendez-vous, sans liste d'attente, et sans les 2 000 CHF d'un bilan.</div>
       <div class="lp-pill"><b>Elle vous dira ce que vos proches n'osent pas</b>Votre entourage vous encourage, c'est normal. Cynthia, elle, regarde vos réponses en face. Si une piste ne tient pas, elle le dit maintenant. Pas dans deux ans.</div>
       <div class="lp-pill"><b>Vous n'arriverez plus jamais en disant « je ne sais pas »</b>Chez un conseiller, à l'ORP ou en entretien, vous saurez enfin nommer ce que vous savez faire et vers quoi vous allez. C'est là que ça bascule.</div>
@@ -1827,7 +1874,48 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     function typ(){var d=document.createElement('div');d.className='lp-typing';d.innerHTML='<i></i><i></i><i></i>';return d;}
     (async function(){for(var i=0;i<script.length;i++){var m=script[i];if(m.t==='ai'){var d=typ();stream.appendChild(d);await wait(850);d.remove();}else if(m.t==='me'){await wait(450);}stream.appendChild(bub(m));await wait(m.t==='chips'?400:1150);}})();
   }
-  try{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14});document.querySelectorAll('#page-landing .lp-rv').forEach(function(el){io.observe(el);});}catch(e){}
+  /* ═══════════════════════════════════════════════════════════════════
+     ANIMATIONS — déclenchées une seule fois, à l'arrivée de l'élément.
+     Si la personne a demandé moins d'animations (réglage système), on
+     affiche tout immédiatement sans aucun mouvement.
+  ═══════════════════════════════════════════════════════════════════ */
+  var _calme = false;
+  try { _calme = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){}
+
+  // Révélations au scroll (blocs + groupes en cascade)
+  try{
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{threshold:.14, rootMargin:'0px 0px -6% 0px'});
+    document.querySelectorAll('#page-landing .lp-rv, #page-landing .cyn-stag').forEach(function(el){ io.observe(el); });
+  }catch(e){}
+
+  // Le hero s'allume dès l'ouverture : titre ligne par ligne, puis le reste
+  try{
+    var hero=document.querySelector('#page-landing .lp-hero');
+    if(hero){ if(_calme){ hero.classList.add('lit'); } else { setTimeout(function(){ hero.classList.add('lit'); },90); } }
+  }catch(e){}
+
+  // Les chiffres comptent quand on arrive dessus (l'écart de prix se ressent)
+  try{
+    var cio=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(!e.isIntersecting) return;
+        var el=e.target, cible=parseInt(el.getAttribute('data-cyn-count'),10)||0;
+        cio.unobserve(el);
+        if(_calme){ el.textContent=cible.toLocaleString('fr-CH'); return; }
+        var t0=null, duree=1100;
+        function pas(ts){
+          if(!t0) t0=ts;
+          var p=Math.min((ts-t0)/duree,1), e2=1-Math.pow(1-p,3);
+          el.textContent=Math.round(cible*e2).toLocaleString('fr-CH');
+          if(p<1) requestAnimationFrame(pas);
+        }
+        requestAnimationFrame(pas);
+      });
+    },{threshold:.5});
+    document.querySelectorAll('[data-cyn-count]').forEach(function(el){ if(!_calme) el.textContent='0'; cio.observe(el); });
+  }catch(e){}
 })();
 </script>
 
