@@ -1655,6 +1655,21 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-rfoot .lp-fn{font-size:.92rem;color:var(--c-muted);} .lp-rfoot .lp-fn b{color:var(--c-ink);}
   .lp-band{background:linear-gradient(135deg,var(--c-emerald-soft),var(--c-coral-soft));border-radius:34px;padding:56px 44px;text-align:center;}
   .lp-band h2{font-size:2rem;margin-bottom:16px;} .lp-band>p{color:var(--c-ink);font-size:1.1rem;max-width:62ch;margin:0 auto;opacity:.82;}
+  /* Sommaire du rapport : les 8 sections, présentées comme un vrai dossier */
+  .lp-somm{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:34px;}
+  .lp-so{background:#fff;border:1px solid var(--c-line);border-radius:14px;padding:16px 16px 15px;font-family:'Space Grotesk';font-weight:600;font-size:.95rem;line-height:1.25;transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s;}
+  .lp-so:hover{transform:translateY(-4px);box-shadow:0 14px 28px -14px rgba(14,42,36,.25);}
+  .lp-so b{display:block;font-family:'Space Grotesk';font-size:.78rem;color:var(--c-emerald-d);letter-spacing:.08em;margin-bottom:8px;}
+  .lp-so span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.82rem;color:var(--c-muted);margin-top:6px;line-height:1.45;}
+  .lp-so.hot{border-color:var(--c-emerald);background:var(--c-emerald-soft);}
+  .lp-so.hot b{color:var(--c-emerald-d);}
+  @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
+  /* Extrait réel : puces CV + pitch */
+  .lp-cvb{background:var(--c-emerald-soft);border-radius:10px;padding:11px 14px;font-size:.9rem;margin-bottom:8px;display:flex;gap:9px;}
+  .lp-cvb::before{content:"✓";color:var(--c-emerald-d);font-weight:700;flex-shrink:0;}
+  .lp-pitch{background:var(--c-cream2);border-left:3px solid var(--c-coral);border-radius:0 10px 10px 0;padding:13px 16px;font-size:.92rem;font-style:italic;line-height:1.6;}
+
   /* Tableau comparatif honnête (IA généraliste vs Cynthia) */
   .lp-vsrow{display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid var(--c-line);font-size:.92rem;}
   .lp-vsrow>div{padding:15px 16px;display:flex;align-items:center;}
@@ -1777,8 +1792,21 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 
   <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
+
+    <!-- SOMMAIRE : les 8 sections réelles du rapport -->
+    <div class="lp-somm cyn-stag">
+      <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
+      <div class="lp-so"><b>02</b>Qui vous êtes<span>Votre portrait et votre profil de personnalité chiffré</span></div>
+      <div class="lp-so"><b>03</b>Ce qui vous porte<span>Vos valeurs, vos moteurs, votre environnement idéal</span></div>
+      <div class="lp-so"><b>04</b>Savoir-faire et savoir-être<span>Ce que vous savez faire, et comment vous le faites</span></div>
+      <div class="lp-so hot"><b>05</b>Booster votre CV<span>Des phrases prêtes à coller et votre pitch de reconversion</span></div>
+      <div class="lp-so"><b>06</b>Vos métiers suisses<span>Salaires en CHF, formations chiffrées, où ça recrute</span></div>
+      <div class="lp-so"><b>07</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
+      <div class="lp-so"><b>08</b>Vos ressources en Suisse<span>Qui finance quoi, et où frapper à la porte</span></div>
+    </div>
+
     <div class="lp-report lp-rv">
-      <div class="lp-rhead"><div><div class="lp-rtitle">Rapport d'orientation</div><div class="lp-rsub">Exemple · PDF, 4 pages · à garder</div></div><span class="lp-rbadge">100 % personnalisé</span></div>
+      <div class="lp-rhead"><div><div class="lp-rtitle">Rapport d'orientation</div><div class="lp-rsub">Exemple · 8 sections · à télécharger et garder</div></div><span class="lp-rbadge">100 % personnalisé</span></div>
       <div class="lp-rgrid">
         <div>
           <div class="lp-rlabel"><span class="lp-k"></span> Profil de personnalité · approche Big Five</div>
@@ -1800,7 +1828,15 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         <div class="lp-metier"><div><div class="lp-mt">Formateur·rice d'adultes</div><div class="lp-ms">Formation · brevet fédéral (FSEA)</div></div><div class="lp-mr"><div class="lp-sal">CHF 85–105k</div><span class="lp-tension s">Demande stable</span></div></div>
         <div class="lp-metier"><div><div class="lp-mt">Spécialiste en ressources humaines</div><div class="lp-ms">RH · certificat / brevet RH</div></div><div class="lp-mr"><div class="lp-sal">CHF 90–115k</div><span class="lp-tension p">Marché porteur</span></div></div>
       </div>
-      <div class="lp-rfoot"><div class="lp-fn"><b>+ Votre plan d'action</b> et vos premiers pas concrets, semaine par semaine.</div><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
+      <!-- EXTRAIT RÉEL : ce que personne d'autre ne donne -->
+      <div class="lp-rfull">
+        <div class="lp-rlabel"><span class="lp-k"></span> Prêt à coller dans votre CV ou LinkedIn</div>
+        <div class="lp-cvb">Formation et intégration de 15+ nouvelles collaboratrices, taux de rétention de 90%</div>
+        <div class="lp-cvb">Refonte du système de planification : réduction des retards de 40% sur six mois</div>
+        <div class="lp-rlabel" style="margin-top:16px;"><span class="lp-k"></span> Votre pitch de reconversion</div>
+        <div class="lp-pitch">« Après douze ans à organiser un cabinet médical et à former les nouvelles arrivantes, je veux faire de l'accompagnement mon métier, pas seulement la partie invisible de mon poste. »</div>
+      </div>
+      <div class="lp-rfoot"><div class="lp-fn"><b>Et aussi :</b> le coût réel de chaque formation en CHF, qui la finance, et votre plan semaine par semaine.</div><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
     </div>
   </div></section>
 
@@ -1823,10 +1859,11 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       <div class="lp-psub">Un paiement unique · sans engagement</div>
       <ul>
         <li><i>✓</i> Une conversation complète avec Cynthia</li>
-        <li><i>✓</i> Votre profil : forces, valeurs, moteurs</li>
-        <li><i>✓</i> Vos métiers alignés sur le marché suisse</li>
-        <li><i>✓</i> Un rapport détaillé à télécharger</li>
-        <li><i>✓</i> Vos premiers pas concrets</li>
+        <li><i>✓</i> Un rapport de <b>8 sections</b> à télécharger et garder</li>
+        <li><i>✓</i> Votre portrait, vos moteurs, vos savoir-faire et savoir-être</li>
+        <li><i>✓</i> <b>Des phrases prêtes à coller dans votre CV</b> et votre pitch de reconversion</li>
+        <li><i>✓</i> 5 métiers suisses : salaires en CHF, formations chiffrées, financements</li>
+        <li><i>✓</i> Votre plan sur 6 mois et vos premiers pas concrets</li>
       </ul>
       <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon parcours →</button>
     </div></div>
@@ -2207,10 +2244,12 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       <p class="conf-sub">Bravo. Vous venez de faire ce que peu osent : prendre 20 minutes pour vraiment réfléchir à votre avenir. Votre rapport est en cours de génération.</p>
       <div class="conf-report">
         <h4>📄 Votre rapport contient</h4>
-        <div class="ri"><span class="rc">✓</span><p>Votre profil de personnalité (approche Big Five), vos savoir-faire et savoir-être</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Le récapitulatif de votre parcours et votre portrait, avec votre profil de personnalité chiffré</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Vos moteurs, votre environnement de travail idéal, vos savoir-faire et savoir-être</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Des phrases prêtes à coller dans votre CV, et votre pitch de reconversion</p></div>
         <div class="ri"><span class="rc">✓</span><p>5 pistes métier (3 principales + 2 à explorer) avec la raison de chaque choix</p></div>
-        <div class="ri"><span class="rc">✓</span><p>Pour chaque piste : formation, salaire suisse estimé et pistes de financement</p></div>
-        <div class="ri"><span class="rc">✓</span><p>Plan d'action sur 6 mois, étape par étape, avec ressources et financements</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Pour chaque piste : la formation, sa durée, son coût en CHF et qui la finance</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Plan d'action sur 6 mois, étape par étape, et vos ressources en Suisse</p></div>
       </div>
       <div id="conf-loading" style="display:none;text-align:center;padding:20px 0;">
         <div style="display:inline-flex;align-items:center;gap:12px;background:var(--c-emerald-soft);border:1px solid transparent;border-radius:12px;padding:14px 24px;">
