@@ -1118,7 +1118,7 @@ footer{
    BETA BANNER
 ════════════════════════════════════════ */
 #beta-banner{
-  position:fixed;top:0;left:0;right:0;z-index:10000;
+  position:relative;z-index:10000;
   background:linear-gradient(90deg,#7A2020,#9B2C2C,#7A2020);
   border-bottom:2px solid #E0A84E;
   padding:9px 16px 9px 48px;
@@ -1130,7 +1130,7 @@ footer{
 #beta-banner .bb-pill{background:rgba(200,151,74,.2);border:1px solid #C8974A;border-radius:100px;padding:2px 10px;font-size:11px;font-weight:800;color:#C8974A;white-space:nowrap;}
 #beta-banner .bb-close{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(250,243,224,.15);border:1px solid rgba(250,243,224,.3);border-radius:6px;color:#fff;cursor:pointer;padding:2px 8px;font-size:13px;font-weight:900;line-height:1.4;transition:.15s;}
 #beta-banner .bb-close:hover{background:rgba(250,243,224,.3);}
-body.beta-open{padding-top:40px;}
+body.beta-open{padding-top:0;} /* la bannière n'est plus fixe : elle prend sa place normale, plus besoin de réserver l'espace */
 body.beta-open .demo-bar{top:40px;}
 body.beta-open .gnav{top:calc(40px + 58px);}
 body.beta-open .gnav-mobile{top:calc(40px + 88px);}
@@ -1776,30 +1776,6 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     </div>
   </div></section>
 
-  <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:48px 40px;">
-    <div class="lp-sechead lp-rv"><h2>Comment ça marche</h2><p>Trois étapes, et vous savez par quoi commencer.</p></div>
-    <div class="lp-steps cyn-stag cyn-spot">
-      <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Vous racontez</h3><p>Votre parcours, ce qui vous pèse, ce que vous savez faire. Sans jugement, à votre rythme.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle creuse</h3><p>Cynthia pose les questions qu'un conseiller poserait. Elle relève ce que vous ne voyez plus.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Vous repartez avec un plan</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et par quoi commencer.</p></div>
-    </div>
-  </div></div></section>
-
-  <!-- ── COMPARAISON HONNÊTE avec une IA généraliste ── -->
-  <section id="lp-vs" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>« Je pourrais demander <span class="lp-pop">à une IA gratuite</span> »</h2><p>Vous pouvez, et parfois ça aide. Voici honnêtement ce qui change.</p></div>
-    <div class="lp-rv" style="max-width:760px;margin:0 auto;border:1px solid var(--c-line);border-radius:18px;overflow:hidden;background:#fff;">
-      <div class="lp-vshead" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0;font-family:'Space Grotesk';font-weight:600;font-size:.82rem;background:var(--c-ink);color:#fff;">
-        <div style="padding:14px 16px;"></div>
-        <div style="padding:14px 10px;text-align:center;">IA généraliste</div>
-        <div style="padding:14px 10px;text-align:center;background:var(--c-emerald-d);">Cynthia</div>
-      </div>
-      <div class="lp-vsrow"><div>Connaît le CFC, le brevet fédéral, l'article 32</div><div class="lp-vsno">Souvent confondu avec le système français</div><div class="lp-vsyes">Oui, c'est sa base</div></div>
-      <div class="lp-vsrow"><div>Qui mène l'échange</div><div class="lp-vsno">Vous, si vous savez quoi demander</div><div class="lp-vsyes">Elle, comme un conseiller</div></div>
-      <div class="lp-vsrow"><div>Ce qu'il vous reste après</div><div class="lp-vsno">Une conversation qui se perd</div><div class="lp-vsyes">Un rapport que vous gardez</div></div>
-    </div>
-  </div></section>
-
   <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
 
@@ -1843,6 +1819,30 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         <div class="lp-pitch">« Après douze ans à organiser un cabinet médical et à former les nouvelles arrivantes, je veux faire de l'accompagnement mon métier, pas seulement la partie invisible de mon poste. »</div>
       </div>
       <div class="lp-rfoot"><div class="lp-fn"><b>Et aussi :</b> le coût réel de chaque formation en CHF, qui la finance, et votre plan semaine par semaine.</div><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
+    </div>
+  </div></section>
+
+  <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:48px 40px;">
+    <div class="lp-sechead lp-rv"><h2>Comment ça marche</h2><p>Trois étapes, et vous savez par quoi commencer.</p></div>
+    <div class="lp-steps cyn-stag cyn-spot">
+      <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Vous racontez</h3><p>Votre parcours, ce qui vous pèse, ce que vous savez faire. Sans jugement, à votre rythme.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle creuse</h3><p>Cynthia pose les questions qu'un conseiller poserait. Elle relève ce que vous ne voyez plus.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Vous repartez avec un plan</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et par quoi commencer.</p></div>
+    </div>
+  </div></div></section>
+
+  <!-- ── COMPARAISON HONNÊTE avec une IA généraliste ── -->
+  <section id="lp-vs" class="lp-sec"><div class="lp-wrap">
+    <div class="lp-sechead lp-rv"><h2>« Je pourrais demander <span class="lp-pop">à une IA gratuite</span> »</h2><p>Vous pouvez, et parfois ça aide. Voici honnêtement ce qui change.</p></div>
+    <div class="lp-rv" style="max-width:760px;margin:0 auto;border:1px solid var(--c-line);border-radius:18px;overflow:hidden;background:#fff;">
+      <div class="lp-vshead" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0;font-family:'Space Grotesk';font-weight:600;font-size:.82rem;background:var(--c-ink);color:#fff;">
+        <div style="padding:14px 16px;"></div>
+        <div style="padding:14px 10px;text-align:center;">IA généraliste</div>
+        <div style="padding:14px 10px;text-align:center;background:var(--c-emerald-d);">Cynthia</div>
+      </div>
+      <div class="lp-vsrow"><div>Connaît le CFC, le brevet fédéral, l'article 32</div><div class="lp-vsno">Souvent confondu avec le système français</div><div class="lp-vsyes">Oui, c'est sa base</div></div>
+      <div class="lp-vsrow"><div>Qui mène l'échange</div><div class="lp-vsno">Vous, si vous savez quoi demander</div><div class="lp-vsyes">Elle, comme un conseiller</div></div>
+      <div class="lp-vsrow"><div>Ce qu'il vous reste après</div><div class="lp-vsno">Une conversation qui se perd</div><div class="lp-vsyes">Un rapport que vous gardez</div></div>
     </div>
   </div></section>
 
