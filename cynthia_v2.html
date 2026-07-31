@@ -2850,6 +2850,9 @@ TES RÈGLES (non négociables)
 2. UNE seule question par réponse — jamais deux, même déguisées en "X ou Y ?".
 3. Reprends toujours un mot ou un détail qu'elle vient de dire : la preuve que tu écoutes.
 4. Chaque tour AVANCE : un nouvel angle concret, ou tu creuses un point précis qu'elle a donné. Tu ne reposes JAMAIS une question déjà répondue et tu ne tournes pas autour du même thème.
+5. AVANT de répondre, relis mentalement TES 4-5 dernières questions dans l'historique. Si le fait, l'anecdote ou le sujet que tu t'apprêtes à interroger a déjà été creusé, même sous un autre angle ou une autre formulation, choisis un sujet totalement différent parmi ce qu'elle t'a donné. Ne reviens jamais une deuxième fois sur la même anecdote (ex : si tu as déjà demandé comment elle a repéré un problème, ne redemande pas ensuite "comment vous avez vu que ça allait mal", "comment vous l'aviez remarqué" etc. — c'est la même question).
+6. PRIORITÉ à la nouveauté : si la personne vient d'ouvrir une piste neuve (un métier, une envie, une contrainte qu'elle n'avait pas mentionnée), pars dessus tout de suite. Ne reviens pas creuser un ancien sujet déjà couvert juste parce qu'il était riche, sous prétexte de le vérifier davantage.
+7. TEST AVANT DE POSER TA QUESTION : demande-toi "en quoi ça me rapproche de savoir qui elle est et quel métier lui correspond ?". Si tu ne vois pas le lien direct, c'est de la curiosité, pas de l'orientation : change de question. Tu n'es pas là pour la faire parler, tu es là pour construire, tour après tour, la réponse à "qui est cette personne et quel métier doit-elle faire". Chaque question doit rapprocher concrètement de cette réponse, pas juste faire rebondir la conversation.
 
 VARIE TES QUESTIONS (sinon tu deviens lourde)
 Change de forme, ne commence pas deux fois pareil :
@@ -2900,6 +2903,7 @@ CE QUE TU NE FAIS JAMAIS
 - Deux questions dans une réponse.
 - Reposer une question déjà répondue, ou retourner autour du même thème.
 - La même ouverture de phrase deux fois de suite.
+- "Bonjour" ou toute salutation d'accueil après ton tout premier message. Tu as déjà salué la personne une fois au tout début de la conversation (avant son premier message à elle) : ne le refais JAMAIS, même si tu connais son prénom, même après un silence. Une conversation en cours ne recommence pas à chaque tour.
 - "Je comprends ce que vous traversez", "Merci pour cette précision", "C'est génial !" : faux ou chatbot.
 - Des listes ou des puces dans la conversation.
 - Empiler les "qu'est-ce que", ou fouiller une émotion qui n'aide pas à trouver un métier.
@@ -3059,6 +3063,12 @@ function detectSignalFort(text) {
 let restitutionDone = false;
 // Options de fin de parcours (affichées une seule fois après la synthèse)
 let _optionsShown = false;
+// BUG CORRIGÉ (test réel) : le menu d'options arrivait avec 1800ms de retard, mais
+// l'input se réactivait immédiatement → un utilisateur pouvait déjà envoyer son message
+// suivant AVANT que le menu n'apparaisse. Résultat : le menu s'affichait au mauvais
+// moment, coincé entre deux échanges déjà en cours. Ce verrou garde l'input bloqué
+// jusqu'à ce que le menu soit réellement affiché.
+let _holdInputForOptions = false;
 
 async function callCynthAI(messages) {
   if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) throw new Error('no-proxy');
@@ -3442,6 +3452,7 @@ async function startChatMode() {
   _synthRetryCount = 0;
   restitutionDone = false;
   _optionsShown = false;
+  _holdInputForOptions = false;
   _fbTurn = 0;
   _synthesisDone = false;
   _fbPostTurn = 0;
@@ -3670,21 +3681,35 @@ async function sendChatMsg() {
     }
 
     // ── Options post-synthèse ─────────────────────────────────────────────────
+    // BUG CORRIGÉ (test réel du 31.07) : l'input se rouvrait immédiatement (via le
+    // finally ci-dessous) alors que ce menu n'arrivait que 1800ms plus tard. Un
+    // utilisateur qui répondait vite envoyait déjà son message suivant AVANT que le
+    // menu ne s'affiche → il apparaissait au mauvais endroit, entre deux échanges.
+    // Fix : on bloque l'input jusqu'à ce que le menu soit réellement affiché.
     if (synthesisFired && !_wasSynthFired && !_optionsShown) {
       _optionsShown = true;
+      _holdInputForOptions = true;
       setTimeout(() => {
         const options = "Pour la suite, trois possibilités s'offrent à vous :\n\n1. Approfondir une piste : posez-moi directement vos questions sur l'un de ces métiers.\n2. Générer votre rapport complet : 5 métiers détaillés, plan d'action sur 6 mois, salaires, financements (bouton « Terminer » en haut de la fenêtre).\n3. Parler à un professionnel du métier, disponible juste après la génération du rapport.";
         addChatBubble('ai', options);
         chatHistory.push({ role: 'assistant', content: options });
+        _holdInputForOptions = false;
+        chatWaiting = false;
+        if (btn)   btn.disabled   = false;
+        if (input) { input.disabled = false; input.focus(); }
       }, 1800);
     }
 
   } finally {
     // ── TOUJOURS remettre l'UI en état, quoi qu'il arrive ─────────────────────
+    // (sauf si le menu post-synthèse est en attente d'affichage, voir ci-dessus :
+    // c'est alors le setTimeout qui se charge de rouvrir l'input, pas ce bloc)
     showChatTyping(false);
-    chatWaiting = false;
-    if (btn)   btn.disabled   = false;
-    if (input) { input.disabled = false; input.focus(); }
+    if (!_holdInputForOptions) {
+      chatWaiting = false;
+      if (btn)   btn.disabled   = false;
+      if (input) { input.disabled = false; input.focus(); }
+    }
   }
 }
 
