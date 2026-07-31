@@ -29,7 +29,7 @@
    RESET & TOKENS
 ════════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;font-size:16px;}
+html{scroll-behavior:smooth;font-size:16px;overflow-x:hidden;overscroll-behavior-x:none;}
 :root{
   --ink:#0D1F15;
   --ink2:#1A3A2A;
@@ -51,7 +51,7 @@ html{scroll-behavior:smooth;font-size:16px;}
 }
 body{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;
-  background:var(--c-cream);color:var(--c-ink);overflow-x:hidden;
+  background:var(--c-cream);color:var(--c-ink);overflow-x:hidden;overscroll-behavior-x:none;
 }
 a{text-decoration:none;color:inherit;}
 button{font-family:inherit;}
@@ -1660,7 +1660,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-steps-sec{background:linear-gradient(150deg,var(--c-ink),#0A211C);color:#fff;border-radius:34px;margin:0 24px;overflow:hidden;position:relative;}
   .lp-steps-sec .lp-sechead h2{color:#fff;} .lp-steps-sec .lp-sechead p{color:#A9C0B7;}
   .lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
-  .lp-step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:30px 26px;}
+  .lp-step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:24px 22px;}
   .lp-step .lp-n{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--c-coral),#FF9166);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
   .lp-step h3{color:#fff;font-size:1.2rem;margin-bottom:9px;} .lp-step p{color:#A9C0B7;font-size:.95rem;}
   .lp-report{background:#fff;border:1px solid var(--c-line);border-radius:28px;box-shadow:0 40px 90px -42px rgba(14,42,36,.42);overflow:hidden;max-width:960px;margin:0 auto;}
@@ -1755,7 +1755,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       <h1><span class="ln"><i>Vous savez que ça doit changer.</i></span><span class="ln"><i class="lp-accent">Reste à savoir vers quoi.</i></span></h1>
       <p class="lp-lead">Pas un test de personnalité. Une vraie conversation, qui finit par un rapport que vous gardez. Disponible maintenant, sans rendez-vous.</p>
       <div class="lp-hcta">
-        <button class="lp-btn lp-btn-primary" style="padding:26px 58px;font-size:1.4rem;" onclick="gp('preappel')">Commencer maintenant →</button>
+        <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer maintenant →</button>
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Voir comment ça marche</button>
       </div>
       <div class="lp-reassure"><span>🔒 <b>Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans rendez-vous</span><span>✦ Sans engagement</span></div>
@@ -1776,7 +1776,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     </div>
   </div></section>
 
-  <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:66px 40px;">
+  <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:48px 40px;">
     <div class="lp-sechead lp-rv"><h2>Comment ça marche</h2><p>Trois étapes, et vous savez par quoi commencer.</p></div>
     <div class="lp-steps cyn-stag cyn-spot">
       <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Vous racontez</h3><p>Votre parcours, ce qui vous pèse, ce que vous savez faire. Sans jugement, à votre rythme.</p></div>
@@ -1795,9 +1795,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
         <div style="padding:14px 10px;text-align:center;background:var(--c-emerald-d);">Cynthia</div>
       </div>
       <div class="lp-vsrow"><div>Connaît le CFC, le brevet fédéral, l'article 32</div><div class="lp-vsno">Souvent confondu avec le système français</div><div class="lp-vsyes">Oui, c'est sa base</div></div>
-      <div class="lp-vsrow"><div>Salaires suisses en CHF</div><div class="lp-vsno">Approximatifs</div><div class="lp-vsyes">Fourchettes issues de sources suisses</div></div>
       <div class="lp-vsrow"><div>Qui mène l'échange</div><div class="lp-vsno">Vous, si vous savez quoi demander</div><div class="lp-vsyes">Elle, comme un conseiller</div></div>
-      <div class="lp-vsrow"><div>Vous dire ce qui ne colle pas</div><div class="lp-vsno">Rarement, elle abonde</div><div class="lp-vsyes">Oui, franchement</div></div>
       <div class="lp-vsrow"><div>Ce qu'il vous reste après</div><div class="lp-vsno">Une conversation qui se perd</div><div class="lp-vsyes">Un rapport que vous gardez</div></div>
     </div>
   </div></section>
