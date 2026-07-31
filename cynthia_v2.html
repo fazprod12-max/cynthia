@@ -1616,7 +1616,6 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .cyn-stag.in>*:nth-child(3){transition-delay:.29s}.cyn-stag.in>*:nth-child(4){transition-delay:.41s}
   .cyn-stag.in>*:nth-child(5){transition-delay:.53s}.cyn-stag.in>*:nth-child(6){transition-delay:.65s}
   .cyn-stag.in>*:nth-child(7){transition-delay:.77s}.cyn-stag.in>*:nth-child(8){transition-delay:.89s}
-  .cyn-stag.in>*:nth-child(9){transition-delay:1.01s}
 
   /* 2b. Les blocs seuls (titres de section, encadrés) montent de la même façon */
   .lp-rv{transition:opacity .8s cubic-bezier(.19,1,.22,1),transform .8s cubic-bezier(.19,1,.22,1);}
@@ -1625,9 +1624,8 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-so b{opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s cubic-bezier(.19,1,.22,1);}
   .cyn-stag.in .lp-so b{opacity:1;transform:none;transition-delay:.1s;}
 
-  /* 4. EFFET PROJECTEUR : la carte survolée s'illumine, les autres s'estompent */
-  .cyn-spot:hover>*{opacity:.5;transition:opacity .35s ease;}
-  .cyn-spot>*:hover{opacity:1!important;}
+  /* 4. Effet projecteur retiré : éteindre les cartes voisines délavait toute la section.
+     La carte survolée se soulève, les autres restent nettes. */
 
   /* 3. L'AIGUILLE TROUVE LE NORD : l'étoile se stabilise en arrivant */
   .lp-orb{transform:rotate(-130deg) scale(.8);opacity:0;transition:transform 1.3s cubic-bezier(.16,1.1,.24,1),opacity .6s ease;}
@@ -1688,44 +1686,16 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-rfoot .lp-fn{font-size:.92rem;color:var(--c-muted);} .lp-rfoot .lp-fn b{color:var(--c-ink);}
   .lp-band{background:linear-gradient(135deg,var(--c-emerald-soft),var(--c-coral-soft));border-radius:34px;padding:56px 44px;text-align:center;}
   .lp-band h2{font-size:2rem;margin-bottom:16px;} .lp-band>p{color:var(--c-ink);font-size:1.1rem;max-width:62ch;margin:0 auto;opacity:.82;}
-  /* Sommaire du rapport : bento (grande carte d'aperçu + les 8 sections) */
+  /* Sommaire du rapport : les 8 sections, présentées comme un vrai dossier */
   .lp-somm{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:34px;}
-  .lp-so{background:#fff;border:1px solid var(--c-line);border-radius:16px;padding:16px 16px 15px;font-family:'Space Grotesk';font-weight:600;font-size:.95rem;line-height:1.25;transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s;}
+  .lp-so{background:#fff;border:1px solid var(--c-line);border-radius:14px;padding:16px 16px 15px;font-family:'Space Grotesk';font-weight:600;font-size:.95rem;line-height:1.25;transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s;}
   .lp-so:hover{transform:translateY(-4px);box-shadow:0 14px 28px -14px rgba(14,42,36,.25);}
   .lp-so b{display:block;font-family:'Space Grotesk';font-size:.78rem;color:var(--c-emerald-d);letter-spacing:.08em;margin-bottom:8px;}
   .lp-so span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.82rem;color:var(--c-muted);margin-top:6px;line-height:1.45;}
-  .lp-so.hot{border-color:var(--c-coral);background:var(--c-coral-soft);}
-  .lp-so.hot b{color:#C6402F;}
-
-  /* La grande carte : un aperçu du rapport qui se dévoile au défilement (rien au repos) */
-  .lp-bhero{grid-column:span 2;grid-row:span 2;position:relative;overflow:hidden;border-radius:20px;
-    padding:24px 26px 20px;min-height:310px;display:flex;flex-direction:column;
-    background:linear-gradient(152deg,#164036 0%,#0E2A24 56%,#0A1F1A 100%);color:var(--c-cream);}
-  .lp-bhero::after{content:"";position:absolute;width:360px;height:360px;right:-140px;top:-150px;border-radius:50%;
-    background:radial-gradient(circle,rgba(31,180,136,.40),transparent 68%);pointer-events:none;}
-  .lp-bhtag{font-family:'Space Grotesk';font-weight:600;font-size:.7rem;letter-spacing:.11em;text-transform:uppercase;color:var(--c-emerald);position:relative;z-index:2;}
-  .lp-bht{font-family:'Space Grotesk';font-weight:600;font-size:1.1rem;line-height:1.3;margin-top:7px;position:relative;z-index:2;}
-  /* Le masque fait fondre le texte dans le fond en haut et en bas :
-     la ligne qui part se dissout au lieu d'être coupée net par le bord. */
-  .lp-bstage{position:relative;flex:1;min-height:158px;margin-top:14px;overflow:hidden;z-index:2;
-    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 26px),transparent 100%);
-    mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 26px),transparent 100%);}
-  .lp-bl{position:absolute;left:0;right:0;top:0;padding-top:9px;opacity:0;will-change:transform,opacity;}
-  .lp-bl b{display:block;font-family:'Space Grotesk';font-weight:600;font-size:.71rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c-emerald);margin-bottom:10px;}
-  .lp-bl p{font-size:1.02rem;line-height:1.58;color:#F2ECE3;margin:0;font-weight:400;}
-  .lp-bl p i{font-style:normal;color:#fff;background:rgba(31,180,136,.24);border-radius:5px;padding:1px 6px;white-space:nowrap;}
-  .lp-bfoot{display:flex;align-items:center;gap:13px;margin-top:14px;position:relative;z-index:2;}
-  .lp-bnum{font-family:'Space Grotesk';font-weight:600;font-size:.73rem;color:rgba(250,246,240,.5);flex-shrink:0;letter-spacing:.05em;}
-  .lp-btrack{flex:1;height:3px;border-radius:100px;background:rgba(250,246,240,.15);overflow:hidden;}
-  .lp-btrack span{display:block;height:100%;width:0;border-radius:100px;background:var(--c-emerald);}
-  @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}
-    .lp-bhero{grid-column:span 2;grid-row:auto;min-height:300px;}}
-  @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}
-    .lp-bhero{grid-column:span 1;padding:20px 20px 17px;min-height:306px;}
-    .lp-bl p{font-size:.96rem;} .lp-bstage{min-height:170px;}}
-  /* Sans animation : on empile tout, lisible d'un coup */
-  .lp-bstage.statique{overflow:visible;min-height:0;-webkit-mask-image:none;mask-image:none;}
-  .lp-bstage.statique .lp-bl{position:static;opacity:1;transform:none;padding-top:0;margin-bottom:14px;}
+  .lp-so.hot{border-color:var(--c-emerald);background:var(--c-emerald-soft);}
+  .lp-so.hot b{color:var(--c-emerald-d);}
+  @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
   /* Extrait réel : puces CV + pitch */
   .lp-cvb{background:var(--c-emerald-soft);border-radius:10px;padding:11px 14px;font-size:.9rem;margin-bottom:8px;display:flex;gap:9px;}
   .lp-cvb::before{content:"✓";color:var(--c-emerald-d);font-weight:700;flex-shrink:0;}
@@ -1854,27 +1824,14 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
 
-    <!-- SOMMAIRE : grande carte d'aperçu (dévoilée au défilement) + les 8 sections réelles -->
+    <!-- SOMMAIRE : les 8 sections réelles du rapport -->
     <div class="lp-somm cyn-stag cyn-spot">
-      <div class="lp-bhero" id="lp-bhero">
-        <div class="lp-bhtag">Aperçu</div>
-        <div class="lp-bht">Ce que vous lisez, page après page</div>
-        <div class="lp-bstage" id="lp-bstage">
-          <div class="lp-bl"><b>Votre portrait</b><p>« Vous tranchez vite, mais jamais avant d'avoir écouté la pièce entière. »</p></div>
-          <div class="lp-bl"><b>Votre profil de personnalité</b><p>Ouverture <i>82 %</i> · Rigueur <i>74 %</i> · Amabilité <i>88 %</i></p></div>
-          <div class="lp-bl"><b>Ce que vous savez déjà faire</b><p>Relation client · Analyse · Organisation · Former les nouveaux</p></div>
-          <div class="lp-bl"><b>À coller dans votre CV</b><p>« Formation de <i>15+ collaboratrices</i>, rétention à <i>90 %</i>. »</p></div>
-          <div class="lp-bl"><b>Vos métiers suisses</b><p>Conseillère en insertion · Formatrice d'adultes · Spécialiste RH</p></div>
-          <div class="lp-bl"><b>Votre plan sur 6 mois</b><p>Mois 1 : deux entretiens métier. Mois 3 : dossier <i>article 32</i> déposé.</p></div>
-        </div>
-        <div class="lp-bfoot"><span class="lp-bnum" id="lp-bnum">01 / 06</span><div class="lp-btrack"><span id="lp-bprog"></span></div></div>
-      </div>
       <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
-      <div class="lp-so hot"><b>02</b>Qui vous êtes<span>Votre portrait et votre profil de personnalité chiffré</span></div>
+      <div class="lp-so"><b>02</b>Qui vous êtes<span>Votre portrait et votre profil de personnalité chiffré</span></div>
       <div class="lp-so"><b>03</b>Ce qui vous porte<span>Vos valeurs, vos moteurs, votre environnement idéal</span></div>
       <div class="lp-so"><b>04</b>Savoir-faire et savoir-être<span>Ce que vous savez faire, et comment vous le faites</span></div>
       <div class="lp-so hot"><b>05</b>Booster votre CV<span>Des phrases prêtes à coller et votre pitch de reconversion</span></div>
-      <div class="lp-so hot"><b>06</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
+      <div class="lp-so"><b>06</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
       <div class="lp-so"><b>07</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
       <div class="lp-so"><b>08</b>Vos ressources en Suisse<span>Qui finance quoi, et où frapper à la porte</span></div>
     </div>
@@ -2053,63 +2010,6 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       });
     },{threshold:.5});
     document.querySelectorAll('[data-cyn-count]').forEach(function(el){ if(!_calme) el.textContent='0'; cio.observe(el); });
-  }catch(e){}
-
-  /* Aperçu du rapport : dévoilement piloté par le défilement (façon Apple).
-     Rien n'est visible au repos : chaque ligne apparaît dans sa fenêtre de scroll,
-     puis repart. Pas de boucle, pas d'automatisme : c'est la molette qui mène. */
-  try{
-    var bstage=document.getElementById('lp-bstage');
-    var bhero=document.getElementById('lp-bhero');
-    if(bstage && bhero){
-      var lignes=[].slice.call(bstage.querySelectorAll('.lp-bl'));
-      var bnum=document.getElementById('lp-bnum'), bprog=document.getElementById('lp-bprog');
-      var N=lignes.length;
-      if(_calme){
-        // Pas d'animation : on empile les lignes, tout est lisible d'un coup
-        bstage.classList.add('statique');
-        if(bprog) bprog.style.width='100%';
-        if(bnum) bnum.textContent=N+' sections';
-      } else {
-        var attente=false;
-        var clamp=function(v){ return v<0?0:(v>1?1:v); };
-        var douce=function(t){ return t*t*(3-2*t); };   // départ et arrivée en douceur
-        var peindre=function(){
-          attente=false;
-          var r=bhero.getBoundingClientRect(), vh=window.innerHeight||800;
-          if(r.bottom<-80 || r.top>vh+80) return;   // hors écran : on ne calcule rien
-          // p = 0 quand la carte entre par le bas, 1 quand elle a fini de traverser
-          var debut=vh*0.90;
-          var p=clamp((debut-r.top)/Math.max(vh*0.80+r.height*0.30,1));
-          // La ligne qui part et celle qui arrive se croisent exactement : jamais de trou.
-          // Elles ne se superposent pas car l'une s'en va vers le haut, l'autre monte du bas.
-          var courante=1;
-          for(var i=0;i<N;i++){
-            var l=p*(N+0.3)-i-0.3;            // position locale de la ligne i
-            var derniere=(i===N-1), o=0, y=78;
-            if(l>=-0.30 && l<=1.15){
-              if(l<0.15){ var a=douce((l+0.30)/0.45); o=a; y=78*(1-a); }        // elle monte et s'allume
-              else if(l<0.70 || derniere){ o=1; y=0; }                          // elle est là, nette
-              else { var b=douce((l-0.70)/0.45); o=1-b; y=-74*b; }              // elle s'efface vers le haut
-            } else if(l>1.15 && derniere){ o=1; y=0; }
-            if(o>0.55) courante=i+1;
-            lignes[i].style.opacity=o.toFixed(3);
-            lignes[i].style.transform='translate3d(0,'+y.toFixed(1)+'px,0)';
-          }
-          if(bprog) bprog.style.width=(p*100).toFixed(1)+'%';
-          if(bnum) bnum.textContent=('0'+courante).slice(-2)+' / '+('0'+N).slice(-2);
-        };
-        var surScroll=function(){ if(!attente){ attente=true; requestAnimationFrame(peindre); } };
-        window.addEventListener('scroll',surScroll,{passive:true});
-        window.addEventListener('resize',surScroll,{passive:true});
-        // Un onglet ouvert en arrière-plan est gelé par le navigateur (aucune image calculée).
-        // Au retour sur l'onglet, et une fois les polices chargées, on repeint sans attendre un scroll.
-        document.addEventListener('visibilitychange',function(){ if(!document.hidden) surScroll(); });
-        window.addEventListener('load',surScroll);
-        if(document.fonts && document.fonts.ready) document.fonts.ready.then(surScroll).catch(function(){});
-        peindre();
-      }
-    }
   }catch(e){}
 })();
 </script>
