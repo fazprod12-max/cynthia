@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Votre retour sur Cynth.IA</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230E2A24'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAF6F0; --cream2:#F1E9DC;
+  --ink:#0E2A24; --muted:#5C6B64;
+  --emerald:#1FB488; --emerald-d:#12876A; --emerald-soft:#E7F4EE;
+  --coral:#FF6F5E; --coral-soft:#FFE9E4;
+  --line:#E8E1D6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--cream);color:var(--ink);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding:0 0 80px;
+}
+
+/* ── EN-TÊTE ── */
+.top{
+  background:linear-gradient(150deg,#0E2A24,#134034);
+  color:var(--cream);padding:46px 28px 52px;position:relative;overflow:hidden;
+}
+.top::after{
+  content:"";position:absolute;inset:auto -20% -55% 40%;
+  height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(31,180,136,.30),transparent 68%);
+}
+.top .in{max-width:720px;margin:0 auto;position:relative;z-index:1}
+.brand{
+  font-family:'Space Grotesk';font-weight:700;font-size:1.06rem;
+  display:flex;align-items:center;gap:2px;margin-bottom:26px;letter-spacing:-.01em;
+}
+.brand .star{
+  width:11px;height:11px;margin:0 1px;display:inline-block;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4 Q34 30 60 32 Q34 34 32 60 Q30 34 4 32 Q30 30 32 4 Z' fill='%233EE0AE'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.brand .ia{color:#3EE0AE}
+.top h1{
+  font-family:'Space Grotesk';font-weight:600;
+  font-size:clamp(1.6rem,4.6vw,2.3rem);line-height:1.2;
+  letter-spacing:-.02em;margin-bottom:14px;
+}
+.top p{font-size:1.02rem;opacity:.9;max-width:60ch}
+.top .dur{
+  display:inline-block;margin-top:20px;font-size:.82rem;font-weight:600;
+  background:rgba(62,224,174,.16);color:#8FF0CE;
+  padding:7px 15px;border-radius:100px;
+}
+
+/* ── STRUCTURE ── */
+main{max-width:720px;margin:0 auto;padding:0 28px}
+.sec{
+  background:#fff;border:1px solid var(--line);border-radius:20px;
+  padding:30px 30px 12px;margin-top:26px;
+}
+.sec > .hd{
+  display:flex;align-items:baseline;gap:12px;
+  padding-bottom:8px;margin-bottom:6px;
+}
+.sec .num{
+  font-family:'Space Grotesk';font-weight:700;font-size:.78rem;
+  color:var(--emerald-d);background:var(--emerald-soft);
+  padding:4px 10px;border-radius:100px;flex:none;
+}
+.sec h2{font-family:'Space Grotesk';font-weight:600;font-size:1.16rem;letter-spacing:-.01em}
+.sec .hint{font-size:.87rem;color:var(--muted);margin:-2px 0 4px}
+
+.q{padding:20px 0;border-top:1px solid var(--line)}
+.sec .hd + .q{border-top:0}
+.q > label,.q .lab{display:block;font-weight:600;font-size:.99rem;margin-bottom:4px}
+.q .sub{font-size:.85rem;color:var(--muted);margin-bottom:12px}
+.q .req{color:var(--coral);font-weight:700}
+
+/* ── ÉCHELLE 1 À 10 ── */
+.scale{margin-top:10px}
+.scale .row{display:flex;gap:5px;flex-wrap:wrap}
+.scale button{
+  font:inherit;cursor:pointer;flex:1;min-width:34px;
+  padding:11px 0;font-weight:600;font-size:.92rem;
+  background:var(--cream);border:1px solid var(--line);border-radius:9px;
+  color:var(--ink);transition:transform .16s cubic-bezier(.34,1.3,.5,1),background .16s,border-color .16s,color .16s;
+}
+.scale button:hover{transform:translateY(-2px);border-color:var(--emerald)}
+.scale button[aria-pressed="true"]{
+  background:var(--emerald);border-color:var(--emerald);color:#fff;
+}
+.scale .ends{
+  display:flex;justify-content:space-between;
+  font-size:.76rem;color:var(--muted);margin-top:7px;
+}
+
+/* ── CHOIX ── */
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.opts button{
+  font:inherit;cursor:pointer;
+  padding:9px 16px;font-size:.9rem;font-weight:500;
+  background:var(--cream);border:1px solid var(--line);border-radius:100px;
+  color:var(--ink);transition:transform .16s cubic-bezier(.34,1.3,.5,1),background .16s,border-color .16s,color .16s;
+}
+.opts button:hover{transform:translateY(-2px);border-color:var(--emerald)}
+.opts button[aria-pressed="true"]{
+  background:var(--emerald);border-color:var(--emerald);color:#fff;font-weight:600;
+}
+.opts.warm button[aria-pressed="true"]{background:var(--coral);border-color:var(--coral)}
+
+/* ── TEXTE ── */
+textarea,input[type=text],input[type=email]{
+  font:inherit;width:100%;margin-top:10px;
+  background:var(--cream);border:1px solid var(--line);border-radius:12px;
+  padding:13px 15px;color:var(--ink);resize:vertical;
+}
+textarea{min-height:88px;line-height:1.55}
+textarea:focus,input:focus{outline:none;border-color:var(--emerald);background:#fff}
+textarea::placeholder,input::placeholder{color:#9AA8A1}
+
+/* ── ENVOI ── */
+.end{margin-top:30px;text-align:center}
+.send{
+  font:inherit;cursor:pointer;font-family:'Space Grotesk';
+  font-weight:600;font-size:1.04rem;
+  background:var(--ink);color:var(--cream);border:0;border-radius:100px;
+  padding:17px 42px;
+  transition:transform .18s cubic-bezier(.34,1.3,.5,1),background .18s;
+}
+.send:hover{transform:translateY(-2px);background:#134034}
+.send:active{transform:translateY(0)}
+.send:disabled{opacity:.55;cursor:default;transform:none}
+.end .note{font-size:.83rem;color:var(--muted);margin-top:14px;max-width:52ch;margin-inline:auto}
+.err{
+  display:none;margin-top:16px;background:var(--coral-soft);
+  border:1px solid #F5C4BC;border-radius:12px;padding:14px 16px;font-size:.9rem;
+}
+.err.on{display:block}
+.err b{display:block;margin-bottom:4px}
+
+/* ── MERCI ── */
+.merci{display:none;text-align:center;padding:70px 28px}
+.merci.on{display:block}
+.merci .ic{
+  width:66px;height:66px;margin:0 auto 22px;border-radius:50%;
+  background:var(--emerald-soft);color:var(--emerald-d);
+  display:flex;align-items:center;justify-content:center;font-size:1.9rem;
+}
+.merci h2{font-family:'Space Grotesk';font-weight:600;font-size:1.5rem;margin-bottom:12px}
+.merci p{color:var(--muted);max-width:46ch;margin:0 auto}
+
+.sauv{
+  position:fixed;left:50%;bottom:22px;transform:translate(-50%,90px);
+  background:var(--ink);color:var(--cream);font-size:.83rem;
+  padding:10px 18px;border-radius:100px;opacity:0;
+  transition:transform .35s cubic-bezier(.34,1.2,.5,1),opacity .35s;
+  pointer-events:none;z-index:9;
+}
+.sauv.on{transform:translate(-50%,0);opacity:1}
+
+@media (max-width:560px){
+  .sec{padding:24px 20px 10px;border-radius:16px}
+  main{padding:0 16px}
+  .top{padding:34px 20px 42px}
+  .scale button{min-width:0;padding:11px 0;font-size:.86rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <div class="brand">Cynth<span class="star"></span><span class="ia">IA</span></div>
+    <h1>Vous venez de tester Cynthia. Dites-moi tout.</h1>
+    <p>Vous faites partie des toutes premières personnes à l'essayer. Vos réponses vont directement servir à corriger ce qui ne va pas. Soyez franc, surtout quand c'est négatif : c'est là que ça m'aide le plus.</p>
+    <div class="dur">Environ 5 minutes · anonyme si vous voulez</div>
+  </div>
+</header>
+
+<main id="form">
+
+  <!-- 1 ─────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="hd"><span class="num">01</span><h2>Vous, en trois clics</h2></div>
+    <p class="hint">Pour comprendre à qui Cynthia parle bien, et à qui elle parle mal.</p>
+
+    <div class="q">
+      <span class="lab">Votre tranche d'âge</span>
+      <div class="opts" data-champ="age">
+        <button type="button">Moins de 25 ans</button>
+        <button type="button">25 à 34 ans</button>
+        <button type="button">35 à 44 ans</button>
+        <button type="button">45 à 54 ans</button>
+        <button type="button">55 ans et plus</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">Votre situation en ce moment</span>
+      <div class="opts" data-champ="situation">
+        <button type="button">En emploi</button>
+        <button type="button">Au chômage</button>
+        <button type="button">En formation ou études</button>
+        <button type="button">En arrêt ou en pause</button>
+        <button type="button">Indépendant</button>
+        <button type="button">Autre</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">Qu'est-ce qui vous a amené à tester Cynthia ?</span>
+      <div class="opts" data-champ="motif">
+        <button type="button">Je veux changer de métier</button>
+        <button type="button">Je cherche du travail</button>
+        <button type="button">Je m'ennuie mais je ne sais pas vers quoi aller</button>
+        <button type="button">Curiosité, je rends service</button>
+        <button type="button">Autre</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ─────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="hd"><span class="num">02</span><h2>La conversation avec Cynthia</h2></div>
+    <p class="hint">Le moment où vous discutiez avec elle, avant le rapport.</p>
+
+    <div class="q" data-scale="ecoute"
+         data-lab="Vous êtes-vous senti écouté et compris ?"
+         data-g="Pas du tout" data-d="Totalement"></div>
+
+    <div class="q" data-scale="pertinence"
+         data-lab="Ses questions étaient-elles pertinentes ?"
+         data-sub="Est-ce qu'elle posait les bonnes questions, ou est-ce qu'elle tournait autour du pot ?"
+         data-g="À côté de la plaque" data-d="Très justes"></div>
+
+    <div class="q" data-scale="naturel"
+         data-lab="Est-ce que ça ressemblait à une vraie conversation ?"
+         data-sub="Ou est-ce que ça sentait le questionnaire automatique ?"
+         data-g="Un robot" data-d="Une vraie personne"></div>
+
+    <div class="q">
+      <label for="juste">Y a-t-il eu un moment où elle a tapé juste ? <span class="req">*</span></label>
+      <div class="sub">Une question ou une phrase qui vous a fait dire « ah, oui, c'est vrai ». Même approximatif, dites-le avec vos mots.</div>
+      <textarea id="juste" data-champ="moment_juste" placeholder="Par exemple : quand elle m'a demandé ce qui m'épuisait le plus dans mon travail actuel…"></textarea>
+    </div>
+
+    <div class="q">
+      <label for="cote">Y a-t-il eu un moment où elle est tombée complètement à côté ? <span class="req">*</span></label>
+      <div class="sub">C'est la réponse la plus utile de tout le questionnaire. N'hésitez pas à être dur.</div>
+      <textarea id="cote" data-champ="moment_rate" placeholder="Par exemple : elle a insisté sur un sujet dont je m'en fichais, ou elle n'a pas compris que…"></textarea>
+    </div>
+
+    <div class="q">
+      <span class="lab">La longueur de la conversation</span>
+      <div class="opts" data-champ="longueur">
+        <button type="button">Trop courte</button>
+        <button type="button">Juste bien</button>
+        <button type="button">Un peu longue</button>
+        <button type="button">Beaucoup trop longue</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">Avez-vous eu envie d'abandonner en cours de route ?</span>
+      <div class="opts warm" data-champ="abandon">
+        <button type="button">Non, jamais</button>
+        <button type="button">Un peu, vers la fin</button>
+        <button type="button">Oui, franchement</button>
+        <button type="button">J'ai vraiment failli arrêter</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 ─────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="hd"><span class="num">03</span><h2>Le rapport</h2></div>
+    <p class="hint">Le document que vous avez reçu à la fin.</p>
+
+    <div class="q" data-scale="ressemble"
+         data-lab="Est-ce que ce rapport vous ressemble ?"
+         data-sub="Est-ce que vous vous êtes reconnu dedans, ou est-ce que ça aurait pu être n'importe qui ?"
+         data-g="Ce n'est pas moi" data-d="C'est exactement moi"></div>
+
+    <div class="q" data-scale="appris"
+         data-lab="Avez-vous appris quelque chose que vous ne saviez pas déjà ?"
+         data-g="Rien de neuf" data-d="Beaucoup de choses"></div>
+
+    <div class="q" data-scale="metiers"
+         data-lab="Les métiers proposés vous parlent-ils ?"
+         data-g="Aucun rapport" data-d="Très bien vus"></div>
+
+    <div class="q" data-scale="lundi"
+         data-lab="Après l'avoir lu, sauriez-vous quoi faire lundi matin ?"
+         data-sub="Une action concrète, précise, que vous pourriez vraiment faire."
+         data-g="Toujours perdu" data-d="Je sais exactement"></div>
+
+    <div class="q" data-scale="confiance"
+         data-lab="Avez-vous eu confiance dans ce qui était écrit ?"
+         data-sub="Les salaires, les formations, les démarches suisses."
+         data-g="J'ai douté" data-d="Ça m'a paru solide"></div>
+
+    <div class="q">
+      <label for="faux">Y a-t-il quelque chose de faux, d'inventé ou de bizarre dans le rapport ? <span class="req">*</span></label>
+      <div class="sub">Un chiffre qui vous a semblé faux, une formation qui n'existe pas, une phrase qui ne veut rien dire. Même un doute, dites-le.</div>
+      <textarea id="faux" data-champ="erreurs" placeholder="Par exemple : le salaire annoncé pour tel métier me paraît trop élevé, ou cette formation je crois qu'elle n'existe pas en Suisse…"></textarea>
+    </div>
+
+    <div class="q">
+      <span class="lab">La partie la plus utile pour vous</span>
+      <div class="opts" data-champ="section_top">
+        <button type="button">Mon parcours</button>
+        <button type="button">Qui je suis, ma personnalité</button>
+        <button type="button">Ce qui me porte, mes valeurs</button>
+        <button type="button">Mes savoir-faire et savoir-être</button>
+        <button type="button">Les phrases pour mon CV</button>
+        <button type="button">Les métiers proposés</button>
+        <button type="button">Le plan sur 6 mois</button>
+        <button type="button">Les ressources suisses</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">Et la partie la moins utile, celle qu'on pourrait supprimer</span>
+      <div class="opts warm" data-champ="section_flop">
+        <button type="button">Mon parcours</button>
+        <button type="button">Qui je suis, ma personnalité</button>
+        <button type="button">Ce qui me porte, mes valeurs</button>
+        <button type="button">Mes savoir-faire et savoir-être</button>
+        <button type="button">Les phrases pour mon CV</button>
+        <button type="button">Les métiers proposés</button>
+        <button type="button">Le plan sur 6 mois</button>
+        <button type="button">Les ressources suisses</button>
+        <button type="button">Tout m'a servi</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <label for="manque">Qu'est-ce qui manquait dans le rapport ?</label>
+      <div class="sub">Ce que vous espériez y trouver et qui n'y était pas.</div>
+      <textarea id="manque" data-champ="manque" placeholder="J'aurais aimé y trouver…"></textarea>
+    </div>
+  </section>
+
+  <!-- 4 ─────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="hd"><span class="num">04</span><h2>Ce que ça vaut</h2></div>
+    <p class="hint">Répondez comme si vous deviez sortir votre carte pour de vrai. Ne soyez pas gentil avec moi, ça ne m'aiderait pas.</p>
+
+    <div class="q">
+      <span class="lab">Si Cynthia disparaissait demain et que vous ne pouviez plus l'utiliser, vous seriez… <span class="req">*</span></span>
+      <div class="opts" data-champ="disparition">
+        <button type="button">Très déçu</button>
+        <button type="button">Un peu déçu</button>
+        <button type="button">Pas déçu du tout</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">Auriez-vous payé pour ce rapport ? <span class="req">*</span></span>
+      <div class="opts" data-champ="paierait">
+        <button type="button">Oui, sans hésiter</button>
+        <button type="button">Oui, mais moins cher</button>
+        <button type="button">J'aurais hésité</button>
+        <button type="button">Non</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">À votre avis, ce rapport vaut combien ? <span class="req">*</span></span>
+      <div class="sub">Le prix que vous trouveriez normal de payer, en francs.</div>
+      <div class="opts" data-champ="prix_juste">
+        <button type="button">Gratuit seulement</button>
+        <button type="button">19 CHF</button>
+        <button type="button">29 CHF</button>
+        <button type="button">39 CHF</button>
+        <button type="button">49 CHF</button>
+        <button type="button">59 CHF</button>
+        <button type="button">69 CHF</button>
+        <button type="button">89 CHF</button>
+        <button type="button">Plus de 89 CHF</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">À partir de quel prix vous trouveriez ça franchement trop cher ?</span>
+      <div class="sub">Le prix où vous refermez la page.</div>
+      <div class="opts warm" data-champ="prix_trop_cher">
+        <button type="button">Dès 29 CHF</button>
+        <button type="button">Dès 49 CHF</button>
+        <button type="button">Dès 69 CHF</button>
+        <button type="button">Dès 89 CHF</button>
+        <button type="button">Dès 129 CHF</button>
+        <button type="button">Au-delà de 129 CHF</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">En dessous de quel prix vous vous méfieriez de la qualité ?</span>
+      <div class="sub">Trop peu cher pour être sérieux.</div>
+      <div class="opts" data-champ="prix_suspect">
+        <button type="button">En dessous de 10 CHF</button>
+        <button type="button">En dessous de 20 CHF</button>
+        <button type="button">En dessous de 30 CHF</button>
+        <button type="button">En dessous de 50 CHF</button>
+        <button type="button">Le prix ne change rien pour moi</button>
+      </div>
+    </div>
+
+    <div class="q" data-scale="recommander"
+         data-lab="Recommanderiez-vous Cynthia à un proche qui se cherche ?"
+         data-g="Jamais" data-d="Sans hésiter"></div>
+
+    <div class="q">
+      <label for="pourquoi_prix">Pourquoi ce prix ?</label>
+      <div class="sub">En une phrase. À quoi vous l'avez comparé dans votre tête.</div>
+      <textarea id="pourquoi_prix" data-champ="pourquoi_prix" placeholder="Je l'ai comparé à…"></textarea>
+    </div>
+  </section>
+
+  <!-- 5 ─────────────────────────────────────────────── -->
+  <section class="sec">
+    <div class="hd"><span class="num">05</span><h2>Le mot de la fin</h2></div>
+
+    <div class="q">
+      <label for="priorite">S'il n'y avait qu'une seule chose à améliorer, ce serait quoi ? <span class="req">*</span></label>
+      <textarea id="priorite" data-champ="priorite" placeholder="La chose qui m'a le plus gêné…"></textarea>
+    </div>
+
+    <div class="q">
+      <label for="garder">Et une chose à surtout ne pas changer ?</label>
+      <textarea id="garder" data-champ="garder" placeholder="Ce qui m'a vraiment plu…"></textarea>
+    </div>
+
+    <div class="q">
+      <span class="lab">Sur quoi l'avez-vous utilisé ?</span>
+      <div class="opts" data-champ="appareil">
+        <button type="button">Ordinateur</button>
+        <button type="button">Téléphone</button>
+        <button type="button">Tablette</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lab">Avez-vous rencontré un bug, un blocage, une lenteur ?</span>
+      <div class="opts warm" data-champ="bug_oui">
+        <button type="button">Non, tout a fonctionné</button>
+        <button type="button">Oui</button>
+      </div>
+      <textarea id="bug" data-champ="bug_detail" placeholder="Si oui, racontez ce qui s'est passé et à quel moment…"></textarea>
+    </div>
+
+    <div class="q">
+      <label for="qui">Votre prénom, si vous voulez que je sache qui vous êtes</label>
+      <div class="sub">Facultatif. Vous pouvez rester totalement anonyme.</div>
+      <input type="text" id="qui" data-champ="prenom" placeholder="Votre prénom" autocomplete="given-name">
+    </div>
+
+    <div class="q">
+      <label for="mail">Votre email, si j'ai le droit de vous rappeler pour creuser</label>
+      <div class="sub">Facultatif. Uniquement pour vous poser des questions sur ce test, rien d'autre, aucune liste de diffusion.</div>
+      <input type="email" id="mail" data-champ="email" placeholder="vous@exemple.ch" autocomplete="email">
+    </div>
+  </section>
+
+  <div class="end">
+    <button class="send" id="envoyer" type="button">Envoyer mon retour</button>
+    <p class="note">Vos réponses partent directement chez moi. Elles ne sont ni revendues, ni utilisées pour entraîner une intelligence artificielle.</p>
+    <div class="err" id="erreur"><b>L'envoi n'a pas fonctionné.</b><span id="erreur-txt"></span></div>
+  </div>
+</main>
+
+<div class="merci" id="merci">
+  <div class="ic">✓</div>
+  <h2>Merci, c'est reçu.</h2>
+  <p>Vos réponses vont vraiment servir. Si vous avez laissé votre email, je reviendrai peut-être vers vous pour creuser un point ou deux.</p>
+</div>
+
+<div class="sauv" id="sauv">Brouillon enregistré</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var WORKER = 'https://cynth-ia-proxy.fazprod12.workers.dev';
+  var CLE_LOCALE = 'cynthia_retour_brouillon';
+  var reponses = {};
+
+  /* ── Construction des échelles 1 à 10 ───────────────────────── */
+  document.querySelectorAll('[data-scale]').forEach(function(bloc){
+    var champ = bloc.getAttribute('data-scale');
+    var html = '<span class="lab">' + bloc.getAttribute('data-lab') + '</span>';
+    if (bloc.getAttribute('data-sub')) {
+      html += '<div class="sub">' + bloc.getAttribute('data-sub') + '</div>';
+    }
+    html += '<div class="scale"><div class="row" data-champ="' + champ + '">';
+    for (var n = 1; n <= 10; n++) {
+      html += '<button type="button" data-val="' + n + '">' + n + '</button>';
+    }
+    html += '</div><div class="ends"><span>1 · ' + bloc.getAttribute('data-g') +
+            '</span><span>' + bloc.getAttribute('data-d') + ' · 10</span></div></div>';
+    bloc.innerHTML = html;
+  });
+
+  /* ── Sélection (échelles et choix) ──────────────────────────── */
+  document.addEventListener('click', function(ev){
+    var b = ev.target.closest('.scale .row button, .opts button');
+    if (!b) return;
+    var groupe = b.parentElement;
+    var champ = groupe.getAttribute('data-champ');
+    if (!champ) return;
+
+    var deja = b.getAttribute('aria-pressed') === 'true';
+    groupe.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+
+    if (deja) {                       // deuxième clic : on désélectionne
+      delete reponses[champ];
+    } else {
+      b.setAttribute('aria-pressed','true');
+      reponses[champ] = b.hasAttribute('data-val')
+        ? Number(b.getAttribute('data-val'))
+        : b.textContent.trim();
+    }
+    sauver();
+  });
+
+  /* ── Champs texte ───────────────────────────────────────────── */
+  document.querySelectorAll('textarea[data-champ], input[data-champ]').forEach(function(el){
+    el.addEventListener('input', function(){
+      var v = el.value.trim();
+      if (v) { reponses[el.getAttribute('data-champ')] = v.slice(0, 2000); }
+      else   { delete reponses[el.getAttribute('data-champ')]; }
+      sauverTardif();
+    });
+  });
+
+  /* ── Brouillon local : rien ne se perd si la page se ferme ──── */
+  var minuteur = null, badge = document.getElementById('sauv');
+  function sauverTardif(){ clearTimeout(minuteur); minuteur = setTimeout(sauver, 900); }
+  function sauver(){
+    try {
+      localStorage.setItem(CLE_LOCALE, JSON.stringify(reponses));
+      badge.classList.add('on');
+      clearTimeout(badge._t);
+      badge._t = setTimeout(function(){ badge.classList.remove('on'); }, 1400);
+    } catch (e) { /* navigation privée : tant pis */ }
+  }
+
+  function restaurer(){
+    var brut;
+    try { brut = localStorage.getItem(CLE_LOCALE); } catch (e) { return; }
+    if (!brut) return;
+    try { reponses = JSON.parse(brut) || {}; } catch (e) { return; }
+
+    Object.keys(reponses).forEach(function(champ){
+      var val = reponses[champ];
+      var groupe = document.querySelector('[data-champ="' + champ + '"]');
+      if (!groupe) return;
+      if (groupe.tagName === 'TEXTAREA' || groupe.tagName === 'INPUT') {
+        groupe.value = val;
+        return;
+      }
+      groupe.querySelectorAll('button').forEach(function(b){
+        var v = b.hasAttribute('data-val') ? Number(b.getAttribute('data-val')) : b.textContent.trim();
+        if (v === val) b.setAttribute('aria-pressed','true');
+      });
+    });
+  }
+  restaurer();
+
+  /* ── Envoi ──────────────────────────────────────────────────── */
+  var bouton = document.getElementById('envoyer');
+  var zoneErr = document.getElementById('erreur');
+  var txtErr  = document.getElementById('erreur-txt');
+
+  bouton.addEventListener('click', async function(){
+    if (!Object.keys(reponses).length) {
+      zoneErr.classList.add('on');
+      txtErr.textContent = ' Le questionnaire est vide. Répondez au moins à une question.';
+      return;
+    }
+
+    bouton.disabled = true;
+    bouton.textContent = 'Envoi en cours…';
+    zoneErr.classList.remove('on');
+
+    var charge = {
+      reponses: reponses,
+      meta: {
+        date: new Date().toISOString(),
+        ecran: window.innerWidth + 'x' + window.innerHeight,
+        langue: navigator.language || ''
+      }
+    };
+
+    try {
+      var r = await fetch(WORKER + '/retour', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(charge)
+      });
+      if (!r.ok) throw new Error('statut ' + r.status);
+
+      try { localStorage.removeItem(CLE_LOCALE); } catch (e) {}
+      document.getElementById('form').style.display = 'none';
+      document.querySelector('.end').style.display = 'none';
+      document.getElementById('merci').classList.add('on');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (e) {
+      bouton.disabled = false;
+      bouton.textContent = 'Réessayer l’envoi';
+      zoneErr.classList.add('on');
+      txtErr.innerHTML = ' Vos réponses sont conservées sur cet appareil, rien n’est perdu. ' +
+        'Réessayez dans un instant, ou <a id="parmail" href="#">envoyez-les par email</a>.';
+      var lien = document.getElementById('parmail');
+      if (lien) {
+        lien.addEventListener('click', function(e2){
+          e2.preventDefault();
+          var corps = Object.keys(reponses).map(function(k){
+            return k + ' : ' + reponses[k];
+          }).join('\n\n');
+          window.location.href = 'mailto:faouzi.samhoud@mail.ch'
+            + '?subject=' + encodeURIComponent('Retour test Cynth.IA')
+            + '&body=' + encodeURIComponent(corps);
+        });
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
