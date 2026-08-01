@@ -3109,6 +3109,34 @@ function stripDash(t) {
     .trim();
 }
 
+/* ── ANTI-RESALUTATION ────────────────────────────────────────────────────────
+   BUG CONFIRMÉ EN TEST LIVE (1er août 2026, profil Isabel) : Cynthia dit
+   « Bonjour Isabel » dans son message d'accueil, PUIS re-dit « Bonjour Isabel »
+   dans sa première réponse. Une conversation en cours ne recommence pas à chaque
+   tour, et ça sonne immédiatement « robot ».
+   La règle existe déjà dans CYNTH_PROMPT, mais un modèle de langage ne la suit
+   pas à 100% : dire bonjour quand on s'adresse à quelqu'un est un réflexe trop
+   fort. Sur un détail aussi visible et aussi facile à filtrer, on ne PARIE pas
+   sur le prompt, on tranche dans le code.
+   Ne touche à rien d'autre : on coupe uniquement la formule d'ouverture, et
+   seulement si elle est en TÊTE de message. */
+function stripGreeting(t) {
+  if (!t) return t;
+  var s = String(t);
+  // Découpe TRÈS bornée : le mot de salutation, éventuellement UN prénom, et la
+  // ponctuation qui suit. Rien d'autre. (Une première version acceptait « n'importe
+  // quoi jusqu'à la prochaine ponctuation » et pouvait avaler la phrase entière
+  // quand elle arrivait tard : « Bonjour Isabel vous avez raison. »)
+  s = s.replace(
+    /^\s*(?:re[-\s]?)?(?:bonjour|bonsoir|salut|coucou|hello)(?:\s+[A-ZÀ-Ý][\wÀ-ÿ'-]{1,20})?\s*[,.!:;]?\s*/i,
+    ''
+  );
+  s = s.trim();
+  if (!s) return String(t).trim();          // sécurité : jamais de message vide
+  // Remet une majuscule si la coupe a laissé une minuscule en tête.
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 // Applique stripDash récursivement à toutes les chaînes d'un objet (pour le rapport).
 function deepStripDash(v) {
   if (typeof v === 'string') return stripDash(v);
@@ -3795,6 +3823,10 @@ async function sendChatMsg() {
     }
     // Purge des tirets cadratins à la source (affichage ET historique envoyé au modèle)
     reply = stripDash(reply);
+    // La conversation a déjà commencé (message d'accueil envoyé) : plus aucune
+    // salutation d'ouverture. Appliqué AVANT l'ajout à chatHistory, donc le modèle
+    // ne voit pas non plus ses propres « Bonjour » et n'est pas incité à recommencer.
+    reply = stripGreeting(reply);
 
     // ── Mise à jour du profil ─────────────────────────────────────────────────
     chatProfile._emotionTurns++;
@@ -4650,7 +4682,7 @@ ${rulesAndSchema}
   // donc toujours complet, même si un morceau échoue. (Les variables dataBlock /
   // rulesAndSchema ci-dessus sont conservées mais ne servent plus qu'au contexte.)
   const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}`;
-  const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV.';
+  const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.';
 
   async function _part(context, instruction, schema) {
     const sys = `Tu es une experte senior en orientation professionnelle en Suisse romande. ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien avant, rien après, pas de markdown. Premier caractère {, dernier }.`;
