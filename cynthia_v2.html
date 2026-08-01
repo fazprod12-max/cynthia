@@ -997,7 +997,7 @@ footer{
 
 
 /* ── CHAT PAGE ── */
-.chat-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;
+.chat-page{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;
   background:
     radial-gradient(ellipse 60% 50% at 12% 8%,rgba(127,230,196,.26),transparent 60%),
     radial-gradient(ellipse 55% 45% at 88% 92%,rgba(255,179,166,.22),transparent 60%),
@@ -1323,6 +1323,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 ════════════════════════════════════════ */
 .quiz-page{
   min-height:100vh;
+  min-height:100dvh;
   display:flex;align-items:center;justify-content:center;
   padding:40px 20px;
   background:
@@ -1477,6 +1478,28 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 @media(max-width:380px){
   .qs-cards{grid-template-columns:1fr 1fr;}
   .quiz-card{padding:22px 14px;}
+}
+
+/* ── Chat mobile (repositionné ici : les règles de base .chat-* plus haut
+     dans le fichier passaient APRÈS le bloc mobile d'origine à la ligne ~980
+     et l'écrasaient en cascade, donc rien ne s'appliquait sur téléphone.
+     Ce bloc doit rester en dernier dans cette feuille de style. ) ── */
+@media(max-width:768px){
+  .chat-page{padding:0;justify-content:flex-start;}
+  .chat-card{height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border-radius:0;border-left:none;border-right:none;border-bottom:none;}
+  .chat-head{padding:12px 16px;gap:10px;}
+  .chat-av{width:38px;height:38px;font-size:16px;}
+  .chat-head-name{font-size:14px;}
+  .chat-head-st{font-size:11px;}
+  .chat-msgs{padding:12px 14px;}
+  .cb{max-width:88%;}
+  .chat-input-area{padding:10px 12px;}
+  .chat-input-row{gap:7px;}
+  .chat-input{font-size:16px;padding:10px 13px;} /* 16px évite le zoom iOS */
+  .chat-send{width:40px;height:40px;font-size:18px;}
+  #mic-async-btn{font-size:18px;padding:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;}
+  .chat-hint{font-size:10px;}
+  .btn-doute-float{bottom:80px;right:12px;left:auto;padding:10px 14px;font-size:13px;}
 }
 
 </style>
