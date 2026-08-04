@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ⚠️ PHASE DE TEST PRIVEE (4 aout 2026) — on demande aux moteurs de recherche de
+     NE PAS referencer le site. A RETIRER le jour de l'ouverture publique, sinon
+     Google n'indexera jamais Cynth.IA et tout le travail SEO sera sans effet. -->
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="googlebot" content="noindex, nofollow">
 <meta name="description" content="CYNTH.IA — Votre conseillère IA en orientation professionnelle en Suisse. Une conversation, puis un rapport complet : portrait de personnalité, 5 pistes métier avec salaires CHF, formations suisses et plan sur 6 mois.">
 <meta property="og:title" content="CYNTH.IA — Retrouvez votre voie en 20 minutes">
 <meta property="og:description" content="Une IA qui vous écoute vraiment. Portrait de personnalité, 5 pistes métier avec salaires CHF et formations suisses, et un rapport que vous gardez.">
@@ -11,10 +16,18 @@
 <link rel="canonical" href="https://cynthia-orientation.ch/">
 <meta property="og:site_name" content="Cynth.IA">
 <meta property="og:locale" content="fr_CH">
-<!-- og:image retiree le 1er aout 2026 : elle pointait vers cynth-ia.com, un domaine
-     non enregistre. Resultat : image cassee dans tout partage WhatsApp/LinkedIn/Slack.
-     Mieux vaut aucune image qu'une image brisee. A remettre le jour ou le domaine
-     existe et heberge reellement le fichier. -->
+<!-- og:image RETABLIE le 4 aout 2026. Elle avait ete retiree pendant l'audit parce
+     qu'elle pointait vers cynth-ia.com, un domaine non enregistre : l'apercu etait
+     casse dans tout partage WhatsApp/LinkedIn/Slack. Maintenant que le domaine
+     existe, le fichier og.png est reellement heberge a la racine.
+     ⚠️ L'adresse DOIT etre absolue : les reseaux sociaux ne resolvent pas les
+     chemins relatifs. Et ils ne lisent pas le SVG, d'ou un vrai PNG 1200x630. -->
+<meta property="og:image" content="https://cynthia-orientation.ch/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cynth.IA — Vous savez que ça doit changer. Reste à savoir vers quoi.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://cynthia-orientation.ch/og.png">
 <meta name="theme-color" content="#C8974A">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='32' fill='%230E2A24'/><path d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/><path d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/></svg>">
 <title>CYNTH.IA — Retrouvez votre voie en 20 minutes</title>
@@ -1532,6 +1545,143 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 </head>
 <body class="beta-open">
 
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PORTE D'ACCES — phase de test privee (4 aout 2026)
+     ─────────────────────────────────────────────────────────────────────────
+     POURQUOI : le site est public (GitHub Pages, aucun mot de passe) et le
+     rapport est gratuit (CONFIG.RAPPORT_GRATUIT = true). Sans cette porte,
+     n'importe qui tombant sur l'adresse repart avec un rapport a 49 CHF, et
+     chaque rapport coute de l'argent reel (4 appels Claude).
+
+     CE QUE CA PROTEGE : quelqu'un qui arrive par hasard, un lien partage qui
+     circule, un moteur de recherche.
+     CE QUE CA NE PROTEGE PAS : un developpeur qui lit le code source. Le
+     controle est cote navigateur — c'est un verrou de porte, pas un coffre.
+     La vraie protection viendra du paiement (RAPPORT_GRATUIT = false).
+
+     CHANGER LE CODE : remplacer la valeur de CYN_ACCES_HASH ci-dessous par le
+     hash du nouveau code. Pour l'obtenir, ouvrir la console du navigateur et
+     coller :  _cynHash('MONNOUVEAUCODE')
+     Changer le hash deconnecte automatiquement tous les anciens testeurs.
+
+     CODE ACTUEL : CAIRN2026   (insensible a la casse et aux espaces)
+
+     RETIRER LA PORTE : supprimer ce bloc + la balise <meta name="robots"> du
+     <head>. Rien d'autre n'en depend.
+═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  // Hash volontairement simple (djb2). Le but n'est pas la cryptographie, c'est
+  // d'eviter que le code apparaisse en clair dans le source de la page.
+  window._cynHash = function (s) {
+    var x = 5381; s = String(s).trim().toUpperCase();
+    for (var i = 0; i < s.length; i++) { x = ((x << 5) + x + s.charCodeAt(i)) >>> 0; }
+    return x.toString(36);
+  };
+  window.CYN_ACCES_HASH = '9w4o1o';   // ← CAIRN2026
+  // Applique l'etat AVANT le premier rendu : aucun clignotement du site derriere.
+  try {
+    if (localStorage.getItem('cynthia_acces') === window.CYN_ACCES_HASH) {
+      document.documentElement.classList.add('cyn-open');
+    }
+  } catch (e) { /* navigateur sans localStorage : la porte reste fermee */ }
+})();
+</script>
+
+<style>
+html:not(.cyn-open){overflow:hidden}
+html.cyn-open #cyn-gate{display:none}
+#cyn-gate{
+  position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:#0E2A24;
+  background-image:radial-gradient(1100px 620px at 50% -10%,#164437 0%,#0E2A24 60%);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+}
+.cyn-gate-card{width:100%;max-width:430px;text-align:center;color:#FAF6F0}
+.cyn-gate-logo{
+  font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;font-size:1.45rem;
+  letter-spacing:-.01em;margin-bottom:34px;display:inline-flex;align-items:baseline;gap:2px;
+}
+.cyn-gate-logo i{
+  font-style:normal;width:.42em;height:.42em;margin:0 .09em;align-self:flex-end;
+  background:var(--cyn-star,none) center/contain no-repeat;
+}
+.cyn-gate-logo i::after{content:'';display:block;width:100%;height:100%;
+  background:#3EE0AE;clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);}
+.cyn-gate-logo b{font-weight:700;color:#3EE0AE}
+.cyn-gate-card h1{
+  font-family:'Space Grotesk','Inter',sans-serif;font-size:1.55rem;font-weight:600;
+  line-height:1.25;margin:0 0 12px;color:#FAF6F0;
+}
+.cyn-gate-card p{font-size:.95rem;line-height:1.6;color:#A9BDB4;margin:0 0 26px}
+#cyn-gate form{display:flex;flex-direction:column;gap:10px}
+#cyn-gate input{
+  width:100%;padding:15px 18px;border-radius:13px;border:1px solid #2C5347;
+  background:#0B221D;color:#FAF6F0;font-size:1rem;font-family:inherit;
+  text-align:center;letter-spacing:.06em;outline:none;transition:border-color .18s,box-shadow .18s;
+}
+#cyn-gate input::placeholder{color:#5C7A6F;letter-spacing:normal}
+#cyn-gate input:focus{border-color:#1FB488;box-shadow:0 0 0 3px rgba(31,180,136,.18)}
+#cyn-gate button{
+  width:100%;padding:15px 18px;border:none;border-radius:13px;cursor:pointer;
+  background:#1FB488;color:#062019;font-size:1rem;font-weight:600;font-family:inherit;
+  transition:background .18s,transform .18s;
+}
+#cyn-gate button:hover{background:#3EE0AE}
+#cyn-gate button:active{transform:scale(.985)}
+.cyn-gate-err{
+  min-height:1.3em;margin:14px 0 0!important;font-size:.88rem;color:#FF9C8E;
+  opacity:0;transition:opacity .2s;
+}
+.cyn-gate-err.on{opacity:1}
+.cyn-gate-foot{margin:30px 0 0!important;font-size:.82rem;color:#6E8A7F}
+@media(prefers-reduced-motion:reduce){#cyn-gate *{transition:none!important}}
+</style>
+
+<div id="cyn-gate" role="dialog" aria-modal="true" aria-labelledby="cyn-gate-t">
+  <div class="cyn-gate-card">
+    <div class="cyn-gate-logo">Cynth<i></i><b>IA</b></div>
+    <h1 id="cyn-gate-t">Accès réservé aux testeurs</h1>
+    <p>Cynth.IA n'est pas encore ouverte au public. Entrez le code qui vous a été communiqué.</p>
+    <form onsubmit="return cynGateSubmit(event)">
+      <input id="cyn-gate-input" type="text" autocomplete="off" autocapitalize="characters"
+             autocorrect="off" spellcheck="false" placeholder="Code d'accès" aria-label="Code d'accès">
+      <button type="submit">Entrer</button>
+    </form>
+    <p id="cyn-gate-err" class="cyn-gate-err" role="alert"></p>
+    <p class="cyn-gate-foot">Pas de code ? Écrivez à contact@cynthia-orientation.ch</p>
+  </div>
+</div>
+
+<script>
+function cynGateSubmit(ev) {
+  if (ev) ev.preventDefault();
+  var input = document.getElementById('cyn-gate-input');
+  var err   = document.getElementById('cyn-gate-err');
+  var val   = input ? input.value : '';
+  if (window._cynHash(val) === window.CYN_ACCES_HASH) {
+    try { localStorage.setItem('cynthia_acces', window.CYN_ACCES_HASH); } catch (e) {}
+    document.documentElement.classList.add('cyn-open');
+    if (err) { err.textContent = ''; err.classList.remove('on'); }
+  } else {
+    if (err) { err.textContent = 'Code non reconnu. Vérifiez la casse et les espaces.'; err.classList.add('on'); }
+    if (input) { input.value = ''; input.focus(); }
+  }
+  return false;
+}
+// Curseur dans le champ des l'ouverture, sauf sur mobile (evite le clavier force).
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    if (document.documentElement.classList.contains('cyn-open')) return;
+    if (window.matchMedia('(min-width:721px)').matches) {
+      var i = document.getElementById('cyn-gate-input');
+      if (i) i.focus();
+    }
+  } catch (e) {}
+});
+</script>
+<!-- ═══════════════════ FIN PORTE D'ACCES ═══════════════════ -->
+
 <!-- ══ BETA BANNER ══ -->
 <div id="beta-banner">
   <!-- MODIF V3 - CONCURRENT : date expiration bêta explicite -->
@@ -1702,6 +1852,37 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .lp-steps-sec{background:linear-gradient(150deg,var(--c-ink),#0A211C);color:#fff;border-radius:34px;margin:0 24px;overflow:hidden;position:relative;}
   .lp-steps-sec .lp-sechead h2{color:#fff;} .lp-steps-sec .lp-sechead p{color:#A9C0B7;}
   .lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  /* ── Bloc fondateur ──────────────────────────────────────────────────────
+     Le portrait : tant que --portrait vaut none, le monogramme s'affiche.
+     POUR METTRE LA PHOTO : déposer faouzi.jpg dans refonte_deepseek (carrée,
+     800x800 suffit) puis remplacer la ligne --portrait ci-dessous par :
+        --portrait: url('faouzi.jpg');
+     Le script de déploiement copie le fichier automatiquement. */
+  .lp-fond{--portrait:none;
+    display:flex;gap:34px;align-items:flex-start;background:#fff;
+    border:1px solid var(--c-line);border-radius:24px;padding:38px 40px;max-width:860px;margin:0 auto;}
+  .lp-fond-av{flex-shrink:0;width:104px;height:104px;border-radius:50%;
+    background-color:var(--c-ink);background-image:var(--portrait);
+    background-size:cover;background-position:center;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk';font-weight:600;font-size:1.95rem;color:#3EE0AE;letter-spacing:.02em;}
+  .lp-fond-av.has-photo{color:transparent;}
+  .lp-fond-txt h2{font-family:'Space Grotesk';font-weight:600;font-size:clamp(1.18rem,2.5vw,1.5rem);
+    line-height:1.28;letter-spacing:-.02em;margin:10px 0 14px;}
+  .lp-fond-txt p{font-size:1rem;line-height:1.65;color:#3A4A43;margin-bottom:14px;}
+  .lp-fond-sign{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:20px 0 16px;
+    padding-top:16px;border-top:1px solid var(--c-line);}
+  .lp-fond-sign b{font-family:'Space Grotesk';font-weight:600;font-size:1.02rem;letter-spacing:-.01em;}
+  .lp-fond-sign span{font-size:.9rem;color:var(--c-muted);}
+  .lp-fond-link{display:inline-block;font-weight:600;font-size:.96rem;color:var(--c-emerald-d);
+    text-decoration:none;border-bottom:1px solid transparent;transition:border-color .18s;}
+  .lp-fond-link:hover{border-bottom-color:var(--c-emerald-d);}
+  @media(max-width:720px){
+    .lp-fond{flex-direction:column;align-items:center;text-align:center;gap:20px;padding:30px 24px;}
+    .lp-fond-av{width:88px;height:88px;font-size:1.7rem;}
+    .lp-fond-sign{justify-content:center;}
+  }
+
   /* Le Cairn : 4 étapes au lieu de 3 */
   .lp-steps-4{grid-template-columns:repeat(4,1fr);gap:18px;}
   .lp-steps-4 .lp-step{padding:22px 18px;}
@@ -1798,6 +1979,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     <div class="lp-links">
       <a onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">La méthode</a>
       <a onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Le rapport</a>
+      <a onclick="document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})">Qui est derrière</a>
       <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer</button>
     </div>
   </nav>
@@ -1918,6 +2100,25 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     </div>
   </div></div></section>
 
+  <!-- ── QUI EST DERRIÈRE — placé juste avant le dernier appel à l'action, au
+       moment précis où la personne hésite. Version courte ; le récit complet
+       est sur histoire.html (qui sert aussi de dossier de presse). ── -->
+  <section id="lp-fondateur" class="lp-sec"><div class="lp-wrap">
+    <div class="lp-fond lp-rv">
+      <div class="lp-fond-av" id="lp-fond-av">FS</div>
+      <div class="lp-fond-txt">
+        <div class="lp-cairn-tag">Qui est derrière</div>
+        <h2>Ce n'est pas une entreprise qui a eu une idée. C'est quelqu'un qui cherchait une réponse.</h2>
+        <p>Je suis arrivé à Genève de l'étranger, sans comprendre comment le travail fonctionne ici. Je voulais savoir ce que je savais faire, vraiment. Un bilan de compétences coûte près de 2 000 francs et se planifie sur trois mois. viamia, le dispositif public, est gratuit mais commence à 40 ans. Entre les deux, il n'y a rien.</p>
+        <p>Alors j'ai construit le conseiller que je cherchais, et je lui ai appris tout ce que j'aurais aimé qu'on découvre de moi. Quand je l'ai passé sur moi-même, il m'a répondu que ma première force, c'était d'aider les gens. Vous êtes en train de lire ce que j'en ai fait.</p>
+        <div class="lp-fond-sign">
+          <b>Faouzi Samhoud</b><span>Fondateur · Genève</span>
+        </div>
+        <a class="lp-fond-link" href="histoire.html">Lire l'histoire complète →</a>
+      </div>
+    </div>
+  </div></section>
+
   <section class="lp-final"><div class="lp-wrap">
     <h2 class="lp-rv">Vingt minutes.<br><span class="lp-pop">Et vous saurez.</span></h2>
     <p class="lp-rv">Vous en saurez plus sur votre avenir qu'en deux ans à y penser le dimanche soir.</p>
@@ -1928,6 +2129,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
     <div class="lp-logo" style="font-size:1.2rem;">Cynth<span class="lp-dot"></span><span class="lp-accent">IA</span></div>
     <div class="lp-foot-links">
       <a role="button" tabindex="0" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">La méthode</a>
+      <a href="histoire.html">Notre histoire</a>
       <!-- Ces deux liens étaient morts (aucun onclick) : la politique de confidentialité
            existait dans le code mais n'était accessible NULLE PART sur le site, alors
            qu'on collecte prénom, email, CV et une conversation personnelle. Corrigé. -->
@@ -1966,6 +2168,12 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
       es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
     },{threshold:.14, rootMargin:'0px 0px -6% 0px'});
     document.querySelectorAll('#page-landing .lp-rv, #page-landing .cyn-stag').forEach(function(el){ io.observe(el); });
+  }catch(e){}
+
+  // Portrait du fondateur : le monogramme s'efface dès qu'une vraie photo existe.
+  try{
+    var _av=document.getElementById('lp-fond-av');
+    if(_av&&getComputedStyle(_av).backgroundImage!=='none')_av.classList.add('has-photo');
   }catch(e){}
 
   // Le hero s'allume dès l'ouverture : titre ligne par ligne, puis le reste
