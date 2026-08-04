@@ -5430,10 +5430,26 @@ p.body{font-size:1rem;margin-bottom:14px}
 .bar{height:9px;border-radius:100px;background:#EAE3D7;overflow:hidden}
 .bar span{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--emerald),var(--emerald-d))}
 .minilabel{font-family:'Space Grotesk';font-weight:600;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--emerald-d);margin-bottom:12px}
-.tags{display:flex;flex-wrap:wrap;gap:8px}
-.tag{background:var(--cream2);border-radius:100px;padding:8px 14px;font-size:.86rem;font-weight:500}
+/* PASTILLES — corrigé le 1er août 2026.
+   Le rayon de 100px ne marche que sur UNE ligne. Or ces pastilles reçoivent
+   souvent des phrases entières (« Environnement où les horaires changent sans
+   préavis »), qui passent à trois lignes : la pastille devenait un ovale étiré
+   avec le texte collé à gauche, et tout le bloc paraissait brouillon.
+   Solution : rayon fixe de 18px (joli sur une ligne comme sur quatre), texte
+   centré verticalement, et alignement en haut pour que des pastilles de
+   hauteurs différentes ne se décalent pas les unes par rapport aux autres. */
+.tags{display:flex;flex-wrap:wrap;gap:9px;align-items:flex-start}
+.tag{background:var(--cream2);border-radius:18px;padding:10px 16px;font-size:.86rem;font-weight:500;
+  line-height:1.45;max-width:100%;display:inline-flex;align-items:center;text-align:left;
+  hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere}
 .tag.c{background:var(--coral-soft);color:#C6402F}
 .tag.g{background:var(--gold-soft);color:#8A6100}
+/* Colonne étroite (grille en 2 colonnes, ou mobile) : une pastille par ligne,
+   pleine largeur. Plus lisible qu'un empilement de pastilles bancales. */
+@media(max-width:720px){
+  .tags{flex-direction:column;align-items:stretch}
+  .tag{width:100%}
+}
 .callout{border:1px solid var(--line);border-radius:16px;padding:22px 24px;background:#fff;margin-bottom:14px}
 .callout .minilabel{margin-bottom:8px}
 .metier{border:1px solid var(--line);border-radius:18px;background:#fff;padding:26px;margin-bottom:18px;position:relative;overflow:hidden}
