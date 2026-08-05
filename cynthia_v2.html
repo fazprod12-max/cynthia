@@ -4900,6 +4900,45 @@ function _detecterRejets(texteUtilisateur) {
   };
 }
 
+/* ── Phrases où la personne dit qu'elle NE fait PAS / N'A PAS ────────────────
+   DÉFAUT CORRIGÉ (5 août 2026), trouvé en test réel : le comptage de mots-clés
+   ne regardait pas la polarité de la phrase. « Je ne code pas » contenait le mot
+   « code », « je n'ai pas de formation en informatique » contenait « informatique ».
+   Résultat mesuré : sur un profil de relation client qui dit explicitement ne pas
+   savoir coder, « Informaticien » ressortait PREMIER sur 91.
+
+   _detecterRejets ne couvrait que le refus de SECTEUR (« je ne veux plus de
+   l'assurance »). Ici on couvre la négation de COMPÉTENCE et d'expérience.
+   On renvoie les phrases concernées pour les retirer du comptage : on ne
+   déduit rien de ces phrases, on cesse simplement de les compter à l'envers. */
+const NEGATION_MOTIFS = [
+  /\bje ne (sais|connais|maitrise|maîtrise|fais|code|programme|pratique)\b/,
+  /\bje (sais|connais|maitrise|maîtrise|fais|code|programme) pas\b/,
+  /\bje n'?ai (jamais|pas)\b/,
+  /\bje n'?ai aucun[e]?\b/,
+  /\bj'?ai aucun[e]?\b/,
+  /\bsans (aucune |aucun )?(formation|diplome|diplôme|experience|expérience|competence|compétence|bagage)\b/,
+  /\baucun[e]? (formation|diplome|diplôme|experience|expérience|competence|compétence|notion|base)\b/,
+  /\bpas de (formation|diplome|diplôme|experience|expérience|competence|compétence|bagage|notion|base)\b/,
+  /\bje ne suis pas\b/,
+  /\bce n'?est pas mon\b/,
+  /\bjamais (fait|travaille|travaillé|touche|touché|etudie|étudié)\b/
+];
+/**
+ * Repère les phrases de négation de compétence.
+ * @param {string} texteUtilisateur  UNIQUEMENT ses messages, en minuscules.
+ * @returns {string[]} les phrases à ne PAS compter comme des intérêts.
+ */
+function _phrasesNegatives(texteUtilisateur) {
+  if (!texteUtilisateur) return [];
+  return String(texteUtilisateur)
+    .toLowerCase()
+    .split(/[.!?;\n]+/)
+    .map(p => p.trim())
+    .filter(p => p && NEGATION_MOTIFS.some(rx => rx.test(p)))
+    .slice(0, 12);
+}
+
 /* ── Recherche par MOTS ENTIERS ──────────────────────────────────────────────
    DÉFAUT CORRIGÉ (4 août 2026) : le matching utilisait includes() sur le texte
    brut, donc il trouvait des mots à l'intérieur d'autres mots. « main » était
@@ -4970,8 +5009,11 @@ function _scoreMetiersRelevance(conversationLower, forces, valeurs, synthMetiers
 
   // On retire des phrases de refus les mots qui y sont cités : sans ça, dire
   // « je ne veux plus d'assurance » comptait comme un intérêt POUR l'assurance.
+  // Même logique pour les négations de compétence (« je ne code pas ») : sinon
+  // dire qu'on ne sait PAS faire quelque chose nous classe dans ce métier.
   let texteUtile = conversationLower;
   (rejets.extraits || []).forEach(ph => { texteUtile = texteUtile.split(ph).join(' '); });
+  _phrasesNegatives(conversationLower).forEach(ph => { texteUtile = texteUtile.split(ph).join(' '); });
   const _dit = _normaliserTexte(texteUtile);   // ce que la personne a dit
   const _cv  = _normaliserTexte(cv);           // ce que son CV décrit
 
@@ -5041,6 +5083,213 @@ function _scoreMetiersRelevance(conversationLower, forces, valeurs, synthMetiers
   return retenus;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   SÉLECTION DES MÉTIERS — refonte du 5 août 2026
+
+   POURQUOI ON A TOUT REPRIS. Jusqu'ici, _scoreMetiersRelevance (comparaison de
+   mots) choisissait les 25 métiers que le modèle avait le droit de proposer.
+   On confiait donc la décision la plus importante au composant le plus bête, et
+   le modèle ne voyait jamais les 66 autres fiches. Mesuré en test réel :
+
+     • profil « relation client, veut former sur l'IA » → Formateur d'adultes 56e
+       sur 91, donc absent de la liste : le modèle ne POUVAIT pas le proposer.
+     • infirmière en burnout qui veut quitter l'hôpital → 1er Menuisier.
+     • maçon au dos cassé → 4e Maçon, 7e Spécialiste en cybersécurité.
+     • « Assistant dentaire » sortait dans 3 profils sur 5, sans rapport.
+
+   La cause est structurelle : les fiches dont les compétences sont écrites avec
+   les mots les plus banals du français (contact, écoute, rigueur, service,
+   aider) gagnent quel que soit l'interlocuteur. Aucune pondération ne répare ça,
+   parce que le problème n'est pas le classement, c'est qu'un mot n'est pas un
+   sens. C'était ça, « toujours les mêmes métiers ».
+
+   CE QU'ON FAIT MAINTENANT. Le catalogue entier (91 fiches, ~4 600 tokens, soit
+   2 % de la fenêtre de contexte) part au modèle, qui fait ce qu'il sait faire :
+   comprendre une histoire et la rapprocher de métiers. Les garanties anti-
+   invention ne bougent pas, elles se déplacent en AVAL : tout identifiant rendu
+   est vérifié contre METIERS_DB, et tout métier refusé est retiré par le code,
+   pas par la politesse du modèle. Le score par mots-clés reste, uniquement comme
+   filet hors ligne si l'appel échoue.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── NIVEAU DE QUALIFICATION ────────────────────────────────────────────────
+   DÉFAUT CORRIGÉ (5 août 2026), vu en test sur plusieurs profils : le modèle
+   proposait ASSC (CFC) à une infirmière diplômée, et Assistant juridique à une
+   juriste titulaire d'un master. Ce n'est pas une erreur de goût, c'est vécu
+   comme une insulte : on répond à quelqu'un qui s'ennuie « redescendez d'un
+   étage ». La cause : le catalogue ne donnait que la formation en toutes
+   lettres, à charge pour le modèle de deviner la hiérarchie suisse.
+   On la lui donne donc explicitement, sur une échelle de 1 à 6.
+
+   On lit l'EXIGENCE D'ENTRÉE, c'est-à-dire le début de la chaîne : « AFP 2 ans ;
+   passerelle CFC » est un métier d'entrée AFP, pas un métier CFC. */
+function _niveauMetier(formation) {
+  const f = String(formation || '').toLowerCase();
+  const tete = f.split(/[;(]/)[0];                     // avant la 1re passerelle
+  if (/master|universit|\buni\b/.test(tete)) return 6;
+  if (/hes|bachelor/.test(tete)) return 6;
+  if (/dipl[oô]me f[eé]d[eé]ral|dipl[oô]me es|\bes\b|[ée]cole sup/.test(tete)) return 5;
+  if (/brevet/.test(tete)) return 4;
+  if (/\bcfc\b/.test(tete)) return 3;
+  if (/\bafp\b/.test(tete)) return 2;
+  if (/pas de dipl[oô]me|sans dipl[oô]me|exp[eé]rience/.test(tete)) return 1;
+  if (/certification|bootcamp/.test(tete)) return 3;
+  return 3;                                            // défaut prudent : CFC
+}
+const _NIVEAU_LABEL = {
+  1: 'sans diplôme exigé', 2: 'AFP', 3: 'CFC',
+  4: 'brevet fédéral', 5: 'diplôme fédéral / ES', 6: 'HES / université'
+};
+
+/** Catalogue compact des 91 métiers : assez pour choisir, assez court pour tenir.
+    On met ici les compétences en MOTS-CLÉS (m.competences), pas les descriptions
+    détaillées : pour choisir, les mots-clés suffisent, et les phrases complètes
+    de METIERS_EXTRA feraient tripler le prompt (18 000 caractères à elles
+    seules). Le détail part ensuite, mais seulement pour les 8 métiers retenus,
+    au modèle qui RÉDIGE — là où il sert vraiment. */
+function _catalogueComplet() {
+  return METIERS_DB.map(m => {
+    const ex = (typeof METIERS_EXTRA !== 'undefined' && METIERS_EXTRA[m.id]) || {};
+    return [
+      m.id,
+      m.titre,
+      m.secteur,
+      'niveau:' + _niveauMetier(m.formation) + '/6 (' + _NIVEAU_LABEL[_niveauMetier(m.formation)] + ')',
+      'formation:' + (m.formation || '?'),
+      'voie_adulte:' + String(ex.voie_adulte || '?').slice(0, 70),
+      'competences:' + (m.competences || []).join('/'),
+      'salaire:' + (m.salaire_debut || '?') + ' → ' + (m.salaire_exp || '?'),
+      'tension:' + (ex.tension || '?')
+    ].join('|');
+  }).join('\n');
+}
+
+/**
+ * Demande au modèle de choisir les métiers dans TOUT le catalogue.
+ * @returns {Promise<Array>} fiches METIERS_DB retenues, ou [] si l'appel échoue.
+ */
+async function _selectionnerMetiers({ motsUtilisateur, cvTexte, rejets, dreamJob, synthMetiers, appel }) {
+  const blocRejet = (rejets && rejets.termes && rejets.termes.length)
+    ? `\n\nELLE A DIT NE PLUS VOULOIR : ${rejets.termes.join(', ')}${(rejets.secteurs || []).length ? ` (secteur : ${rejets.secteurs.join(', ')})` : ''}. Aucun métier de ce domaine, quelle que soit sa pertinence sur le papier. Ses compétences acquises là-bas restent valables ailleurs : sers-t'en pour justifier d'AUTRES métiers.`
+    : '';
+  const blocSynth = (synthMetiers && synthMetiers.length)
+    ? `\n\nPENDANT L'ENTRETIEN, TU LUI AS DÉJÀ PROPOSÉ : ${synthMetiers.map(s => s.titre).join(', ')}. Si elle n'a pas dit non, ces pistes sont prioritaires : c'est la conclusion à laquelle vous êtes arrivés ensemble.`
+    : '';
+  const blocReve = dreamJob ? `\n\nMÉTIER DE RÊVE DÉCLARÉ : « ${dreamJob} ». Inclus-le, ou le plus proche du catalogue, et dis honnêtement ce qui sépare la personne de ce métier.` : '';
+  const blocCv = cvTexte ? `\n\nSON CV (faits réels : postes, durées, formations) :\n${String(cvTexte).slice(0, 5000)}` : '';
+
+  const sys = `Tu es conseillère en orientation en Suisse romande. On te donne le catalogue COMPLET des métiers de la base et ce qu'une personne a raconté. Tu choisis les métiers qui lui correspondent VRAIMENT.
+
+COMMENT CHOISIR — dans cet ordre :
+1. Ce qu'elle dit vouloir et ce qui l'anime, avec ses mots à elle.
+2. Ce qu'elle sait déjà faire, y compris transféré d'un autre secteur.
+3. Ses contraintes réelles : salaire plancher, durée de formation acceptable, diplômes reconnus en Suisse, région.
+4. Le marché.
+
+RÈGLES ABSOLUES :
+• Ne choisis QUE des identifiants présents dans le catalogue ci-dessous. Jamais un métier inventé.
+• NE FAIS PAS REDESCENDRE LA PERSONNE. Chaque métier porte un niveau de 1 à 6
+  (1 = sans diplôme, 2 = AFP, 3 = CFC, 4 = brevet fédéral, 5 = diplôme fédéral/ES,
+  6 = HES/université). Estime son niveau actuel d'après son diplôme ET ses années
+  d'expérience, puis ne propose rien en dessous, sauf si elle demande
+  explicitement à lever le pied ou à repartir de zéro. Proposer « assistant·e »
+  à quelqu'un qui exerce déjà le métier plein, ou un CFC à un·e diplômé·e HES,
+  est ressenti comme une insulte, même si les compétences se recoupent.
+  Dix ans d'expérience valent un niveau, même sans diplôme suisse : dans ce cas
+  privilégie les métiers accessibles par l'art. 32 ou par validation des acquis.
+• Ne propose pas le métier qu'elle veut quitter, ni un quasi-synonyme.
+• Si elle dit ne PAS savoir faire quelque chose, ce n'est pas un intérêt : c'est une lacune.
+• Varie : pas cinq métiers du même secteur.
+• Choisis 8 métiers classés du plus au moins pertinent. Les 3 premiers doivent être solides ; les suivants peuvent être des pistes plus latérales.
+
+FORMAT : uniquement un objet JSON, premier caractère {, dernier }.`;
+
+  const usr = `CATALOGUE (format : id|titre|secteur|niveau|formation|voie_adulte|competences|salaire|tension) :
+${_catalogueComplet()}
+
+CE QU'ELLE A DIT (ses messages, mot pour mot) :
+${motsUtilisateur}${blocCv}${blocRejet}${blocSynth}${blocReve}
+
+Réponds uniquement ainsi :
+{"niveau_personne": 4, "accepte_de_redescendre": false, "choix":[{"id":"identifiant-exact-du-catalogue","raison":"une phrase : ce qu'elle a dit qui justifie ce métier"}]}
+
+niveau_personne = son niveau actuel sur l'échelle 1-6 ci-dessus, diplôme ET expérience confondus.
+accepte_de_redescendre = true UNIQUEMENT si elle a dit vouloir lever le pied, se reconvertir de zéro, ou accepter un poste moins qualifié.`;
+
+  let brut;
+  try { brut = await appel(sys, usr); }
+  catch (e) {
+    try { brut = await appel(sys, usr); }               // 1 seule reprise
+    catch (e2) { console.warn('[CYNTH] sélection métiers indisponible :', e2 && e2.message); return []; }
+  }
+
+  const choix = (brut && Array.isArray(brut.choix)) ? brut.choix : [];
+  return _validerChoixMetiers(choix, rejets, {
+    niveau: Number(brut && brut.niveau_personne) || 0,
+    accepteDeRedescendre: !!(brut && brut.accepte_de_redescendre)
+  });
+}
+
+/**
+ * Filet de sécurité en aval : le modèle propose, le code dispose.
+ * Un identifiant inconnu est écarté ; un métier refusé est écarté même si le
+ * modèle l'a proposé ; un métier trop en dessous de son niveau aussi.
+ *
+ * Pourquoi ici et pas dans le prompt : une consigne de prompt est un conseil,
+ * pas une garantie. Mesuré — avec la règle « ne fais pas redescendre » écrite
+ * noir sur blanc, le modèle proposait quand même ASSC (CFC) à une infirmière
+ * HES. Le modèle est bon pour ESTIMER un niveau, le code est bon pour
+ * l'APPLIQUER : on répartit le travail selon les forces de chacun.
+ *
+ * @param {Array}  choix   ce que le modèle a proposé
+ * @param {Object} rejets  ce que la personne a dit ne plus vouloir
+ * @param {Object} niv     { niveau:1-6, accepteDeRedescendre:bool }
+ */
+function _validerChoixMetiers(choix, rejets, niv) {
+  const termes = (rejets && rejets.termes) || [];
+  const secteurs = (rejets && rejets.secteurs) || [];
+  const portee = (rejets && rejets.portee) || 'inconnu';
+  const niveauPersonne = (niv && niv.niveau) || 0;
+  const accepte = !!(niv && niv.accepteDeRedescendre);
+  /* On tolère DEUX crans d'écart, pas un. Une infirmière HES (6) qui devient
+     formatrice d'adultes avec un brevet fédéral (4) ne se déclasse pas : elle
+     change de métier, et c'est une trajectoire suisse classique et respectée.
+     Ce qu'il faut bloquer, c'est le vrai déclassement — lui proposer ASSC (3)
+     ou aide en soins (2), c'est-à-dire les postes qu'elle supervisait hier.
+     Si elle a dit vouloir lever le pied, on ne filtre rien : c'est son choix,
+     pas à nous de le juger. */
+  const plancher = (niveauPersonne && !accepte) ? niveauPersonne - 2 : 0;
+
+  const vus = new Set();
+  const retenus = [];
+  const declasses = [];
+
+  choix.forEach(c => {
+    const id = c && (c.id || c.identifiant);
+    if (!id || vus.has(id)) return;
+    const fiche = METIERS_DB.find(m => m.id === id);
+    if (!fiche) { console.warn('[CYNTH] métier hors base ignoré :', id); return; }
+    const titreL = fiche.titre.toLowerCase();
+    if (termes.some(r => titreL.includes(r))) return;                 // titre refusé
+    if (portee === 'secteur' && secteurs.includes(fiche.secteur)) return; // secteur refusé
+    vus.add(id);
+    const entree = { ...fiche, _raisonChoix: (c.raison || '').slice(0, 240) };
+    if (plancher && _niveauMetier(fiche.formation) < plancher) { declasses.push(entree); return; }
+    retenus.push(entree);
+  });
+
+  // Filet : mieux vaut une piste trop basse que pas de piste du tout. On les
+  // réintroduit en dernier recours, en fin de liste, et du moins bas au plus
+  // bas — sinon un métier d'aide passait devant un métier à brevet fédéral.
+  if (retenus.length < 5 && declasses.length) {
+    declasses.sort((a, b) => _niveauMetier(b.formation) - _niveauMetier(a.formation));
+    console.warn('[CYNTH] moins de 5 métiers au niveau attendu — on complète avec ' +
+      declasses.length + ' piste(s) plus basse(s)');
+    while (retenus.length < 5 && declasses.length) retenus.push(declasses.shift());
+  }
+  return retenus;
+}
+
 /* ══════════════════════════════════════════════════════════════
    GÉNÉRATION DU RAPPORT IA
 ══════════════════════════════════════════════════════════════ */
@@ -5057,9 +5306,6 @@ async function generateOrientationReport() {
     ? quizAnswers.metierReve.trim()
     : '';
 
-  // BUG FIX v5.3 — présélection des métiers pertinents (au lieu des 100 en vrac) :
-  // réduit la surface d'hallucination et empêche le LLM de dériver vers les mêmes
-  // métiers "par défaut" quand le signal de la conversation est faible.
   // Ce que la personne a dit ne plus vouloir. On ne lit QUE ses messages : les
   // mots de Cynthia ne sont pas des faits sur elle.
   const _motsUtilisateur = chatHistory
@@ -5068,159 +5314,43 @@ async function generateOrientationReport() {
     .join(' \n ');
   const _rejets = _detecterRejets(_motsUtilisateur);
 
-  const _relevantMetiers = _scoreMetiersRelevance(
-    _motsUtilisateur,
-    chatProfile.forces,
-    chatProfile.valeurs,
-    _synthMetiers,
-    _dreamJob,
-    _rejets,
-    _cvText || ''
-  ).slice(0, 25);
-
-  // Enrichissement avec METIERS_EXTRA pour le matching compétences transférables
-  const metiersList = _relevantMetiers
-    .map(m => {
-      const ex = METIERS_EXTRA[m.id] || {};
-      return [
-        m.id,
-        m.titre,
-        m.secteur,
-        'competences_cles:' + (ex.competences_detaillees || m.competences).join(' / '),
-        'tension_marche:' + (ex.tension || '?'),
-        'avenir:' + (ex.avenir || '?'),
-        'financement:' + (m.financement || ''),
-        'voie_adulte:' + (ex.voie_adulte || ''),
-        'ou_recrute:' + (ex.ou_recrute || ''),
-        'profils_types:' + (ex.profils_from || []).join(','),
-        'salaire_debut:' + m.salaire_debut,
-        'salaire_exp:' + m.salaire_exp
-      ].join('|');
-    })
-    .join('\n');
-
   const _cvForReport = _cvText
     ? `\n\nCV DE LA PERSONNE (texte réel extrait de son CV — ses postes, années d'expérience, formations et compétences comptent comme DITS par la personne ; croise-les avec la conversation) :\n${_cvText.slice(0, 6000)}\n`
     : '';
-  // Ceinture ET bretelles : les métiers refusés sont déjà retirés de la liste
-  // ci-dessous, mais on le dit AUSSI au modèle. S'il a compris un refus que le
-  // code n'a pas su repérer, il doit le respecter de lui-même.
+  // Ceinture ET bretelles : les métiers refusés sont déjà retirés de la liste,
+  // mais on le dit AUSSI au modèle. S'il a compris un refus que le code n'a pas
+  // su repérer, il doit le respecter de lui-même.
   const _blocRejets = (_rejets.termes && _rejets.termes.length)
     ? `\n\n⛔ CE QUE LA PERSONNE A DIT NE PLUS VOULOIR : ${_rejets.termes.join(', ')}${_rejets.secteurs.length ? ` (secteur(s) écarté(s) : ${_rejets.secteurs.join(', ')})` : ''}.
 INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal" ni en "piste". Même s'il correspond parfaitement à son expérience passée. Elle l'a dit, tu le respectes. Ses compétences acquises là-bas restent valables et transférables ailleurs : sers-t'en pour justifier d'AUTRES métiers.\n`
     : '';
 
-  const dataBlock = `CONVERSATION INTÉGRALE :
-${conversationText}${_cvForReport}${_blocRejets}
+  /* SÉLECTION DES MÉTIERS — voir le pavé d'explication au-dessus de
+     _selectionnerMetiers. Le modèle lit le catalogue entier ; le score par
+     mots-clés ne sert plus que de filet si l'appel échoue. Les identifiants
+     rendus sont vérifiés contre la base et les refus appliqués par le code.
 
-BASE DE DONNÉES MÉTIERS SUISSE (format: id|titre|secteur|competences_cles|tension_marche|avenir|financement|voie_adulte|ou_recrute|profils_types|salaire_debut|salaire_exp) :
-${metiersList}`;
+     On LANCE l'appel ici sans l'attendre : mesuré à 7,6 s, et les trois autres
+     parties du rapport (portrait, actions, plan) n'en dépendent pas. On les
+     démarre donc en même temps et on ne récupère la sélection qu'au moment de
+     rédiger les métiers — l'attente disparaît derrière le reste du travail. */
+  const _pSelection = _selectionnerMetiers({
+    motsUtilisateur: _motsUtilisateur,
+    cvTexte: _cvText || '',
+    rejets: _rejets,
+    dreamJob: _dreamJob,
+    synthMetiers: _synthMetiers,
+    appel: (s, u) => _callReportModel(s, u, 1200)
+  }).catch(function () { return []; });
 
-  const rulesAndSchema = `RÈGLES D'ANALYSE :
-0. ADRESSE-TOI TOUJOURS À LA PERSONNE EN "VOUS" — jamais à la 3e personne, jamais son prénom comme sujet. Écris "Vous aimez aider les gens", PAS "Marc aime aider les gens" ni "il ressent". TOUS les champs texte (resume, style_travail, moment_alignement, freins, pourquoi, alignement_valeurs, message_fin) s'adressent directement à la personne.
-1. Identifie CE QUE LA PERSONNE A DIT MOT POUR MOT — ses vrais mots, ses vraies peurs, ses vraies envies, ses moments d'alignement. Si un CV a été fourni (section CV DE LA PERSONNE), traite son contenu comme des faits dits par la personne : postes réels, années d'expérience, formations obtenues, compétences maîtrisées — appuie-toi dessus en priorité.
-2. Sélectionne EXACTEMENT 5 métiers : les 3 PLUS adaptés à son profil (champ "type": "principal") puis 2 pistes complémentaires à explorer (champ "type": "piste") — les 5 métiers sont TOUS DIFFÉRENTS, jamais deux fois le même titre (ni en principal ni en piste)
-3. Chaque "pourquoi" DOIT citer des éléments réels de la conversation (reprend ses propres mots)
-4. Le plan d'action doit être CONCRET — pas de vœux pieux, des étapes actionnables avec des délais réels
-5. Les ressources doivent être RÉELLES et ACCESSIBLES EN SUISSE (orientation.ch, viamia, OrTra santé-social, ORP, écoles professionnelles, HES/ES, jobup.ch)
-6. Si tu ne connais pas l'âge exact, mets null
-7. MATCHING COMPÉTENCES TRANSFÉRABLES (RÈGLE DE FER) : Pour chaque métier, croise les competences_cles du métier avec ce que la personne a dit. Dans "atouts", liste UNIQUEMENT des competences_cles que la personne possède déjà (d'après la conversation). Dans "developper", liste UNIQUEMENT des competences_cles qui lui manquent, et indique la voie de formation suisse pour les combler (CFC, AFP, brevet/diplôme fédéral, HES, ES, certification) à partir des champs "formation" et "voie_adulte". N'invente JAMAIS une compétence hors de cette liste.
-8. MARCHÉ : Utilise tension_marche (haute/moyenne/basse) et avenir (fort/stable/risque) pour contextualiser chaque recommandation — dis franchement si le marché est porteur ou difficile.
-9. ANTI-HALLUCINATION : Ne cite QUE des compétences et expériences EXPLICITEMENT mentionnées dans la conversation OU présentes dans les competences_cles du métier. Recopie SANS les modifier les champs factuels de la base (salaire_debut, salaire_exp, formation, financement, tension_marche, avenir) : tous les montants sont en CHF, toutes les formations sont suisses (CFC, AFP, brevet/diplôme fédéral, HES, ES). N'invente jamais un salaire, une formation ou un dispositif français (pas de CPF, pas de France Travail, pas de RIASEC).${_dreamJob ? `\n10. MÉTIER RÊVÉ OBLIGATOIRE : L'utilisateur a mentionné "${_dreamJob}" comme métier de rêve ou aspiration. Tu DOIS inclure ce métier exact (ou un cousin direct, c'est-à-dire une déclinaison réaliste du même domaine) parmi les 5 top_metiers. Si ce métier n'existe pas dans la base, utilise le métier le plus proche et explique le lien. Ce métier doit figurer dans les 3 "principal" si le profil le justifie.` : ''}
-
-Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant ou après) :
-{
-  "prenom": "prénom détecté ou null",
-  "age": null_ou_nombre,
-  "situation": "situation actuelle en 1 phrase courte et précise",
-  "profil_personnalite": {
-    "resume": "Portrait psychologique personnalisé en 4-5 phrases. Reprend les VRAIS mots de la personne, sa situation réelle, ce qui la caractérise profondément. Utilise les données de la conversation — pas un portrait générique.",
-    "traits_dominants": ["trait 1 avec exemple tiré de la conversation", "trait 2", "trait 3"],
-    "intelligences_cles": ["intelligence dominante 1 (ex: interpersonnelle, linguistique, logique...)", "intelligence 2"],
-    "style_travail": "Brève description du style de travail préféré (environnement, rythme, relation aux autres)",
-    "big_five": {"ouverture": entier_0_100, "rigueur": entier_0_100, "extraversion": entier_0_100, "amabilite": entier_0_100, "stabilite": entier_0_100},
-    "citation_forte": "UNE phrase verbatim marquante dite par la personne (ses mots exacts), qui résume son état d'esprit — ou null si rien de fort"
-  },
-  "valeurs_professionnelles": {
-    "cles": ["valeur 1 — lien direct avec la conversation", "valeur 2", "valeur 3"],
-    "besoins_non_negociables": ["besoin 1 identifié", "besoin 2"],
-    "a_eviter": ["ce qui serait toxique pour cette personne 1", "élément 2"]
-  },
-  "forces_identifiees": {
-    "naturelles": ["force naturelle 1 avec exemple tiré de la conversation", "force 2", "force 3"],
-    "competences_transferables": ["compétence transférable 1", "compétence 2"],
-    "moment_alignement": "Description du moment ou contexte où la personne était vraiment dans son élément (tiré de la conversation)"
-  },
-  "freins": {
-    "identifies": ["frein principal avec reformulation empathique", "frein 2"],
-    "recadrage": "Perspective positive sur ces freins — ce qu'ils révèlent en réalité"
-  },
-  "forces": ["3 à 5 forces concrètes identifiées dans la conversation"],
-  "valeurs": ["3 à 4 valeurs professionnelles clés de cette personne"],
-  "profil_resume": "Résumé du profil en 4 phrases personnalisées. Reprend les VRAIS mots de la personne.",
-  "top_metiers": [
-    {
-      "id": "id-exact-du-metier",
-      "type": "principal ou piste",
-      "titre": "Titre du métier",
-      "secteur": "Secteur",
-      "score": 94,
-      "pourquoi": "2-3 phrases expliquant SPÉCIFIQUEMENT pourquoi ce métier correspond à CE que cette personne a dit. Citez ses propres mots.",
-      "alignement_valeurs": "Comment ce métier répond à ses valeurs et besoins non négociables",
-      "atouts": ["compétence qu'elle possède déjà, directement applicable à ce métier (ex: 'animation de groupe — déjà pratiquée dans son poste actuel')", "atout 2 issu de la conversation", "atout 3"],
-      "developper": ["compétence manquante à acquérir — précise la voie suisse (ex: 'maîtrise de Python → bootcamp 3-6 mois' ou 'comptabilité → brevet fédéral en emploi, 50% remboursé')", "compétence 2 à développer"],
-      "tension_marche": "haute / moyenne / basse — copié depuis la base",
-      "avenir_secteur": "fort / stable / risque — avec 1 phrase d'explication concrète",
-      "financement_info": "Financement suisse concret pour se former à ce métier — recopie/adapte le champ financement de la base (ex: 'art. 32 + chèque formation', '50% des cours remboursés par la Confédération', 'AC/ORP', 'viamia 40+')",
-      "premier_pas": "Action ultra-concrète à faire CETTE SEMAINE (pas vague — précis : 'Regarder 3 témoignages de X sur LinkedIn', 'Appeler le CIO de votre ville', 'S'inscrire à l'événement Y')",
-      "salaire_debut": "copie depuis la base",
-      "salaire_exp": "copie depuis la base",
-      "marche": "copie depuis la base",
-      "formation": "copie depuis la base",
-      "financement": "copie depuis la base"
-    }
-  ],
-  "plan_action_6_mois": {
-    "semaine1": "Action immédiate ultra-concrète (ex: 'Regarder 5 témoignages de coaches sur YouTube et noter ce qui résonne')",
-    "semaine2_4": "Actions du premier mois (ex: 'Contacter 3 personnes qui exercent ce métier via LinkedIn')",
-    "mois2": "Étape de validation concrète (ex: 'Participer à un événement networking dans ce domaine, faire une journée d'observation')",
-    "mois3": "Décision ou engagement (ex: 'S'inscrire à une formation courte, ou faire un bilan viamia si 40+')",
-    "mois4_5": "Montée en compétences ou test (ex: 'Réaliser une première mission ou projet pilote')",
-    "mois6": "Point de bilan et ajustement (ex: 'Évaluer les retours, ajuster la stratégie, décider de la suite')"
-  },
-  "ressources_utiles": {
-    "formations": ["ressource formation 1 avec URL si possible", "ressource 2"],
-    "financement": ["viamia — bilan d'orientation gratuit pour les 40+ (viamia.ch)", "Chèque annuel de formation cantonal (Genève, Vaud, Neuchâtel, Jura…)", "ORP / assurance-chômage — mesures de marché du travail si inscrit·e", "Confédération — 50% des cours préparatoires aux examens fédéraux (brevet/diplôme)"],
-    "reseaux": ["LinkedIn — recherche de professionnels du secteur", "resseau 2 spécifique au secteur identifié"],
-    "outils": ["outil ou livre utile 1 pour cette transition", "outil 2"],
-    "communautes": ["communauté ou association pertinente pour ce profil"]
-  },
-  "plan_action": {
-    "semaine1": "Action très concrète cette semaine",
-    "mois1": "Objectif mesurable à 1 mois",
-    "mois3": "Objectif mesurable à 3 mois"
-  },
-  "message_fin": "Message d'encouragement personnalisé de 3-4 phrases. Reprend leur histoire spécifique, nomme quelque chose de précis qu'ils ont dit, célèbre le courage de cette démarche, donne une vraie chaleur humaine — pas un message générique."
-}`;
-
-  // BUG FIX v5.3 — le rapport échouait quasi systématiquement (prose au lieu de JSON) car
-  // tout partait dans un seul message role:'user' très long (conversation + 100 métiers +
-  // schéma JSON complet) : le modèle "dérive" en langage naturel avant la fin du prompt,
-  // surtout sur des conversations chargées émotionnellement. Fix :
-  //  1) séparer un vrai message `system` (instruction de format, courte, jamais noyée)
-  //     d'un message `user` (les données) — le system prompt pèse plus sur le comportement
-  //  2) renforcer la consigne de fin de prompt (recency bias)
-  //  3) ajouter UN retry automatique avec un prompt plus court et plus strict si le 1er
-  //     essai ne produit pas de JSON exploitable (même logique que le retry de synthèse)
-  const systemPromptReport = `Tu es une experte senior en orientation professionnelle avec 20 ans d'expérience, formée en psychologie humaniste, Big Five (OCEAN), théorie de l'autodétermination et approche orientée solution.
-
-RÈGLE ABSOLUE DE FORMAT : tu réponds TOUJOURS et UNIQUEMENT avec un objet JSON valide. Jamais de texte avant, jamais de texte après, jamais de balises markdown \`\`\`json. Ta réponse complète commence par le caractère { et se termine par le caractère }. Même si le sujet de la conversation est sensible, émotionnel ou difficile, tu ne réagis JAMAIS en langage naturel — tu restructures ce que tu ressens directement DANS les champs texte du JSON (ex: dans "message_fin" ou "recadrage"). Le JSON EST ta réponse, il n'y a rien d'autre.`;
-
-  const userPromptReport = `${dataBlock}
-
-${rulesAndSchema}
-
-⚠️ RAPPEL FINAL AVANT DE RÉPONDRE : ta réponse doit être EXCLUSIVEMENT l'objet JSON ci-dessus, rempli avec les vraies données de cette conversation. Pas une seule phrase avant. Pas une seule phrase après. Le tout premier caractère de ta réponse doit être { et le dernier doit être }.`;
+  /* CODE MORT SUPPRIMÉ (5 août 2026). Les variables rulesAndSchema,
+     systemPromptReport et userPromptReport dataient de l'époque où le rapport
+     partait en UN seul gros appel. Depuis le passage en 4 appels courts elles
+     n'étaient plus lues nulle part, mais elles continuaient d'être construites.
+     Elles sont devenues nuisibles le jour où la sélection des métiers est passée
+     en parallèle : userPromptReport lisait `dataBlock`, désormais déclaré plus
+     bas, ce qui plantait tout le rapport avant même le premier appel. Une ligne
+     morte n'est jamais neutre : elle finit par tomber sur quelqu'un. */
 
   async function _callReportModel(sysP, usrP, maxTok) {
     const resp = await fetch(GROQ_PROXY_URL, {
@@ -5262,7 +5392,7 @@ ${rulesAndSchema}
   // On découpe en 4 appels COURTS et parallèles : aucun ne peut tronquer. Chaque
   // partie a son retry (dans _part) et son fallback PAR SECTION — le rapport sort
   // donc toujours complet, même si un morceau échoue. (Les variables dataBlock /
-  // rulesAndSchema ci-dessus sont conservées mais ne servent plus qu'au contexte.)
+  // partie a son retry et son fallback PAR SECTION.)
   const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}`;
   const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.';
 
@@ -5281,13 +5411,65 @@ ${rulesAndSchema}
     'Produis les éléments actionnables côté personne. changement_type = LE plus important : détermine lequel des trois changements correspond vraiment à cette personne, en te basant sur ce qu\'elle a dit. Exactement une valeur parmi \"metier\" (le contenu du travail ne lui convient plus), \"environnement\" (elle aime son métier mais pas l\'endroit, l\'équipe ou le secteur), \"equilibre\" (métier et lieu vont, c\'est la place du travail dans sa vie qui ne va plus : taux, horaires, charge). changement_explication = 2-3 phrases qui expliquent CE choix avec ses propres mots, et qui disent franchement ce que ça implique. Si c\'est \"environnement\" ou \"equilibre\", dis-lui clairement qu\'elle n\'a PAS besoin de tout quitter : c\'est souvent la meilleure nouvelle de tout le rapport. moteurs = ce qui la fait vraiment avancer, avec une courte explication. environnement_ideal = type d\'équipe, rythme, autonomie, taille de structure. competences_a_ajouter = compétences précises à acquérir ou à mettre en avant pour sa cible (avec la voie suisse si pertinent). cv_bullets = 3 puces PRÊTES À COLLER dans un CV ou LinkedIn, formulées de façon pro, chiffrées si possible, tirées de son vécu réel. pitch = 3-4 phrases à la première personne pour expliquer sa reconversion en entretien.',
     '{"changement_type":"metier|environnement|equilibre","changement_explication":"2-3 phrases","moteurs":["moteur : explication courte","",""],"environnement_ideal":"2-3 phrases concrètes","competences_a_ajouter":["","",""],"cv_bullets":["","",""],"pitch":"3-4 phrases (je...)"}');
 
+  const pPlan = _part(convBlock,
+    'Construis un plan d\'action réaliste sur 6 mois (étapes concrètes et datées, adaptées à SA situation réelle), des ressources suisses réelles, et un message de fin chaleureux qui reprend un détail précis qu\'elle a dit.',
+    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
+
+  /* On récupère seulement maintenant la sélection lancée plus haut : son temps
+     d'attente (mesuré à 7,6 s) a été absorbé par les TROIS appels ci-dessus,
+     qui tournent déjà. Le rapport ne prend donc pas plus de temps qu'avant. */
+  let _metiersRetenus = await _pSelection;
+
+  if (_metiersRetenus.length < 5) {
+    // Filet : on complète avec le score hors ligne, sans doublon.
+    const secours = _scoreMetiersRelevance(
+      _motsUtilisateur, chatProfile.forces, chatProfile.valeurs,
+      _synthMetiers, _dreamJob, _rejets, _cvText || ''
+    );
+    if (!_metiersRetenus.length) console.warn('[CYNTH] sélection par modèle vide → repli sur le score hors ligne');
+    secours.forEach(m => {
+      if (_metiersRetenus.length < 8 && !_metiersRetenus.find(x => x.id === m.id)) _metiersRetenus.push(m);
+    });
+  }
+  const _relevantMetiers = _metiersRetenus.slice(0, 8);
+
+  // Fiches complètes des seuls métiers retenus : le modèle qui RÉDIGE n'a plus
+  // à choisir, il n'a qu'à bien écrire sur une liste déjà justifiée.
+  const metiersList = _relevantMetiers
+    .map(m => {
+      const ex = METIERS_EXTRA[m.id] || {};
+      return [
+        m.id, m.titre, m.secteur,
+        'competences_cles:' + (ex.competences_detaillees || m.competences).join(' / '),
+        'tension_marche:' + (ex.tension || '?'),
+        'avenir:' + (ex.avenir || '?'),
+        'financement:' + (m.financement || ''),
+        'voie_adulte:' + (ex.voie_adulte || ''),
+        'ou_recrute:' + (ex.ou_recrute || ''),
+        'profils_types:' + (ex.profils_from || []).join(','),
+        'salaire_debut:' + m.salaire_debut,
+        'salaire_exp:' + m.salaire_exp,
+        'pourquoi_retenu:' + (m._raisonChoix || '')
+      ].join('|');
+    })
+    .join('\n');
+
+  const dataBlock = `CONVERSATION INTÉGRALE :
+${conversationText}${_cvForReport}${_blocRejets}
+
+MÉTIERS DÉJÀ RETENUS POUR CETTE PERSONNE — choisis dans la base suisse après
+lecture de tout son entretien. Tu n'as PAS à en chercher d'autres : tu prends
+dans cette liste, dans l'ordre, et tu rédiges. Le champ pourquoi_retenu rappelle
+ce qui, dans SES mots, a motivé chaque choix.
+(format: id|titre|secteur|competences_cles|tension_marche|avenir|financement|voie_adulte|ou_recrute|profils_types|salaire_debut|salaire_exp|pourquoi_retenu)
+${metiersList}`;
+
   const pMetiers = _part(dataBlock,
     `Choisis EXACTEMENT 5 métiers dans la BASE DE DONNÉES MÉTIERS ci-dessus, TOUS DIFFÉRENTS : 3 de type "principal" (les plus adaptés) puis 2 de type "piste". Pour chacun : pourquoi (cite ses mots), atouts (competences_cles qu\'elle possède DÉJÀ), developper (competences_cles qui manquent + la voie de formation suisse pour les combler), route_formation (formation suisse concrète : intitulé + durée + coût approximatif en CHF + qui finance), premier_pas (action précise cette semaine). Recopie salaire_debut, salaire_exp et tension_marche SANS les modifier.${_dreamJob ? ' La personne aspire à "'+_dreamJob+'" : inclus ce métier (ou le plus proche de la base) dans les 5.' : ''}`,
     '{"top_metiers":[{"id":"id-exact-de-la-base","type":"principal","titre":"","secteur":"","score":90,"pourquoi":"2-3 phrases avec ses mots","atouts":["","",""],"developper":["compétence + voie suisse",""],"route_formation":"formation + durée + coût CHF approx + financement","tension_marche":"copie de la base","salaire_debut":"copie de la base","salaire_exp":"copie de la base","premier_pas":"action concrète cette semaine"}]}');
 
-  const pPlan = _part(convBlock,
-    'Construis un plan d\'action réaliste sur 6 mois (étapes concrètes et datées, adaptées à SA situation réelle), des ressources suisses réelles, et un message de fin chaleureux qui reprend un détail précis qu\'elle a dit.',
-    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
+  // (pPlan est lancé plus haut, avec pProfil et pActions, pour couvrir l'attente
+  //  de la sélection des métiers.)
 
   const [rProfil, rActions, rMetiers, rPlan] = await Promise.all([
     pProfil.catch(function(){return null;}),
@@ -5435,7 +5617,7 @@ function _captureSynthMetiers(synthText) {
     if (!/^[●•▶►]/.test(trimmed)) continue;
 
     // Ligne type : "● Chargé RSE → Pourquoi vous : votre sens de l'impact..."
-    const withoutBullet = trimmed.replace(/^[●•▶►]\s*/, '');
+    const withoutBullet = trimmed.replace(/^[●•▶►]\s*/, '').replace(/\*\*/g, '');
     const arrowIdx = withoutBullet.indexOf('→');
     const colonIdx = withoutBullet.indexOf(':');
 
@@ -5467,6 +5649,32 @@ function _captureSynthMetiers(synthText) {
     }
 
     if (title.length > 3) rawEntries.push({ title: title.toLowerCase(), pourquoi });
+  }
+
+  /* DÉFAUT CORRIGÉ (5 août 2026), constaté en test réel : on n'acceptait QUE
+     les puces ●•▶►. Quand Cynthia présentait ses pistes en **gras** (ce qu'elle
+     fait souvent), rien n'était capturé, _synthMetiers restait null, et le
+     bonus « métier proposé par Cynthia » ne s'appliquait jamais — alors même
+     que la personne venait de dire oui à voix haute à l'une des pistes.
+     C'était le signal le plus fort de tout l'entretien, réduit à zéro.
+     On accepte donc aussi le gras, les tirets et les listes numérotées. */
+  if (rawEntries.length === 0) {
+    lines.forEach(l => {
+      const t = l.trim();
+      let cand = null;
+      const gras = t.match(/\*\*([^*]{4,80})\*\*/);          // **Formateur d'adultes**
+      const tiret = t.match(/^[-–]\s+(.{4,80}?)(?:\s*[:(→].*)?$/); // - Formateur d'adultes : ...
+      const num = t.match(/^\d+[.)]\s+(.{4,80}?)(?:\s*[:(→].*)?$/); // 1. Formateur d'adultes
+      if (gras) cand = gras[1];
+      else if (tiret) cand = tiret[1];
+      else if (num) cand = num[1];
+      if (cand) {
+        const titre = cand.replace(/\*\*/g, '').trim().toLowerCase();
+        if (titre.length > 3 && !rawEntries.find(e => e.title === titre)) {
+          rawEntries.push({ title: titre, pourquoi: null });
+        }
+      }
+    });
   }
 
   if (rawEntries.length === 0) return;
