@@ -3257,6 +3257,22 @@ L'ARC (fais-le avancer, ne stagne jamais)
 3. Le cadre : ses envies, ses contraintes, ce qu'elle ne veut plus. C'est ici que tu identifies lequel des TROIS CHANGEMENTS la concerne vraiment.
 Tu ne proposes AUCUN métier pendant l'entretien (ça vient à la synthèse finale) — mais tout ce que tu récoltes sert à en trouver un.
 
+QUAND QUELQU'UN DIT « JE NE VEUX PLUS DE ÇA » : DEMANDE TOUJOURS JUSQU'OÙ
+C'est la question la plus utile de tout l'entretien, et presque personne ne la pose.
+« Je ne veux plus travailler dans l'assurance » peut vouloir dire trois choses très différentes :
+- plus jamais ce MÉTIER précis, mais le secteur lui va (elle pourrait être formatrice dans une assurance) ;
+- plus jamais ce SECTEUR, mais le métier lui plaît (elle pourrait conseiller ailleurs) ;
+- plus jamais cette FAÇON de travailler (les objectifs, la pression, la vente forcée), et le reste peut rester.
+Tant que tu ne sais pas laquelle, tu ne peux rien lui proposer de juste.
+
+Alors dès qu'elle exprime un rejet, tu poses UNE question simple, dans tes mots, du genre :
+« Quand vous dites que vous ne voulez plus de l'assurance, c'est le métier de conseiller qui vous a usé, ou tout le milieu ? »
+Reprends SES mots à elle, pas un vocabulaire de formulaire. Une seule question, pas trois.
+
+Ensuite tu le retiens et tu n'y reviens plus. Si elle a dit « tout le secteur », tu ne lui reparles jamais de ce secteur, même en passant, même pour un métier voisin. C'est une promesse tenue : elle a dit non une fois, elle ne doit pas avoir à le redire.
+
+Et distingue bien un rejet d'un simple agacement. « J'en ai marre de mon chef » n'est pas un rejet du métier : c'est un problème d'environnement, et c'est justement l'un des TROIS CHANGEMENTS. Creuse avant de conclure.
+
 CE QUE TU NE FAIS JAMAIS
 - Le tiret cadratin ou demi-cadratin (— ou –). JAMAIS. À la place : une virgule, un point, ou deux-points. Le tiret long fait « écrit par une IA », et ça casse tout.
 - Deux questions dans une réponse.
@@ -4770,10 +4786,152 @@ const METIERS_EXTRA = {
    pour filtrer la liste envoyée au rapport IA et pour corriger le
    tie-break du générateur de secours (buildFallbackReport).
 ══════════════════════════════════════════════════════════════ */
-function _scoreMetiersRelevance(conversationLower, forces, valeurs, synthMetiers, dreamJob) {
+/* ══════════════════════════════════════════════════════════════════════════
+   ENTENDRE « NON » — détection des refus (4 août 2026)
+   ─────────────────────────────────────────────────────────────────────────
+   DÉFAUT CORRIGÉ, reproduit en test : le matching ne comptait que des mots-clés
+   présents. « Je ne veux plus travailler dans l'assurance » contenait le mot
+   « assurance », donc ça FAISAIT MONTER le métier Conseiller en assurance —
+   arrivé 1er sur 91 pour quelqu'un qui le refusait deux fois. La phrase de
+   rejet produisait l'inverse de son sens.
+
+   Deux garde-fous, volontairement redondants :
+   1. Cynthia DEMANDE pendant la conversation si c'est le métier ou le domaine
+      (règle dans CYNTH_PROMPT). C'est le bon signal, propre et explicite.
+   2. Ce détecteur lit la conversation quoi qu'il arrive. Si Cynthia oublie de
+      poser la question, on est quand même protégé. Le modèle donne la qualité,
+      le code garantit le plancher.
+
+   On ne lit QUE les messages de la personne : les mots de Cynthia ne sont pas
+   des faits sur elle (même cause que le bug « Maçon » de juillet).
+══════════════════════════════════════════════════════════════════════════ */
+
+/** Domaines reconnus → secteurs de METIERS_DB à écarter quand ils sont rejetés. */
+const REJET_DOMAINES = [
+  { mots: ['assurance', 'assurances', 'assureur'],                    secteurs: ['Banque & Finance'] },
+  { mots: ['banque', 'bancaire', 'finance', 'financier'],             secteurs: ['Banque & Finance'] },
+  { mots: ['vente', 'commerce', 'commercial', 'magasin', 'retail'],   secteurs: ['Commerce & Vente'] },
+  { mots: ['soin', 'soins', 'santé', 'medical', 'médical', 'hopital', 'hôpital', 'ehpad', 'social'], secteurs: ['Santé & Social'] },
+  { mots: ['restauration', 'hotellerie', 'hôtellerie', 'cuisine', 'restaurant', 'service en salle'], secteurs: ['Hôtellerie-Restauration'] },
+  { mots: ['chantier', 'batiment', 'bâtiment', 'construction', 'maçonnerie'], secteurs: ['Construction & Bâtiment'] },
+  { mots: ['informatique', 'developpement', 'développement', 'code', 'digital', 'tech'], secteurs: ['IT & Digital'] },
+  { mots: ['administratif', 'administration', 'bureau', 'paperasse', 'rh'], secteurs: ['Administration & RH'] },
+  { mots: ['usine', 'industrie', 'production', 'atelier'],            secteurs: ['Technique & Industrie'] },
+  { mots: ['transport', 'logistique', 'entrepot', 'entrepôt', 'camion', 'chauffeur'], secteurs: ['Transport & Logistique'] },
+  { mots: ['securite', 'sécurité', 'surveillance'],                   secteurs: ['Sécurité & Service public'] },
+  { mots: ['immobilier', 'immobiliere', 'immobilière'],               secteurs: ['Immobilier & Services'] },
+  { mots: ['communication', 'marketing', 'medias', 'médias'],         secteurs: ['Communication & Médias'] }
+];
+
+/** Formules par lesquelles quelqu'un dit qu'il n'en veut plus. */
+const REJET_AMORCES = [
+  'je ne veux plus', 'je veux plus', 'je n\'en veux plus', 'j\'en veux plus',
+  'plus jamais', 'jamais plus', 'je ne peux plus', 'je peux plus',
+  'j\'en ai marre', 'j\'en ai assez', 'j\'en ai ras', 'j\'en ai fini',
+  'je ne supporte plus', 'je supporte plus', 'je fuis', 'surtout pas',
+  'hors de question', 'pas question', 'je refuse', 'j\'ai arrêté',
+  'j\'ai arrete', 'je quitte', 'je ne retournerai', 'je ne veux pas'
+];
+
+/**
+ * Repère ce que la personne dit ne plus vouloir.
+ * @param {string} texteUtilisateur  UNIQUEMENT ses messages, en minuscules.
+ * @returns {{termes:string[], secteurs:string[], portee:string, extraits:string[]}}
+ */
+function _detecterRejets(texteUtilisateur) {
+  const vide = { termes: [], secteurs: [], portee: 'inconnu', extraits: [] };
+  if (!texteUtilisateur) return vide;
+  const t = String(texteUtilisateur).toLowerCase();
+
+  // On découpe en phrases : un refus vaut pour sa phrase, pas pour tout le texte.
+  const phrases = t.split(/[.!?;\n]+/).map(p => p.trim()).filter(Boolean);
+  const termes = new Set(), secteurs = new Set(), extraits = [];
+
+  phrases.forEach(ph => {
+    if (!REJET_AMORCES.some(a => ph.includes(a))) return;
+    REJET_DOMAINES.forEach(d => {
+      if (d.mots.some(m => ph.includes(m))) {
+        d.mots.forEach(m => { if (ph.includes(m)) termes.add(m); });
+        d.secteurs.forEach(s => secteurs.add(s));
+        if (extraits.length < 4) extraits.push(ph.slice(0, 140));
+      }
+    });
+  });
+
+  if (!termes.size) return vide;
+
+  // Portée : c'est tout le domaine, ou seulement ce poste ? Cynthia pose la
+  // question ; on lit sa réponse. Sans réponse claire, on reste prudent et on
+  // ne coupe que le métier, pas tout le secteur.
+  const ditSecteur = /\b(tout le (secteur|domaine|milieu|monde)|le secteur (entier|en entier)|toute la branche|plus rien dans|tout ce (secteur|domaine|milieu)|l'?ensemble du (secteur|domaine))\b/.test(t);
+  const ditMetier  = /\b(juste (ce|le) (poste|métier|metier|job)|seulement (ce|le) (poste|métier|metier)|c'?est (ce|le) (poste|métier|metier)|pas le secteur|le secteur (ça va|ca va|me plaît|me plait))\b/.test(t);
+
+  return {
+    termes: [...termes],
+    secteurs: ditMetier ? [] : [...secteurs],
+    portee: ditSecteur ? 'secteur' : (ditMetier ? 'metier' : 'inconnu'),
+    extraits
+  };
+}
+
+/* ── Recherche par MOTS ENTIERS ──────────────────────────────────────────────
+   DÉFAUT CORRIGÉ (4 août 2026) : le matching utilisait includes() sur le texte
+   brut, donc il trouvait des mots à l'intérieur d'autres mots. « main » était
+   trouvé dans « humain », « soin » dans « besoin », « vente » dans « inventer »,
+   « sport » dans « transport ». Concrètement : dire « le contact humain » faisait
+   monter Coiffeur (passion « main »), et dire « j'ai besoin de » faisait monter
+   tout le secteur des soins. On normalise (accents retirés) puis on encadre le
+   terme d'espaces : plus aucun mot ne peut se cacher dans un autre. */
+function _normaliserTexte(s) {
+  return ' ' + String(s || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // é → e, ç → c
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim() + ' ';
+}
+/** Le terme est-il présent comme mot (ou groupe de mots) entier ? Tolère le pluriel. */
+function _contientMot(botteDeFoin, terme) {
+  const t = _normaliserTexte(terme).trim();
+  if (!t) return false;
+  return botteDeFoin.includes(' ' + t + ' ')
+      || botteDeFoin.includes(' ' + t + 's ')
+      || botteDeFoin.includes(' ' + t + 'e ');
+}
+
+/* Un mot partagé par quarante métiers ne dit rien de personne. « Contact »,
+   « écoute », « rigueur » sont partout ; « horlogerie » ou « soudure » sont
+   rares donc discriminants. On pondère chaque terme par sa rareté dans la base.
+   Sans ça, un profil relationnel matchait autant Coiffeur que Spécialiste RH —
+   ce qui est exactement ce qu'on a observé en test. Calculé une seule fois. */
+let _POIDS_CACHE = null;
+function _poidsTerme(terme) {
+  if (!_POIDS_CACHE) {
+    _POIDS_CACHE = Object.create(null);
+    const n = METIERS_DB.length;
+    const compte = Object.create(null);
+    METIERS_DB.forEach(m => {
+      new Set([...m.competences, ...m.passions, ...(m.valeurs || [])].map(t => t.toLowerCase()))
+        .forEach(t => { compte[t] = (compte[t] || 0) + 1; });
+    });
+    Object.keys(compte).forEach(t => {
+      // Rareté bornée entre 0.35 (mot passe-partout) et 1 (mot signant).
+      _POIDS_CACHE[t] = Math.max(0.35, Math.min(1, Math.log(n / compte[t]) / Math.log(n / 2)));
+    });
+  }
+  return _POIDS_CACHE[terme] !== undefined ? _POIDS_CACHE[terme] : 1;
+}
+
+function _scoreMetiersRelevance(conversationLower, forces, valeurs, synthMetiers, dreamJob, rejets, cvLower) {
   forces = forces || [];
   valeurs = valeurs || [];
+  rejets = rejets || { termes: [], secteurs: [], portee: 'inconnu' };
   const dreamLower = (dreamJob || '').toLowerCase();
+
+  // Le CV décrit le PASSÉ. Il sert à reconnaître des compétences transférables,
+  // jamais à ramener la personne dans le secteur qu'elle veut quitter : on le
+  // croise donc avec les competences, pas avec les passions (qui portent les
+  // mots de secteur : « assurance », « banque », « vente »...).
+  const cv = (cvLower || '').toLowerCase();
 
   // Graine simple et stable dérivée de la conversation — sert à départager
   // les égalités sans jamais retomber sur l'ordre brut de la base (c'était
@@ -4784,27 +4942,77 @@ function _scoreMetiersRelevance(conversationLower, forces, valeurs, synthMetiers
   for (let i = 0; i < conversationLower.length; i++) seed = (seed * 31 + conversationLower.charCodeAt(i)) >>> 0;
   function seededRand(n) { seed = (seed * 1103515245 + 12345) >>> 0; return seed % n; }
 
+  // On retire des phrases de refus les mots qui y sont cités : sans ça, dire
+  // « je ne veux plus d'assurance » comptait comme un intérêt POUR l'assurance.
+  let texteUtile = conversationLower;
+  (rejets.extraits || []).forEach(ph => { texteUtile = texteUtile.split(ph).join(' '); });
+  const _dit = _normaliserTexte(texteUtile);   // ce que la personne a dit
+  const _cv  = _normaliserTexte(cv);           // ce que son CV décrit
+
   const scored = METIERS_DB.map(m => {
+    const titreL = m.titre.toLowerCase();
+    // Le titre du métier contient un mot refusé → il sort, sans discussion.
+    const titreRefuse = (rejets.termes || []).some(r => titreL.includes(r));
+    // Le SECTEUR est refusé : on ne l'efface que si la personne a confirmé que
+    // c'est bien tout le domaine. Sinon on pénalise fortement sans supprimer —
+    // « je ne veux plus de vente forcée » ne veut pas dire « plus jamais de
+    // commerce », et c'est justement ce que Cynthia va demander de préciser.
+    const secteurVise = (rejets.secteurs || []).includes(m.secteur);
+    const refuse = titreRefuse || (secteurVise && rejets.portee === 'secteur');
+    const penalite = (!refuse && secteurVise) ? 0.2 : 1;
+
     let kw = 0;
-    [...m.competences, ...m.passions, ...(m.valeurs || [])].forEach(k => {
-      if (conversationLower.includes(k.toLowerCase())) kw++;
+    // Compétences : transférables. Ce que la personne DIT compte plus que ce
+    // que son CV décrit — dire « j'aime former » est un choix, l'avoir sur son
+    // CV est un constat.
+    m.competences.forEach(k => {
+      const kl = k.toLowerCase();
+      if (_contientMot(_dit, kl)) kw += 2 * _poidsTerme(kl);
+      else if (_cv.length > 2 && _contientMot(_cv, kl)) kw += 1 * _poidsTerme(kl);
+    });
+    // Intérêts et valeurs : ils portent la couleur du secteur. Ils ne comptent
+    // que si la personne les a exprimés elle-même, JAMAIS depuis le CV.
+    [...m.passions, ...(m.valeurs || [])].forEach(k => {
+      const kl = k.toLowerCase();
+      if (_contientMot(_dit, kl)) kw += _poidsTerme(kl);
     });
     // Bonus si le profil détecté pendant la conversation (forces/valeurs)
     // recoupe les compétences/valeurs/passions du métier
+    // Même correction que plus haut : ce bonus comparait des sous-chaînes, donc
+    // la force « conseil » matchait le terme « conseiller » et « relationnel »
+    // matchait « relation ». Un profil relationnel décrochait ainsi +4 chez
+    // Coiffeur, qui passait devant Spécialiste RH alors qu'il avait MOINS de
+    // mots-clés en commun. On compare désormais des termes normalisés, à
+    // l'identique, et on pondère par la rareté comme le reste.
     let profileBonus = 0;
-    const allMetierTerms = [...m.competences, ...(m.valeurs || []), ...m.passions].map(t => t.toLowerCase());
-    forces.forEach(f => { if (allMetierTerms.some(t => t.includes(f.toLowerCase()) || f.toLowerCase().includes(t))) profileBonus += 2; });
-    valeurs.forEach(v => { if (allMetierTerms.some(t => t.includes(v.toLowerCase()) || v.toLowerCase().includes(t))) profileBonus += 2; });
+    const termesMetier = [...m.competences, ...(m.valeurs || []), ...m.passions]
+      .map(t => _normaliserTexte(t).trim());
+    [...forces, ...valeurs].forEach(f => {
+      const fn = _normaliserTexte(f).trim();
+      if (!fn) return;
+      if (termesMetier.includes(fn)) profileBonus += 1.6 * _poidsTerme(f.toLowerCase());
+    });
     // Bonus fort si déjà proposé par Cynthia en synthèse (cohérence avec le fil de la conversation)
     const inSynth = synthMetiers && synthMetiers.find(s => s.id === m.id);
     // Bonus fort si c'est (ou proche de) le métier de rêve déclaré au questionnaire
     const isDream = dreamLower && (m.titre.toLowerCase().includes(dreamLower) || dreamLower.includes(m.titre.toLowerCase()));
-    const total = kw + profileBonus + (inSynth ? 20 : 0) + (isDream ? 25 : 0);
-    return { ...m, _relScore: total, _jitter: seededRand(1000) };
+    // La pénalité s'applique au TOTAL : sinon les bonus de profil la contournaient
+    // et un métier du secteur rejeté remontait quand même dans les premiers.
+    // Exceptions volontaires : ce que Cynthia a proposé en direct et le métier
+    // rêvé déclaré par la personne restent intouchables — c'est sa parole à elle.
+    const total = (kw + profileBonus) * penalite + (inSynth ? 20 : 0) + (isDream ? 25 : 0);
+    // Le hasard ne sert qu'à départager de VRAIES égalités. Avant, il valait
+    // jusqu'à 1000 et pesait donc plus que le score lui-même quand les écarts
+    // étaient serrés — c'est ainsi que « Coiffeuse » remontait en 3e position.
+    return { ...m, _relScore: total, _refuse: refuse, _jitter: seededRand(100) / 1000 };
   });
 
-  scored.sort((a, b) => (b._relScore - a._relScore) || (a._jitter - b._jitter));
-  return scored;
+  // Les métiers refusés ne sont pas seulement mal classés : ils sont retirés.
+  const gardes = scored.filter(m => !m._refuse);
+  const retenus = gardes.length >= 12 ? gardes : scored;   // filet : jamais une liste vide
+
+  retenus.sort((a, b) => (b._relScore - a._relScore) || (a._jitter - b._jitter));
+  return retenus;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -4826,12 +5034,22 @@ async function generateOrientationReport() {
   // BUG FIX v5.3 — présélection des métiers pertinents (au lieu des 100 en vrac) :
   // réduit la surface d'hallucination et empêche le LLM de dériver vers les mêmes
   // métiers "par défaut" quand le signal de la conversation est faible.
+  // Ce que la personne a dit ne plus vouloir. On ne lit QUE ses messages : les
+  // mots de Cynthia ne sont pas des faits sur elle.
+  const _motsUtilisateur = chatHistory
+    .filter(m => m.role === 'user')
+    .map(m => m.content.toLowerCase())
+    .join(' \n ');
+  const _rejets = _detecterRejets(_motsUtilisateur);
+
   const _relevantMetiers = _scoreMetiersRelevance(
-    conversationText.toLowerCase(),
+    _motsUtilisateur,
     chatProfile.forces,
     chatProfile.valeurs,
     _synthMetiers,
-    _dreamJob
+    _dreamJob,
+    _rejets,
+    _cvText || ''
   ).slice(0, 25);
 
   // Enrichissement avec METIERS_EXTRA pour le matching compétences transférables
@@ -4858,8 +5076,16 @@ async function generateOrientationReport() {
   const _cvForReport = _cvText
     ? `\n\nCV DE LA PERSONNE (texte réel extrait de son CV — ses postes, années d'expérience, formations et compétences comptent comme DITS par la personne ; croise-les avec la conversation) :\n${_cvText.slice(0, 6000)}\n`
     : '';
+  // Ceinture ET bretelles : les métiers refusés sont déjà retirés de la liste
+  // ci-dessous, mais on le dit AUSSI au modèle. S'il a compris un refus que le
+  // code n'a pas su repérer, il doit le respecter de lui-même.
+  const _blocRejets = (_rejets.termes && _rejets.termes.length)
+    ? `\n\n⛔ CE QUE LA PERSONNE A DIT NE PLUS VOULOIR : ${_rejets.termes.join(', ')}${_rejets.secteurs.length ? ` (secteur(s) écarté(s) : ${_rejets.secteurs.join(', ')})` : ''}.
+INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal" ni en "piste". Même s'il correspond parfaitement à son expérience passée. Elle l'a dit, tu le respectes. Ses compétences acquises là-bas restent valables et transférables ailleurs : sers-t'en pour justifier d'AUTRES métiers.\n`
+    : '';
+
   const dataBlock = `CONVERSATION INTÉGRALE :
-${conversationText}${_cvForReport}
+${conversationText}${_cvForReport}${_blocRejets}
 
 BASE DE DONNÉES MÉTIERS SUISSE (format: id|titre|secteur|competences_cles|tension_marche|avenir|financement|voie_adulte|ou_recrute|profils_types|salaire_debut|salaire_exp) :
 ${metiersList}`;
@@ -5094,7 +5320,8 @@ function buildFallbackReport() {
   const conversation = chatHistory.filter(m => m.role === 'user').map(m => m.content.toLowerCase()).join(' ');
   const _dreamJobFb = (typeof quizAnswers !== 'undefined' && quizAnswers.metierReve && quizAnswers.metierReve.trim())
     ? quizAnswers.metierReve.trim() : '';
-  const scored = _scoreMetiersRelevance(conversation, chatProfile.forces, chatProfile.valeurs, _synthMetiers, _dreamJobFb);
+  const _rejetsFb = _detecterRejets(conversation);
+  const scored = _scoreMetiersRelevance(conversation, chatProfile.forces, chatProfile.valeurs, _synthMetiers, _dreamJobFb, _rejetsFb, _cvText || '');
   // BUG #7 — Prioriser les métiers proposés par Cynthia en synthèse si disponibles
   const picks = (_synthMetiers && _synthMetiers.length >= 2)
     ? [..._synthMetiers, ...scored.filter(m => !_synthMetiers.find(s => s.id === m.id))].slice(0, 3)
@@ -5493,9 +5720,19 @@ function downloadRapport(){
   const bf = (P.big_five && typeof P.big_five==='object') ? P.big_five : null;
   let portraitLeft = '';
   if (bf) {
-    const dims = [['Ouverture',bf.ouverture],['Rigueur',bf.rigueur!=null?bf.rigueur:bf.conscience],['Extraversion',bf.extraversion],['Amabilité',bf.amabilite!=null?bf.amabilite:bf['amabilité']],['Stabilité émotionnelle',bf.stabilite!=null?bf.stabilite:bf['stabilité']]];
-    const bars = dims.filter(d=>d[1]!=null && !isNaN(Number(d[1]))).map(function(d){var val=Math.max(15,Math.min(99,Math.round(Number(d[1])||60)));return `<div class="trait"><div class="tt"><span>${d[0]}</span><span>${val} %</span></div><div class="bar"><span style="width:${val}%"></span></div></div>`;}).join('');
-    if (bars) portraitLeft = `<div><div class="minilabel">Profil de personnalité · approche Big Five</div>${bars}</div>`;
+    /* Une définition sous chaque dimension : sans ça, la personne lit
+       « Amabilité 82 % » sans savoir de quoi on parle, et un pourcentage
+       qu'on ne comprend pas n'inspire pas confiance. Formulé en langage
+       courant, sans jargon de psychologue. */
+    const dims = [
+      ['Ouverture',              bf.ouverture,                                          'Votre goût pour la nouveauté, les idées et le changement.'],
+      ['Rigueur',                bf.rigueur!=null?bf.rigueur:bf.conscience,             'Votre sens de l\'organisation et votre façon de tenir vos engagements.'],
+      ['Extraversion',           bf.extraversion,                                       'L\'énergie que vous tirez du contact avec les autres.'],
+      ['Amabilité',              bf.amabilite!=null?bf.amabilite:bf['amabilité'],       'Votre tendance à coopérer, écouter et faire confiance.'],
+      ['Stabilité émotionnelle', bf.stabilite!=null?bf.stabilite:bf['stabilité'],       'Votre calme face à la pression et à l\'imprévu.']
+    ];
+    const bars = dims.filter(d=>d[1]!=null && !isNaN(Number(d[1]))).map(function(d){var val=Math.max(15,Math.min(99,Math.round(Number(d[1])||60)));return `<div class="trait"><div class="tt"><span>${d[0]}</span><span>${val} %</span></div><div class="bar"><span style="width:${val}%"></span></div><div class="tdef">${esc(d[2])}</div></div>`;}).join('');
+    if (bars) portraitLeft = `<div><div class="minilabel">Profil de personnalité · approche Big Five</div>${bars}<p class="bfnote">Ces repères décrivent des tendances, pas des cases. Aucun score n'est « bon » ou « mauvais » : ils servent à repérer les environnements de travail où vous serez à l'aise.</p></div>`;
   }
   if (!portraitLeft && arrOf(P.traits_dominants).length) portraitLeft = `<div><div class="minilabel">Vos traits dominants</div><div class="tags">${tagList(P.traits_dominants)}</div></div>`;
   const portraitRight = `${arrOf(P.intelligences_cles).length?`<div class="callout"><div class="minilabel">Intelligences dominantes</div><div class="tags">${tagList(P.intelligences_cles)}</div></div>`:''}${P.style_travail?`<div class="callout"><div class="minilabel">Votre style de travail</div><p class="body" style="margin:0;font-size:.94rem">${esc(P.style_travail)}</p></div>`:''}`;
@@ -5653,7 +5890,9 @@ h2.sec{font-size:1.55rem;display:flex;align-items:center;margin-bottom:8px}
 .lead-quote{background:var(--emerald-soft);border-radius:16px;padding:22px 24px;font-size:1.05rem;color:var(--ink);margin-bottom:24px;border-left:4px solid var(--emerald)}
 p.body{font-size:1rem;margin-bottom:14px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
-.trait{margin-bottom:14px}
+.trait{margin-bottom:18px}
+.trait .tdef{margin-top:6px;font-size:.82rem;line-height:1.45;color:#6B7A73}
+.bfnote{margin-top:16px;font-size:.8rem;line-height:1.55;color:#6B7A73;font-style:italic}
 .trait .tt{display:flex;justify-content:space-between;font-size:.92rem;margin-bottom:5px;font-weight:500}
 .trait .tt span:last-child{color:var(--emerald-d);font-family:'Space Grotesk';font-weight:600}
 .bar{height:9px;border-radius:100px;background:#EAE3D7;overflow:hidden}
