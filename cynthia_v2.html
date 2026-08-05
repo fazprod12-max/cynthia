@@ -1064,8 +1064,16 @@ footer{
 .chat-head-name{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--c-ink);font-size:16px;}
 .chat-head-st{font-size:12px;color:var(--c-muted);display:flex;align-items:center;gap:5px;}
 .chat-head-dot{width:7px;height:7px;border-radius:50%;background:var(--c-emerald);animation:pulse 2s infinite;}
-.chat-end-btn{background:var(--c-cream);border:1px solid var(--c-line);color:var(--c-muted);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:.2s;}
-.chat-end-btn:hover{background:var(--c-coral-soft);border-color:transparent;color:#C6402F;}
+/* Discret pendant l'entretien : on ne veut pas qu'on clique au 3e message et
+   qu'on reparte avec un rapport creux. Il s'allume quand la synthèse arrive. */
+.chat-end-btn{background:var(--c-cream);border:1px solid var(--c-line);color:var(--c-muted);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:background .2s,border-color .2s,color .2s,transform .2s;white-space:nowrap;}
+.chat-end-btn:hover{background:var(--c-emerald-soft);border-color:var(--c-emerald);color:var(--c-emerald-d);}
+.chat-end-btn:active{transform:scale(.97);}
+/* Le moment est venu : une seule pulsation à l'arrivée, puis plus rien ne bouge. */
+.chat-end-btn.ready{background:var(--c-emerald);border-color:var(--c-emerald);color:#062019;font-weight:600;animation:cynReady .7s cubic-bezier(.34,1.3,.5,1) 1;}
+.chat-end-btn.ready:hover{background:#3EE0AE;border-color:#3EE0AE;color:#062019;}
+@keyframes cynReady{0%{transform:scale(1)}45%{transform:scale(1.09)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.chat-end-btn.ready{animation:none}}
 /* Phase indicator */
 .chat-phase-bar{display:flex;align-items:center;gap:2px;padding:6px 12px;background:var(--c-emerald-soft);border-bottom:1px solid var(--c-line);overflow-x:auto;}
 .chat-phase-step{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--c-muted);font-weight:600;letter-spacing:.2px;transition:.4s;white-space:nowrap;flex-shrink:0;}
@@ -2447,7 +2455,11 @@ document.addEventListener('DOMContentLoaded', function () {
           <div class="chat-head-name">CYNTH.IA</div>
           <div class="chat-head-st"><span class="chat-head-dot"></span><span id="chat-head-status">En ligne</span></div>
         </div>
-        <button class="chat-end-btn" onclick="confirmEndChat()">✕ Terminer</button>
+        <!-- Ce bouton s'appelait « ✕ Terminer » et virait au rouge au survol : il
+             ressemblait à un bouton pour QUITTER alors qu'il donne accès au
+             rapport, c'est-à-dire à toute la valeur du produit. Renommé, et il
+             s'allume en émeraude au moment où la synthèse arrive. -->
+        <button class="chat-end-btn" id="chat-end-btn" onclick="confirmEndChat()">Mon rapport →</button>
       </div>
       <!-- Phase progress (3 phases — méthode CYNTH.IA) -->
       <div class="chat-phase-bar" id="chat-phase-bar">
@@ -4205,9 +4217,19 @@ async function sendChatMsg() {
       _optionsShown = true;
       _holdInputForOptions = true;
       setTimeout(() => {
-        const options = "Pour la suite, trois possibilités s'offrent à vous :\n\n1. Approfondir une piste : posez-moi directement vos questions sur l'un de ces métiers.\n2. Générer votre rapport complet : 5 métiers détaillés, plan d'action sur 6 mois, salaires, financements (bouton « Terminer » en haut de la fenêtre).\n3. Parler à un professionnel du métier, disponible juste après la génération du rapport.";
+        // CLÔTURE. Avant, c'était une liste de trois options : la personne ne
+        // savait pas que l'entretien était terminé, ni que le rapport était là.
+        // Message fixe (donc fiable à 100 %, contrairement à une consigne de
+        // prompt) : je conclus, j'oriente vers le rapport, je demande le retour.
+        // Aucune promesse sur le CONTENU du rapport : on ne sait pas encore ce
+        // qu'il dira, et promettre des pistes « surprenantes » serait mentir.
+        const options = "Voilà, j'ai fait le tour de votre parcours.\n\n"
+          + "Ce que vous m'avez raconté m'a donné de vraies pistes. Cliquez sur « Mon rapport », en haut, pour l'ouvrir : 5 métiers détaillés, les salaires suisses, les formations et votre plan sur 6 mois. C'est Faouzi, qui m'a créée, qui vous l'offre pendant la phase de test.\n\n"
+          + "Prenez deux minutes pour les questions en bas du rapport, ça m'aide à m'améliorer pour ceux qui viendront après vous. Et si une piste vous intrigue, je suis encore là.";
         addChatBubble('ai', options);
         chatHistory.push({ role: 'assistant', content: options });
+        // Le bouton du rapport s'allume : c'est maintenant l'action principale.
+        try { const _eb = document.getElementById('chat-end-btn'); if (_eb) _eb.classList.add('ready'); } catch (e) {}
         _holdInputForOptions = false;
         chatWaiting = false;
         if (btn)   btn.disabled   = false;
