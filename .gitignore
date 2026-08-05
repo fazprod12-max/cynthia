@@ -1,0 +1,21 @@
+# Ce depot est PUBLIC (github.com/fazprod12-max/cynthia).
+# Tout ce qui y est commite est visible par n'importe qui.
+# Seuls les fichiers du site doivent s'y trouver.
+
+# Dossier de travail : CLAUDE.md, business plan, dossier de presse, sauvegardes.
+# Il a ete deplace ici par accident le 5 aout 2026 ; tant qu'il y est, git doit
+# l'ignorer completement.
+refonte_deepseek/
+
+# Sauvegardes datees
+*.bak_*
+*.bak
+
+# Documents de travail qui n'ont rien a faire en ligne
+VOCA_AI_*.md
+CYNTHIA_master_*.md
+CYNTHIA_recap_*.pdf
+CYNTHIA_glossaire_*.pdf
+
+# macOS
+.DS_Store
