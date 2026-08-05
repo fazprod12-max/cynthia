@@ -356,15 +356,6 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     <p class="hint">Répondez comme si vous deviez sortir votre carte pour de vrai. Ne soyez pas gentil avec moi, ça ne m'aiderait pas.</p>
 
     <div class="q">
-      <span class="lab">Si Cynthia disparaissait demain et que vous ne pouviez plus l'utiliser, vous seriez… <span class="req">*</span></span>
-      <div class="opts" data-champ="disparition">
-        <button type="button">Très déçu</button>
-        <button type="button">Un peu déçu</button>
-        <button type="button">Pas déçu du tout</button>
-      </div>
-    </div>
-
-    <div class="q">
       <span class="lab">Auriez-vous payé pour ce rapport ? <span class="req">*</span></span>
       <div class="opts" data-champ="paierait">
         <button type="button">Oui, sans hésiter</button>
@@ -388,6 +379,12 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
         <button type="button">89 CHF</button>
         <button type="button">Plus de 89 CHF</button>
       </div>
+    </div>
+
+    <div class="q">
+      <label for="pourquoi_prix">Pourquoi ce prix ?</label>
+      <div class="sub">En une phrase. À quoi vous l'avez comparé dans votre tête.</div>
+      <textarea id="pourquoi_prix" data-champ="pourquoi_prix" placeholder="Je l'ai comparé à…"></textarea>
     </div>
 
     <div class="q">
@@ -415,20 +412,35 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       </div>
     </div>
 
+  </section>
+
+  <!-- 4bis ─── Est-ce que ça compte pour vous ? ─────────────────────────
+       Ces deux questions ne parlent PAS d'argent : elles mesurent l'attachement.
+       Elles étaient noyées au milieu des grilles de prix, où « recommanderiez-vous »
+       coupait le bloc en deux et séparait « combien » de « pourquoi ». Regroupées
+       ici, elles retrouvent leur sens et ce sont les deux réponses les plus utiles
+       du questionnaire. -->
+  <section class="sec">
+    <div class="hd"><span class="num">05</span><h2>Est-ce que ça compte</h2></div>
+    <p class="hint">Deux questions, et ce sont peut-être les plus importantes de toutes.</p>
+
+    <div class="q">
+      <span class="lab">Si Cynthia disparaissait demain et que vous ne pouviez plus l'utiliser, vous seriez… <span class="req">*</span></span>
+      <div class="opts" data-champ="disparition">
+        <button type="button">Très déçu</button>
+        <button type="button">Un peu déçu</button>
+        <button type="button">Pas déçu du tout</button>
+      </div>
+    </div>
+
     <div class="q" data-scale="recommander"
          data-lab="Recommanderiez-vous Cynthia à un proche qui se cherche ?"
          data-g="Jamais" data-d="Sans hésiter"></div>
-
-    <div class="q">
-      <label for="pourquoi_prix">Pourquoi ce prix ?</label>
-      <div class="sub">En une phrase. À quoi vous l'avez comparé dans votre tête.</div>
-      <textarea id="pourquoi_prix" data-champ="pourquoi_prix" placeholder="Je l'ai comparé à…"></textarea>
-    </div>
   </section>
 
   <!-- 5 ─────────────────────────────────────────────── -->
   <section class="sec">
-    <div class="hd"><span class="num">05</span><h2>Le mot de la fin</h2></div>
+    <div class="hd"><span class="num">06</span><h2>Le mot de la fin</h2></div>
 
     <div class="q">
       <label for="priorite">S'il n'y avait qu'une seule chose à améliorer, ce serait quoi ? <span class="req">*</span></label>
