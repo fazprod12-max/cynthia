@@ -6298,8 +6298,62 @@ footer .disc{font-size:.76rem;opacity:.85;margin-top:8px}
 .suiv button:hover{opacity:.9}
 .suiv .mini{font-size:.76rem;color:var(--muted);margin-top:11px;line-height:1.5}
 .suiv .done{font-size:.95rem;color:var(--emerald-d);font-weight:600}
-@media print{.suiv{display:none}}
-@media print{body{background:#fff}.doc{box-shadow:none;margin:0;max-width:100%}.fbk{display:none}}
+/* ══════════════════════════════════════════════════════════════════════════
+   IMPRESSION / ENREGISTREMENT EN PDF
+   ──────────────────────────────────────────────────────────────────────────
+   REFAIT LE 6 août 2026. Avant, il n'y avait que deux lignes ici : aucun
+   contrôle de pagination. Résultat constaté sur le PDF réel de Faouzi :
+   sections coupées en plein milieu, fiches métier scindées sur deux pages,
+   titre de section seul en bas de page avec le paragraphe précédent qui
+   débordait dessous, 13 pages en désordre. Illisible pour un document qu'on
+   fait payer.
+
+   Principes retenus :
+   1. La couverture occupe SA page, seule.
+   2. Chaque section commence en haut d'une nouvelle page (« chaque page a
+      son thème »).
+   3. Aucun bloc atomique — fiche métier, trait de personnalité, étape du
+      plan, colonne de ressources — ne peut être coupé en deux.
+   4. Un titre ne reste jamais seul en bas d'une page.
+   5. Les couleurs sont forcées : sans print-color-adjust, le vert profond,
+      les barres et les encadrés sortent en blanc et le document perd tout.
+   ══════════════════════════════════════════════════════════════════════════ */
+@page{size:A4;margin:0}
+@media print{
+  /* Les couleurs de marque doivent survivre à l'impression. */
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+
+  html,body{background:#fff!important}
+  body{font-size:10.6pt;line-height:1.55}
+  .doc{max-width:none;width:100%;margin:0;box-shadow:none;background:#fff}
+
+  /* 1. Couverture pleine page. Le break-before des sections suivantes la
+        laisse seule sur la page 1 : pas besoin de break-after ici, qui
+        provoquerait une page blanche. */
+  .cover{min-height:100vh;padding:38mm 20mm;display:flex;flex-direction:column;justify-content:center}
+  .cover .glow,.cover .glow2{filter:none}
+
+  /* 2. Une section = une page. Marges portées par .pad puisque @page vaut 0,
+        ce qui permet à la couverture d'aller bord à bord. */
+  .pad{break-before:page;page-break-before:always;padding:22mm 18mm}
+  .divider{display:none}
+
+  /* 3. Ce qui ne doit JAMAIS être coupé en deux. */
+  .metier,.trait,.tl .item,.res>div,.grid2>div,.mgrid>div,.lead-quote,
+  .firststep,.card,.bfnote,.mhead,.mfoot,li{
+    break-inside:avoid;page-break-inside:avoid}
+
+  /* 4. Un titre ou une amorce ne reste pas orphelin en bas de page. */
+  h2.sec,h3,h4,.minilabel,.sec-sub,.rank{
+    break-after:avoid;page-break-after:avoid}
+  p,li{orphans:3;widows:3}
+
+  /* 5. Finitions : rien qui flotte, rien qui déborde, pas d'ombres baveuses. */
+  .metier{box-shadow:none;border:1px solid var(--line)}
+  .grid2,.mgrid,.res{gap:14mm 10mm}
+  a{text-decoration:none;color:inherit}
+  .suiv,.fbk{display:none}
+}
 </style></head><body><div class="doc">
 <div class="cover"><div class="glow"></div><div class="glow2"></div><div class="brandline">Cynth<span class="orb"></span><span class="ia">IA</span></div><div class="label">Rapport d'orientation personnalisé</div><h1>${esc(prenom)}</h1><div class="who">Préparé pour vous, à partir de votre conversation avec Cynthia.</div><div class="meta"><div><b>${esc(date)}</b>Établi le</div><div><b>${esc(refNum)}</b>Référence</div><div><b>Suisse romande</b>Marché de référence</div></div></div>
 ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetiers}${secPlan}${secRes}${section6}
