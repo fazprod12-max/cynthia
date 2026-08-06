@@ -4939,6 +4939,84 @@ function _phrasesNegatives(texteUtilisateur) {
     .slice(0, 12);
 }
 
+/* ── UN MÉTIER NE PEUT PAS ÊTRE « PRINCIPAL » S'IL CONTREDIT LA PERSONNE ─────
+   DÉFAUT VU EN TEST LIVE (5 août 2026, profil de Faouzi) : « Spécialiste IA /
+   Machine Learning Engineer » sortait en 2e position et en type « principal »
+   alors que la personne avait dit « je ne code pas, je n'ai aucune formation en
+   informatique ». Le modèle l'assumait lui-même (« même si vous ne codez pas
+   aujourd'hui ») et listait « fondamentaux en programmation » à acquérir.
+
+   Ce n'est pas une invention et ce n'est pas absurde : c'est une ambition qu'il
+   a exprimée. Mais le présenter comme une des trois pistes SOLIDES, c'est
+   vendre un projet de plusieurs années comme une porte d'entrée. La règle
+   retenue avec Faouzi : ça reste dans le rapport, en « piste à explorer »,
+   jamais en « principal ».
+
+   Ces familles de mots sont curées à la main, pas devinées. Elles ne couvrent
+   donc que ce qu'on y a mis : c'est une liste à étendre quand un cas nouveau
+   apparaît, pas un système qui comprend le français. */
+const CONTRADICTIONS = [
+  { concept: 'programmation', mots: ['code', 'coder', 'codage', 'programmation', 'programmer',
+      'python', 'java', 'javascript', 'sql', 'developpement', 'developpeur',
+      'logiciel', 'algorithme', 'machine learning', 'mlops', 'data science', 'informatique'] },
+  { concept: 'mathematiques', mots: ['mathematiques', 'maths', 'statistiques', 'calcul', 'algebre'] },
+  { concept: 'comptabilite', mots: ['comptabilite', 'compta', 'fiscalite', 'bilan comptable', 'ecritures comptables'] },
+  { concept: 'effort physique', mots: ['port de charges', 'charges lourdes', 'manutention',
+      'endurance physique', 'travail physique', 'force physique'] },
+  { concept: 'vente', mots: ['vente', 'prospection', 'negociation commerciale', 'objectifs de vente'] },
+  { concept: 'conduite', mots: ['conduite', 'permis de conduire', 'poids lourd'] }
+];
+
+/**
+ * Rétrograde en « piste » tout métier dont une compétence À ACQUÉRIR tombe dans
+ * une famille que la personne a explicitement dit ne pas maîtriser.
+ * On ne supprime jamais : on déclasse, et on renvoie les principaux d'abord.
+ *
+ * @param {Array}    topMetiers     les 5 métiers rédigés
+ * @param {string[]} phrasesNeg     sortie de _phrasesNegatives
+ * @returns {Array}  les mêmes métiers, réordonnés et retypés
+ */
+function _retrograderContradictions(topMetiers, phrasesNeg) {
+  if (!Array.isArray(topMetiers) || !topMetiers.length) return topMetiers || [];
+  if (!phrasesNeg || !phrasesNeg.length) return topMetiers;
+
+  // Quelles familles la personne a-t-elle niées ?
+  const negNorm = phrasesNeg.map(p => _normaliserTexte(p));
+  const familiesNiees = CONTRADICTIONS.filter(f =>
+    f.mots.some(mot => negNorm.some(ph => _contientMot(ph, mot))));
+  if (!familiesNiees.length) return topMetiers;
+
+  const principaux = [], pistes = [];
+  topMetiers.forEach(m => {
+    // On ne regarde QUE ce qu'il faut acquérir : ce que la personne sait déjà
+    // faire n'est pas en cause, et ses "atouts" ne doivent pas la pénaliser.
+    const aAcquerir = _normaliserTexte([
+      ...(Array.isArray(m.developper) ? m.developper : []),
+      m.route_formation || ''
+    ].join(' '));
+    const heurte = familiesNiees.find(f => f.mots.some(mot => _contientMot(aAcquerir, mot)));
+    if (heurte && m.type !== 'piste') {
+      console.warn('[CYNTH] « ' + m.titre +' » rétrogradé en piste : demande ' +
+        heurte.concept + ', que la personne a dit ne pas maîtriser.');
+      pistes.push({ ...m, type: 'piste', _retrograde: heurte.concept });
+    } else if (heurte) {
+      pistes.push({ ...m, _retrograde: heurte.concept });
+    } else if (m.type === 'piste') {
+      pistes.push(m);
+    } else {
+      principaux.push(m);
+    }
+  });
+
+  // Filet : si tout a été rétrogradé, on garde le premier en principal —
+  // un rapport sans aucune piste solide ne rend service à personne.
+  if (!principaux.length && pistes.length) {
+    const premier = pistes.shift();
+    principaux.push({ ...premier, type: 'principal' });
+  }
+  return principaux.concat(pistes);
+}
+
 /* ── Recherche par MOTS ENTIERS ──────────────────────────────────────────────
    DÉFAUT CORRIGÉ (4 août 2026) : le matching utilisait includes() sur le texte
    brut, donc il trouvait des mots à l'intérieur d'autres mots. « main » était
@@ -5506,7 +5584,11 @@ ${metiersList}`;
     competences_a_ajouter: _ac.competences_a_ajouter || [],
     cv_bullets: _ac.cv_bullets || [],
     pitch: _ac.pitch || '',
-    top_metiers: _mt.top_metiers || [],
+    // Dernier filtre avant affichage : un métier qui exige d'acquérir ce que la
+    // personne a dit ne pas savoir faire descend en « piste ». Voir
+    // _retrograderContradictions. Appliqué ici, donc valable aussi bien pour la
+    // rédaction par le modèle que pour le rapport de secours.
+    top_metiers: _retrograderContradictions(_mt.top_metiers || [], _phrasesNegatives(_motsUtilisateur)),
     plan_action_6_mois: _pl.plan_action_6_mois || {},
     ressources_utiles: _pl.ressources_utiles || {},
     message_fin: _pl.message_fin || _fb.message_fin,
