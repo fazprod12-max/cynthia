@@ -830,27 +830,6 @@ footer{
   color:var(--c-emerald-d);font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
 }
 /* Audio player */
-.audio-player{background:rgba(250,243,224,.03);border:1px solid var(--border);border-radius:16px;padding:24px;margin:20px 0;}
-.ap-orb{width:56px;height:56px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 0deg,var(--v1),var(--v3),var(--v4),var(--v1));filter:blur(.5px);box-shadow:0 0 26px rgba(143,188,139,.6);}
-.ap-orb.playing{animation:spin 4s linear infinite;}
-.ap-wave{display:flex;align-items:center;justify-content:center;gap:3px;height:32px;margin-bottom:12px;}
-.ap-wave .aw{width:2px;border-radius:4px;background:linear-gradient(180deg,var(--v3),var(--v1));}
-.ap-wave.playing .aw{animation:wave .9s ease-in-out infinite;}
-.ap-wave .aw:nth-child(1){height:6px;animation-delay:0s;}
-.ap-wave .aw:nth-child(2){height:14px;animation-delay:.1s;}
-.ap-wave .aw:nth-child(3){height:9px;animation-delay:.2s;}
-.ap-wave .aw:nth-child(4){height:22px;animation-delay:.3s;}
-.ap-wave .aw:nth-child(5){height:16px;animation-delay:.4s;}
-.ap-wave .aw:nth-child(6){height:26px;animation-delay:.5s;}
-.ap-wave .aw:nth-child(7){height:10px;animation-delay:.6s;}
-.ap-wave .aw:nth-child(8){height:19px;animation-delay:.7s;}
-.ap-progress{width:100%;height:3px;background:rgba(250,243,224,.08);border-radius:4px;margin:10px 0;cursor:pointer;}
-.ap-bar{height:100%;background:linear-gradient(90deg,var(--v1),var(--v4));border-radius:4px;width:0%;transition:width .5s linear;}
-.ap-time{font-size:12px;color:var(--txt3);text-align:center;font-variant-numeric:tabular-nums;margin-bottom:12px;}
-.ap-controls{display:flex;gap:12px;justify-content:center;}
-.ap-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:rgba(250,243,224,.04);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.2s;}
-.ap-btn:hover{background:rgba(250,243,224,.1);}
-.ap-btn.play{width:52px;height:52px;font-size:20px;background:linear-gradient(135deg,#E0A84E,#C8974A);border-color:transparent;box-shadow:0 4px 20px rgba(200,151,74,.35);}
 .ap-transcript{background:rgba(143,188,139,.06);border:1px solid rgba(143,188,139,.15);border-radius:12px;padding:14px 16px;margin-top:14px;font-size:13px;color:var(--txt2);line-height:1.7;font-style:italic;}
 
 
@@ -3098,11 +3077,9 @@ function showModal(type){
   body.innerHTML=contents[type]||'';
   overlay.classList.add('show');
   // Init audio if needed
-  if(type==='audio'){audioSec=0;audioPlaying=false;audioTimer=null;}
 }
 function closeModal(){
   document.getElementById('modal-overlay').classList.remove('show');
-  if(audioTimer){clearInterval(audioTimer);audioTimer=null;audioPlaying=false;}
 }
 // Close on overlay click
 document.addEventListener('DOMContentLoaded',()=>{
@@ -3111,38 +3088,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 
-/* ── AUDIO PLAYER (simulated) ── */
-let audioSec=0,audioMax=45,audioPlaying=false,audioTimer=null;
-function toggleAudio(){
-  const btn=document.getElementById('ap-play');
-  const wave=document.getElementById('ap-wave');
-  const orb=document.getElementById('ap-orb');
-  if(!btn)return;
-  if(audioPlaying){
-    audioPlaying=false;clearInterval(audioTimer);audioTimer=null;
-    btn.textContent='▶';
-    if(wave)wave.classList.remove('playing');
-    if(orb)orb.style.animation='none';
-  } else {
-    audioPlaying=true;
-    btn.textContent='⏸';
-    if(wave)wave.classList.add('playing');
-    if(orb)orb.style.animation='spin 4s linear infinite';
-    audioTimer=setInterval(()=>{
-      audioSec++;
-      if(audioSec>=audioMax){clearInterval(audioTimer);audioPlaying=false;btn.textContent='▶';if(wave)wave.classList.remove('playing');audioSec=audioMax;}
-      updateAudioUI();
-    },1000);
-  }
-}
-function updateAudioUI(){
-  const bar=document.getElementById('ap-bar');const time=document.getElementById('ap-time');
-  if(bar)bar.style.width=(audioSec/audioMax*100)+'%';
-  if(time)time.textContent=`0:${String(audioSec).padStart(2,'0')} / 0:45`;
-}
-function rewindAudio(){audioSec=Math.max(0,audioSec-10);updateAudioUI();}
-function fwdAudio(){audioSec=Math.min(audioMax,audioSec+10);updateAudioUI();}
-function scrubAudio(e){const r=e.currentTarget.getBoundingClientRect();audioSec=Math.round((e.clientX-r.left)/r.width*audioMax);updateAudioUI();}
+/* Le faux lecteur audio a été SUPPRIMÉ le 11 août 2026 (audit du code source).
+   Il n'y a jamais eu de fichier son : c'était une animation qui simulait une
+   lecture de 45 secondes, présentée aux visiteurs comme « un extrait réel d'un
+   vrai entretien bêta ». Le texte a été corrigé ET le lecteur retiré, parce
+   qu'un bouton lecture et un compteur font croire à un enregistrement même
+   sans description. Code mort supprimé pour qu'il ne revienne jamais. */
 
 
 /* ── CHAT ENGINE ── */
@@ -4921,6 +4872,79 @@ const REJET_AMORCES = [
   'j\'ai arrete', 'je quitte', 'je ne retournerai', 'je ne veux pas'
 ];
 
+/* ── LIRE MALGRÉ LES FAUTES ──────────────────────────────────────────────────
+   Demandé par Faouzi le 11 août 2026, et le besoin est réel : mesuré avant
+   correction, 4 refus sur 6 n'étaient PAS détectés dès qu'il y avait une faute.
+   « je ne veu plus travailler dans l'assurance » passait à travers, et le
+   rapport pouvait donc reproposer l'assurance à quelqu'un qui venait de la
+   refuser — exactement le bug d'origine.
+
+   ⚠️ CE QU'ON NE FAIT PAS : corriger le texte que la personne voit, ni celui
+   qu'on envoie au modèle. CYNTH_PROMPT dit de NE JAMAIS relever une faute —
+   une partie de nos utilisateurs est mal à l'aise à l'écrit, et voir son
+   message réécrit est humiliant. Claude, de son côté, lit parfaitement un texte
+   fautif. La correction sert donc UNIQUEMENT à notre lecture interne : détecter
+   les refus et les négations. Elle ne sort jamais de ces fonctions.
+
+   Méthode : on rétablit d'abord les apostrophes avalées (« jen », « lassurance »),
+   puis on rapproche chaque mot d'une PETITE liste de termes qui nous importent,
+   avec une tolérance d'une lettre. La liste est courte et curée : c'est ce qui
+   évite de « corriger » un mot en un autre mot réel. */
+/* Deux mots diffèrent-ils d'au plus une lettre (ajout, retrait ou substitution) ?
+   ⚠️ Ma première version « optimisée » se trompait sur les insertions au milieu :
+   restoration / restauration renvoyait faux. Réécrite en trois cas explicites,
+   plus lisible et vérifiée par les tests ci-dessous. Un code malin et faux vaut
+   moins qu'un code évident et juste. */
+function _distance1(a, b) {
+  if (a === b) return true;
+  if (a.length === b.length) {          // une substitution
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i] && ++diff > 1) return false;
+    return diff === 1;
+  }
+  const court = a.length < b.length ? a : b;
+  const long = a.length < b.length ? b : a;
+  if (long.length - court.length !== 1) return false;   // une seule lettre d'écart
+  for (let i = 0; i < long.length; i++) {               // on retire la lettre i
+    if (long.slice(0, i) + long.slice(i + 1) === court) return true;
+  }
+  return false;
+}
+
+let _MOTS_CLES_CACHE = null;
+function _motsClesSurveilles() {
+  if (_MOTS_CLES_CACHE) return _MOTS_CLES_CACHE;
+  const set = new Set();
+  REJET_DOMAINES.forEach(d => d.mots.forEach(m => m.split(/\s+/).forEach(w => { if (w.length >= 4) set.add(w); })));
+  REJET_AMORCES.forEach(a => a.replace(/'/g, ' ').split(/\s+/).forEach(w => { if (w.length >= 3) set.add(w); }));
+  ['pas', 'plus', 'jamais', 'aucune', 'aucun', 'formation', 'diplome', 'experience', 'code', 'coder'].forEach(w => set.add(w));
+  _MOTS_CLES_CACHE = [...set];
+  return _MOTS_CLES_CACHE;
+}
+
+/**
+ * Rapproche un texte fautif de nos mots-clés, POUR NOTRE LECTURE SEULEMENT.
+ * Ne modifie ni l'affichage, ni ce qui part au modèle.
+ */
+function _lireMalgreFautes(texte) {
+  if (!texte) return '';
+  let t = String(texte).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')      // accents
+    .replace(/[''`]/g, ' ')                                 // apostrophes → espace
+    // apostrophes avalées : « jen ai marre », « jai », « cest », « lassurance »
+    .replace(/\bj(ai|en|e)\b/g, 'j $1')
+    .replace(/\bc(est)\b/g, 'c $1')
+    .replace(/\bl(assurance|hopital|informatique|immobilier)\b/g, 'l $1')
+    .replace(/\bd(assurance|informatique)\b/g, 'd $1');
+  const cles = _motsClesSurveilles();
+  return t.split(/([^a-z0-9]+)/).map(seg => {
+    if (!/^[a-z0-9]+$/.test(seg) || seg.length < 3) return seg;
+    if (cles.indexOf(seg) !== -1) return seg;               // déjà correct
+    const proche = cles.find(c => Math.abs(c.length - seg.length) <= 1 && _distance1(seg, c));
+    return proche || seg;
+  }).join('');
+}
+
 /**
  * Repère ce que la personne dit ne plus vouloir.
  * @param {string} texteUtilisateur  UNIQUEMENT ses messages, en minuscules.
@@ -4929,17 +4953,34 @@ const REJET_AMORCES = [
 function _detecterRejets(texteUtilisateur) {
   const vide = { termes: [], secteurs: [], portee: 'inconnu', extraits: [] };
   if (!texteUtilisateur) return vide;
-  const t = String(texteUtilisateur).toLowerCase();
+  const brut = String(texteUtilisateur).toLowerCase();
+  /* On analyse le texte ORIGINAL **et** une version rapprochée de nos mots-clés
+     (voir _lireMalgreFautes) : sans elle, « je ne veu plus d'assurance » passait
+     à travers. Les deux sont concaténés au lieu d'être substitués — la version
+     corrigée ne peut donc qu'AJOUTER des détections, jamais en faire perdre.
+     C'est ce qui garantit qu'on ne casse rien de ce qui marchait déjà. */
+  const t = brut + ' \n ' + _lireMalgreFautes(brut);
 
   // On découpe en phrases : un refus vaut pour sa phrase, pas pour tout le texte.
+  // Les extraits renvoyés sont pris sur le texte BRUT (index alignés) pour rester
+  // fidèles à ce que la personne a vraiment écrit.
   const phrases = t.split(/[.!?;\n]+/).map(p => p.trim()).filter(Boolean);
   const termes = new Set(), secteurs = new Set(), extraits = [];
 
+  /* Les motifs (« j'en ai marre », « sécurité ») portent apostrophes et accents,
+     que la version tolérante aux fautes a justement retirés. On compare donc
+     chaque motif sous ses DEUX formes : telle qu'écrite, et aplatie de la même
+     façon que le texte. Sans ça, la correction ne servait à rien. */
+  const _aplati = x => String(x).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[''`]/g, ' ').replace(/\s+/g, ' ').trim();
+  const _dansPhrase = (ph, motif) => ph.includes(motif) || ph.includes(_aplati(motif));
+
   phrases.forEach(ph => {
-    if (!REJET_AMORCES.some(a => ph.includes(a))) return;
+    if (!REJET_AMORCES.some(a => _dansPhrase(ph, a))) return;
     REJET_DOMAINES.forEach(d => {
-      if (d.mots.some(m => ph.includes(m))) {
-        d.mots.forEach(m => { if (ph.includes(m)) termes.add(m); });
+      if (d.mots.some(m => _dansPhrase(ph, m))) {
+        d.mots.forEach(m => { if (_dansPhrase(ph, m)) termes.add(m); });
         d.secteurs.forEach(s => secteurs.add(s));
         if (extraits.length < 4) extraits.push(ph.slice(0, 140));
       }
@@ -4993,8 +5034,10 @@ const NEGATION_MOTIFS = [
  */
 function _phrasesNegatives(texteUtilisateur) {
   if (!texteUtilisateur) return [];
-  return String(texteUtilisateur)
-    .toLowerCase()
+  // Même tolérance qu'aux refus, et de la même façon : on ajoute la version
+  // rapprochée au lieu de remplacer, donc aucune détection existante ne se perd.
+  const _b = String(texteUtilisateur).toLowerCase();
+  return (_b + ' \n ' + _lireMalgreFautes(_b))
     .split(/[.!?;\n]+/)
     .map(p => p.trim())
     .filter(p => p && NEGATION_MOTIFS.some(rx => rx.test(p)))
