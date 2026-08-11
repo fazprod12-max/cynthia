@@ -3181,6 +3181,27 @@ function _logAiFailure(kind, detail) {
   } catch (e) { /* localStorage indisponible — on ignore, le console.error suffit */ }
 }
 
+/* ── QUELLE DATE SOMMES-NOUS ? ──────────────────────────────────────────────
+   Un modèle de langage n'a pas d'horloge. Si on ne le lui dit pas, il répond
+   avec la date de sa dernière mise à jour — d'où « fin 2025 » et « janvier
+   2026 » proposés à quelqu'un en août 2026 (premier testeur, 6 août 2026).
+   Cette fonction est appelée à chaque appel, chat comme rapport : le jour
+   change pendant qu'une session est ouverte, et une session peut être reprise
+   le lendemain. Une constante posée au chargement ne suffirait pas. */
+function _blocDateDuJour() {
+  const d = new Date();
+  const jour = d.toLocaleDateString('fr-CH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const annee = d.getFullYear();
+  const mois = d.toLocaleDateString('fr-CH', { month: 'long' });
+  return `📅 NOUS SOMMES LE ${jour.toUpperCase()}.
+C'est la date réelle d'aujourd'hui, elle prime sur tout ce que tu crois savoir.
+Toutes tes échéances partent de MAINTENANT : « cette semaine » = ${mois} ${annee},
+« dans six mois » tombe en ${new Date(d.getFullYear(), d.getMonth() + 6, 1).toLocaleDateString('fr-CH', { month: 'long', year: 'numeric' })}.
+Ne parle JAMAIS d'une année passée comme si elle était à venir, et ne propose
+jamais une rentrée ou une échéance déjà écoulée. Si la personne évoque une date,
+situe-la par rapport à aujourd'hui avant de répondre.`;
+}
+
 const CYNTH_PROMPT = `Tu es Cynthia. Pas une IA — une coach d'orientation avec 20 ans de terrain, qui a aidé des centaines de personnes de tous horizons (ouvriers, cadres, artisans, parents, indépendants) à trouver un métier qui leur ressemble. Zéro mépris de classe : chaque personne a de la valeur, quelle que soit sa situation.
 
 TON BUT (à chaque tour)
@@ -3593,7 +3614,16 @@ async function callCynthAI(messages) {
   if (chatProfile.valeurs.length > 0) profileContext += `Valeurs détectées : ${chatProfile.valeurs.join(', ')}. `;
   if (chatProfile.forces.length > 0)  profileContext += `Forces détectées : ${chatProfile.forces.join(', ')}. `;
   if (chatProfile.freins.length > 0)  profileContext += `Freins exprimés : ${chatProfile.freins.join(', ')}. `;
-  let systemPrompt = CYNTH_PROMPT + (profileContext ? `\n\n📋 PROFIL CONNU : ${profileContext.trim()}` : '');
+  /* LA DATE DU JOUR — bug remonté par le premier testeur (6 août 2026).
+     Cynthia écrivait « vous êtes en Australie jusqu'à fin 2025, retour prévu
+     janvier 2026 » alors qu'on était en août 2026. Un modèle de langage n'a
+     aucune horloge : sans qu'on le lui dise, il reste bloqué à sa date
+     d'entraînement et raisonne dans le passé. Sur un produit d'orientation qui
+     parle d'échéances, de rentrées scolaires et de plans à 6 mois, c'est une
+     faute grave : la personne voit tout de suite que l'outil est à côté.
+     On l'injecte donc à CHAQUE appel, pas une fois au chargement. */
+  let systemPrompt = CYNTH_PROMPT + '\n\n' + _blocDateDuJour() +
+    (profileContext ? `\n\n📋 PROFIL CONNU : ${profileContext.trim()}` : '');
   if (_cvText) systemPrompt += `\n\n📄 CV DE LA PERSONNE (texte réel extrait de son CV — sers-t'en pour ancrer tes questions sur son vrai parcours et ses vraies compétences ; ne le récite pas, rebondis dessus) :\n${_cvText.slice(0, 4000)}`;
 
   // ── Contexte questionnaire (si rempli avant le chat) ────────────────────────
@@ -4576,6 +4606,7 @@ const METIERS_DB = [
   {id:'electricien',titre:'Installateur·rice-électricien·ne',secteur:'Construction & Bâtiment',competences:['rigueur','sécurité','logique','précision','autonomie'],passions:['technique','installer','électricité','manuel','énergie'],valeurs:['fiabilité','concret','sécurité'],salaire_debut:'CHF ~5 000–5 800/mois',salaire_exp:'CHF ~6 500/mois',marche:'Marché sélectif',formation:'CFC 4 ans (dual); brevet chef de projet',financement:'art. 32, CCT, chèque formation'},
   {id:'menuisier',titre:'Menuisier·ère / Charpentier·ère',secteur:'Construction & Bâtiment',competences:['précision','spatial','créativité','soin','rigueur'],passions:['bois','créer','construire','manuel','artisanat'],valeurs:['concret','créativité','durabilité'],salaire_debut:'CHF ~4 500/mois',salaire_exp:'CHF ~6 900/mois (ébéniste)',marche:'Porteur',formation:'CFC 4 ans (dual); brevet/maîtrise',financement:'art. 32, CCT-SOR, chèque formation'},
   {id:'dessinateur-batiment',titre:'Dessinateur·rice en bâtiment / génie civil',secteur:'Construction & Bâtiment',competences:['précision','spatial','rigueur','organisation','équipe'],passions:['dessin','plans','architecture','concevoir','bâtiment'],valeurs:['précision','créativité','concret'],salaire_debut:'CHF ~5 000–6 500/mois',salaire_exp:'CHF ~7 000/mois',marche:'Stable',formation:'CFC 4 ans (dual, bureau); passerelles ES/HES',financement:'art. 32, AC/ORP, chèque formation'},
+  {id:'architecte',titre:'Architecte',secteur:'Construction & Bâtiment',competences:['analyse','créativité','spatial','esthétique','négociation','rigueur'],passions:['concevoir','construire','dessiner','architecture','bâtiment','créer'],valeurs:['création','responsabilité','esthétique'],salaire_debut:'CHF ~5 400–6 300/mois',salaire_exp:'CHF ~8 400/mois',marche:'Stable',formation:'Bachelor HES en architecture (3 ans) ou master université/EPF (1,5 an après bachelor)',financement:'bourses et prêts d\'études cantonaux, employeur (formation en emploi), chèque annuel de formation (GE)',orientation:'https://www.orientation.ch/fr/professions/architecte'},
   {id:'chef-chantier',titre:'Chef·fe de chantier / Conducteur·rice de travaux',secteur:'Construction & Bâtiment',competences:['leadership','organisation','sang-froid','rigueur','responsabilité'],passions:['piloter','construire','coordonner','chantier','bâtiment'],valeurs:['leadership','concret','performance'],salaire_debut:'CHF ~80 000/an',salaire_exp:'CHF 90 000–100 000/an',marche:'Marché sélectif',formation:'Brevet fédéral / EPS (5 ans d\'expérience)',financement:'50% Confédération, employeur'},
 
   // ═══ IT & DIGITAL ═══
@@ -4712,6 +4743,7 @@ const METIERS_EXTRA = {
   'installateur-sanitaire':{competences_detaillees:['pose et raccordement d\'installations sanitaires (eau, évacuations)','installation de systèmes de chauffage (pompes à chaleur, chaudières)','soudure et cintrage','lecture de plans techniques','diagnostic et dépannage'],tension:'haute',avenir:'fort',profils_from:['aide bâtiment','reconversion manuelle','autre métier technique'],voie_adulte:'art. 32 OFPr',ou_recrute:'entreprises d\'installation (sanitaire, chauffage, ventilation), régies · jobup.ch'},
   'electricien':{competences_detaillees:['pose et raccordement d\'installations électriques','lecture de schémas','mise en service et contrôle','domotique et bornes de recharge','dépannage et mise aux normes'],tension:'haute',avenir:'fort',profils_from:['aide bâtiment','reconversion manuelle','autre métier technique'],voie_adulte:'art. 32 OFPr',ou_recrute:'entreprises d\'électricité, installateurs, industrie, régies · jobup.ch'},
   'menuisier':{competences_detaillees:['fabrication et pose d\'ouvrages en bois (fenêtres, portes, agencements)','lecture de plans et prise de cotes','usinage (machines et outils)','assemblage et finitions','pose sur chantier'],tension:'moyenne',avenir:'stable',profils_from:['bricoleur reconversion','autre métier du bâtiment','passion du bois'],voie_adulte:'art. 32 OFPr',ou_recrute:'menuiseries, charpentes, entreprises d\'agencement, ébénisteries · jobup.ch'},
+  'architecte':{competences_detaillees:['identification des besoins du client et traduction en croquis et plans préliminaires','vérification de la faisabilité selon les réglementations (environnement, monuments historiques)','conception de plans et de maquettes sur logiciels de CAO, rendus 3D','constitution des dossiers de permis de construire, négociation des prix et attribution des marchés','direction des travaux : planification du chantier, contrôle des délais, du budget et de la qualité'],tension:'moyenne',avenir:'stable',profils_from:['dessinateur·rice en bâtiment','profil créatif et technique','maturité professionnelle bâtiment'],voie_adulte:'CFC + maturité professionnelle → bachelor HES ; ou CFC d\'un autre domaine + 1 an de pratique en bureau d\'architecture',ou_recrute:'bureaux d\'architectes, entreprises générales, départements construction de grandes entreprises, administrations communales et cantonales · jobup.ch, sia.ch',note_marche:'L\'indice de pénurie Adecco / Université de Zurich (nov. 2025) place l\'ingénierie parmi les 4 seules catégories encore en pénurie ; l\'architecture en profite surtout côté direction de travaux et rénovation énergétique. Salaires vérifiés sur jobs.ch et jobup.ch (août 2026).'},
   'dessinateur-batiment':{competences_detaillees:['réalisation de plans (DAO/CAO : AutoCAD, Archicad, Revit)','mise au net des projets d\'architectes et d\'ingénieurs','calculs de surfaces et métrés','suivi de dossiers de construction','coordination avec les corps de métier'],tension:'moyenne',avenir:'stable',profils_from:['métier du bâtiment souhaitant le bureau','reconversion technique'],voie_adulte:'art. 32 OFPr; passerelles ES/HES',ou_recrute:'bureaux d\'architectes et d\'ingénieurs, entreprises générales, administrations · jobup.ch'},
   'chef-chantier':{competences_detaillees:['planification et organisation des chantiers','encadrement des équipes et des sous-traitants','suivi des délais, des coûts et de la qualité','sécurité et respect des normes','relation avec le maître d\'ouvrage et les bureaux'],tension:'haute',avenir:'fort',profils_from:['professionnel expérimenté du bâtiment'],voie_adulte:'brevet fédéral / EPS (env. 5 ans d\'expérience)',ou_recrute:'entreprises de construction et de génie civil, entreprises générales · jobup.ch'},
 
@@ -4938,6 +4970,46 @@ function _phrasesNegatives(texteUtilisateur) {
     .filter(p => p && NEGATION_MOTIFS.some(rx => rx.test(p)))
     .slice(0, 12);
 }
+
+/* ── LES MÉTIERS QUI MANQUENT À LA BASE ──────────────────────────────────────
+   BUG DU 2e TESTEUR (6 août 2026), le plus grave de la série : profil
+   ARCHITECTE. Cynthia lui propose « Architecte » en tête de sa synthèse, il dit
+   oui — et le métier n'apparaît nulle part dans le rapport. Vérifié : **il n'y
+   a pas de fiche « Architecte » dans les 91**. Le rapport ne peut choisir que
+   dans la base, donc le métier s'évapore entre la conversation et le livrable.
+   De son point de vue, l'outil lui a promis quelque chose puis l'a oublié.
+
+   La vraie correction, c'est d'ajouter la fiche. Mais une fiche sans source est
+   interdite ici (règle posée le 1er août), et je n'ai aucun accès réseau pour
+   aller chercher les salaires et la voie de formation réels. En attendant, on
+   arrête au moins de perdre l'information : chaque métier nommé mais absent de
+   la base est mémorisé, avec son nombre d'occurrences. La base grandit ainsi à
+   partir de la demande RÉELLE des testeurs, pas de nos suppositions.
+
+   Pour les lire : ouvrir la console et taper  metiersManquants() */
+function _noterMetierManquant(titre, ou) {
+  try {
+    const t = String(titre || '').trim();
+    if (!t || t.length > 90) return;
+    const cle = 'cynthia_metiers_manquants';
+    const reg = JSON.parse(localStorage.getItem(cle) || '{}');
+    const k = t.toLowerCase();
+    reg[k] = reg[k] || { titre: t, vu: 0, ou: [] };
+    reg[k].vu++;
+    if (ou && reg[k].ou.indexOf(ou) === -1) reg[k].ou.push(ou);
+    reg[k].dernier = new Date().toISOString().slice(0, 10);
+    localStorage.setItem(cle, JSON.stringify(reg));
+    console.warn('[CYNTH] métier proposé mais ABSENT de la base : « ' + t + ' » (' + ou + ')');
+  } catch (e) { /* localStorage plein ou bloqué : on ne casse rien pour ça */ }
+}
+/** À taper dans la console pour voir ce qu'il manque à la base. */
+window.metiersManquants = function () {
+  const reg = JSON.parse(localStorage.getItem('cynthia_metiers_manquants') || '{}');
+  const l = Object.values(reg).sort((a, b) => b.vu - a.vu);
+  if (!l.length) { console.log('Aucun métier manquant enregistré.'); return l; }
+  console.table(l.map(x => ({ métier: x.titre, fois: x.vu, où: x.ou.join(', '), dernier: x.dernier })));
+  return l;
+};
 
 /* ── UN MÉTIER NE PEUT PAS ÊTRE « PRINCIPAL » S'IL CONTREDIT LA PERSONNE ─────
    DÉFAUT VU EN TEST LIVE (5 août 2026, profil de Faouzi) : « Spécialiste IA /
@@ -5346,7 +5418,7 @@ function _validerChoixMetiers(choix, rejets, niv) {
     const id = c && (c.id || c.identifiant);
     if (!id || vus.has(id)) return;
     const fiche = METIERS_DB.find(m => m.id === id);
-    if (!fiche) { console.warn('[CYNTH] métier hors base ignoré :', id); return; }
+    if (!fiche) { _noterMetierManquant(id, 'sélection du rapport'); return; }
     const titreL = fiche.titre.toLowerCase();
     if (termes.some(r => titreL.includes(r))) return;                 // titre refusé
     if (portee === 'secteur' && secteurs.includes(fiche.secteur)) return; // secteur refusé
@@ -5475,7 +5547,11 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
   const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.';
 
   async function _part(context, instruction, schema) {
-    const sys = `Tu es une experte senior en orientation professionnelle en Suisse romande. ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien avant, rien après, pas de markdown. Premier caractère {, dernier }.`;
+    // La date réelle, sinon le plan sur 6 mois part d'une année déjà écoulée :
+    // le premier testeur a reçu « d'ici fin 2025 » en plein mois d'août 2026.
+    const sys = `Tu es une experte senior en orientation professionnelle en Suisse romande.
+${_blocDateDuJour()}
+${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien avant, rien après, pas de markdown. Premier caractère {, dernier }.`;
     const usr = `${context}\n\n${instruction}\n\nRéponds UNIQUEMENT avec cet objet JSON, rempli avec les vraies données de cette personne :\n${schema}\n\nRAPPEL : uniquement le JSON. Premier caractère {, dernier }.`;
     try { return await _callReportModel(sys, usr, 3500); }
     catch (e) { return await _callReportModel(sys, usr, 3500); } // 1 retry
@@ -5786,6 +5862,9 @@ function _captureSynthMetiers(synthText) {
     }
     // Exiger au moins 2 mots communs pour éviter les faux positifs
     const found = bestScore >= 2 ? bestMatch : null;
+    // Cynthia vient de nommer un métier qu'on n'a pas en fiche : on le retient
+    // au lieu de le perdre. C'est ce qui s'est passé avec « Architecte ».
+    if (!found) _noterMetierManquant(entry.title, 'synthèse de Cynthia');
     if (found && !matched.find(x => x.id === found.id)) {
       // Attacher le "pourquoi" extrait directement depuis les mots de Cynthia
       matched.push({ ...found, _synthPourquoi: entry.pourquoi || null });
@@ -6145,7 +6224,17 @@ function downloadRapport(){
     // resultat de test psychometrique. Honnetete = argument de vente ici.
     const score = Math.max(50, Math.min(97, Math.round(Number(m.score) || 80)));
     const why = esc(m.pourquoi||'');
-    const jobUrl = 'https://www.jobup.ch/fr/emplois/?term='+encodeURIComponent(m.titre||'');
+    const jobUrl = _jobupUrl(m.titre);
+    /* Lien vers le portail officiel d'orientation suisse. Le testeur demandait
+       de pouvoir vérifier par lui-même et s'inscrire, au lieu de croire le
+       rapport sur parole — c'est une demande juste.
+       Le champ `orientation` porte l'adresse EXACTE de la fiche officielle,
+       relevée dans le sitemap de orientation.ch (771 fiches), jamais devinée :
+       le site répond 200 à n'importe quelle adresse, donc un slug déduit d'un
+       titre mène à une page de repli vide. Tant qu'une fiche n'a pas son lien
+       vérifié, on retombe sur la racine du site — jamais sur un lien mort. */
+    const _fiche = (typeof METIERS_DB !== 'undefined') ? METIERS_DB.find(x => x.id === m.id) : null;
+    const orientUrl = (_fiche && _fiche.orientation) ? _fiche.orientation : 'https://www.orientation.ch/';
     const jobChip = `<a class="chipm" href="${jobUrl}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--ink)">Voir les offres ↗</a>`;
     if (!isPrinc(m)) return `<div class="metier piste"><div class="rank">À explorer</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why" style="margin-bottom:0">${why}</p></div>`;
     const salChip = (sd||se)?`<span class="chipm sal">${esc([sd,se].filter(Boolean).join(' → '))}</span>`:'';
@@ -6153,7 +6242,19 @@ function downloadRapport(){
     const marcheChip = marche?`<span class="chipm ${mcls}">${esc(marche)}</span>`:'';
     const formChip = formation?`<span class="chipm">${esc(formation)}</span>`:'';
     const first = m.premier_pas?`<div class="firststep"><b>Premier pas cette semaine :</b> ${esc(m.premier_pas)}</div>`:'';
-    const route = m.route_formation?`<div class="firststep" style="background:var(--emerald-soft);margin-top:10px"><b style="color:var(--emerald-d)">Se former :</b> ${esc(m.route_formation)}</div>`:'';
+    /* Chaque formation proposée est désormais accompagnée des liens pour aller
+       vérifier et s'inscrire. Demande explicite du premier testeur : « que chaque
+       formation qu'elle propose ait un lien qui permet soit de s'inscrire, soit
+       d'avoir les infos nécessaires ». Un rapport qui affirme sans donner la
+       source oblige à le croire sur parole ; avec le lien, il se vérifie. */
+    const liensForm = `<div style="margin-top:8px;font-size:.86rem">
+      <a href="${orientUrl}" target="_blank" rel="noopener" style="color:var(--emerald-d);font-weight:600;text-decoration:underline">Fiche officielle sur orientation.ch ↗</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.sbfi.admin.ch/sbfi/fr/home/formation/formation-professionnelle-superieure.html" target="_blank" rel="noopener" style="color:var(--emerald-d);font-weight:600;text-decoration:underline">Brevets et diplômes fédéraux ↗</a>
+      &nbsp;·&nbsp;
+      <a href="https://www.alice.ch/fr/" target="_blank" rel="noopener" style="color:var(--emerald-d);font-weight:600;text-decoration:underline">Certificat FSEA ↗</a>
+    </div>`;
+    const route = m.route_formation?`<div class="firststep" style="background:var(--emerald-soft);margin-top:10px"><b style="color:var(--emerald-d)">Se former :</b> ${esc(m.route_formation)}${liensForm}</div>`:'';
     const at = arrOf(m.atouts).length?`<div><div class="minilabel">Ce que vous avez déjà</div><ul class="mlist plus">${liList(m.atouts)}</ul></div>`:'';
     const dv = arrOf(m.developper).length?`<div><div class="minilabel">À développer</div><ul class="mlist dev">${liList(m.developper)}</ul></div>`:'';
     const grid = (at||dv)?`<div class="mgrid">${at}${dv}</div>`:'';
@@ -6181,7 +6282,7 @@ function downloadRapport(){
 
   const section6 = data.message_fin ? `<div class="pad"><div class="msgfin"><div class="minilabel">Un mot pour la suite</div><p>${esc(data.message_fin)}</p><div class="signature"><div class="orb"></div><div><b>Cynthia</b><small>Votre coach d'orientation</small></div></div></div></div>` : '';
 
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="format-detection" content="telephone=no,date=no,address=no,email=no"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>
 :root{--cream:#FAF6F0;--cream2:#F1E9DC;--ink:#0E2A24;--ink2:#0A211C;--muted:#5C6B64;--emerald:#1FB488;--emerald-d:#12876A;--emerald-soft:#E7F4EE;--coral:#FF6F5E;--gold:#E8A93C;--gold-soft:#FBF0D8;--coral-soft:#FFE9E4;--line:#E8E1D6}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:#EFE7DB;line-height:1.62;-webkit-font-smoothing:antialiased}
@@ -6318,6 +6419,12 @@ footer .disc{font-size:.76rem;opacity:.85;margin-top:8px}
    5. Les couleurs sont forcées : sans print-color-adjust, le vert profond,
       les barres et les encadrés sortent en blanc et le document perd tout.
    ══════════════════════════════════════════════════════════════════════════ */
+/* iOS Safari transforme tout seul les suites de chiffres en liens téléphone :
+   « CHF 63 000-72 000 » sortait en bleu souligné au milieu du rapport, sans que
+   personne l'ait demandé (constaté par le premier testeur, 6 août 2026). La
+   balise format-detection le désactive ; cette règle rattrape les cas où le
+   moteur l'applique quand même. */
+a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;pointer-events:none}
 @page{size:A4;margin:0}
 @media print{
   /* Les couleurs de marque doivent survivre à l'impression. */
@@ -6654,17 +6761,50 @@ let _avatarWaiting = false;     // verrou anti-doublon
 function _buildAvatarPrompt(metier) {
   const titre = metier.titre || 'professionnel';
   const secteur = metier.secteur || 'ce secteur';
+
+  /* IL EXERCE EN SUISSE — bug remonté par le premier testeur (6 août 2026) :
+     interrogé sur le salaire, l'avatar répondait EN EUROS. Son prompt ne
+     contenait pas un seul mot sur la Suisse, donc le modèle se rabattait sur
+     la France. Sur un produit dont l'argument principal est l'ancrage suisse,
+     c'est le pire endroit possible pour se tromper de pays.
+     On lui donne en plus les VRAIS chiffres de la fiche : il n'a plus à les
+     inventer, il n'a qu'à les commenter. */
+  const fiche = (typeof METIERS_DB !== 'undefined')
+    ? METIERS_DB.find(m => m.id === metier.id || m.titre === titre) : null;
+  const faits = fiche ? `
+
+CE QUE TU SAIS DE TON MÉTIER EN SUISSE (chiffres réels, ne les invente pas, ne les convertis pas) :
+- Salaire en début de carrière : ${fiche.salaire_debut || '?'}
+- Salaire avec de l'expérience : ${fiche.salaire_exp || '?'}
+- Formation exigée : ${fiche.formation || '?'}
+- Financement possible : ${fiche.financement || '?'}
+- État du marché : ${fiche.marche || '?'}` : '';
+
   return `Tu es ${titre}, un professionnel expérimenté dans le domaine de ${secteur}.
 Tu t'appelles Alex (prénom neutre) et tu as 12 ans d'expérience dans ce métier.
 Tu as fait une reconversion toi-même il y a quelques années, donc tu comprends les doutes.
+
+⛔ TU EXERCES EN SUISSE ROMANDE, ET ÇA DOIT S'ENTENDRE.
+Tous les montants sont en FRANCS SUISSES (CHF), jamais en euros — pas même en
+comparaison. Le système de formation dont tu parles est le système suisse :
+CFC, AFP, maturité professionnelle, brevet fédéral, diplôme fédéral, HES, ES,
+apprentissage dual, article 32 pour faire valider son expérience.
+INTERDITS ABSOLUS : euros, CPF, France Travail, Pôle emploi, BTS, DUT, licence,
+bac+X, SMIC, Sécu. Si la personne vient de France, tu peux le reconnaître, mais
+tu ramènes toujours la réponse au terrain suisse — c'est là qu'elle va
+travailler. Pour l'emploi tu cites l'ORP, jobup.ch, jobs.ch ; pour l'orientation
+orientation.ch ; pour un bilan à partir de 40 ans, viamia.${faits}
 
 TON RÔLE : répondre aux questions de la personne sur ton métier avec RÉALISME et AUTHENTICITÉ.
 Tu ne vends pas du rêve. Tu donnes une vision honnête et humaine du quotidien.
 
 RÈGLES ABSOLUES :
 ⛔ Tu parles à la 1ère personne ("dans mon travail, je...", "ce que j'aime le plus c'est...")
-⛔ Tu réponds toujours en "vous" à la personne qui te parle.
-⛔ Maximum 4-5 phrases par réponse. Sois précis, concret.
+⛔ VOUVOIEMENT OBLIGATOIRE. Tu dis "vous", "votre", "vos" — JAMAIS "tu", "ton", "ta", "tes",
+   jamais "t'as". Écris "Vu votre profil…", pas "Vu ton profil…". Cynthia vouvoie : deux
+   interlocuteurs du même produit ne peuvent pas s'adresser différemment à la même personne.
+⛔ Maximum 4-5 phrases par réponse, et TERMINE toujours ta dernière phrase.
+⛔ Pas de markdown : ni **gras**, ni astérisques, ni tirets cadratins (— ou –). Du texte simple.
 ⛔ Si tu ne sais pas quelque chose, dis-le honnêtement.
 ⛔ Mentionne les vraies difficultés du métier (pas seulement les avantages).
 
@@ -6777,7 +6917,14 @@ function _addAvatarBubble(role, text) {
   if (!msgs) return;
   const wrap = document.createElement('div');
   wrap.className = 'cb ' + (role === 'user' ? 'user' : 'ai');
-  const safe = _sanitize(text).replace(/\n/g, '<br>');
+  /* BUGS REMONTÉS PAR LE 2e TESTEUR (6 août 2026) : le coach affichait ses
+     « **gras** » en markdown brut et ses tirets cadratins, parce qu'il passait
+     par _sanitize seul alors que le chat principal, lui, applique stripDash +
+     formatChatText. Deux fenêtres du même produit ne peuvent pas avoir deux
+     qualités de rendu : on aligne le coach sur Cynthia. */
+  const safe = (role === 'ai')
+    ? formatChatText(stripDash(String(text || '')))
+    : _sanitize(text).replace(/\n/g, '<br>');
   if (role === 'ai') {
     wrap.innerHTML = `<div class="cb-av">🧑‍💼</div><div style="flex:1"><div class="cb-text">${safe}</div></div>`;
   } else {
@@ -6827,7 +6974,11 @@ async function sendAvatarMsg() {
               { role: 'system', content: _buildAvatarPrompt(_avatarMetier) },
               ..._avatarHistory
             ],
-            max_tokens: 300,
+            // 300 coupait les réponses en plein milieu d'une phrase — le 2e
+            // testeur recevait « …le côté autonomie et projets complets pour »
+            // puis plus rien. Une réponse tronquée est pire qu'une réponse
+            // courte : elle donne l'impression que l'outil a planté.
+            max_tokens: 700,
             temperature: 0.7,
             top_p: 0.9
           })
@@ -6892,8 +7043,23 @@ document.addEventListener('keydown', e => {
 ══════════════════════════════════════════════════════════════════════════ */
 
 /** URL de recherche jobup.ch pour un intitulé de métier. */
+/* Le titre de nos fiches est en écriture inclusive et souvent double :
+   « Formateur·rice d'adultes », « Chef·fe de projet IT / Product owner »,
+   « Assistant·e en soins et santé communautaire (ASSC) ». Envoyé tel quel à un
+   site d'emploi, ça ne remonte AUCUNE offre — le lien s'ouvrait donc bien, mais
+   sur une page vide, ce qui revient au même pour la personne (constaté par le
+   premier testeur, 6 août 2026). On en fait un terme de recherche utilisable. */
+function _termeRecherche(intitule) {
+  return String(intitule || '')
+    .split('/')[0]                       // « Chef de projet IT / Product owner » → le 1er
+    .replace(/\([^)]*\)/g, '')           // retire « (ASSC) », « (dipl. ES) »
+    .replace(/·[a-zàâäéèêëîïôöùûüç]+/gi, '')  // « Formateur·rice » → « Formateur »
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function _jobupUrl(intitule) {
-  return 'https://www.jobup.ch/fr/emplois/?term=' + encodeURIComponent(intitule || '');
+  return 'https://www.jobup.ch/fr/emplois/?term=' + encodeURIComponent(_termeRecherche(intitule));
 }
 
 /**
@@ -7271,7 +7437,7 @@ async function _transcribeWhisper(blob, mimeType, _retryCount) {
       <button onclick="closeRapportOverlay()" style="background:rgba(250,243,224,.08);color:rgba(250,243,224,.8);border:1px solid rgba(250,243,224,.15);padding:9px 16px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Fermer</button>
     </div>
   </div>
-  <iframe id="rapport-frame" style="position:absolute;top:58px;left:0;right:0;bottom:0;width:100%;height:calc(100vh - 58px);border:none;background:#f4f1ff;" sandbox="allow-scripts allow-same-origin allow-modals allow-downloads"></iframe>
+  <iframe id="rapport-frame" style="position:absolute;top:58px;left:0;right:0;bottom:0;width:100%;height:calc(100vh - 58px);border:none;background:#f4f1ff;" sandbox="allow-scripts allow-same-origin allow-modals allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe>
 </div>
 
 <!-- MODAL HTML -->
