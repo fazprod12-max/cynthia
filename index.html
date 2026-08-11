@@ -3199,7 +3199,18 @@ Toutes tes échéances partent de MAINTENANT : « cette semaine » = ${mois} ${a
 « dans six mois » tombe en ${new Date(d.getFullYear(), d.getMonth() + 6, 1).toLocaleDateString('fr-CH', { month: 'long', year: 'numeric' })}.
 Ne parle JAMAIS d'une année passée comme si elle était à venir, et ne propose
 jamais une rentrée ou une échéance déjà écoulée. Si la personne évoque une date,
-situe-la par rapport à aujourd'hui avant de répondre.`;
+situe-la par rapport à aujourd'hui avant de répondre.
+
+⏳ SON HORLOGE À ELLE COMPTE PLUS QUE LA TIENNE.
+Bug constaté le 11 août 2026 : un rapport a construit un plan sur six mois, donc
+jusqu'en février, à quelqu'un dont les droits au chômage s'arrêtaient en octobre.
+L'échéance la plus critique de sa vie n'était mentionnée nulle part.
+Cherche donc tôt s'il existe une DATE BUTOIR : fin de droits chômage, fin de
+contrat, préavis, permis, fin de congé maternité, date de disponibilité, échéance
+financière. Si elle en a une, tout le plan se cale dessus : les étapes doivent
+tenir AVANT cette date, et si elles ne tiennent pas, dis-le franchement et
+propose ce qui est faisable dans le temps réel qui reste. Un plan qui déborde
+l'échéance de la personne n'est pas un plan, c'est une politesse.`;
 }
 
 const CYNTH_PROMPT = `Tu es Cynthia. Pas une IA — une coach d'orientation avec 20 ans de terrain, qui a aidé des centaines de personnes de tous horizons (ouvriers, cadres, artisans, parents, indépendants) à trouver un métier qui leur ressemble. Zéro mépris de classe : chaque personne a de la valeur, quelle que soit sa situation.
@@ -5544,7 +5555,18 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
   // donc toujours complet, même si un morceau échoue. (Les variables dataBlock /
   // partie a son retry et son fallback PAR SECTION.)
   const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}`;
-  const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.';
+  const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.'
+  /* ── RÈGLES DE VÉRACITÉ ────────────────────────────────────────────────────
+     Ajoutées le 11 août 2026 après un rapport de bugs d'un testeur qui a TOUT
+     vérifié. Chaque interdiction ci-dessous correspond à une erreur réelle,
+     constatée dans un rapport livré — pas à une précaution théorique. */
+  + ' RÈGLES DE VÉRACITÉ, chacune vient d\'une erreur réelle :'
+  + ' (1) EMPLOYEURS — ne cite AUCUN nom d\'entreprise que tu n\'as pas lu dans le champ ou_recrute de la fiche métier ou dans ce que la personne a dit. Un rapport a envoyé quelqu\'un candidater au Crédit Suisse, absorbé par UBS et radié du registre depuis 2024. Tu ne connais pas l\'actualité des entreprises : dis "les grandes banques de la place" plutôt qu\'un nom, ou reprends ou_recrute tel quel.'
+  + ' (2) SIGLES ET DISPOSITIFS — n\'écris que des dispositifs suisses que tu peux nommer en toutes lettres et qui existent : assurance-chômage (AC), ORP, chèque annuel de formation cantonal, art. 32 OFPr, subvention fédérale de 50% pour les cours préparatoires aux examens fédéraux, viamia (dès 40 ans), bourses cantonales. Un rapport a inventé le sigle "RAI", qui n\'existe pas. Dans le doute, écris le nom complet sans sigle.'
+  + ' (3) MONTANTS ET DURÉES — ne donne un chiffre que s\'il vient de la fiche métier ou de la personne. N\'arrondis JAMAIS une ancienneté : si elle dit dix ans, écris dix ans, pas neuf. Si tu n\'as pas le montant exact d\'une aide, dis "montant à vérifier auprès du canton" plutôt qu\'un nombre.'
+  + ' (4) INTITULÉS DE POSTE — recopie le statut et l\'intitulé exacts qu\'elle a donnés. Ne transforme pas un conseiller clientèle salarié en "courtier itinérant". Le statut (salarié, indépendant, intérim) est un fait, jamais une interprétation.'
+  + ' (5) CERTIFICATIONS — ne devine pas ce que recouvre un sigle. IOBSP est une certification BANCAIRE (intermédiaire en opérations de banque et services de paiement), pas de l\'assurance. Si tu ne sais pas, cite le sigle sans l\'expliquer.'
+  + ' (6) PUCES DE CV — ne mets un chiffre dans cv_bullets QUE si la personne l\'a donné. Pas de "50+ clients" ni de "taux de fidélisation élevé" inventés : elle devra les défendre en entretien. Sans chiffre de sa part, reste qualitatif et concret.';
 
   async function _part(context, instruction, schema) {
     // La date réelle, sinon le plan sur 6 mois part d'une année déjà écoulée :
@@ -5566,8 +5588,10 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
     '{"changement_type":"metier|environnement|equilibre","changement_explication":"2-3 phrases","moteurs":["moteur : explication courte","",""],"environnement_ideal":"2-3 phrases concrètes","competences_a_ajouter":["","",""],"cv_bullets":["","",""],"pitch":"3-4 phrases (je...)"}');
 
   const pPlan = _part(convBlock,
-    'Construis un plan d\'action réaliste sur 6 mois (étapes concrètes et datées, adaptées à SA situation réelle), des ressources suisses réelles, et un message de fin chaleureux qui reprend un détail précis qu\'elle a dit.',
-    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
+    'Construis un plan d\'action réaliste sur 6 mois (étapes concrètes et datées, adaptées à SA situation réelle), des ressources suisses réelles, et un message de fin chaleureux qui reprend un détail précis qu\'elle a dit.'
+    + ' ⏳ DATE BUTOIR : relis la conversation et cherche une échéance qui lui est propre (fin de droits chômage, fin de contrat, préavis, permis, disponibilité, échéance financière). Si tu en trouves une, DIS-LA dans la première étape et cale tout le plan dessus : les étapes doivent tomber AVANT. Si six mois dépassent cette date, raccourcis le plan au temps réellement disponible et dis franchement ce qui ne tiendra pas. Un rapport a proposé un plan jusqu\'en février à quelqu\'un dont les droits s\'arrêtaient en octobre, sans jamais le mentionner : c\'est la faute à ne pas refaire.'
+    + ' Dans ressources_utiles.financement, n\'écris que des dispositifs réels et nommés en toutes lettres. N\'invente aucun sigle. Si tu n\'es pas sûr du montant d\'une aide, écris "montant à vérifier auprès du canton" au lieu d\'un chiffre.',
+    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal (GE : max. CHF 750/an)","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
 
   /* On récupère seulement maintenant la sélection lancée plus haut : son temps
      d'attente (mesuré à 7,6 s) a été absorbé par les TROIS appels ci-dessus,
@@ -5640,7 +5664,7 @@ ${metiersList}`;
   const _pf = rProfil || {};
   const _ac = rActions || {};
   const _mt = (rMetiers && Array.isArray(rMetiers.top_metiers) && rMetiers.top_metiers.length) ? rMetiers : { top_metiers: _fb.top_metiers };
-  const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal','ORP / assurance-chômage','Confédération — 50% des cours pour examens fédéraux'], formations:['orientation.ch — fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
+  const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal (GE : max. CHF 750/an)','ORP / assurance-chômage','Confédération — 50% des cours pour examens fédéraux'], formations:['orientation.ch — fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
 
   return {
     prenom: chatProfile.prenom || _pf.prenom || null,
@@ -6127,7 +6151,15 @@ function downloadRapport(){
       ['Stabilité émotionnelle', bf.stabilite!=null?bf.stabilite:bf['stabilité'],       'Votre calme face à la pression et à l\'imprévu.']
     ];
     const bars = dims.filter(d=>d[1]!=null && !isNaN(Number(d[1]))).map(function(d){var val=Math.max(15,Math.min(99,Math.round(Number(d[1])||60)));return `<div class="trait"><div class="tt"><span>${d[0]}</span><span>${val} %</span></div><div class="bar"><span style="width:${val}%"></span></div><div class="tdef">${esc(d[2])}</div></div>`;}).join('');
-    if (bars) portraitLeft = `<div><div class="minilabel">Profil de personnalité · approche Big Five</div>${bars}<p class="bfnote">Ces repères décrivent des tendances, pas des cases. Aucun score n'est « bon » ou « mauvais » : ils servent à repérer les environnements de travail où vous serez à l'aise.</p></div>`;
+    /* HONNÊTETÉ SUR CE QUE C'EST — bug n°2 du rapport de test du 11 août 2026.
+       Un testeur a comparé nos chiffres à un VRAI test Big Five qu'il avait
+       passé : écart de 35 points sur l'ouverture, 28 sur la conscience. C'est
+       normal, ce n'est pas la même chose — nous lisons une conversation, un
+       questionnaire psychométrique fait passer des dizaines d'items calibrés.
+       Le problème n'est pas l'écart, c'est de l'avoir présenté comme un score
+       Big Five sans le dire. Quelqu'un sans point de comparaison ne pouvait pas
+       le savoir. On renomme, et on l'écrit noir sur blanc sous les barres. */
+    if (bars) portraitLeft = `<div><div class="minilabel">Ce que votre façon de parler laisse voir</div>${bars}<p class="bfnote">Ces repères sont <b>lus dans votre conversation</b>, ils ne viennent pas d'un questionnaire de personnalité. Ils s'inspirent des cinq grandes dimensions utilisées en psychologie du travail, mais ce ne sont pas des scores validés : voyez-les comme des tendances observées pendant l'échange, utiles pour repérer les environnements où vous serez à l'aise. Aucune n'est « bonne » ou « mauvaise », et un vrai test pourrait donner d'autres chiffres.</p></div>`;
   }
   if (!portraitLeft && arrOf(P.traits_dominants).length) portraitLeft = `<div><div class="minilabel">Vos traits dominants</div><div class="tags">${tagList(P.traits_dominants)}</div></div>`;
   const portraitRight = `${arrOf(P.intelligences_cles).length?`<div class="callout"><div class="minilabel">Intelligences dominantes</div><div class="tags">${tagList(P.intelligences_cles)}</div></div>`:''}${P.style_travail?`<div class="callout"><div class="minilabel">Votre style de travail</div><p class="body" style="margin:0;font-size:.94rem">${esc(P.style_travail)}</p></div>`:''}`;
@@ -6455,9 +6487,18 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
     break-after:avoid;page-break-after:avoid}
   p,li{orphans:3;widows:3}
 
-  /* 5. Finitions : rien qui flotte, rien qui déborde, pas d'ombres baveuses. */
+  /* 5. LES GRILLES REDEVIENNENT DES BLOCS.
+        Diagnostic du 6 août 2026, mesuré sur un vrai rapport : .mgrid, .grid2 et
+        .res sont des conteneurs CSS Grid. Or les moteurs d'impression gèrent très
+        mal la coupure à l'intérieur d'une grille — « break-inside:avoid » y est
+        régulièrement ignoré. C'est ce qui coupait encore certaines sections alors
+        que les règles étaient bien présentes. En impression on repasse donc en
+        colonnes simples, où la pagination est prévisible et respectée. */
+  .grid2,.mgrid,.res{display:block!important}
+  .grid2>div,.mgrid>div,.res>div{margin-bottom:9mm;break-inside:avoid;page-break-inside:avoid}
+
+  /* 6. Finitions : rien qui flotte, rien qui déborde, pas d'ombres baveuses. */
   .metier{box-shadow:none;border:1px solid var(--line)}
-  .grid2,.mgrid,.res{gap:14mm 10mm}
   a{text-decoration:none;color:inherit}
   .suiv,.fbk{display:none}
 }
