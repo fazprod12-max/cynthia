@@ -4617,7 +4617,7 @@ const METIERS_DB = [
   {id:'electricien',titre:'Installateur·rice-électricien·ne',secteur:'Construction & Bâtiment',competences:['rigueur','sécurité','logique','précision','autonomie'],passions:['technique','installer','électricité','manuel','énergie'],valeurs:['fiabilité','concret','sécurité'],salaire_debut:'CHF ~5 000–5 800/mois',salaire_exp:'CHF ~6 500/mois',marche:'Marché sélectif',formation:'CFC 4 ans (dual); brevet chef de projet',financement:'art. 32, CCT, chèque formation'},
   {id:'menuisier',titre:'Menuisier·ère / Charpentier·ère',secteur:'Construction & Bâtiment',competences:['précision','spatial','créativité','soin','rigueur'],passions:['bois','créer','construire','manuel','artisanat'],valeurs:['concret','créativité','durabilité'],salaire_debut:'CHF ~4 500/mois',salaire_exp:'CHF ~6 900/mois (ébéniste)',marche:'Porteur',formation:'CFC 4 ans (dual); brevet/maîtrise',financement:'art. 32, CCT-SOR, chèque formation'},
   {id:'dessinateur-batiment',titre:'Dessinateur·rice en bâtiment / génie civil',secteur:'Construction & Bâtiment',competences:['précision','spatial','rigueur','organisation','équipe'],passions:['dessin','plans','architecture','concevoir','bâtiment'],valeurs:['précision','créativité','concret'],salaire_debut:'CHF ~5 000–6 500/mois',salaire_exp:'CHF ~7 000/mois',marche:'Stable',formation:'CFC 4 ans (dual, bureau); passerelles ES/HES',financement:'art. 32, AC/ORP, chèque formation'},
-  {id:'architecte',titre:'Architecte',secteur:'Construction & Bâtiment',competences:['analyse','créativité','spatial','esthétique','négociation','rigueur'],passions:['concevoir','construire','dessiner','architecture','bâtiment','créer'],valeurs:['création','responsabilité','esthétique'],salaire_debut:'CHF ~5 400–6 300/mois',salaire_exp:'CHF ~8 400/mois',marche:'Stable',formation:'Bachelor HES en architecture (3 ans) ou master université/EPF (1,5 an après bachelor)',financement:'bourses et prêts d\'études cantonaux, employeur (formation en emploi), chèque annuel de formation (GE)',orientation:'https://www.orientation.ch/fr/professions/architecte'},
+  {id:'architecte',titre:'Architecte',secteur:'Construction & Bâtiment',competences:['analyse','créativité','spatial','esthétique','négociation','rigueur'],passions:['concevoir','construire','dessiner','architecture','bâtiment','créer'],valeurs:['création','responsabilité','esthétique'],salaire_debut:'CHF ~5 400–6 300/mois',salaire_exp:'CHF ~8 400/mois',marche:'Stable',formation:'Bachelor HES en architecture (3 ans) ou master université/EPF (1,5 an après bachelor)',financement:'bourses et prêts d\'études cantonaux, employeur (formation en emploi), chèque annuel de formation cantonal (GE : max. CHF 750/an)',salaire_source:'jobs.ch et jobup.ch, relevé le 11.08.2026 (débutant CHF 69 973/an · moyenne suisse CHF 81 360 · haut CHF 110 000 · Genève CHF 84 000)',verifie_le:'2026-08-11',orientation:'https://www.orientation.ch/fr/professions/architecte'},
   {id:'chef-chantier',titre:'Chef·fe de chantier / Conducteur·rice de travaux',secteur:'Construction & Bâtiment',competences:['leadership','organisation','sang-froid','rigueur','responsabilité'],passions:['piloter','construire','coordonner','chantier','bâtiment'],valeurs:['leadership','concret','performance'],salaire_debut:'CHF ~80 000/an',salaire_exp:'CHF 90 000–100 000/an',marche:'Marché sélectif',formation:'Brevet fédéral / EPS (5 ans d\'expérience)',financement:'50% Confédération, employeur'},
 
   // ═══ IT & DIGITAL ═══
@@ -4754,7 +4754,7 @@ const METIERS_EXTRA = {
   'installateur-sanitaire':{competences_detaillees:['pose et raccordement d\'installations sanitaires (eau, évacuations)','installation de systèmes de chauffage (pompes à chaleur, chaudières)','soudure et cintrage','lecture de plans techniques','diagnostic et dépannage'],tension:'haute',avenir:'fort',profils_from:['aide bâtiment','reconversion manuelle','autre métier technique'],voie_adulte:'art. 32 OFPr',ou_recrute:'entreprises d\'installation (sanitaire, chauffage, ventilation), régies · jobup.ch'},
   'electricien':{competences_detaillees:['pose et raccordement d\'installations électriques','lecture de schémas','mise en service et contrôle','domotique et bornes de recharge','dépannage et mise aux normes'],tension:'haute',avenir:'fort',profils_from:['aide bâtiment','reconversion manuelle','autre métier technique'],voie_adulte:'art. 32 OFPr',ou_recrute:'entreprises d\'électricité, installateurs, industrie, régies · jobup.ch'},
   'menuisier':{competences_detaillees:['fabrication et pose d\'ouvrages en bois (fenêtres, portes, agencements)','lecture de plans et prise de cotes','usinage (machines et outils)','assemblage et finitions','pose sur chantier'],tension:'moyenne',avenir:'stable',profils_from:['bricoleur reconversion','autre métier du bâtiment','passion du bois'],voie_adulte:'art. 32 OFPr',ou_recrute:'menuiseries, charpentes, entreprises d\'agencement, ébénisteries · jobup.ch'},
-  'architecte':{competences_detaillees:['identification des besoins du client et traduction en croquis et plans préliminaires','vérification de la faisabilité selon les réglementations (environnement, monuments historiques)','conception de plans et de maquettes sur logiciels de CAO, rendus 3D','constitution des dossiers de permis de construire, négociation des prix et attribution des marchés','direction des travaux : planification du chantier, contrôle des délais, du budget et de la qualité'],tension:'moyenne',avenir:'stable',profils_from:['dessinateur·rice en bâtiment','profil créatif et technique','maturité professionnelle bâtiment'],voie_adulte:'CFC + maturité professionnelle → bachelor HES ; ou CFC d\'un autre domaine + 1 an de pratique en bureau d\'architecture',ou_recrute:'bureaux d\'architectes, entreprises générales, départements construction de grandes entreprises, administrations communales et cantonales · jobup.ch, sia.ch',note_marche:'L\'indice de pénurie Adecco / Université de Zurich (nov. 2025) place l\'ingénierie parmi les 4 seules catégories encore en pénurie ; l\'architecture en profite surtout côté direction de travaux et rénovation énergétique. Salaires vérifiés sur jobs.ch et jobup.ch (août 2026).'},
+  'architecte':{competences_detaillees:['identification des besoins du client et traduction en croquis et plans préliminaires','vérification de la faisabilité selon les réglementations (environnement, monuments historiques)','conception de plans et de maquettes sur logiciels de CAO, rendus 3D','constitution des dossiers de permis de construire, négociation des prix et attribution des marchés','direction des travaux : planification du chantier, contrôle des délais, du budget et de la qualité'],tension:'moyenne',avenir:'stable',profils_from:['dessinateur·rice en bâtiment','profil créatif et technique','maturité professionnelle bâtiment'],voie_adulte:'CFC + maturité professionnelle → bachelor HES ; ou CFC d\'un autre domaine + 1 an de pratique en bureau d\'architecture',ou_recrute:'bureaux d\'architectes, entreprises générales, départements construction de grandes entreprises, administrations communales et cantonales · jobup.ch, sia.ch',ce_qui_use:'Les horaires deviennent irréguliers dès qu\'un projet est soumis à des délais courts, et la responsabilité sur les délais, le budget et la qualité des travaux pèse en permanence : c\'est vous qui répondez quand un chantier dérape. (source : orientation.ch)',note_marche:'L\'indice de pénurie Adecco / Université de Zurich (nov. 2025) place l\'ingénierie parmi les 4 seules catégories encore en pénurie ; l\'architecture en profite surtout côté direction de travaux et rénovation énergétique. Salaires vérifiés sur jobs.ch et jobup.ch (août 2026).'},
   'dessinateur-batiment':{competences_detaillees:['réalisation de plans (DAO/CAO : AutoCAD, Archicad, Revit)','mise au net des projets d\'architectes et d\'ingénieurs','calculs de surfaces et métrés','suivi de dossiers de construction','coordination avec les corps de métier'],tension:'moyenne',avenir:'stable',profils_from:['métier du bâtiment souhaitant le bureau','reconversion technique'],voie_adulte:'art. 32 OFPr; passerelles ES/HES',ou_recrute:'bureaux d\'architectes et d\'ingénieurs, entreprises générales, administrations · jobup.ch'},
   'chef-chantier':{competences_detaillees:['planification et organisation des chantiers','encadrement des équipes et des sous-traitants','suivi des délais, des coûts et de la qualité','sécurité et respect des normes','relation avec le maître d\'ouvrage et les bureaux'],tension:'haute',avenir:'fort',profils_from:['professionnel expérimenté du bâtiment'],voie_adulte:'brevet fédéral / EPS (env. 5 ans d\'expérience)',ou_recrute:'entreprises de construction et de génie civil, entreprises générales · jobup.ch'},
 
@@ -5013,6 +5013,33 @@ function _noterMetierManquant(titre, ou) {
     console.warn('[CYNTH] métier proposé mais ABSENT de la base : « ' + t + ' » (' + ou + ')');
   } catch (e) { /* localStorage plein ou bloqué : on ne casse rien pour ça */ }
 }
+/* ── SANTÉ DE LA BASE MÉTIERS ────────────────────────────────────────────────
+   Sans cet outil, le champ `verifie_le` ne servirait à rien : une base vieillit
+   en silence, les salaires bougent, et on ne s'en aperçoit que le jour où un
+   testeur vérifie à notre place. Là, l'état est consultable à tout moment.
+   À taper dans la console :  santeBase()  */
+window.santeBase = function (moisAvantPerime) {
+  const limite = (moisAvantPerime || 12);
+  const now = new Date();
+  const lignes = METIERS_DB.map(m => {
+    const d = m.verifie_le ? new Date(m.verifie_le) : null;
+    const mois = d ? Math.round((now - d) / (1000 * 60 * 60 * 24 * 30.44)) : null;
+    return {
+      métier: m.titre,
+      vérifiée: m.verifie_le || '— jamais —',
+      'mois': mois === null ? '?' : mois,
+      'source salaire': m.salaire_source ? 'oui' : 'NON',
+      'lien officiel': m.orientation ? 'oui' : 'NON',
+      'ce qui use': (typeof METIERS_EXTRA !== 'undefined' && METIERS_EXTRA[m.id] && METIERS_EXTRA[m.id].ce_qui_use) ? 'oui' : 'NON'
+    };
+  });
+  const aFaire = lignes.filter(l => l.vérifiée === '— jamais —' || l.mois > limite ||
+    l['source salaire'] === 'NON' || l['lien officiel'] === 'NON' || l['ce qui use'] === 'NON');
+  console.log(`Base : ${METIERS_DB.length} métiers · complètes : ${METIERS_DB.length - aFaire.length} · à compléter ou revérifier : ${aFaire.length}`);
+  console.table(aFaire.slice(0, 60));
+  return { total: METIERS_DB.length, completes: METIERS_DB.length - aFaire.length, aFaire };
+};
+
 /** À taper dans la console pour voir ce qu'il manque à la base. */
 window.metiersManquants = function () {
   const reg = JSON.parse(localStorage.getItem('cynthia_metiers_manquants') || '{}');
@@ -6297,7 +6324,27 @@ function downloadRapport(){
     const noteM = ex.note_marche
       ? `<div class="firststep" style="background:#FBF0D8;margin-top:10px"><b style="color:#9A6B0F">Le marché, franchement :</b> ${esc(ex.note_marche)}</div>`
       : '';
-    return `<div class="metier principal"><div class="rank">Piste principale</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why">${why}</p>${grid}<div class="mfoot">${salChip}${marcheChip}${formChip}${jobChip}</div>${first}${route}${noteM}</div>`;
+
+    /* ── CE QUI USE DANS CE MÉTIER ────────────────────────────────────────────
+       Ajouté le 11 août 2026. Toutes nos fiches disaient ce qui est bien, aucune
+       ne disait pourquoi les gens partent. Or c'est ce qu'un vrai conseiller dit,
+       et c'est précisément ce qu'une IA généraliste ne dit jamais. Le contenu
+       vient de la fiche officielle, pas d'une opinion : si le champ est vide, on
+       n'affiche rien plutôt que d'inventer une difficulté. */
+    const useM = ex.ce_qui_use
+      ? `<div class="firststep" style="background:#FBEEEC;margin-top:10px"><b style="color:#A6402F">Ce qui use, dans ce métier :</b> ${esc(ex.ce_qui_use)}</div>`
+      : '';
+
+    /* ── D'OÙ VIENNENT LES CHIFFRES ───────────────────────────────────────────
+       Demandé par le testeur du 11 août : « les fourchettes salariales ne citent
+       aucune source ». En champ à part, donc affiché tel quel : ni le modèle ni
+       la rédaction ne peuvent le déformer. Rien ne s'affiche tant qu'une fiche
+       n'a pas sa source — c'est visible, et c'est voulu. */
+    const srcSal = (_fiche && _fiche.salaire_source)
+      ? `<p style="margin:8px 0 0;font-size:.78rem;color:var(--muted);font-style:italic">Salaires : ${esc(_fiche.salaire_source)}${_fiche.verifie_le ? ' · fiche vérifiée le ' + esc(String(_fiche.verifie_le).split('-').reverse().join('.')) : ''}</p>`
+      : '';
+
+    return `<div class="metier principal"><div class="rank">Piste principale</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why">${why}</p>${grid}<div class="mfoot">${salChip}${marcheChip}${formChip}${jobChip}</div>${srcSal}${first}${route}${noteM}${useM}</div>`;
   };
   const metiersHtml = metiers.filter(isPrinc).map(metierCard).join('') + metiers.filter(function(m){return !isPrinc(m);}).map(metierCard).join('');
   const secMetiers = secWrap('Vos métiers, alignés sur le marché suisse', 'Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.', metiersHtml);
