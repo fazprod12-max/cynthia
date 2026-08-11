@@ -2984,24 +2984,22 @@ let currentModalContent='';
 function showModal(type){
   const contents={
     audio:`
-      <div class="modal-tag">🎙 Extrait réel</div>
-      <h3>Écoutez CYNTH.IA</h3>
-      <p>Un extrait de 45 secondes d'un vrai entretien bêta — avec la permission de l'utilisateur.</p>
-      <div class="audio-player">
-        <div class="ap-orb" id="ap-orb"></div>
-        <div class="ap-wave" id="ap-wave">
-          <div class="aw"></div><div class="aw"></div><div class="aw"></div>
-          <div class="aw"></div><div class="aw"></div><div class="aw"></div>
-          <div class="aw"></div><div class="aw"></div>
-        </div>
-        <div class="ap-progress" onclick="scrubAudio(event)"><div class="ap-bar" id="ap-bar"></div></div>
-        <div class="ap-time" id="ap-time">0:00 / 0:45</div>
-        <div class="ap-controls">
-          <button class="ap-btn" onclick="rewindAudio()">⏮</button>
-          <button class="ap-btn play" id="ap-play" onclick="toggleAudio()">▶</button>
-          <button class="ap-btn" onclick="fwdAudio()">⏭</button>
-        </div>
-      </div>
+      <div class="modal-tag">💬 Exemple d'échange</div>
+      <h3>À quoi ressemble un entretien</h3>
+      <!-- CORRIGÉ le 11 août 2026, audit externe du code source.
+           On annonçait « un extrait de 45 secondes d'un vrai entretien bêta, avec la
+           permission de l'utilisateur ». Il n'existe AUCUN fichier audio dans le produit,
+           aucune balise <audio>, et le code lui-même porte la mention « simulated ».
+           Le consentement invoqué n'existait pas non plus, puisqu'il n'y avait personne.
+           C'était une affirmation fausse faite au visiteur sur la page qui vend
+           l'honnêteté du produit. On dit maintenant ce que c'est : un exemple écrit. -->
+      <p>Un exemple écrit du type de questions que pose Cynthia. Ce n'est pas un enregistrement : c'est une reconstitution, pour vous donner le ton avant de commencer.</p>
+      <!-- Le faux lecteur (onde animée, barre de progression, minuteur 0:45, boutons
+           lecture/avance) a été RETIRÉ le 11 août 2026. Corriger le texte ne suffisait
+           pas : un bouton « lire » et un compteur de 45 secondes font croire à un
+           enregistrement même sans un mot de description. Il n'y a jamais eu de son.
+           On garde l'échange écrit, qui lui est honnête et sert le même but : montrer
+           le type de questions au lieu de le promettre. -->
       <div class="ap-transcript">
         <strong>CYNTH.IA :</strong> "Si vous étiez absolument certain de réussir — sans aucun risque — quelle serait cette idée que vous avez en tête depuis longtemps ?"<br><br>
         <strong>Utilisateur :</strong> "Honnêtement... je voudrais travailler dans le design. Mais j'ai aucune formation."<br><br>
@@ -3158,13 +3156,20 @@ const CONFIG = {
   PRIX_RAPPORT: 49.00,   // Prix du rapport complet, en CHF. Seul endroit à modifier.
 };
 // ────────────────────────────────────────────────────────────
-// PROXY IA — La clé API DeepSeek est stockée côté serveur (Cloudflare Worker).
-// Cascade côté Worker : DeepSeek (principal) → Groq (fallback) → local.
+// PROXY IA — les clés API sont stockées côté serveur (Cloudflare Worker), jamais ici.
+// Cascade réelle côté Worker (v5.8) : Claude / Anthropic (principal) → Groq (secours)
+// → réponse locale en dernier recours.
+// ⚠️ DeepSeek a été RETIRÉ en juillet 2026 (fournisseur chinois : transfert de données
+// personnelles indéfendable sous nLPD). Ces commentaires disaient encore l'inverse et ont
+// fait conclure à un auditeur externe, le 11 août 2026, que la politique de confidentialité
+// mentait sur le traitement des données. Elle disait vrai — c'était le commentaire qui
+// était faux. Un commentaire périmé sur un sujet juridique coûte aussi cher qu'un vrai
+// mensonge : il doit être tenu à jour comme du code.
 // Pour déployer : voir worker/worker.js + wrangler.toml
 const GROQ_PROXY_URL = 'https://cynth-ia-proxy.fazprod12.workers.dev';
 // ────────────────────────────────────────────────────────────
 
-// BUG FIX v5.3 — OBSERVABILITÉ MINIMALE : jusqu'ici, quand Groq ET DeepSeek
+// BUG FIX v5.3 — OBSERVABILITÉ MINIMALE : jusqu'ici, quand tous les fournisseurs
 // échouaient tous les deux, le Worker basculait silencieusement sur une réponse
 // codée en dur qui se fait passer pour Cynthia (aucun log visible, aucune alerte
 // — c'est comme ça que le problème a duré 2 semaines sans être vu). Ce compteur
@@ -3213,7 +3218,21 @@ propose ce qui est faisable dans le temps réel qui reste. Un plan qui déborde
 l'échéance de la personne n'est pas un plan, c'est une politesse.`;
 }
 
-const CYNTH_PROMPT = `Tu es Cynthia. Pas une IA — une coach d'orientation avec 20 ans de terrain, qui a aidé des centaines de personnes de tous horizons (ouvriers, cadres, artisans, parents, indépendants) à trouver un métier qui leur ressemble. Zéro mépris de classe : chaque personne a de la valeur, quelle que soit sa situation.
+/* ⚠️ CORRIGÉ le 11 août 2026 — audit externe du code source.
+   L'ancienne première ligne disait : « Tu es Cynthia. Pas une IA — une coach
+   d'orientation avec 20 ans de terrain, qui a aidé des centaines de personnes ».
+   Trois problèmes, tous graves :
+   1. On demandait au modèle de NIER être une IA. Si un utilisateur posait la
+      question, Cynthia devait mentir — sur la page même où le site affiche
+      « Oui, Cynthia est une intelligence artificielle ».
+   2. Les « 20 ans de terrain » et les « centaines de personnes » sont faux : le
+      premier testeur date du 6 août 2026.
+   3. C'est visible par n'importe qui dans le code source, et ça détruit
+      exactement la crédibilité que la page « Honnêteté » cherche à construire.
+   Cynthia n'a pas besoin d'un passé inventé : sa crédibilité vient de la qualité
+   de ses questions et de données suisses réelles. On garde la POSTURE (chaleur,
+   exigence, zéro mépris de classe) et on retire le mensonge. */
+const CYNTH_PROMPT = `Tu es Cynthia, la coach d'orientation de Cynth.IA. Tu es une intelligence artificielle, et tu l'assumes : si on te le demande, tu réponds oui, simplement, sans t'excuser ni couper l'élan de la conversation. Tu ne prétends JAMAIS être humaine, ni avoir un passé, des années de métier ou des personnes déjà accompagnées. Ce qui te rend utile n'est pas une biographie : c'est que tu écoutes vraiment, que tu poses les questions qu'un bon conseiller pose, et que tu t'appuies sur des données suisses réelles (métiers, salaires en CHF, formations, dispositifs). Tu as la posture d'une conseillère chevronnée — chaleureuse, directe, jamais complaisante. Zéro mépris de classe : chaque personne a de la valeur, quelle que soit sa situation.
 
 TON BUT (à chaque tour)
 En une vraie conversation d'environ 20 minutes, faire que la personne (1) se sente écoutée et (2) reparte avec une direction de métier qui colle à SES compétences, SON expérience et SES envies réelles. Tu n'es pas là pour fouiller ses émotions à l'infini — tu es là pour faire émerger de la matière concrète et la relier à des métiers.
@@ -3276,7 +3295,7 @@ Tu n'as pas UN style figé : tu épouses le sien. À chaque réponse, tu te reca
 La personne doit sentir qu'elle parle à quelqu'un qui la capte vraiment, pas à un script qui déroule.
 
 TU ES SUISSE, ET ÇA DOIT SE SENTIR TRÈS VITE (ton avantage décisif)
-Tu connais le système suisse de l'intérieur, comme une conseillère qui exerce à Genève depuis 20 ans. Ce n'est pas un décor : c'est ce qui te rend crédible là où une IA généraliste raconte n'importe quoi.
+Tu connais le système suisse dans le détail, parce que tes données viennent de sources officielles suisses (orientation.ch, OFS, jobs.ch) et pas d'une culture générale approximative. Ce n'est pas un décor : c'est ce qui te rend crédible là où une IA généraliste raconte n'importe quoi. Tu ne prétends pas pour autant l'avoir vécu — tu le SAIS, tu ne l'as pas exercé.
 - DANS LES 2 OU 3 PREMIERS ÉCHANGES, place naturellement UN vrai repère suisse. Pas un cours, pas une liste : une question ou une remarque de pro. Par exemple : « Vous avez un CFC, ou vous êtes arrivée dans le métier autrement ? », « Vous êtes plutôt sur Genève, ou Vaud ? », « Vous avez déjà passé par un ORP ? ». La personne doit se dire : « elle connaît vraiment le terrain ici ».
 - LE RÉFLEXE ARTICLE 32 : si quelqu'un a des années d'expérience mais pas de titre, dis-lui tôt qu'en Suisse on peut faire valider son expérience et obtenir un CFC par l'article 32, sans refaire tout un apprentissage. C'est LE truc que les gens ignorent et qui change une vie. Une phrase suffit, pas un exposé.
 - TON VOCABULAIRE : CFC, AFP, maturité professionnelle, brevet fédéral, diplôme fédéral, HES, ES, apprentissage dual, formation en cours d'emploi, article 32, chèque annuel de formation (Genève, Vaud, Neuchâtel, Jura), viamia (dès 40 ans), ORP, caisse de chômage, OrTra, jobup, 13e salaire, permis B/C/frontalier. Salaires TOUJOURS en CHF, en général mensuels bruts.
@@ -3555,7 +3574,7 @@ let usedQs = new Set();
 let synthesisFired = false;
 let _synthRetryCount = 0; // Nombre de retry synthèse déjà tentés (max 1)
 
-// ── APPEL IA — DeepSeek via Worker (cascade DeepSeek → Groq → local) ──────────
+// ── APPEL IA via Worker (cascade Claude → Groq → réponse locale) ─────────────
 
 // R3 — Détection de réponse courte : force une question de suivi (seuil élargi pour vraie profondeur)
 function isShortAnswer(text) {
@@ -3769,7 +3788,7 @@ async function callCynthAI(messages) {
   });
   if (!resp.ok) throw new Error('proxy-' + resp.status);
   const data = await resp.json();
-  // BUG FIX v5.3 — dégradation silencieuse : quand Groq ET DeepSeek échouent, le
+  // BUG FIX v5.3 — dégradation silencieuse : quand tous les fournisseurs échouent, le
   // Worker répond quand même 200 OK avec une phrase codée en dur (provider:'fallback')
   // qui se fait passer pour Cynthia. On le trace maintenant au lieu de le laisser
   // invisible — c'est ce mécanisme, jamais détecté, qui causait les réponses hors
@@ -5548,7 +5567,7 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
         isSynthesis: true,           // → force Groq 70b si Claude indispo
         // BUG FIX v5.3 : JSON Object Mode natif de Groq — l'API garantit une sortie
         // syntaxiquement JSON (ou une erreur), le modèle ne peut plus "dériver" en prose.
-        // Supporté par llama-3.3-70b-versatile. Le worker forward ce flag vers Groq/DeepSeek.
+        // Supporté par llama-3.3-70b-versatile. Le worker transmet ce drapeau au fournisseur.
         wantJsonMode: true,
         messages:[{role:'system',content:sysP},{role:'user',content:usrP}],
         max_tokens:3500,
@@ -5558,7 +5577,7 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
     });
     if (!resp.ok) throw new Error('proxy-'+resp.status);
     const data = await resp.json();
-    // BUG FIX v5.3 — dégradation silencieuse : si Groq ET DeepSeek ont échoué, le
+    // BUG FIX v5.3 — dégradation silencieuse : si tous les fournisseurs ont échoué, le
     // Worker répond quand même 200 OK mais avec provider:'fallback' (une phrase
     // codée en dur, jamais du JSON). Avant ce fix, on tentait quand même de la
     // parser comme un rapport, ce qui donnait "no-json" avec un message trompeur.
