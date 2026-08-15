@@ -2440,7 +2440,7 @@ document.addEventListener('DOMContentLoaded', function () {
              Placée en dernier volontairement : c'est la question la moins
              engageante, elle ne doit pas être la première chose qu'on demande. -->
         <div class="quiz-step" id="qs-6">
-          <div class="qs-tag">Préparation · 6 / 6</div>
+          <div class="qs-tag">Préparation · 6 / 6 · Optionnelle</div>
           <h2 class="qs-title">Où en êtes-vous, côté Suisse ?</h2>
           <p class="qs-sub">Les aides et les démarches ne sont pas les mêmes pour tout le monde.</p>
           <div class="qs-cards qs-cards-2" id="q6-cards">
@@ -2461,7 +2461,7 @@ document.addEventListener('DOMContentLoaded', function () {
               <div class="qc-label">Je regarde par curiosité</div>
             </div>
           </div>
-          <button class="quiz-next quiz-finish" onclick="finishQuestionnaire()" id="qnext-6" disabled>Commencer l'entretien ✦</button>
+          <button class="quiz-next quiz-finish" onclick="finishQuestionnaire()" id="qnext-6">Commencer l'entretien ✦</button>
         </div>
 
         <!-- L'étape « Le métier de vos rêves » a été RETIRÉE le 15 août 2026.
@@ -4582,7 +4582,7 @@ function resetQuiz() {
   document.querySelectorAll('.qc,.qm,.qt').forEach(el => el.classList.remove('selected'));
   const q4 = document.getElementById('q4-input');
   if (q4) q4.value = '';
-  ['qnext-1','qnext-2','qnext-5','qnext-6'].forEach(id => {
+  ['qnext-1','qnext-2','qnext-5'].forEach(id => {
     const b = document.getElementById(id);
     if (b) b.disabled = true;
   });
