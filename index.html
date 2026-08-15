@@ -4276,8 +4276,13 @@ function _preparerRapportEnFond() {
 
 function _fabriquerApercu(texteComplet, nbMetiers) {
   const t = String(texteComplet || '');
-  // La restitution personnelle : tout ce qui précède le premier métier.
-  const iPremier = t.search(/(^|\n)\s*(●|•|▶|►|\*\*|\d[.)])/);
+  /* ⚠️ Ne PAS exiger un retour à la ligne devant la puce. Test live du 15 août :
+     le modèle a écrit toute sa synthèse d'un seul tenant (« ...il manque juste
+     la structure et le revenu. ● Conseiller en transformation digitale... »).
+     La version précédente cherchait /(^|\n)\s*●/, ne trouvait rien, et
+     réaffichait donc la synthèse ENTIÈRE : l'aperçu ne servait à rien.
+     On repère la puce où qu'elle soit. */
+  const iPremier = t.search(/[●•▶►]/);
   let portrait = (iPremier > 0 ? t.slice(0, iPremier) : t).trim();
   // Le modèle glisse parfois un séparateur markdown (« --- ») : il sortait brut
   // à l'écran, constaté sur le test du 15 août.
@@ -4285,9 +4290,11 @@ function _fabriquerApercu(texteComplet, nbMetiers) {
 
   // Le premier métier, titre seul : ni « pourquoi », ni « premier pas ».
   let premier = '';
-  const m = t.match(/(?:^|\n)\s*(?:●|•|▶|►)\s*\*{0,2}([^\n*]{3,90})/)
-        || t.match(/(?:^|\n)\s*\*\*([^\n*]{3,90})\*\*/);
-  if (m) premier = m[1].replace(/\*+/g, '').replace(/[:\-–]\s*$/, '').trim();
+  // Le titre s'arrête à la première flèche, au premier retour à la ligne, ou à
+  // la puce suivante : sans ça on embarquait tout le « Pourquoi vous » avec.
+  const m = t.match(/[●•▶►]\s*\*{0,2}([^\n→\*●•▶►]{3,90})/)
+        || t.match(/\*\*([^\n*]{3,90})\*\*/);
+  if (m) premier = m[1].replace(/\*+/g, '').replace(/[:\-–,\s]+$/, '').trim();
 
   const reste = Math.max(0, (nbMetiers || 5) - 1);
   let out = portrait;
