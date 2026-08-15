@@ -4284,9 +4284,25 @@ function _fabriquerApercu(texteComplet, nbMetiers) {
      On repère la puce où qu'elle soit. */
   const iPremier = t.search(/[●•▶►]/);
   let portrait = (iPremier > 0 ? t.slice(0, iPremier) : t).trim();
-  // Le modèle glisse parfois un séparateur markdown (« --- ») : il sortait brut
-  // à l'écran, constaté sur le test du 15 août.
-  portrait = portrait.replace(/\s*-{3,}\s*$/, '').replace(/^\s*-{3,}\s*/, '').trim();
+  /* Nettoyage de fin de portrait. Constaté en test live le 15 août :
+     · un séparateur « --- » sortait brut ;
+     · quand le modèle annonce ses pistes en gras, il reste un « ** » orphelin
+       (« Voici ce qui vous correspond vraiment : ** La piste qui... ») ;
+     · et l'amorce (« Voici ce qui vous correspond : ») n'a plus de sens
+       puisqu'on enchaîne sur notre propre phrase. */
+  portrait = portrait
+    .replace(/^\s*-{3,}\s*/, '')
+    .replace(/[\s*_:–-]+$/, '')          // tirets, gras orphelin, deux-points de fin
+    .trim();
+  /* Et on borne la restitution : elle prouve qu'on a écouté, elle ne doit pas
+     redevenir un pavé. On coupe à la fin d'une phrase, jamais au milieu d'un mot.
+     Mesuré le 15 août : la restitution seule atteignait 1 300 caractères. */
+  const MAX = 700;
+  if (portrait.length > MAX) {
+    const coupe = portrait.slice(0, MAX);
+    const fin = Math.max(coupe.lastIndexOf('. '), coupe.lastIndexOf('! '), coupe.lastIndexOf('? '));
+    portrait = (fin > 250 ? coupe.slice(0, fin + 1) : coupe.trim() + '...').trim();
+  }
 
   // Le premier métier, titre seul : ni « pourquoi », ni « premier pas ».
   let premier = '';
