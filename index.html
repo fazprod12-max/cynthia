@@ -1984,7 +1984,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer maintenant →</button>
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Découvrir la méthode</button>
       </div>
-      <div class="lp-reassure"><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans rendez-vous</span><span>✦ Sans engagement</span><span>↩ Remboursé 14 jours, sans justification</span></div>
+      <div class="lp-reassure"><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans rendez-vous</span><span>✦ Sans engagement</span><span>↩ Pas satisfait ? Écrivez-nous</span></div>
     </div>
     <div class="lp-chatcard">
       <div class="lp-ctop"><div class="lp-orb"></div><div><div class="lp-who">Cynthia</div><div class="lp-cstat">● en ligne · vous écoute</div></div></div>
@@ -2045,7 +2045,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="lp-cvb">Formation et intégration de 15+ nouvelles collaboratrices, taux de rétention de 90%</div>
         <div class="lp-pitch">« Après douze ans à organiser un cabinet médical et à former les nouvelles arrivantes, je veux faire de l'accompagnement mon métier, pas seulement la partie invisible de mon poste. »</div>
       </div>
-      <div class="lp-rfoot"><div class="lp-fn"><b>Et aussi :</b> le coût réel de chaque formation en CHF, qui la finance, et votre plan semaine par semaine.</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button><span style="font-size:.78rem;color:var(--c-muted);">14 jours pour changer d'avis · remboursé sans justification</span></div></div>
+      <div class="lp-rfoot"><div class="lp-fn"><b>Et aussi :</b> le coût réel de chaque formation en CHF, qui la finance, et votre plan semaine par semaine.</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button><span style="font-size:.78rem;color:var(--c-muted);">Un souci avec votre rapport ? On le reprend avec vous</span></div></div>
     </div>
   </div></section>
 
@@ -2085,9 +2085,12 @@ document.addEventListener('DOMContentLoaded', function () {
        page de vente inquiète le client au lieu de le rassurer (même règle que
        pour le nombre de métiers, posée le 4 août : les chiffres de volume vont
        à la presse et aux investisseurs, jamais sur la page de vente).
-       ⚠️ La garantie 14 jours elle-même n'a PAS disparu : elle reste énoncée
-       dans les conditions d'utilisation (modale « cgu »). Rien de juridique
-       n'a été retiré ici, seulement l'argumentaire commercial. -->
+       ⚠️ MAJ du 15 août 2026 : la promesse chiffrée « 14 jours, sans
+       justification » a elle aussi été retirée, à la demande de Faouzi. Elle est
+       remplacée dans les conditions d'utilisation par un engagement de fond :
+       on écoute, on corrige, et on rembourse si on ne peut pas corriger. Plus
+       honnête pour un produit en phase de test, où un rapport qui rate sa cible
+       vaut mieux d'être repris que remboursé en silence. -->
 
   <!-- ── HONNÊTETÉ : chaque limite formulée comme une raison de faire confiance ── -->
   <section id="lp-franc" class="lp-sec"><div class="lp-wrap"><div class="lp-band lp-rv">
@@ -3110,8 +3113,9 @@ function showModal(type){
       <h4>Qui peut l'utiliser</h4>
       <p>Les personnes de 16 ans et plus. Le service est pensé pour le marché du travail suisse et proposé en français. Pendant la phase de test, il est gratuit.</p>
 
-      <h4>Garantie</h4>
-      <p>Une fois le service payant, vous disposez de 14 jours après l'achat pour demander un remboursement intégral, sans justification, en écrivant à <strong style="color:var(--c-emerald-d);">${LEGAL.email}</strong>.</p>
+      <h4>Si le rapport ne vous convient pas</h4>
+      <p>Écrivez-nous à <strong style="color:var(--c-emerald-d);">${LEGAL.email}</strong> en nous disant ce qui ne va pas. On regarde chaque message, et on fait le maximum pour corriger : reprendre le rapport, préciser un point, refaire un entretien. Si rien de tout cela ne répond à votre situation, on vous rembourse.</p>
+      <p>Ce n'est pas une formule : Cynth.IA est en phase de test, et un rapport qui rate sa cible nous intéresse plus qu'un client mécontent qui s'en va sans rien dire.</p>
 
       <h4>Vos décisions restent les vôtres</h4>
       <p>Vous restez seul décideur de votre parcours. ${LEGAL.exploitant} ne peut être tenu responsable des choix faits à la suite d'un entretien ou d'un rapport, ni d'éventuelles interruptions du service.</p>
