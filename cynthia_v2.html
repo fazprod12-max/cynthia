@@ -3791,7 +3791,7 @@ async function callCynthAI(messages) {
 
   // ── Post-synthèse : approfondissement, plus de nouvelles listes ─────────────
   if (synthesisFired && !wantSynthesis) {
-    systemPrompt += `\n\n✅ POST-SYNTHÈSE. La synthèse a été livrée. RÈGLES :\n1. Ne génère PLUS de nouvelles listes de métiers avec ●.\n2. Si l'utilisateur explore une piste : approfondis-la (quotidien, réalité du métier, premiers pas concrets). 2 à 4 phrases, une question au plus.\n3. S'il demande des chiffres précis (salaires, financements) : donne une tendance indicative et rappelle que le détail chiffré est dans le rapport complet.\n4. S'il exprime un doute : accueille l'émotion, normalise, recadre avec un fait, propose une micro-action.`;
+    systemPrompt += `\n\n✅ POST-APERÇU. Tu viens de donner un aperçu : le portrait de la personne et UNE piste. Le reste est dans son rapport. RÈGLES :\n1. Ne cite AUCUN autre nom de métier, et n'en propose aucun nouveau. Ni liste, ni « il y a aussi... », ni « je pensais également à... ». Les autres pistes appartiennent au rapport, c'est ce qui en fait la valeur. Si on te demande « c'était quoi les autres ? », tu réponds simplement qu'elles sont détaillées dans le rapport, avec ce qui rend la personne légitime pour chacune, et tu proposes de parler de celle que tu as déjà nommée.\n2. Sur la piste déjà nommée, tu peux approfondir librement : le quotidien, la réalité du métier, ce qui use, un premier pas. 2 à 4 phrases, une question au plus.\n3. Pas de chiffres précis de salaire ni de financement : ils sont dans le rapport, vérifiés et sourcés. Tu peux dire une tendance en mots (« ça paie correctement en Suisse »), jamais un montant.\n4. S'il exprime un doute : accueille-le, recadre avec un fait qu'il t'a donné, propose une micro-action.\n5. Tu ne redemandes PAS « laquelle vous parle le plus » : l'entretien est terminé, la suite est dans le rapport.`;
   }
 
   // ── Synthèse : format imposé (3 métiers + 2 pistes) ─────────────────────────
@@ -4216,6 +4216,88 @@ function showChatTyping(show) {
   if (msgs) msgs.scrollTop = msgs.scrollHeight;
 }
 
+/* ══ APERÇU DE SYNTHÈSE ══════════════════════════════════════════════════════
+   Demande de Faouzi, 15 août 2026. La synthèse déballait TOUT dans le chat :
+   trois métiers détaillés plus deux pistes. Trois problèmes d'un coup.
+     · C'est long, et le plafond de 850 tokens dégradait la fin : sur le test du
+       15 août, les deux dernières pistes sortaient écrasées en fin de
+       paragraphe, sans « Pourquoi vous » ni « Premier pas ». La pire partie
+       était donc la dernière lue.
+     · Ça donne gratuitement l'essentiel de ce qu'on vend.
+     · Ça se terminait par une relance (« laquelle vous parle le plus ? ») juste
+       avant le message de clôture : deux fins qui se contredisent.
+
+   Le modèle continue de produire ses TROIS métiers : `_captureSynthMetiers` en a
+   besoin (il lui en faut au moins 2, sinon on rouvre le bug du 5 août où le
+   signal le plus fort de l'entretien comptait zéro). Mais on n'AFFICHE que le
+   portrait et le premier métier.
+
+   ⚠️ Point clé, demandé par Faouzi : les métiers non affichés ne doivent pas
+   pouvoir ressortir si la conversation continue, sinon payer ne sert à rien.
+   On ne se contente donc PAS de le demander au modèle : on ne pousse dans
+   `chatHistory` que le texte affiché. Ce qui n'est pas dans son contexte ne peut
+   pas fuiter. */
+/* Prépare le rapport pendant que la personne lit l'aperçu et décide.
+   Mesuré en live le 15 août 2026 : 153 secondes de génération, alors que le
+   délai côté navigateur est de 120. Tant que c'était gratuit, la personne
+   patientait ; le jour où elle a payé, ce même sablier arrive juste APRÈS la
+   carte bancaire, au moment où le doute coûte le plus cher.
+   On lance donc tôt, une seule fois, sans bloquer l'interface. Si ça échoue
+   ici, on ne dit rien : `doEndChat` relancera et gérera l'erreur normalement. */
+let _rapportEnCours = null;
+function _preparerRapportEnFond() {
+  if (_rapportEnCours || window._reportData) return _rapportEnCours;
+  const t0 = Date.now();
+  _rapportEnCours = generateOrientationReport()
+    .then(data => {
+      if (data && Array.isArray(data.top_metiers)) {
+        const vus = {};
+        data.top_metiers = data.top_metiers.filter(m => {
+          const k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim();
+          if (!k || vus[k]) return false; vus[k] = 1; return true;
+        });
+      }
+      window._reportData = deepStripDash(data);
+      try { _stashReport(); } catch (e) {}
+      try { _compter('rapport', (Date.now() - t0) / 1000); } catch (e) {}
+      try {
+        const b = document.getElementById('chat-end-btn');
+        if (b) b.classList.add('ready');
+      } catch (e) {}
+      return window._reportData;
+    })
+    .catch(e => { console.warn('preparation rapport:', e && e.message); _rapportEnCours = null; return null; });
+  return _rapportEnCours;
+}
+
+function _fabriquerApercu(texteComplet, nbMetiers) {
+  const t = String(texteComplet || '');
+  // La restitution personnelle : tout ce qui précède le premier métier.
+  const iPremier = t.search(/(^|\n)\s*(●|•|▶|►|\*\*|\d[.)])/);
+  let portrait = (iPremier > 0 ? t.slice(0, iPremier) : t).trim();
+  // Le modèle glisse parfois un séparateur markdown (« --- ») : il sortait brut
+  // à l'écran, constaté sur le test du 15 août.
+  portrait = portrait.replace(/\s*-{3,}\s*$/, '').replace(/^\s*-{3,}\s*/, '').trim();
+
+  // Le premier métier, titre seul : ni « pourquoi », ni « premier pas ».
+  let premier = '';
+  const m = t.match(/(?:^|\n)\s*(?:●|•|▶|►)\s*\*{0,2}([^\n*]{3,90})/)
+        || t.match(/(?:^|\n)\s*\*\*([^\n*]{3,90})\*\*/);
+  if (m) premier = m[1].replace(/\*+/g, '').replace(/[:\-–]\s*$/, '').trim();
+
+  const reste = Math.max(0, (nbMetiers || 5) - 1);
+  let out = portrait;
+  if (premier) {
+    out += '\n\nLa piste qui ressort le plus fort, c\'est ' + premier + '.';
+    if (reste > 0) {
+      out += '\n\nJ\'en ai ' + reste + ' autres pour vous, avec pour chacune ce qui vous y rend légitime, '
+           + 'le salaire réel en Suisse, la formation s\'il en faut une, et par quoi commencer. '
+           + 'C\'est dans votre rapport.';
+    }
+  }
+  return out.trim();
+}
+
 async function sendChatMsg() {
   if (chatWaiting) return;
   const input = document.getElementById('chat-input');
@@ -4330,8 +4412,26 @@ async function sendChatMsg() {
     // ── Affichage réponse ─────────────────────────────────────────────────────
     await new Promise(r => setTimeout(r, 400));
     showChatTyping(false);
-    addChatBubble('ai', reply);
-    chatHistory.push({ role: 'assistant', content: reply });
+
+    /* Si c'est la synthèse, on n'affiche qu'un APERÇU. Le texte complet a déjà
+       servi à `_captureSynthMetiers` juste au-dessus : les 3 métiers sont donc
+       captés pour la sélection du rapport, mais seuls le portrait et le premier
+       entrent dans la conversation. Les deux autres ne sont NI affichés, NI
+       remis dans chatHistory : le modèle ne les a plus, il ne peut donc pas les
+       redonner si la personne continue à discuter. */
+    var _estSynthese = (synthesisFired && !_wasSynthFired);
+    var _aAfficher = reply;
+    if (_estSynthese) {
+      var _ap = _fabriquerApercu(reply, 5);
+      if (_ap && _ap.length > 40) _aAfficher = _ap;   // garde-fou : si l'extraction rate, on garde le texte d'origine
+    }
+    addChatBubble('ai', _aAfficher);
+    chatHistory.push({ role: 'assistant', content: _aAfficher });
+
+    /* Le rapport se prépare PENDANT que la personne lit l'aperçu et décide.
+       Mesuré en live le 15 août : 153 secondes de génération. Sans ça, cette
+       attente tomberait après le paiement, au pire moment possible. */
+    if (_estSynthese) { try { _preparerRapportEnFond(); } catch (e) {} }
 
     // ── Bouton "J'ai un doute" : apparaît après la réponse de Cynthia dès le 5e message ──
     const _userMsgCount = chatHistory.filter(m => m.role === 'user').length;
@@ -4355,9 +4455,19 @@ async function sendChatMsg() {
         // prompt) : je conclus, j'oriente vers le rapport, je demande le retour.
         // Aucune promesse sur le CONTENU du rapport : on ne sait pas encore ce
         // qu'il dira, et promettre des pistes « surprenantes » serait mentir.
-        const options = "Voilà, j'ai fait le tour de votre parcours.\n\n"
-          + "Ce que vous m'avez raconté m'a donné de vraies pistes. Cliquez sur « Mon rapport », en haut, pour l'ouvrir : 5 métiers détaillés, les salaires suisses, les formations et votre plan sur 6 mois. C'est Faouzi, qui m'a créée, qui vous l'offre pendant la phase de test.\n\n"
-          + "Prenez deux minutes pour les questions en bas du rapport, ça m'aide à m'améliorer pour ceux qui viendront après vous. Et si une piste vous intrigue, je suis encore là.";
+        /* Le texte change selon qu'on est en phase de test (rapport offert) ou
+           en vente. Le prix ne vit qu'à UN endroit, CONFIG.PRIX_RAPPORT, et
+           n'est jamais recopié à la main ici. */
+        const _gratuit = (typeof CONFIG !== 'undefined' && CONFIG.RAPPORT_GRATUIT);
+        const _prix = (typeof CONFIG !== 'undefined' && CONFIG.PRIX_RAPPORT) ? CONFIG.PRIX_RAPPORT : null;
+        const options = _gratuit
+          ? "Voilà, j'ai fait le tour de votre parcours.\n\n"
+            + "Cliquez sur « Mon rapport », en haut, pour l'ouvrir : vos 5 métiers détaillés, les salaires réels en Suisse, les formations et votre plan sur 6 mois. C'est Faouzi, qui m'a créée, qui vous l'offre pendant la phase de test.\n\n"
+            + "Prenez deux minutes pour les questions en bas du rapport, ça m'aide à m'améliorer pour ceux qui viendront après vous. Et si une piste vous intrigue, je suis encore là."
+          : "Voilà, j'ai fait le tour de votre parcours.\n\n"
+            + "Votre rapport complet est en train de se préparer : vos 5 métiers avec ce qui vous y rend légitime, les salaires réels en Suisse, les formations et leur coût, et votre plan sur 6 mois. Cliquez sur « Mon rapport », en haut, pour le débloquer"
+            + (_prix ? " (" + _prix + " CHF)" : "") + ".\n\n"
+            + "Et si une piste vous intrigue, je suis encore là.";
         addChatBubble('ai', options);
         chatHistory.push({ role: 'assistant', content: options });
         // Le bouton du rapport s'allume : c'est maintenant l'action principale.
@@ -4432,7 +4542,15 @@ function doEndChat() {
 
   const _tDebutRapport = Date.now();
   const _reportTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout-report')), 120000));
-  Promise.race([generateOrientationReport(), _reportTimeout])
+  /* Si le rapport a été préparé pendant la lecture de l'aperçu, on le réutilise
+     au lieu de tout relancer : c'est tout l'intérêt de l'avoir lancé tôt.
+     `_preparerRapportEnFond` rend la promesse en cours, ou une promesse déjà
+     résolue si elle a abouti. Sinon (aperçu sauté, reprise de session), on
+     génère normalement. */
+  const _source = window._reportData
+    ? Promise.resolve(window._reportData)
+    : (_rapportEnCours || _preparerRapportEnFond() || generateOrientationReport());
+  Promise.race([_source, _reportTimeout])
     .then(data => {
       _compter('rapport', (Date.now() - _tDebutRapport) / 1000);
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
