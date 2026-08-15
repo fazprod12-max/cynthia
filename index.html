@@ -1650,6 +1650,10 @@ function cynGateSubmit(ev) {
     try { localStorage.setItem('cynthia_acces', window.CYN_ACCES_HASH); } catch (e) {}
     document.documentElement.classList.add('cyn-open');
     if (err) { err.textContent = ''; err.classList.remove('on'); }
+    // La porte vient de s'ouvrir : si un entretien avait été interrompu, c'est
+    // MAINTENANT qu'il faut proposer de le reprendre (au chargement de la page,
+    // l'overlay couvrait encore tout l'écran).
+    try { setTimeout(function () { if (typeof _tenterRepriseChat === 'function') _tenterRepriseChat(); }, 300); } catch (e) {}
   } else {
     if (err) { err.textContent = 'Code non reconnu. Vérifiez la casse et les espaces.'; err.classList.add('on'); }
     if (input) { input.value = ''; input.focus(); }
@@ -2735,6 +2739,8 @@ function gp(name){
   if(name==='preappel'||name==='landing'){
     try { _resetCv(); } catch(e){}
     try { sessionStorage.removeItem(_REPORT_STASH_KEY); } catch(e){}
+    // Nouveau parcours = l'entretien précédent n'a plus lieu d'être proposé.
+    try { _clearChatStash(); } catch(e){}
     window._reportData = null;
   }
   if(name==='chat'){startChatMode();}
@@ -4273,6 +4279,10 @@ async function sendChatMsg() {
       if (btn)   btn.disabled   = false;
       if (input) { input.disabled = false; input.focus(); }
     }
+    // Sauvegarde après chaque échange : sur iOS, un onglet peut être déchargé
+    // sans prévenir. Attendre `visibilitychange` seul serait déjà trop tard si
+    // le système tue l'onglet brutalement.
+    try { _stashChat(); } catch (e) {}
   }
 }
 
@@ -7449,6 +7459,164 @@ function _restoreReport() {
   } catch (e) { return false; }
 }
 
+/* ── SURVIE DE LA CONVERSATION (appel entrant, changement d'app) ──────────────
+   BUG REMONTÉ PAR UNE TESTEUSE (15 août 2026) : sur iPhone, elle reçoit un appel
+   pendant l'entretien ; au retour, toute la conversation avait disparu et il
+   fallait tout recommencer.
+
+   Cause vérifiée dans le code, pas supposée : `chatHistory` et les ~14 drapeaux
+   d'état de l'entretien n'étaient QUE des variables en mémoire vive, et il
+   n'existait aucun gestionnaire visibilitychange / pagehide dans tout le
+   fichier. Safari sur iOS décharge un onglet en arrière-plan dès qu'il a besoin
+   de mémoire (un appel suffit) : au retour, la page se recharge de zéro. Rien
+   n'était perdu par erreur — rien n'était jamais sauvegardé.
+
+   Choix de Faouzi (15 août 2026) : sessionStorage, PAS localStorage. La
+   conversation survit au rechargement de l'onglet, et s'efface d'elle-même dès
+   que l'onglet est fermé. Sur un navigateur partagé, la personne suivante ne
+   tombe jamais sur l'entretien de la précédente — on a déjà eu exactement ce
+   bug avec le CV, on ne le refait pas. Rien ne part au serveur.
+   Et au retour, on DEMANDE avant de reprendre : la personne garde le contrôle,
+   et si ce n'est pas elle qui revient, elle ne lit pas une conversation intime. */
+const _CHAT_STASH_KEY = 'cynthia_chat_stash';
+const _CHAT_STASH_MAX_AGE = 6 * 60 * 60 * 1000; // 6 h : au-delà, ce n'est plus « je reviens »
+
+/** Sauvegarde l'entretien en cours. Silencieux : ne doit JAMAIS casser le chat. */
+function _stashChat() {
+  try {
+    if (!Array.isArray(chatHistory) || chatHistory.length < 2) return; // rien d'utile à garder
+    if (typeof synthesisFired !== 'undefined' && window._reportData) return; // entretien fini
+    sessionStorage.setItem(_CHAT_STASH_KEY, JSON.stringify({
+      v: 1,
+      ts: Date.now(),
+      chatHistory: chatHistory,
+      chatProfile: chatProfile,
+      usedQs: Array.from(usedQs || []),
+      synthesisFired: synthesisFired,
+      _synthRetryCount: _synthRetryCount,
+      restitutionDone: restitutionDone,
+      _franchiseDone: _franchiseDone,
+      _optionsShown: _optionsShown,
+      _holdInputForOptions: _holdInputForOptions,
+      _fbTurn: _fbTurn,
+      _synthesisDone: _synthesisDone,
+      _fbPostTurn: _fbPostTurn,
+      _synthMetiers: _synthMetiers,
+      _cvText: (typeof _cvText === 'string' ? _cvText : '')
+    }));
+  } catch (e) { /* quota plein ou mode privé : on ne casse rien */ }
+}
+
+/** Y a-t-il un entretien récupérable ? Renvoie l'objet, ou null. */
+function _peekStashedChat() {
+  try {
+    const raw = sessionStorage.getItem(_CHAT_STASH_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (!d || d.v !== 1 || !Array.isArray(d.chatHistory) || d.chatHistory.length < 2) return null;
+    if (!d.ts || (Date.now() - d.ts) > _CHAT_STASH_MAX_AGE) { _clearChatStash(); return null; }
+    return d;
+  } catch (e) { return null; }
+}
+
+function _clearChatStash() {
+  try { sessionStorage.removeItem(_CHAT_STASH_KEY); } catch (e) {}
+}
+
+/** Remet l'entretien exactement où il était, bulles comprises. */
+function _restoreChat() {
+  const d = _peekStashedChat();
+  if (!d) return false;
+  try {
+    chatHistory          = d.chatHistory;
+    chatProfile          = d.chatProfile || chatProfile;
+    usedQs               = new Set(d.usedQs || []);
+    synthesisFired       = !!d.synthesisFired;
+    _synthRetryCount     = d._synthRetryCount || 0;
+    restitutionDone      = !!d.restitutionDone;
+    _franchiseDone       = !!d._franchiseDone;
+    _optionsShown        = !!d._optionsShown;
+    _holdInputForOptions = !!d._holdInputForOptions;
+    _fbTurn              = d._fbTurn || 0;
+    _synthesisDone       = !!d._synthesisDone;
+    _fbPostTurn          = d._fbPostTurn || 0;
+    _synthMetiers        = d._synthMetiers || null;
+    _fbUsed              = new Set();
+    if (typeof d._cvText === 'string') _cvText = d._cvText;
+    chatWaiting = false; // sinon l'input reste bloqué si l'onglet est mort pendant un appel IA
+
+    // Reconstruit les bulles à partir de l'historique (source unique de vérité).
+    const msgs = document.getElementById('chat-msgs');
+    if (msgs) msgs.innerHTML = '';
+    chatHistory.forEach(function (m) {
+      if (m && m.content) addChatBubble(m.role === 'user' ? 'user' : 'ai', m.content);
+    });
+
+    // Le bouton du rapport doit retrouver son état allumé si la synthèse était passée.
+    try {
+      if (synthesisFired) {
+        const b = document.getElementById('btn-mon-rapport') || document.getElementById('btn-terminer');
+        if (b) b.classList.add('ready');
+      }
+    } catch (e) {}
+
+    try { updatePhaseIndicator(); } catch (e) {}
+    return true;
+  } catch (e) {
+    _clearChatStash();
+    return false;
+  }
+}
+
+/** Propose de reprendre — on ne décide pas à la place de la personne. */
+function _proposerRepriseChat() {
+  const d = _peekStashedChat();
+  if (!d) return false;
+  const nbUser = d.chatHistory.filter(function (m) { return m && m.role === 'user'; }).length;
+  if (nbUser < 1) { _clearChatStash(); return false; }
+
+  const box = document.createElement('div');
+  box.id = 'cyn-reprise';
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'true');
+  box.setAttribute('aria-labelledby', 'cyn-reprise-t');
+  box.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(14,42,36,.72);display:flex;align-items:center;justify-content:center;padding:20px';
+  box.innerHTML =
+    '<div style="background:var(--cream,#FAF6EF);color:var(--c-ink,#14201C);max-width:440px;width:100%;border-radius:18px;padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,.28)">' +
+      '<h3 id="cyn-reprise-t" style="margin:0 0 10px;font-size:1.15rem;line-height:1.35">Vous avez un entretien en cours</h3>' +
+      '<p style="margin:0 0 18px;font-size:.95rem;line-height:1.55;opacity:.85">Il vous restait ' + nbUser + ' message' + (nbUser > 1 ? 's' : '') + ' échangé' + (nbUser > 1 ? 's' : '') + ' avec Cynthia. Vous pouvez reprendre où vous en étiez, ou repartir de zéro.</p>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+        '<button type="button" id="cyn-reprise-oui" style="flex:1;min-width:150px;cursor:pointer;font:inherit;font-weight:600;border:none;border-radius:11px;padding:13px 16px;background:var(--c-emerald-d,#0E5C46);color:#fff">Reprendre l\'entretien</button>' +
+        '<button type="button" id="cyn-reprise-non" style="flex:1;min-width:150px;cursor:pointer;font:inherit;font-weight:600;border:1px solid rgba(20,32,28,.28);border-radius:11px;padding:13px 16px;background:transparent;color:inherit">Recommencer</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(box);
+
+  const fermer = function () { try { box.remove(); } catch (e) {} };
+  box.querySelector('#cyn-reprise-oui').addEventListener('click', function () {
+    fermer();
+    try {
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('on'); });
+      const pg = document.getElementById('page-chat');
+      if (pg) pg.classList.add('on');
+      window.scrollTo(0, 0);
+    } catch (e) {}
+    if (!_restoreChat()) { try { gp('preappel'); } catch (e) {} }
+  });
+  box.querySelector('#cyn-reprise-non').addEventListener('click', function () {
+    _clearChatStash();
+    fermer();
+  });
+  return true;
+}
+
+/* Points de sauvegarde. `visibilitychange` est le seul signal fiable sur iOS :
+   `beforeunload` n'est PAS déclenché quand Safari décharge un onglet en fond. */
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'hidden') _stashChat();
+});
+window.addEventListener('pagehide', _stashChat);
+
 /**
  * Lance le checkout Stripe via le Worker.
  * Si déjà payé → télécharge directement le rapport.
@@ -7557,6 +7725,25 @@ async function checkStripeReturn() {
 
 // Vérifier le retour Stripe dès le chargement de la page
 document.addEventListener('DOMContentLoaded', checkStripeReturn);
+
+/* Proposer de reprendre un entretien interrompu (appel entrant, changement
+   d'app…). Après la porte d'accès et après le retour Stripe, pour ne jamais
+   passer par-dessus l'un des deux. Ne s'affiche que s'il y a vraiment quelque
+   chose à reprendre — sinon la personne ne voit rien du tout. */
+function _tenterRepriseChat() {
+  try {
+    // `cyn-open` sur <html> = porte d'accès DÉVERROUILLÉE. Tant qu'elle est
+    // fermée, on ne montre rien : l'overlay couvre tout l'écran de toute façon.
+    if (!document.documentElement.classList.contains('cyn-open')) return;
+    if (document.getElementById('cyn-reprise')) return;   // déjà proposé
+    if (window._reportData) return;                       // retour de paiement en cours
+    if (_URL_PARAMS && _URL_PARAMS.payment) return;
+    _proposerRepriseChat();
+  } catch (e) {}
+}
+document.addEventListener('DOMContentLoaded', function () {
+  setTimeout(_tenterRepriseChat, 400);
+});
 
 /* ─────────────────────────────────────────────────────────
    MINI MICRO ASYNCHRONE
