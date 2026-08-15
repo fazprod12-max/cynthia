@@ -3602,6 +3602,105 @@ function deepStripDash(v) {
   return v;
 }
 
+/* ══ DICTIONNAIRE CYNTH.IA — CORRECTION AUTOMATIQUE ══════════════════════════
+   Fourni par Faouzi le 15 août 2026. Le dictionnaire était écrit comme une
+   consigne de relecture humaine avant export PDF. Or les rapports sont produits
+   en production, dans le navigateur du client, sans personne dans la boucle :
+   une consigne ne protège rien. On corrige donc par du code, comme pour les
+   tirets cadratins.
+
+   CE QUI EST CORRIGÉ ICI : uniquement le mécanique et le sans-risque.
+   CE QUI NE L'EST PAS, VOLONTAIREMENT :
+     · « CHF 5. » → « CHF 5 000 ». On ignore si le vrai montant était 5 000,
+       5 500 ou 500. Le compléter serait INVENTER un chiffre, ce que le produit
+       interdit partout ailleurs. On le signale en console à la place.
+     · « CHF- » → « CHF – ». Le dictionnaire demande un demi-cadratin, que
+       stripDash supprime : les deux règles se battraient.
+     · RAI, Crédit Suisse, BEM, SFBC : entrées non vérifiées ou fausses, écartées
+       en attendant leurs sources (RAI n'existe pas, c'est l'AC ; Crédit Suisse
+       est radiée depuis 2024 — les deux avaient été signalées comme bugs le
+       11 août, les réinscrire les ferait revenir).
+
+   Les accents ne sont ajoutés qu'en MOTS ENTIERS, et jamais sur un champ `id`
+   ni sur une URL : « specialiste-vente » est un identifiant de la base, le
+   transformer en « spécialiste-vente » casserait la recherche du métier. */
+const _DICO_MOTS = [
+  [/\bcete\b/g, 'cette'], [/\bCete\b/g, 'Cette'], [/\bcetee\b/g, 'cette'],
+  [/\bcet semaine\b/g, 'cette semaine'], [/\bcettes\b/g, 'ces'],
+  [/\bclientelle?\b/g, 'clientèle'],
+  [/\bemploye(s?)\b/g, 'employé$1'], [/\bgerant(e?s?)\b/g, 'gérant$1'],
+  [/\bspecialiste(s?)\b/g, 'spécialiste$1'], [/\bcompetence(s?)\b/g, 'compétence$1'],
+  [/\bfidelisation\b/g, 'fidélisation'],
+  [/\bmonde de requin\b/g, 'monde de requins'],
+  [/\bla lever\b/g, 'la levée'], [/\bLa lever\b/g, 'La levée']
+];
+
+function _corrigerLangue(txt) {
+  if (typeof txt !== 'string' || !txt) return txt;
+  var t = txt;
+
+  // 1. URLs : fautes de frappe listées au dictionnaire
+  t = t.replace(/nttps:\/\//gi, 'https://')
+       .replace(/orientation\.cn\b/gi, 'orientation.ch')
+       .replace(/cynthia-orientation\.cn\b/gi, 'cynthia-orientation.ch')
+       .replace(/cynthia\.cn\b/gi, 'cynthia.ch')
+       .replace(/cynthia_v2\.htm[!]?(?!l)/g, 'cynthia_v2.html');
+
+  // 2. Mots (jamais dans une URL : on la met à l'abri le temps du passage)
+  var urls = [];
+  /* Le marqueur doit etre IMPOSSIBLE a confondre avec du texte du rapport.
+     Premiere version : un simple numero. Catastrophe evitee de justesse, la
+     restauration finale remplacait alors TOUS les nombres du rapport (donc les
+     salaires) par une URL ou par undefined. */
+  t = t.replace(/https?:\/\/[^\s)<>"']+/g, function (u) { urls.push(u); return '\u0001U' + (urls.length - 1) + '\u0001'; });
+  _DICO_MOTS.forEach(function (r) { t = t.replace(r[0], r[1]); });
+
+  // 3. Montants. CHF toujours AVANT, espace fine comme séparateur de milliers.
+  t = t.replace(/(\d[\d  ']*\d|\d)\s*CHF\b/g, 'CHF $1');           // « 5000 CHF » → « CHF 5000 »
+  t = t.replace(/\bCHF\s*~/g, 'CHF ~');                                  // « CHF~ » → « CHF ~ »
+  // Espace des milliers : seulement au contact de CHF ou d'une unité de temps,
+  // pour ne jamais toucher une année, un code postal ou un effectif.
+  t = t.replace(/\bCHF\s*(~?)\s*(\d{4,6})\b/g, function (m, tilde, n) {
+    return 'CHF ' + (tilde ? '~' : '') + n.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  });
+  t = t.replace(/\b(\d{4,6})(\s*\/\s*(?:an|mois))/g, function (m, n, suf) {
+    return n.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + suf;
+  });
+
+  // 4. Espaces parasites avant virgule et point (typographie française).
+  //    On laisse « ? » « ! » « : » « ; » qui EXIGENT une espace en français.
+  t = t.replace(/\s+,/g, ',').replace(/(?<![.\d])\s+\.(?!\.)/g, '.');
+
+  // 5. On remet les URLs
+  t = t.replace(/\u0001U(\d+)\u0001/g, function (m, i) { return urls[+i]; });
+
+  return t.replace(/[ \t]{2,}/g, ' ');
+}
+
+/* Parcourt tout le rapport. `id` est SAUTÉ : c'est un identifiant technique,
+   pas du texte lu par la personne, et le corriger casserait la base. */
+const _DICO_CLES_INTOUCHABLES = { id: 1, type: 1, score: 1, horizon: 1 };
+
+function _corrigerLangueProfond(v, cle) {
+  if (typeof v === 'string') return _DICO_CLES_INTOUCHABLES[cle] ? v : _corrigerLangue(v);
+  if (Array.isArray(v)) return v.map(function (x) { return _corrigerLangueProfond(x, cle); });
+  if (v && typeof v === 'object') {
+    for (var k in v) if (Object.prototype.hasOwnProperty.call(v, k)) v[k] = _corrigerLangueProfond(v[k], k);
+    return v;
+  }
+  return v;
+}
+
+/* Signale ce qu'on ne corrige PAS tout seul, pour que ça remonte au lieu de
+   passer inaperçu (montant tronqué du type « CHF 5. »). */
+function _signalerMontantsDouteux(obj) {
+  try {
+    var t = JSON.stringify(obj || {});
+    var m = t.match(/CHF\s*\d{1,3}[.,](?!\d)/g);
+    if (m && m.length) console.warn('[DICO] montant peut-être tronqué, à vérifier :', m.join(', '));
+  } catch (e) {}
+}
+
 /* ── PHASES DE L'ENTRETIEN — SOURCE UNIQUE DE VÉRITÉ ──────────────────────────
    BUG CORRIGÉ (1er août 2026) : deux fonctions calculaient la phase avec des
    seuils DIFFÉRENTS. updatePhaseIndicator() (affichage) passait en phase 3 dès le
@@ -4261,7 +4360,8 @@ function _preparerRapportEnFond() {
           if (!k || vus[k]) return false; vus[k] = 1; return true;
         });
       }
-      window._reportData = deepStripDash(data);
+      window._reportData = _corrigerLangueProfond(deepStripDash(data));
+      _signalerMontantsDouteux(window._reportData);
       try { _stashReport(); } catch (e) {}
       try { _compter('rapport', (Date.now() - t0) / 1000); } catch (e) {}
       try {
@@ -4581,7 +4681,8 @@ function doEndChat() {
     .then(data => {
       _compter('rapport', (Date.now() - _tDebutRapport) / 1000);
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
-      window._reportData = deepStripDash(data);
+      window._reportData = _corrigerLangueProfond(deepStripDash(data));
+      _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
       // Bouton rapport — comportement selon CONFIG.RAPPORT_GRATUIT (test / production)
       if (btn) {
@@ -4610,7 +4711,8 @@ function doEndChat() {
       // Le repli est un signal de qualité : s'il monte, c'est que les appels
       // échouent ou dépassent le délai, et la personne reçoit un rapport pauvre.
       _compter('rapport_repli', (Date.now() - _tDebutRapport) / 1000);
-      window._reportData = deepStripDash(buildFallbackReport());
+      window._reportData = _corrigerLangueProfond(deepStripDash(buildFallbackReport()));
+      _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📋 Aperçu du rapport'; }
       renderMetiersSection((window._reportData.top_metiers) || []);
@@ -6032,6 +6134,13 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
   // partie a son retry et son fallback PAR SECTION.)
   const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}`;
   const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.'
+    + ' LANGUE ET TYPOGRAPHIE (dictionnaire Cynth.IA, 15 août 2026). Ce rapport se lit comme un document professionnel suisse, pas comme une sortie de machine :'
+    + ' (a) SUISSE ROMANDE, jamais français de France : écris "assurance-chômage" et non "la Sécu" ou "le chômage" seul, "salaire minimum" et non "SMIC", "formation continue" et non "VAE". Aucun sigle français.'
+    + ' (b) MONNAIE : "CHF" en majuscules et TOUJOURS avant le montant, avec une espace tous les trois chiffres. On écrit "CHF 5 000/mois", jamais "5000 CHF" ni "CHF 5000". N\'écris JAMAIS un montant tronqué du type "CHF 5." : soit tu donnes le nombre entier, soit tu ne donnes pas de chiffre.'
+    + ' (c) ACCORDS : relis les pluriels et les participes passés avant de rendre ta réponse. "des clients revenaient" et non "revenait". Accorde les adjectifs au bon genre quand tu parles de la personne.'
+    + ' (d) ACCENTS : tous les mots en é, è, ê sont accentués. "compétence", "spécialiste", "fidélisation", "clientèle", "employé", "gérant".'
+    + ' (e) TON : chaleureux mais professionnel, direct mais bienveillant, jamais moralisateur. Vouvoiement partout.'
+    + ' (f) TYPOGRAPHIE : pas d\'espace avant une virgule ni avant un point. Les noms propres suisses gardent leur orthographe exacte (Genève, Suisse romande, ORP, CFC, HES-SO, brevet fédéral, article 32).'
   /* ── RÈGLES DE VÉRACITÉ ────────────────────────────────────────────────────
      Ajoutées le 11 août 2026 après un rapport de bugs d'un testeur qui a TOUT
      vérifié. Chaque interdiction ci-dessous correspond à une erreur réelle,
