@@ -1586,6 +1586,45 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   .cb,.chat-msgs{overflow-wrap:anywhere;word-break:break-word;}
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   LA BARRE DU LECTEUR DE RAPPORT (17 août 2026)
+
+   Mesuré à 390 px avant correction : la barre demandait 407 px, soit
+   17 px de débordement, et le bouton « Enregistrer en PDF » passait sur
+   DEUX lignes dans une barre haute de 58 px — donc coupé. C'est le
+   bouton qui produit le livrable, sur l'écran le plus utilisé.
+
+   Même cause que le bloc d'action de l'aperçu : tout était écrit en dur
+   dans le HTML, donc aucune règle CSS ne pouvait le rattraper. C'est le
+   troisième bloc de cette famille ; le motif est toujours le même.
+
+   Ce qu'on coupe sur petit écran : le sous-titre « · Rapport
+   personnalisé », qui n'apprend rien à quelqu'un qui vient de demander
+   son rapport, et le libellé des boutons, réduits à leur icône. On ne
+   coupe jamais l'action, seulement le décor.
+════════════════════════════════════════════════════════════════════════ */
+.rap-bar{position:absolute;top:0;left:0;right:0;height:58px;z-index:1;
+  background:linear-gradient(135deg,#8FBC8B,#4A7C59);
+  box-shadow:0 4px 20px rgba(143,188,139,.35);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 24px;}
+.rap-bar-titre{display:flex;align-items:center;gap:12px;min-width:0;}
+.rap-bar-nom{color:#fff;font-weight:900;font-size:15px;letter-spacing:-.5px;white-space:nowrap;}
+.rap-bar-sub{color:rgba(250,243,224,.5);font-size:13px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;}
+.rap-bar-actions{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+.rap-btn{border-radius:100px;font-size:13px;cursor:pointer;font-family:inherit;
+  white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+.rap-btn-pdf{background:rgba(250,243,224,.18);color:#fff;
+  border:1px solid rgba(250,243,224,.3);padding:9px 20px;font-weight:700;letter-spacing:-.3px;}
+.rap-btn-x{background:rgba(250,243,224,.08);color:rgba(250,243,224,.8);
+  border:1px solid rgba(250,243,224,.15);padding:9px 16px;font-weight:600;}
+@media(max-width:600px){
+  .rap-bar{padding:0 12px;gap:8px;}
+  .rap-bar-sub{display:none;}          /* décor, pas information */
+  .rap-btn-txt{display:none;}          /* l'icône suffit, l'action reste */
+  .rap-btn{min-width:44px;min-height:44px;justify-content:center;padding:0 14px;font-size:15px;}
+}
+
 /* Quand le clavier est ouvert, on réduit la carte à la hauteur réellement
    visible (voir _clavierMobile en JS). Sans cette variable, la carte fait
    toute la hauteur de l'écran et le champ de saisie se retrouve CACHÉ sous
@@ -1980,6 +2019,36 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-tension{font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:100px;display:inline-block;margin-top:5px;}
   .lp-tension.p{background:var(--c-emerald-soft);color:var(--c-emerald-d);} .lp-tension.s{background:#FFF3D9;color:#8A6100;}
   .lp-rfoot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:22px 32px;border-top:1px solid var(--c-line);background:var(--c-cream);}
+/* ── LE BLOC D'ACTION DE L'APERÇU (17 août 2026, deuxième version) ──────────
+   Faouzi, sur capture : « c'est pas centré, pourquoi c'est moche comme ça ».
+
+   Le défaut d'origine : ce bloc portait ses styles EN DUR dans le HTML
+   (style="display:flex;align-items:flex-end"). Tant que la légende et le
+   bouton tiennent sur une ligne, ça passe. Dès que ça passe à la ligne, la
+   colonne ne fait plus que la largeur de sa légende, et le bouton se cale à
+   droite de CELLE-CI : ni aligné à gauche sur le texte, ni centré, ni au bord
+   de la carte. Posé au hasard. Et un attribut style ne peut être corrigé par
+   aucune feuille de style — c'est pour ça que tout le reste s'est adapté et
+   pas lui.
+
+   Ma première correction alignait à droite au-dessus de 760 px et ne centrait
+   qu'en dessous. Autrement dit, elle ne réglait le problème que sur téléphone,
+   alors que la capture vient d'un grand écran. Corriger à moitié un défaut
+   d'alignement, c'est le laisser.
+
+   Version retenue : ce bloc est une invitation à agir, pas une barre d'outils.
+   Il est donc CENTRÉ, à toutes les largeurs, sans exception et sans point de
+   rupture — la légende, le bouton, puis la note de réassurance, empilés sur un
+   axe unique. Aucune largeur d'écran ne peut le remettre de travers. */
+.lp-rfoot{flex-direction:column;align-items:center;text-align:center;gap:14px;}
+.lp-ract{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+.lp-ract .lp-btn{min-width:min(100%,280px);}
+.lp-rnote{font-size:.78rem;color:var(--c-muted);}
+@media(max-width:760px){
+  .lp-rfoot{padding:20px 18px;}
+  .lp-ract .lp-btn{width:100%;max-width:340px;}
+}
+}
   .lp-rfoot .lp-fn{font-size:.92rem;color:var(--c-muted);} .lp-rfoot .lp-fn b{color:var(--c-ink);}
   .lp-band{background:linear-gradient(135deg,var(--c-emerald-soft),var(--c-coral-soft));border-radius:34px;padding:56px 44px;text-align:center;}
   .lp-band h2{font-size:2rem;margin-bottom:16px;} .lp-band>p{color:var(--c-ink);font-size:1.1rem;max-width:62ch;margin:0 auto;opacity:.82;}
@@ -2117,7 +2186,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="lp-cvb">Formation et intégration de 15+ nouvelles collaboratrices, taux de rétention de 90%</div>
         <div class="lp-pitch">« Après douze ans à organiser un cabinet médical et à former les nouvelles arrivantes, je veux faire de l'accompagnement mon métier, pas seulement la partie invisible de mon poste. »</div>
       </div>
-      <div class="lp-rfoot"><div class="lp-fn"><b>Et aussi :</b> le coût réel de chaque formation en CHF, qui la finance, et votre plan semaine par semaine.</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button><span style="font-size:.78rem;color:var(--c-muted);">Un souci avec votre rapport ? On le reprend avec vous</span></div></div>
+      <div class="lp-rfoot"><div class="lp-fn"><b>Et aussi :</b> le coût réel de chaque formation en CHF, qui la finance, et votre plan semaine par semaine.</div><div class="lp-ract"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button><span class="lp-rnote">Un souci avec votre rapport ? On le reprend avec vous</span></div></div>
     </div>
   </div></section>
 
@@ -8952,14 +9021,14 @@ async function _transcribeWhisper(blob, mimeType, _retryCount) {
 
 <!-- RAPPORT OVERLAY — jamais bloqué par les popup blockers -->
 <div id="rapport-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:#f4f1ff;">
-  <div style="position:absolute;top:0;left:0;right:0;height:58px;background:linear-gradient(135deg,#8FBC8B,#4A7C59);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:1;box-shadow:0 4px 20px rgba(143,188,139,.35);">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span style="color:#fff;font-weight:900;font-size:15px;letter-spacing:-.5px;">CYNTH.IA</span>
-      <span style="color:rgba(250,243,224,.5);font-size:13px;">· Rapport personnalisé</span>
+  <div class="rap-bar">
+    <div class="rap-bar-titre">
+      <span class="rap-bar-nom">CYNTH.IA</span>
+      <span class="rap-bar-sub">· Rapport personnalisé</span>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button onclick="printRapport()" style="background:rgba(250,243,224,.18);color:#fff;border:1px solid rgba(250,243,224,.3);padding:9px 20px;border-radius:100px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:-.3px;font-family:inherit;">🖨 Enregistrer en PDF</button>
-      <button onclick="closeRapportOverlay()" style="background:rgba(250,243,224,.08);color:rgba(250,243,224,.8);border:1px solid rgba(250,243,224,.15);padding:9px 16px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Fermer</button>
+    <div class="rap-bar-actions">
+      <button class="rap-btn rap-btn-pdf" onclick="printRapport()">🖨 <span class="rap-btn-txt">Enregistrer en PDF</span></button>
+      <button class="rap-btn rap-btn-x" onclick="closeRapportOverlay()">✕ <span class="rap-btn-txt">Fermer</span></button>
     </div>
   </div>
   <iframe id="rapport-frame" style="position:absolute;top:58px;left:0;right:0;bottom:0;width:100%;height:calc(100vh - 58px);height:calc(100dvh - 58px);border:none;background:#f4f1ff;" sandbox="allow-scripts allow-same-origin allow-modals allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe>
