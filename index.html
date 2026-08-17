@@ -5958,7 +5958,7 @@ async function _selectionnerMetiers({ motsUtilisateur, cvTexte, rejets, synthMet
     ? `\n\nELLE A DIT NE PLUS VOULOIR : ${rejets.termes.join(', ')}${(rejets.secteurs || []).length ? ` (secteur : ${rejets.secteurs.join(', ')})` : ''}. Aucun métier de ce domaine, quelle que soit sa pertinence sur le papier. Ses compétences acquises là-bas restent valables ailleurs : sers-t'en pour justifier d'AUTRES métiers.`
     : '';
   const blocSynth = (synthMetiers && synthMetiers.length)
-    ? `\n\nPENDANT L'ENTRETIEN, TU LUI AS DÉJÀ PROPOSÉ : ${synthMetiers.map(s => s.titre).join(', ')}. Si elle n'a pas dit non, ces pistes sont prioritaires : c'est la conclusion à laquelle vous êtes arrivés ensemble.`
+    ? `\n\nPENDANT L'ENTRETIEN, TU LUI AS DÉJÀ PROPOSÉ : ${synthMetiers.map(s => s.titre).join(', ')}. Si elle n'a pas dit non ET si elles passent le test de preuve ci-dessus, garde-les : c'est la conclusion à laquelle vous êtes arrivés ensemble.`
     : '';
   const blocCv = cvTexte ? `\n\nSON CV (faits réels : postes, durées, formations) :\n${String(cvTexte).slice(0, 5000)}` : '';
 
@@ -5983,7 +5983,27 @@ RÈGLES ABSOLUES :
   privilégie les métiers accessibles par l'art. 32 ou par validation des acquis.
 • Ne propose pas le métier qu'elle veut quitter, ni un quasi-synonyme.
 • Si elle dit ne PAS savoir faire quelque chose, ce n'est pas un intérêt : c'est une lacune.
-• Varie : pas cinq métiers du même secteur.
+• ⛔ LE TEST QUI COMPTE — À APPLIQUER À CHAQUE MÉTIER AVANT DE LE RETENIR.
+  Demande-toi : « qu'est-ce que CETTE personne a raconté qui pointe vers CE
+  domaine ? » Si tu ne peux pas répondre en citant une phrase précise de ses
+  messages ou une ligne de son CV, tu ne le retiens pas. Point.
+  ⚠️ UN TRAIT DE CARACTÈRE N'EST PAS UNE PREUVE. « Elle est patiente », « elle
+  aime le contact », « elle sait écouter », « elle est rigoureuse » sont vrais de
+  la moitié du catalogue : ça ne justifie AUCUN métier en particulier. Ce qui
+  justifie un métier, c'est une expérience, une tâche déjà faite, une formation,
+  un secteur fréquenté, ou une envie qu'elle a nommée elle-même.
+  Erreur réelle du 17 août 2026 : un conseiller de vente automobile de 41 ans, qui
+  n'a jamais prononcé un mot sur la santé, s'est vu proposer « hygiéniste
+  dentaire » et « assistant médical » parce qu'il avait dit aimer écouter les
+  gens et prendre son temps. Deux pistes sur cinq sans aucun rapport avec sa vie.
+  Ce genre de proposition détruit la confiance dans tout le reste du rapport.
+• PLUTÔT MOINS QUE MAL. Si tu ne trouves que 5 métiers qui passent le test
+  ci-dessus, rends-en 5. Mieux vaut 5 pistes justifiées que 8 dont 3 sont du
+  remplissage : la personne juge le rapport sur la PIRE proposition, pas sur la
+  meilleure.
+• Ne cherche pas la variété pour elle-même. Deux métiers proches mais tous deux
+  pertinents valent mieux qu'un troisième secteur choisi pour faire joli. Évite
+  seulement les quasi-doublons du même poste.
 • Choisis 8 métiers classés du plus au moins pertinent. Les 3 premiers doivent être solides ; les suivants peuvent être des pistes plus latérales.
 
 FORMAT : uniquement un objet JSON, premier caractère {, dernier }.`;
@@ -5995,10 +6015,11 @@ CE QU'ELLE A DIT (ses messages, mot pour mot) :
 ${motsUtilisateur}${blocCv}${blocRejet}${blocSynth}
 
 Réponds uniquement ainsi :
-{"niveau_personne": 4, "accepte_de_redescendre": false, "choix":[{"id":"identifiant-exact-du-catalogue","raison":"une phrase : ce qu'elle a dit qui justifie ce métier"}]}
+{"niveau_personne": 4, "accepte_de_redescendre": false, "choix":[{"id":"identifiant-exact-du-catalogue","preuve":"citation EXACTE de ses mots, recopiée depuis ses messages ou son CV","raison":"ce que cette citation prouve pour ce métier"}]}
 
 niveau_personne = son niveau actuel sur l'échelle 1-6 ci-dessus, diplôme ET expérience confondus.
-accepte_de_redescendre = true UNIQUEMENT si elle a dit vouloir lever le pied, se reconvertir de zéro, ou accepter un poste moins qualifié.`;
+accepte_de_redescendre = true UNIQUEMENT si elle a dit vouloir lever le pied, se reconvertir de zéro, ou accepter un poste moins qualifié.
+preuve = un extrait RECOPIÉ de ses messages ou de son CV, pas une reformulation. Il est vérifié automatiquement : si l'extrait ne se retrouve pas dans ce qu'elle a écrit, le métier est écarté. Si tu n'as rien à citer pour un métier, ne le propose pas.`;
 
   let brut;
   try { brut = await appel(sys, usr); }
@@ -6008,10 +6029,12 @@ accepte_de_redescendre = true UNIQUEMENT si elle a dit vouloir lever le pied, se
   }
 
   const choix = (brut && Array.isArray(brut.choix)) ? brut.choix : [];
+  /* On passe SES mots (messages + CV) pour que la vérification de preuve puisse
+     travailler. Sans eux, la fonction ne bloque rien : elle ne peut pas juger. */
   return _validerChoixMetiers(choix, rejets, {
     niveau: Number(brut && brut.niveau_personne) || 0,
     accepteDeRedescendre: !!(brut && brut.accepte_de_redescendre)
-  });
+  }, String(motsUtilisateur || '') + ' ' + String(cvTexte || ''));
 }
 
 /**
@@ -6029,7 +6052,51 @@ accepte_de_redescendre = true UNIQUEMENT si elle a dit vouloir lever le pied, se
  * @param {Object} rejets  ce que la personne a dit ne plus vouloir
  * @param {Object} niv     { niveau:1-6, accepteDeRedescendre:bool }
  */
-function _validerChoixMetiers(choix, rejets, niv) {
+/* ══ VÉRIFICATION DE LA PREUVE ═══════════════════════════════════════════════
+   Ajouté le 17 août 2026 après un défaut vu sur un rapport réel : un conseiller
+   de vente automobile s'est vu proposer « hygiéniste dentaire » et « assistant
+   médical », alors qu'il n'avait jamais prononcé un mot sur la santé. Le modèle
+   avait raisonné sur des traits de caractère (écoute, patience, contact) qui sont
+   vrais de la moitié du catalogue et ne prouvent aucun métier en particulier.
+
+   On ne se contente donc plus de le DEMANDER au modèle : chaque métier doit être
+   accompagné d'un extrait des propres mots de la personne, et cet extrait est
+   VÉRIFIÉ ici. Un modèle peut ignorer une consigne ; il ne peut pas fabriquer
+   une citation qui se retrouve dans un texte qu'on relit.
+
+   Deux garde-fous contre l'excès de zèle, parce qu'une vérification trop stricte
+   coûterait des pistes légitimes :
+     · on n'exige pas l'exactitude au caractère près (les modèles paraphrasent) :
+       on demande qu'une part suffisante des mots significatifs de la citation se
+       retrouve réellement dans ce qu'elle a écrit ;
+     · un métier sans preuve valable n'est pas SUPPRIMÉ mais RÉTROGRADÉ en fin de
+       liste, et il ne sera utilisé que s'il faut compléter. On ne descend jamais
+       en dessous de 5 pistes. */
+const _MOTS_VIDES = new Set(['dans','avec','pour','plus','tout','tous','elle','vous','mais','être','avoir','fait','faire','cette','celui','leur','sans','sous','très','bien','aussi','comme','quand','parce','alors','donc','chez','moi','mon','mes','son','ses','les','des','une','aux','par','sur','que','qui','pas','est','suis','ete','j','ai','de','la','le','et','en','un','du','au','ce','se','il','ne','on','ma','ta','sa']);
+
+function _normPreuve(t) {
+  return String(t || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+/** La citation se retrouve-t-elle vraiment dans ce que la personne a écrit ?
+ *  @returns {number} part des mots significatifs retrouvés, de 0 à 1. */
+function _preuveRetrouvee(preuve, sesMots) {
+  const p = _normPreuve(preuve);
+  const source = _normPreuve(sesMots);
+  if (!p || !source) return 0;
+  if (source.includes(p)) return 1;                        // citation exacte
+  const mots = p.split(' ').filter(m => m.length > 3 && !_MOTS_VIDES.has(m));
+  if (!mots.length) return 0;                              // que des mots vides : ne prouve rien
+  const trouves = mots.filter(m => source.includes(m)).length;
+  return trouves / mots.length;
+}
+
+const _SEUIL_PREUVE = 0.6;   // 60% des mots significatifs doivent s'y retrouver
+
+function _validerChoixMetiers(choix, rejets, niv, sesMots) {
   const termes = (rejets && rejets.termes) || [];
   const secteurs = (rejets && rejets.secteurs) || [];
   const portee = (rejets && rejets.portee) || 'inconnu';
@@ -6047,6 +6114,7 @@ function _validerChoixMetiers(choix, rejets, niv) {
   const vus = new Set();
   const retenus = [];
   const declasses = [];
+  const sansPreuve = [];   // retenus en dernier recours seulement
 
   choix.forEach(c => {
     const id = c && (c.id || c.identifiant);
@@ -6059,6 +6127,20 @@ function _validerChoixMetiers(choix, rejets, niv) {
     vus.add(id);
     const entree = { ...fiche, _raisonChoix: (c.raison || '').slice(0, 240) };
     if (plancher && _niveauMetier(fiche.formation) < plancher) { declasses.push(entree); return; }
+    /* Le métier est-il ancré dans ce qu'elle a réellement dit ? On ne vérifie
+       que si on a de quoi comparer : sans ses mots, on ne bloque rien. */
+    if (sesMots) {
+      const part = _preuveRetrouvee(c && (c.preuve || c.raison), sesMots);
+      if (part < _SEUIL_PREUVE) {
+        console.warn('[CYNTH] « ' + fiche.titre + ' » écarté des premiers choix : '
+          + 'la justification ne se retrouve pas dans ses mots ('
+          + Math.round(part * 100) + '% des termes). Citation reçue : "'
+          + String((c && (c.preuve || c.raison)) || '').slice(0, 90) + '"');
+        entree._sansPreuve = true;
+        sansPreuve.push(entree);
+        return;
+      }
+    }
     retenus.push(entree);
   });
 
@@ -6070,6 +6152,14 @@ function _validerChoixMetiers(choix, rejets, niv) {
     console.warn('[CYNTH] moins de 5 métiers au niveau attendu — on complète avec ' +
       declasses.length + ' piste(s) plus basse(s)');
     while (retenus.length < 5 && declasses.length) retenus.push(declasses.shift());
+  }
+  /* Dernier recours : les métiers dont la justification n'a pas été retrouvée.
+     On préfère une piste faible à un rapport à trois métiers, mais elles
+     arrivent EN FIN de liste, donc en « à explorer » et jamais en tête. */
+  if (retenus.length < 5 && sansPreuve.length) {
+    console.warn('[CYNTH] complément avec ' + sansPreuve.length
+      + ' piste(s) sans preuve retrouvée, placées en fin de liste');
+    while (retenus.length < 5 && sansPreuve.length) retenus.push(sansPreuve.shift());
   }
   return retenus;
 }
@@ -6276,6 +6366,7 @@ ${metiersList}`;
 • "2 ans" — demande une vraie formation (CFC, brevet, ES, HES) avant d\'exercer.
 Et renseigne "horizon_precision" : UNE phrase qui dit ce qui manque exactement pour y être, ou pourquoi c\'est déjà ouvert.
 Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer. Mais cherche vraiment : quelqu\'un qui n\'a plus de revenu dans quelques semaines a besoin d\'au moins une porte ouverte tout de suite.
+⚠️ ET SI UN MÉTIER EST EN "maintenant", IL DOIT ÊTRE DE TYPE "principal", pas "piste". Constaté le 17 août 2026 : le seul métier immédiatement accessible avait été relégué en piste secondaire, donc affiché en tout petit, alors que c\'était l\'information la plus utile du rapport pour cette personne. Une porte ouverte tout de suite vaut plus qu\'un beau projet à deux ans : elle passe devant.
 
 🇨🇭 ARTICLE 32 — RENDS-LE CONCRET, NE TE CONTENTE PAS DE LE CITER. Si la personne a de l\'expérience mais pas de titre suisse (ou un diplôme étranger non reconnu), renseigne "art32" sur les métiers concernés, avec cette règle EXACTE, sans l\'arrondir : il faut 5 ans d\'expérience professionnelle au total à la date de l\'examen, dont 2 à 4 ans dans le domaine visé selon le métier (souvent 3 ans à 100%) ; le temps partiel compte proportionnellement ; on passe ensuite les examens finaux, avec cours préparatoires ou par validation des acquis. Dis où elle en est PAR RAPPORT à ce compte (ex : « vos 10 ans couvrent largement les 5 ans exigés ; reste à vérifier que X années comptent dans le domaine »), et que c\'est le canton qui tranche. Si elle a déjà un titre suisse dans le domaine, laisse "art32" vide.`,
     '{"top_metiers":[{"id":"id-exact-de-la-base","type":"principal","titre":"","secteur":"","score":90,"horizon":"maintenant|6-12 mois|2 ans","horizon_precision":"une phrase : ce qui manque, ou pourquoi c\'est deja ouvert","art32":"","pourquoi":"2-3 phrases avec ses mots","atouts":["","",""],"developper":["compétence + voie suisse",""],"route_formation":"formation + durée + coût CHF approx + financement","tension_marche":"copie de la base","salaire_debut":"copie de la base","salaire_exp":"copie de la base","premier_pas":"action concrète cette semaine"}]}');
@@ -6940,7 +7031,17 @@ function downloadRapport(){
     const art32 = m.art32
       ? `<div class="art32"><b>Faire reconnaître votre expérience (article 32) :</b> ${esc(m.art32)}<br><span style="opacity:.8">La règle : 5 ans d'expérience professionnelle au total à la date de l'examen, dont 2 à 4 ans dans le domaine visé selon le métier. Le temps partiel compte proportionnellement. C'est le canton qui décide.</span></div>`
       : '';
-    if (!isPrinc(m)) return `<div class="metier piste"><div class="rank">À explorer</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why" style="margin-bottom:0">${why}</p></div>`;
+    /* PISTES SECONDAIRES — corrigé le 17 août 2026, défaut vu sur un rapport réel.
+       Les cartes « à explorer » n'affichaient qu'un titre et un pourcentage. Or
+       sur ce test, le SEUL métier accessible tout de suite (« Agent relation
+       client », horizon « maintenant ») était classé en piste : l'information la
+       plus actionnable du rapport se trouvait donc sur la carte la moins visible,
+       et son horizon n'était même pas affiché. C'est l'inverse de ce que
+       l'horizon doit servir.
+       On affiche désormais la pastille et sa précision sur les pistes aussi. Le
+       reste (salaire, formation, premier pas) reste réservé aux pistes
+       principales : une piste doit rester plus légère à lire. */
+    if (!isPrinc(m)) return `<div class="metier piste"><div class="rank">À explorer</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why" style="margin-bottom:${hzChip ? '10px' : '0'}">${why}</p>${hzChip ? `<div class="mfoot">${hzChip}${jobChip}</div>` : ''}${hzLine}</div>`;
     const salChip = (sd||se)?`<span class="chipm sal">${esc([sd,se].filter(Boolean).join(' → '))}</span>`:'';
     const mcls = (tension.includes('haute')||/pénurie|porteur/i.test(marche))?'p':(/stable/i.test(marche)?'s':'p');
     const marcheChip = marche?`<span class="chipm ${mcls}">${esc(marche)}</span>`:'';
