@@ -155,7 +155,7 @@ button{font-family:inherit;}
    HERO
 ════════════════════════════════════════ */
 .hero{
-  min-height:calc(100vh - 100px);
+  min-height:calc(100vh - 100px);min-height:calc(100dvh - 100px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;padding:80px 24px 60px;position:relative;overflow:hidden;
 }
@@ -546,7 +546,7 @@ h1.hero-h{
    FINAL CTA (full screen cinématique)
 ════════════════════════════════════════ */
 .final-cta{
-  min-height:100vh;display:flex;flex-direction:column;
+  min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   text-align:center;padding:80px 24px;position:relative;overflow:hidden;
 }
@@ -612,7 +612,7 @@ footer{
    PAGE 2 — PRÉ-APPEL
 ════════════════════════════════════════ */
 .preappel-page{
-  min-height:calc(100vh - 36px);display:flex;align-items:center;
+  min-height:calc(100vh - 36px);min-height:calc(100dvh - 36px);display:flex;align-items:center;
   justify-content:center;padding:60px 20px;
   background:
     radial-gradient(ellipse 60% 50% at 12% 8%,rgba(127,230,196,.26),transparent 60%),
@@ -676,7 +676,7 @@ footer{
    PAGE 4 — CONFIRMATION
 ════════════════════════════════════════ */
 .confirm-page{
-  min-height:calc(100vh - 36px);display:flex;align-items:center;
+  min-height:calc(100vh - 36px);min-height:calc(100dvh - 36px);display:flex;align-items:center;
   justify-content:center;padding:60px 20px;
 }
 .conf-card{
@@ -904,7 +904,7 @@ footer{
   .gnav-menu{display:flex;align-items:center;justify-content:center;}
 
   /* Hero */
-  .hero{padding:56px 20px 48px;min-height:calc(100vh - 84px);}
+  .hero{padding:56px 20px 48px;min-height:calc(100vh - 84px);min-height:calc(100dvh - 84px);}
   .orb-wrap{width:260px;height:260px;}
   h1.hero-h{font-size:clamp(30px,10vw,48px);letter-spacing:-2px;margin-bottom:22px;}
   .hero-sub{font-size:16px;margin-bottom:32px;}
@@ -968,9 +968,9 @@ footer{
   .foot-links{flex-wrap:wrap;justify-content:center;gap:16px;}
 
   /* Pages 2/3/4 */
-  .preappel-page{min-height:calc(100vh - 84px);padding:28px 16px;}
-  .call-page{min-height:calc(100vh - 84px);padding:28px 16px;}
-  .confirm-page{min-height:calc(100vh - 84px);padding:28px 16px;}
+  .preappel-page{min-height:calc(100vh - 84px);min-height:calc(100dvh - 84px);padding:28px 16px;}
+  .call-page{min-height:calc(100vh - 84px);min-height:calc(100dvh - 84px);padding:28px 16px;}
+  .confirm-page{min-height:calc(100vh - 84px);min-height:calc(100dvh - 84px);padding:28px 16px;}
   .pa-card{padding:32px 20px;border-radius:20px;}
   .pa-card h2{font-size:22px;}
   .call-card{padding:36px 20px;border-radius:20px;}
@@ -1341,7 +1341,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
    PAGE QUESTIONNAIRE — Préparation
 ════════════════════════════════════════ */
 .quiz-page{
-  min-height:100vh;
+  min-height:100vh;min-height:100dvh;
   min-height:100dvh;
   display:flex;align-items:center;justify-content:center;
   padding:40px 20px;
@@ -1521,6 +1521,78 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .btn-doute-float{bottom:80px;right:12px;left:auto;padding:10px 14px;font-size:13px;}
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   TÉLÉPHONE — LES DÉTAILS QUI NE SE VOIENT QUE SUR UN VRAI APPAREIL
+   (17 août 2026)
+
+   Ce bloc est volontairement le DERNIER de la feuille : tout ce qui précède
+   peut être écrasé ici, jamais l'inverse. C'est la leçon du bloc chat mobile
+   d'origine, qui était placé avant les règles de base et ne s'appliquait donc
+   jamais sur téléphone.
+
+   Pourquoi ces règles existent, une par une — aucune n'est décorative :
+
+   1. ZONES DE SÉCURITÉ. Sur les iPhone à encoche, le bas de l'écran est
+      occupé par la barre de geste. Une barre de saisie collée en bas passe
+      DESSOUS : la personne tape sur la barre d'accueil au lieu du champ.
+      Il n'y avait aucun env(safe-area-inset-*) dans tout le fichier.
+
+   2. CIBLES TACTILES. Apple recommande 44 px ; on mesurait 40 px sur le
+      bouton d'envoi, 23 px sur les liens de navigation, 24 px sur les croix
+      de fermeture. En dessous, on rate sa cible — et sur un produit qui
+      s'adresse à des gens déjà contrariés, chaque geste raté compte double.
+
+   3. REBOND DE SCROLL. Sans overscroll-behavior, faire défiler les messages
+      jusqu'en haut entraîne toute la page, et sur iOS déclenche parfois le
+      rechargement par tirage. En pleine conversation, c'est la conversation
+      perdue.
+
+   4. ROTATION. Sans text-size-adjust, iOS grossit tout seul certains textes
+      quand on passe en paysage, et la mise en page se disloque.
+════════════════════════════════════════════════════════════════════════ */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+
+@media(max-width:768px){
+  /* ── 1. Zones de sécurité ─────────────────────────────────────────────── */
+  .chat-input-area{
+    padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    padding-left:calc(12px + env(safe-area-inset-left,0px));
+    padding-right:calc(12px + env(safe-area-inset-right,0px));
+  }
+  .btn-doute-float{bottom:calc(80px + env(safe-area-inset-bottom,0px));}
+
+  /* ── 2. Cibles tactiles : 44 px minimum ───────────────────────────────── */
+  .chat-send,#mic-async-btn{width:44px;height:44px;min-width:44px;}
+  .chat-input{min-height:44px;}
+  .modal-close,.bb-close{
+    width:44px;height:44px;min-width:44px;
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+  }
+  /* Les liens de navigation et de pied de page faisaient 23 px de haut. On
+     agrandit la zone cliquable sans changer la taille du texte : le dessin
+     reste identique, seule la surface de contact grandit. */
+  .lp-nav a,.lp-foot a,.lp-foot span[onclick],.lp-links a{
+    display:inline-flex;align-items:center;min-height:44px;
+  }
+  .lp-btn,.btn,button{min-height:44px;}
+
+  /* ── 3. Le défilement des messages reste dans les messages ────────────── */
+  .chat-msgs{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+
+  /* ── 4. Confort de lecture ────────────────────────────────────────────── */
+  .cb{max-width:90%;}
+  /* Un mot très long (une adresse collée, un intitulé de métier) ne doit pas
+     élargir la bulle et créer un défilement horizontal. */
+  .cb,.chat-msgs{overflow-wrap:anywhere;word-break:break-word;}
+}
+
+/* Quand le clavier est ouvert, on réduit la carte à la hauteur réellement
+   visible (voir _clavierMobile en JS). Sans cette variable, la carte fait
+   toute la hauteur de l'écran et le champ de saisie se retrouve CACHÉ sous
+   le clavier : on écrit sans voir ce qu'on écrit. */
+@media(max-width:768px){
+  .chat-card{height:var(--cyn-vh,100dvh);max-height:var(--cyn-vh,100dvh);}
+}
 </style>
 <!-- Extraction du texte des CV, côté navigateur (le fichier ne quitte jamais l'appareil) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1703,7 +1775,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <div id="page-landing" class="page on">
 <style>
   #page-landing{overflow-y:auto;background:linear-gradient(180deg,var(--c-emerald-soft) 0%,var(--c-cream) 100%);background-repeat:no-repeat;}
-  .lp{font-family:'Inter',system-ui,sans-serif;color:var(--c-ink);background:var(--c-cream);min-height:100vh;position:relative;overflow-x:hidden;line-height:1.62;}
+  .lp{font-family:'Inter',system-ui,sans-serif;color:var(--c-ink);background:var(--c-cream);min-height:100vh;min-height:100dvh;position:relative;overflow-x:hidden;line-height:1.62;}
   .lp h1,.lp h2,.lp h3,.lp .lp-bf{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em;line-height:1.08;}
   .lp .lp-accent{color:var(--c-emerald-d);} .lp .lp-pop{color:var(--c-coral);}
   .lp-aura{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
@@ -2686,6 +2758,63 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sc) setTimeout(() => animateCounter(sc, 14, 1400), 1000);
   if (hc) setTimeout(() => animateCounter(hc, 14, 1400), 1200);
 });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE CLAVIER DU TÉLÉPHONE (17 août 2026)
+
+   Le problème, et pourquoi le CSS seul ne suffit pas : sur iOS, quand le
+   clavier s'ouvre, la fenêtre ne rétrécit PAS. `100dvh` continue de valoir
+   toute la hauteur de l'écran, clavier compris. La carte de chat fait donc
+   toujours la taille de l'écran, et sa barre de saisie — qui est tout en bas —
+   se retrouve DERRIÈRE le clavier. On écrit sans voir ce qu'on écrit.
+   C'est invisible sur ordinateur, systématique sur iPhone.
+
+   La solution : `window.visualViewport` donne la hauteur RÉELLEMENT visible,
+   clavier déduit. On la copie dans une variable CSS que la carte utilise.
+
+   Trois précautions :
+   · si visualViewport n'existe pas (vieux navigateur), on ne fait RIEN et le
+     comportement d'avant s'applique. On ne casse jamais pour améliorer ;
+   · on n'agit qu'en dessous de 768 px : sur ordinateur la variable resterait
+     figée à la hauteur de la fenêtre et empêcherait le redimensionnement ;
+   · on ramène la vue en bas après ouverture du clavier, sinon la personne
+     tape dans un champ visible mais ne voit plus le dernier message reçu.
+═══════════════════════════════════════════════════════════════════════════ */
+function _clavierMobile() {
+  const vv = window.visualViewport;
+  if (!vv) return;                       // pas supporté : on laisse tel quel
+
+  const msgs = () => document.querySelector('.chat-msgs');
+  let dernier = 0;
+
+  function ajuster() {
+    if (window.innerWidth > 768) {       // ordinateur : on rend la main au CSS
+      document.documentElement.style.removeProperty('--cyn-vh');
+      return;
+    }
+    const h = Math.round(vv.height);
+    if (Math.abs(h - dernier) < 2) return;   // évite de recalculer pour rien
+    dernier = h;
+    document.documentElement.style.setProperty('--cyn-vh', h + 'px');
+  }
+
+  // Quand le clavier vient de s'ouvrir, on remet le fil de discussion en bas.
+  let clavierOuvert = false;
+  function suivreLeFil() {
+    const ouvertMaintenant = vv.height < window.innerHeight - 120;
+    if (ouvertMaintenant && !clavierOuvert) {
+      const m = msgs();
+      if (m) setTimeout(() => { m.scrollTop = m.scrollHeight; }, 120);
+    }
+    clavierOuvert = ouvertMaintenant;
+  }
+
+  vv.addEventListener('resize', () => { ajuster(); suivreLeFil(); });
+  vv.addEventListener('scroll', ajuster);
+  window.addEventListener('orientationchange', () => setTimeout(ajuster, 260));
+  ajuster();
+}
+document.addEventListener('DOMContentLoaded', _clavierMobile);
 
 // ── DEMO BAR — masquée en prod, activable via ?debug=1 (évite un clic accidentel
 // sur "③ Questionnaire" qui appellerait resetQuiz() et effacerait les réponses). ──
@@ -5033,12 +5162,12 @@ const METIERS_DB = [
 
   // ═══ BANQUE & FINANCE ═══
   {id:'conseiller-bancaire',titre:'Conseiller·ère à la clientèle bancaire',secteur:'Banque & Finance',competences:['relationnel','sérieux','rigueur','service','discrétion'],passions:['finance','conseil','contact humain','argent','banque'],valeurs:['confiance','service','performance'],salaire_debut:'CHF ~5 750/mois',salaire_exp:'CHF ~10 000/mois',marche:'Porteur',formation:'CFC banque (BEM) + brevet de conseiller financier',financement:'50% Confédération, employeur, AC/ORP',salaire_source:'jobs.ch, lu directement le 14.08.2026 sur la fiche « conseiller financier » (débutant CHF 75 000/an · moyenne CHF 92 000/an · le plus élevé attendu CHF 130 000/an, sur 686 entrées). Échantillon plus restreint et étendue très large (jusqu\'à CHF 250 000/an) : le haut de fourchette inclut probablement des postes de gestion de fortune private banking, au-delà du niveau brevet fédéral visé par cette fiche.',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/conseiller-ere-financier-iere-bf'},
-  {id:'gestionnaire-fortune',titre:'Gestionnaire de fortune / Conseiller·ère en placement',secteur:'Banque & Finance',competences:['analyse','sang-froid','relationnel','discrétion','rigueur'],passions:['finance','investissement','marchés','stratégie','argent'],valeurs:['excellence','performance','confiance'],salaire_debut:'CHF ~119 000/an',salaire_exp:'CHF ~148 000/an (davantage en gestion de fortune privée à Genève, non chiffré précisément)',marche:'Porteur (Genève)',formation:'Diplôme fédéral analyste/gestionnaire de fortune; CWMA',financement:'certifications financées par l\'employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « gestionnaire de fortune » (débutant CHF 119 189/an · moyenne CHF 131 000/an · secteur Banques/Instituts financiers CHF 148 000/an sur 49 annonces).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/analyste-financier-et-gestionnaire-de-fortunes-df-analyste-financier-et-gestionnaire-de'},
-  {id:'compliance',titre:'Compliance officer (conformité AML-KYC)',secteur:'Banque & Finance',competences:['rigueur','intégrité','analyse','fermeté','discrétion'],passions:['droit','finance','contrôle','enquêter','conformité'],valeurs:['intégrité','rigueur','protection'],salaire_debut:'CHF ~96 000/an',salaire_exp:'CHF 116 000–150 000/an',marche:'Porteur',formation:'Uni/HES éco-finance-droit + certifications conformité',financement:'certifications financées par l\'employeur'},
-  {id:'comptable',titre:'Comptable',secteur:'Banque & Finance',competences:['rigueur','chiffres','organisation','discrétion','fiabilité'],passions:['chiffres','ordre','analyser','finances','comptabilité'],valeurs:['rigueur','fiabilité','précision'],salaire_debut:'CHF ~90 000/an',salaire_exp:'CHF ~111 000/an (jusqu\'à ~136 000/an dans certains secteurs comme la medtech)',marche:'Porteur',formation:'CFC + brevet fédéral spécialiste finance et comptabilité',financement:'50% Confédération, chèque formation, employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « Spécialiste en finance et comptabilité » (moyenne CHF 100 000/an · débutant CHF 90 028/an · le plus élevé attendu CHF 111 000/an · secteur medtech jusqu\'à CHF 136 000/an). Corrige une première estimation du même jour basée sur une synthèse de recherche, qui surestimait le haut de fourchette.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/specialiste-en-finance-et-comptabilite-bf'},
-  {id:'expert-comptable',titre:'Expert·e-comptable diplômé·e',secteur:'Banque & Finance',competences:['rigueur','intégrité','analyse','endurance','conseil'],passions:['chiffres','audit','vérifier','analyser','finances'],valeurs:['intégrité','rigueur','excellence'],salaire_debut:'CHF ~85 000/an',salaire_exp:'CHF ~98 000/an (probablement sous-estimé pour le titre seul, voir source)',marche:'Porteur',formation:'Brevet puis diplôme fédéral d\'expert-comptable (en emploi)',financement:'50% Confédération, prise en charge cabinet',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « expert comptable » (débutant CHF 76 640/an · moyenne CHF 84 630/an · le plus élevé attendu CHF 98 313/an, sur 8 375 entrées). Ce chiffre est probablement tiré vers le bas par des postes de comptable plus généralistes classés sous le même terme de recherche : le diplôme fédéral d\'expert-comptable est un titre senior obtenu après plusieurs années d\'expérience, et les postes visés (réviseur agréé, direction financière) sont généralement mieux rémunérés. À affiner avec une source spécialisée.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/expert-comptable-df-expert-comptable-df'},
+  {id:'gestionnaire-fortune',titre:'Gestionnaire de fortune / Conseiller·ère en placement',secteur:'Banque & Finance',competences:['analyse','sang-froid','relationnel','discrétion','rigueur'],passions:['finance','investissement','marchés','stratégie','argent'],valeurs:['excellence','performance','confiance'],salaire_debut:'CHF ~9 150/mois',salaire_exp:'CHF ~11 400/mois (davantage en gestion de fortune privée à Genève, non chiffré précisément)',marche:'Porteur (Genève)',formation:'Diplôme fédéral analyste/gestionnaire de fortune; CWMA',financement:'certifications financées par l\'employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « gestionnaire de fortune » (débutant CHF 119 189/an · moyenne CHF 131 000/an · secteur Banques/Instituts financiers CHF 148 000/an sur 49 annonces).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/analyste-financier-et-gestionnaire-de-fortunes-df-analyste-financier-et-gestionnaire-de'},
+  {id:'compliance',titre:'Compliance officer (conformité AML-KYC)',secteur:'Banque & Finance',competences:['rigueur','intégrité','analyse','fermeté','discrétion'],passions:['droit','finance','contrôle','enquêter','conformité'],valeurs:['intégrité','rigueur','protection'],salaire_debut:'CHF ~7 400/mois',salaire_exp:'CHF 8 900–11 550/mois',marche:'Porteur',formation:'Uni/HES éco-finance-droit + certifications conformité',financement:'certifications financées par l\'employeur'},
+  {id:'comptable',titre:'Comptable',secteur:'Banque & Finance',competences:['rigueur','chiffres','organisation','discrétion','fiabilité'],passions:['chiffres','ordre','analyser','finances','comptabilité'],valeurs:['rigueur','fiabilité','précision'],salaire_debut:'CHF ~6 900/mois',salaire_exp:'CHF ~8 550/mois (jusqu\'à ~10 450/mois dans certains secteurs comme la medtech)',marche:'Porteur',formation:'CFC + brevet fédéral spécialiste finance et comptabilité',financement:'50% Confédération, chèque formation, employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « Spécialiste en finance et comptabilité » (moyenne CHF 100 000/an · débutant CHF 90 028/an · le plus élevé attendu CHF 111 000/an · secteur medtech jusqu\'à CHF 136 000/an). Corrige une première estimation du même jour basée sur une synthèse de recherche, qui surestimait le haut de fourchette.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/specialiste-en-finance-et-comptabilite-bf'},
+  {id:'expert-comptable',titre:'Expert·e-comptable diplômé·e',secteur:'Banque & Finance',competences:['rigueur','intégrité','analyse','endurance','conseil'],passions:['chiffres','audit','vérifier','analyser','finances'],valeurs:['intégrité','rigueur','excellence'],salaire_debut:'CHF ~6 550/mois',salaire_exp:'CHF ~7 550/mois (probablement sous-estimé pour le titre seul, voir source)',marche:'Porteur',formation:'Brevet puis diplôme fédéral d\'expert-comptable (en emploi)',financement:'50% Confédération, prise en charge cabinet',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « expert comptable » (débutant CHF 76 640/an · moyenne CHF 84 630/an · le plus élevé attendu CHF 98 313/an, sur 8 375 entrées). Ce chiffre est probablement tiré vers le bas par des postes de comptable plus généralistes classés sous le même terme de recherche : le diplôme fédéral d\'expert-comptable est un titre senior obtenu après plusieurs années d\'expérience, et les postes visés (réviseur agréé, direction financière) sont généralement mieux rémunérés. À affiner avec une source spécialisée.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/expert-comptable-df-expert-comptable-df'},
   {id:'conseiller-assurance',titre:'Conseiller·ère en assurance',secteur:'Banque & Finance',competences:['relationnel','écoute','persévérance','service','autonomie'],passions:['conseil','vente','protéger','contact humain','assurance'],valeurs:['protection','service','liberté'],salaire_debut:'CHF ~5 200/mois',salaire_exp:'CHF ~7 200/mois',marche:'Stable',formation:'Pas de diplôme imposé; brevet de spécialiste en assurance (18 mois)',financement:'frais de reconversion déductibles, employeur, AC/ORP',salaire_source:'jobs.ch, lu directement le 14.08.2026 sur la fiche « spécialiste en assurance » (débutant CHF 67 520/an · moyenne CHF 80 000/an · le plus élevé attendu CHF 93 450/an, sur 690 entrées).',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/specialiste-en-assurance-bf'},
-  {id:'analyste-financier',titre:'Analyste financier·ère / Analyste crédit',secteur:'Banque & Finance',competences:['analyse','esprit critique','chiffres','synthèse','intégrité'],passions:['finance','analyser','chiffres','marchés','investissement'],valeurs:['rigueur','savoir','intégrité'],salaire_debut:'CHF ~95 000/an',salaire_exp:'CHF ~132 000/an',marche:'Porteur',formation:'HES/université éco-finance + CIIA (AZEK) ou CFA',financement:'certifications financées par l\'employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « analyste financier » (débutant CHF 95 000/an · moyenne CHF 105 000/an · le plus élevé attendu CHF 132 000/an, sur 713 entrées).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/analyste-financier-et-gestionnaire-de-fortunes-df-analyste-financier-et-gestionnaire-de'},
+  {id:'analyste-financier',titre:'Analyste financier·ère / Analyste crédit',secteur:'Banque & Finance',competences:['analyse','esprit critique','chiffres','synthèse','intégrité'],passions:['finance','analyser','chiffres','marchés','investissement'],valeurs:['rigueur','savoir','intégrité'],salaire_debut:'CHF ~7 300/mois',salaire_exp:'CHF ~10 150/mois',marche:'Porteur',formation:'HES/université éco-finance + CIIA (AZEK) ou CFA',financement:'certifications financées par l\'employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « analyste financier » (débutant CHF 95 000/an · moyenne CHF 105 000/an · le plus élevé attendu CHF 132 000/an, sur 713 entrées).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/analyste-financier-et-gestionnaire-de-fortunes-df-analyste-financier-et-gestionnaire-de'},
 
   // ═══ HÔTELLERIE-RESTAURATION & TOURISME ═══
   {id:'employe-hotellerie',titre:'Employé·e en hôtellerie / restauration',secteur:'Hôtellerie-Restauration',competences:['endurance','polyvalence','amabilité','rapidité','équipe'],passions:['contact humain','service','cuisine','hôtellerie','accueil'],valeurs:['service','contact','polyvalence'],salaire_debut:'CHF ~3 600/mois',salaire_exp:'CHF ~4 600/mois',marche:'Marché sélectif',formation:'AFP 2 ans (dual); passerelle CFC',financement:'fonds L-GAV, AC/ORP, chèque formation',salaire_source:'jobs.ch ne reconnaît pas « employé hôtellerie-intendance » comme requête de recherche ; proxy retenu : « femme de chambre » (fonction proche, niveau d\'entrée en hôtellerie-intendance), lu directement le 14.08.2026 (débutant CHF 46 866/an · moyenne CHF 50 091/an · le plus élevé attendu CHF 60 000/an, sur 968 entrées).',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/employe-e-en-hotellerie-intendance-afp'},
@@ -5055,32 +5184,32 @@ const METIERS_DB = [
   {id:'menuisier',titre:'Menuisier·ère / Charpentier·ère',secteur:'Construction & Bâtiment',competences:['précision','spatial','créativité','soin','rigueur'],passions:['bois','créer','construire','manuel','artisanat'],valeurs:['concret','créativité','durabilité'],salaire_debut:'CHF ~4 900/mois',salaire_exp:'CHF ~6 000–6 900/mois',marche:'Porteur',formation:'CFC 4 ans (dual); brevet/maîtrise',financement:'art. 32, CCT-SOR, chèque formation',salaire_source:'CCT-SOR (minimums de la convention collective) et jobup.ch, relevé le 13.08.2026 (minimum CFC CHF ~4 900/mois · chef d\'équipe CHF ~6 000/mois · ébéniste expérimenté CHF ~6 900/mois)',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/menuisier-iere-cfc'},
   {id:'dessinateur-batiment',titre:'Dessinateur·rice en bâtiment / génie civil',secteur:'Construction & Bâtiment',competences:['précision','spatial','rigueur','organisation','équipe'],passions:['dessin','plans','architecture','concevoir','bâtiment'],valeurs:['précision','créativité','concret'],salaire_debut:'CHF ~4 550/mois',salaire_exp:'CHF ~6 450/mois',marche:'Stable',formation:'CFC 4 ans (dual, bureau); passerelles ES/HES',financement:'art. 32, AC/ORP, chèque formation',salaire_source:'jobs.ch, lu directement le 14.08.2026 sur la fiche « dessinateur bâtiment » (débutant CHF 59 421/an · moyenne CHF 65 000/an · le plus élevé attendu CHF 84 000/an, sur 1 437 entrées).',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/dessinateur-trice-cfc'},
   {id:'architecte',titre:'Architecte',secteur:'Construction & Bâtiment',competences:['analyse','créativité','spatial','esthétique','négociation','rigueur'],passions:['concevoir','construire','dessiner','architecture','bâtiment','créer'],valeurs:['création','responsabilité','esthétique'],salaire_debut:'CHF ~5 400–6 300/mois',salaire_exp:'CHF ~8 400/mois',marche:'Stable',formation:'Bachelor HES en architecture (3 ans) ou master université/EPF (1,5 an après bachelor)',financement:'bourses et prêts d\'études cantonaux, employeur (formation en emploi), chèque annuel de formation cantonal (GE : max. CHF 750/an)',salaire_source:'jobs.ch et jobup.ch, relevé le 11.08.2026 (débutant CHF 69 973/an · moyenne suisse CHF 81 360 · haut CHF 110 000 · Genève CHF 84 000)',verifie_le:'2026-08-11',orientation:'https://www.orientation.ch/fr/professions/architecte'},
-  {id:'chef-chantier',titre:'Chef·fe de chantier / Conducteur·rice de travaux',secteur:'Construction & Bâtiment',competences:['leadership','organisation','sang-froid','rigueur','responsabilité'],passions:['piloter','construire','coordonner','chantier','bâtiment'],valeurs:['leadership','concret','performance'],salaire_debut:'CHF ~80 000/an',salaire_exp:'CHF ~100 000/an (moyenne CHF ~90 000/an)',marche:'Marché sélectif',formation:'Brevet fédéral / EPS (5 ans d\'expérience)',financement:'50% Confédération, employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « conducteur de travaux », proxy retenu faute de fiche jobs.ch dédiée à « chef de chantier » (débutant CHF 79 999/an · moyenne CHF 90 000/an · le plus élevé attendu CHF 100 000/an, sur 5 229 entrées).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/contremaitre-sse-construction-bf'},
+  {id:'chef-chantier',titre:'Chef·fe de chantier / Conducteur·rice de travaux',secteur:'Construction & Bâtiment',competences:['leadership','organisation','sang-froid','rigueur','responsabilité'],passions:['piloter','construire','coordonner','chantier','bâtiment'],valeurs:['leadership','concret','performance'],salaire_debut:'CHF ~6 150/mois',salaire_exp:'CHF ~7 700/mois (moyenne CHF ~6 900/mois)',marche:'Marché sélectif',formation:'Brevet fédéral / EPS (5 ans d\'expérience)',financement:'50% Confédération, employeur',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « conducteur de travaux », proxy retenu faute de fiche jobs.ch dédiée à « chef de chantier » (débutant CHF 79 999/an · moyenne CHF 90 000/an · le plus élevé attendu CHF 100 000/an, sur 5 229 entrées).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/contremaitre-sse-construction-bf'},
 
   // ═══ IT & DIGITAL ═══
   {id:'informaticien',titre:'Informaticien·ne',secteur:'IT & Digital',competences:['logique','rigueur','curiosité','autonomie','résolution'],passions:['informatique','technologie','code','systèmes','résoudre'],valeurs:['innovation','autonomie','progression'],salaire_debut:'CHF ~5 000/mois',salaire_exp:'CHF ~6 200/mois',marche:'Marché sélectif',formation:'CFC 4 ans (dual); passerelle HES',financement:'apprentissage/art. 32, AC/ORP',salaire_source:'jobup.ch et jobs.ch, relevé le 13.08.2026 (débutant CFC CHF ~5 000/mois · moyenne informaticien·ne CHF 80 000–87 792/an selon le périmètre)',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/informaticien-ne-cfc'},
   {id:'developpeur',titre:'Développeur·se / Ingénieur·e logiciel',secteur:'IT & Digital',competences:['logique','rigueur','créativité','apprentissage','équipe'],passions:['code','créer','technologie','construire','informatique','web'],valeurs:['innovation','créativité','progression'],salaire_debut:'CHF ~6 600/mois',salaire_exp:'CHF ~9 200/mois',marche:'Marché sélectif',formation:'Bachelor HES ou bootcamp intensif reconnu',financement:'AC/ORP, chèque formation',salaire_source:'jobs.ch, lu directement le 14.08.2026 sur la fiche « software developer » (débutant CHF 85 581/an · moyenne CHF 96 978/an · le plus élevé attendu CHF 120 000/an, sur 7 576 entrées).',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/informaticien-ne'},
   {id:'admin-systemes',titre:'Administrateur·rice systèmes et réseau',secteur:'IT & Digital',competences:['rigueur','sang-froid','service','disponibilité','méthode'],passions:['informatique','systèmes','réseaux','technologie','résoudre'],valeurs:['fiabilité','excellence','service'],salaire_debut:'CHF ~5 650/mois',salaire_exp:'CHF ~7 750/mois',marche:'Marché sélectif',formation:'CFC informaticien + certifications, ou HES',financement:'employeur, AC/ORP',salaire_source:'jobs.ch, lu directement le 14.08.2026 sur la fiche « system administrator » (débutant CHF 73 503/an · moyenne CHF 82 980/an · le plus élevé attendu CHF 100 590/an, sur 1 667 entrées).',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/informaticien-ne-cfc'},
-  {id:'data-analyst',titre:'Data analyst / Data scientist',secteur:'IT & Digital',competences:['analyse','curiosité','esprit critique','pédagogie','chiffres'],passions:['données','patterns','analyser','chiffres','IA','comprendre'],valeurs:['savoir','précision','impact'],salaire_debut:'CHF ~87 000/an',salaire_exp:'CHF ~118 000/an',marche:'Marché sélectif',formation:'Bachelor/Master HES-uni (data), ou certifications',financement:'employeur, AC/ORP'},
+  {id:'data-analyst',titre:'Data analyst / Data scientist',secteur:'IT & Digital',competences:['analyse','curiosité','esprit critique','pédagogie','chiffres'],passions:['données','patterns','analyser','chiffres','IA','comprendre'],valeurs:['savoir','précision','impact'],salaire_debut:'CHF ~6 700/mois',salaire_exp:'CHF ~9 100/mois',marche:'Marché sélectif',formation:'Bachelor/Master HES-uni (data), ou certifications',financement:'employeur, AC/ORP'},
   {id:'cybersecurite',titre:'Spécialiste en cybersécurité',secteur:'IT & Digital',competences:['rigueur','éthique','curiosité','sang-froid','analyse'],passions:['sécurité','hacking','protéger','technologie','enquêter','systèmes'],valeurs:['protection','rigueur','excellence'],salaire_debut:'CHF ~7 250/mois',salaire_exp:'CHF ~11 300/mois',marche:'Marché sélectif',formation:'HES + certifications (Security+, CEH, OSCP) ou bootcamp',financement:'employeur, AC/ORP',salaire_source:'jobs.ch, lu directement le 14.08.2026 : « Cyber Security Specialist » n\'est pas reconnu comme terme de recherche ; proxy retenu « Security Engineer » (débutant CHF 94 000/an · moyenne CHF 110 222/an · le plus élevé attendu CHF 146 750/an, sur 1 251 entrées). Révise nettement à la baisse l\'ancienne estimation non sourcée (117-155k/an dès le début), qui semblait déjà correspondre à un profil expérimenté.',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/cyber-security-specialist-bf'},
-  {id:'chef-projet-it',titre:'Chef·fe de projet IT / Product owner',secteur:'IT & Digital',competences:['leadership','organisation','communication','sang-froid','résultat'],passions:['piloter','coordonner','technologie','projet','équipe'],valeurs:['leadership','impact','performance'],salaire_debut:'CHF ~123 000/an',salaire_exp:'CHF ~158 000/an',marche:'Marché sélectif',formation:'Expérience IT + certifications (Scrum, PMP)',financement:'employeur, certifications'},
+  {id:'chef-projet-it',titre:'Chef·fe de projet IT / Product owner',secteur:'IT & Digital',competences:['leadership','organisation','communication','sang-froid','résultat'],passions:['piloter','coordonner','technologie','projet','équipe'],valeurs:['leadership','impact','performance'],salaire_debut:'CHF ~9 450/mois',salaire_exp:'CHF ~12 150/mois',marche:'Marché sélectif',formation:'Expérience IT + certifications (Scrum, PMP)',financement:'employeur, certifications'},
 
   // ═══ ADMINISTRATION, RH, DROIT & ÉDUCATION ═══
   {id:'avocat',titre:'Avocat·e',secteur:'Administration & RH',competences:['analyse','rédaction','argumentation','discrétion','mémoire','communication'],passions:['droit','défendre','plaider','conseiller','justice','écrire'],valeurs:['justice','rigueur','indépendance'],salaire_debut:'CHF ~8 000/mois',salaire_exp:'CHF ~11 500/mois',marche:'Stable',formation:'Master universitaire en droit (bachelor 3 ans + master 1 an), puis 1 à 2 ans de stage en emploi et brevet d\'avocat (conditions cantonales)',financement:'bourses et prêts d\'études cantonaux, stage rémunéré en étude',salaire_source:'jobs.ch, relevé le 11.08.2026 (début CHF 104 000/an · moyenne suisse CHF 120 000 · haut CHF 150 000 · Genève CHF 143 000)',verifie_le:'2026-08-11',orientation:'https://www.orientation.ch/fr/professions/avocat-e'},
-  {id:'specialiste-rh',titre:'Spécialiste RH',secteur:'Administration & RH',competences:['écoute','discrétion','organisation','diplomatie','rigueur'],passions:['humain','recrutement','accompagner','organiser','droit'],valeurs:['équité','humain','organisation'],salaire_debut:'CHF ~88 000/an',salaire_exp:'CHF ~108 000/an',marche:'Stable',formation:'Brevet fédéral de spécialiste RH (en emploi)',financement:'50% Confédération, employeur, chèque formation',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « spécialiste RH » (débutant CHF 88 252/an · le plus élevé attendu CHF 108 089/an). Corrige une première estimation du même jour basée sur une synthèse de recherche, légèrement trop haute.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/specialiste-rh-bf'},
-  {id:'assistant-direction',titre:'Assistant·e de direction',secteur:'Administration & RH',competences:['organisation','discrétion','polyvalence','anticipation','relationnel'],passions:['organiser','coordonner','administration','bureau','soutenir'],valeurs:['organisation','fiabilité','service'],salaire_debut:'CHF ~76 000/an',salaire_exp:'CHF ~97 000/an',marche:'Stable',formation:'CFC employé de commerce + expérience/formations',financement:'chèque formation, AC/ORP',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « assistant de direction » (débutant CHF 76 467/an · moyenne CHF 84 500/an · le plus élevé attendu CHF 96 938/an, sur 9 646 entrées).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/assistant-e-de-direction-bf'},
-  {id:'assurances-sociales',titre:'Spécialiste en assurances sociales',secteur:'Administration & RH',competences:['rigueur','service','précision','discrétion','pédagogie'],passions:['droit','social','conseil','aider','administration'],valeurs:['équité','rigueur','service'],salaire_debut:'CHF ~86 000–92 000/an',salaire_exp:'CHF 100 000+/an',marche:'Porteur',formation:'Brevet fédéral de spécialiste en assurances sociales',financement:'50% Confédération, employeur',salaire_source:'jobs.ch ne reconnaît pas le terme exact « spécialiste en assurances sociales » comme requête de recherche (lu le 13.08.2026). À titre de comparaison, un poste adjacent, « gestionnaire de sinistres » (secteur Assurances), affiche une moyenne de CHF 74 000/an et un haut de fourchette de CHF 90 000/an, plus bas que les chiffres ci-dessus. Ces chiffres restent donc à confirmer avec une source spécialisée (association professionnelle du brevet).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/specialiste-en-assurances-sociales-bf'},
-  {id:'assistant-juridique',titre:'Assistant·e juridique',secteur:'Administration & RH',competences:['rigueur','discrétion','organisation','précision','fiabilité'],passions:['droit','justice','rédiger','analyser','administration'],valeurs:['justice','rigueur','fiabilité'],salaire_debut:'CHF ~65 000–85 000/an',salaire_exp:'CHF ~95 000/an (Genève)',marche:'Stable',formation:'CFC + spécialisation juridique',financement:'chèque formation, AC/ORP'},
-  {id:'enseignant',titre:'Enseignant·e (primaire / secondaire)',secteur:'Administration & RH',competences:['pédagogie','patience','communication','créativité','autorité'],passions:['transmettre','enseigner','enfants','savoir','partager','éduquer'],valeurs:['transmission','utilité','savoir'],salaire_debut:'CHF ~78 000–100 000/an (selon canton et source)',salaire_exp:'CHF ~105 000–136 000/an (selon canton et source)',marche:'Porteur',formation:'Bachelor/Master en enseignement (HEP)',financement:'bourses cantonales, parfois rémunéré en emploi',salaire_source:'jobs.ch, relevé le 13.08.2026 : les sources se contredisent sur ce métier et on le dit plutôt que de trancher au hasard. Requête nationale « enseignant » : moyenne CHF 90 000/an, débutant CHF 78 000/an, plus élevé attendu CHF 105 000/an. Une recherche ciblée sur Genève donne des chiffres différents selon la source (entre CHF 73 000 et CHF 100 000/an en début de carrière). La grille officielle du DIP genevois n\'a pas pu être consultée directement, à vérifier auprès du canton avant tout engagement.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/enseignant-e-primaire'},
+  {id:'specialiste-rh',titre:'Spécialiste RH',secteur:'Administration & RH',competences:['écoute','discrétion','organisation','diplomatie','rigueur'],passions:['humain','recrutement','accompagner','organiser','droit'],valeurs:['équité','humain','organisation'],salaire_debut:'CHF ~6 750/mois',salaire_exp:'CHF ~8 300/mois',marche:'Stable',formation:'Brevet fédéral de spécialiste RH (en emploi)',financement:'50% Confédération, employeur, chèque formation',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « spécialiste RH » (débutant CHF 88 252/an · le plus élevé attendu CHF 108 089/an). Corrige une première estimation du même jour basée sur une synthèse de recherche, légèrement trop haute.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/specialiste-rh-bf'},
+  {id:'assistant-direction',titre:'Assistant·e de direction',secteur:'Administration & RH',competences:['organisation','discrétion','polyvalence','anticipation','relationnel'],passions:['organiser','coordonner','administration','bureau','soutenir'],valeurs:['organisation','fiabilité','service'],salaire_debut:'CHF ~5 850/mois',salaire_exp:'CHF ~7 450/mois',marche:'Stable',formation:'CFC employé de commerce + expérience/formations',financement:'chèque formation, AC/ORP',salaire_source:'jobs.ch, lu directement le 13.08.2026 sur la fiche « assistant de direction » (débutant CHF 76 467/an · moyenne CHF 84 500/an · le plus élevé attendu CHF 96 938/an, sur 9 646 entrées).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/assistant-e-de-direction-bf'},
+  {id:'assurances-sociales',titre:'Spécialiste en assurances sociales',secteur:'Administration & RH',competences:['rigueur','service','précision','discrétion','pédagogie'],passions:['droit','social','conseil','aider','administration'],valeurs:['équité','rigueur','service'],salaire_debut:'CHF 6 600–7 100/mois',salaire_exp:'CHF 7 700+/mois',marche:'Porteur',formation:'Brevet fédéral de spécialiste en assurances sociales',financement:'50% Confédération, employeur',salaire_source:'jobs.ch ne reconnaît pas le terme exact « spécialiste en assurances sociales » comme requête de recherche (lu le 13.08.2026). À titre de comparaison, un poste adjacent, « gestionnaire de sinistres » (secteur Assurances), affiche une moyenne de CHF 74 000/an et un haut de fourchette de CHF 90 000/an, plus bas que les chiffres ci-dessus. Ces chiffres restent donc à confirmer avec une source spécialisée (association professionnelle du brevet).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/specialiste-en-assurances-sociales-bf'},
+  {id:'assistant-juridique',titre:'Assistant·e juridique',secteur:'Administration & RH',competences:['rigueur','discrétion','organisation','précision','fiabilité'],passions:['droit','justice','rédiger','analyser','administration'],valeurs:['justice','rigueur','fiabilité'],salaire_debut:'CHF 5 000–6 550/mois',salaire_exp:'CHF ~7 300/mois (Genève)',marche:'Stable',formation:'CFC + spécialisation juridique',financement:'chèque formation, AC/ORP'},
+  {id:'enseignant',titre:'Enseignant·e (primaire / secondaire)',secteur:'Administration & RH',competences:['pédagogie','patience','communication','créativité','autorité'],passions:['transmettre','enseigner','enfants','savoir','partager','éduquer'],valeurs:['transmission','utilité','savoir'],salaire_debut:'CHF 6 000–7 700/mois (selon canton et source)',salaire_exp:'CHF 8 100–10 450/mois (selon canton et source)',marche:'Porteur',formation:'Bachelor/Master en enseignement (HEP)',financement:'bourses cantonales, parfois rémunéré en emploi',salaire_source:'jobs.ch, relevé le 13.08.2026 : les sources se contredisent sur ce métier et on le dit plutôt que de trancher au hasard. Requête nationale « enseignant » : moyenne CHF 90 000/an, débutant CHF 78 000/an, plus élevé attendu CHF 105 000/an. Une recherche ciblée sur Genève donne des chiffres différents selon la source (entre CHF 73 000 et CHF 100 000/an en début de carrière). La grille officielle du DIP genevois n\'a pas pu être consultée directement, à vérifier auprès du canton avant tout engagement.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/enseignant-e-primaire'},
   {id:'formateur-adultes',titre:'Formateur·rice d\'adultes',secteur:'Administration & RH',competences:['pédagogie','écoute','aisance orale','adaptabilité','bienveillance'],passions:['transmettre','former','partager','expliquer','accompagner'],valeurs:['transmission','utilité','partage'],salaire_debut:'CHF ~6 050/mois',salaire_exp:'CHF ~7 550/mois',marche:'Stable',formation:'Certificat FSEA puis brevet fédéral de formateur·rice',financement:'50% Confédération, employeur, chèque formation',salaire_source:'jobs.ch et jobup.ch, relevé le 13.08.2026 (débutant CHF 78 750/an · moyenne suisse CHF 85 059/an · haut CHF 98 280/an · Genève CHF 90 000/an)',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/formateur-trice-bf'},
 
   // ═══ MÉTIERS ÉMERGENTS 2026 ═══
-  {id:'ia-ml',titre:'Spécialiste IA / Machine Learning Engineer',secteur:'Métiers émergents',competences:['rigueur','curiosité','expérimentation','persévérance','éthique'],passions:['intelligence artificielle','données','automatiser','innover','modéliser','futur'],valeurs:['innovation','savoir','impact'],salaire_debut:'CHF ~110 000–130 000/an',salaire_exp:'CHF 155 000–180 000/an',marche:'Marché sélectif',formation:'Master HES/uni (IA/data), ou spécialisation depuis dev/data',financement:'certifications, employeur'},
+  {id:'ia-ml',titre:'Spécialiste IA / Machine Learning Engineer',secteur:'Métiers émergents',competences:['rigueur','curiosité','expérimentation','persévérance','éthique'],passions:['intelligence artificielle','données','automatiser','innover','modéliser','futur'],valeurs:['innovation','savoir','impact'],salaire_debut:'CHF 8 450–10 000/mois',salaire_exp:'CHF 11 900–13 850/mois',marche:'Marché sélectif',formation:'Master HES/uni (IA/data), ou spécialisation depuis dev/data',financement:'certifications, employeur'},
   {id:'installateur-solaire',titre:'Installateur·rice solaire / Monteur·se en photovoltaïque',secteur:'Métiers émergents',competences:['manuel','sécurité','rigueur','équipe','fiabilité'],passions:['énergie','solaire','construire','manuel','environnement','climat'],valeurs:['durabilité','concret','utilité'],salaire_debut:'CHF ~4 900/mois',salaire_exp:'CHF ~6 200/mois',marche:'Pénurie (15 000 postes d\'ici 2028)',formation:'Formation de monteur (~10 j) ou CFC installateur solaire',financement:'Swissolar, AC/ORP, chèque formation',salaire_source:'jobs.ch ne reconnaît pas « installateur solaire » comme terme de recherche. Proxy : « monteur électricien » (métier proche, même famille de compétences), lu directement le 13.08.2026 (débutant CHF 63 687/an · moyenne CHF 68 839/an · le plus élevé attendu CHF 80 607/an, sur 6 708 entrées).',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/installateur-trice-solaire-cfc'},
-  {id:'conseiller-energetique',titre:'Conseiller·ère énergétique du bâtiment',secteur:'Métiers émergents',competences:['technique','pédagogie','conseil','conviction','rigueur'],passions:['énergie','environnement','conseiller','bâtiment','climat','durabilité'],valeurs:['durabilité','utilité','impact'],salaire_debut:'CHF ~85 000–100 000/an',salaire_exp:'CHF 100 000+/an',marche:'Porteur',formation:'Brevet fédéral de conseiller énergétique du bâtiment',financement:'50% Confédération, employeur',salaire_source:'jobs.ch ne reconnaît « conseiller énergétique » ni aucun terme proche comme requête de recherche (essayé le 13.08.2026, y compris des postes voisins du bâtiment) : aucune donnée fiable trouvée. Les chiffres ci-dessus restent une estimation antérieure, non revérifiée cette session.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/conseiller-ere-energetique-des-batiments-bf'},
+  {id:'conseiller-energetique',titre:'Conseiller·ère énergétique du bâtiment',secteur:'Métiers émergents',competences:['technique','pédagogie','conseil','conviction','rigueur'],passions:['énergie','environnement','conseiller','bâtiment','climat','durabilité'],valeurs:['durabilité','utilité','impact'],salaire_debut:'CHF 6 550–7 700/mois',salaire_exp:'CHF 7 700+/mois',marche:'Porteur',formation:'Brevet fédéral de conseiller énergétique du bâtiment',financement:'50% Confédération, employeur',salaire_source:'jobs.ch ne reconnaît « conseiller énergétique » ni aucun terme proche comme requête de recherche (essayé le 13.08.2026, y compris des postes voisins du bâtiment) : aucune donnée fiable trouvée. Les chiffres ci-dessus restent une estimation antérieure, non revérifiée cette session.',verifie_le:'2026-08-13',orientation:'https://www.orientation.ch/fr/professions/conseiller-ere-energetique-des-batiments-bf'},
   {id:'marketing-digital',titre:'Spécialiste marketing digital / e-commerce',secteur:'Métiers émergents',competences:['créativité','curiosité','analyse','organisation','adaptabilité'],passions:['marketing','réseaux sociaux','créer','contenu','communication','digital'],valeurs:['créativité','impact','innovation'],salaire_debut:'CHF ~6 500/mois',salaire_exp:'CHF ~8 600/mois',marche:'Porteur',formation:'Certifications (Google, Meta, HubSpot), bootcamp digital',financement:'chèque formation, AC/ORP',salaire_source:'jobs.ch, lu directement le 14.08.2026 sur la fiche « E-commerce Specialist » (débutant CHF 84 750/an · moyenne CHF 91 000/an · le plus élevé attendu CHF 112 000/an, sur 370 entrées).',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/specialiste-du-e-commerce-bf'},
   {id:'ux-designer',titre:'UX / UI designer',secteur:'Métiers émergents',competences:['empathie','créativité','écoute','observation','rigueur'],passions:['design','créer','utilisateur','esthétique','digital','améliorer'],valeurs:['créativité','impact','humain'],salaire_debut:'CHF ~5 550/mois',salaire_exp:'CHF ~8 750/mois',marche:'Porteur',formation:'Bootcamp UX ou HES design',financement:'chèque formation, AC/ORP',salaire_source:'jobs.ch, lu directement le 14.08.2026 sur la fiche « UX Designer » (débutant CHF 72 000/an · moyenne CHF 89 250/an · le plus élevé attendu CHF 114 000/an, sur 1 103 entrées). Révise à la baisse l\'ancienne estimation non sourcée pour le début de carrière.',verifie_le:'2026-08-14',orientation:'https://www.orientation.ch/fr/professions/user-experience-user-interface-designer-ux-ui-designer-bf'},
-  {id:'durabilite-rse',titre:'Responsable durabilité / RSE',secteur:'Métiers émergents',competences:['conviction','analyse','pédagogie','diplomatie','vision'],passions:['environnement','durabilité','changer','impact','climat','planète'],valeurs:['durabilité','équité','impact'],salaire_debut:'CHF ~90 000–120 000/an',salaire_exp:'CHF 120 000+/an',marche:'Porteur',formation:'HES/uni + spécialisation durabilité (CAS/DAS)',financement:'certifications, employeur'},
+  {id:'durabilite-rse',titre:'Responsable durabilité / RSE',secteur:'Métiers émergents',competences:['conviction','analyse','pédagogie','diplomatie','vision'],passions:['environnement','durabilité','changer','impact','climat','planète'],valeurs:['durabilité','équité','impact'],salaire_debut:'CHF 6 900–9 250/mois',salaire_exp:'CHF 9 250+/mois',marche:'Porteur',formation:'HES/uni + spécialisation durabilité (CAS/DAS)',financement:'certifications, employeur'},
 
   // ═══ TECHNIQUE, INDUSTRIE & HORLOGERIE ═══
   // Rangs 3 et 4 de la pénurie suisse 2025 (ingénierie, électricité/électronique).
@@ -5676,6 +5805,97 @@ const CONTRADICTIONS = [
  * @param {string[]} phrasesNeg     sortie de _phrasesNegatives
  * @returns {Array}  les mêmes métiers, réordonnés et retypés
  */
+/* ═══════════════════════════════════════════════════════════════════════════
+   « JE NE SAIS PAS FAIRE » ET « JE N'EN VEUX PLUS » SONT DEUX CHOSES
+   (17 août 2026)
+
+   Défaut vu sur un rapport réel. Une cliente quitte l'assurance après sept
+   mois et dit noir sur blanc : pas de pression de chiffre, pas de concurrence
+   interne. Le rapport lui sort Conseiller bancaire en n°1 et Account manager
+   en n°2 — un poste à objectifs — et s'en justifie ainsi : « vous pouvez fuir
+   la pression commerciale toxique en cherchant une PME moins agressive ».
+   Ce n'est pas respecter sa contrainte, c'est la contourner. Cette phrase de
+   rationalisation est d'ailleurs le signe le plus fiable qu'on est en train
+   de forcer un métier qui ne passe pas.
+
+   Pourquoi le mécanisme existant ne pouvait pas l'attraper : la famille
+   « vente » de CONTRADICTIONS existe bien, mais elle se déclenche sur
+   _phrasesNegatives, c'est-à-dire sur « je ne SAIS pas faire ». Elle a dit
+   « je ne VEUX plus » — une condition de travail, pas une lacune. Deux notions
+   différentes, deux détections différentes.
+
+   CE QUE CETTE FONCTION FAIT, ET SES LIMITES — dit franchement.
+   Elle s'appuie sur le SECTEUR de la fiche, qui est un champ curé à la main,
+   donc fiable. J'ai mesuré l'alternative lexicale (chercher « vente »,
+   « commercial », « prospection » dans les compétences) : elle attrapait
+   Urbaniste, Architecte et Comptable, et RATAIT Conseiller bancaire — c'est-
+   à-dire le problème principal. Un mécanisme qui se trompe dans les deux sens
+   ne vaut pas mieux que rien, et il donne un faux sentiment de sécurité.
+   Donc : le secteur « Commerce & Vente » est déclassé de façon sûre, et le
+   reste est confié au prompt, où le jugement a sa place.
+   ⚠️ Conseiller bancaire N'EST PAS attrapé ici : son secteur est « Banque &
+   Finance ». Savoir si un métier comporte des objectifs chiffrés n'est pas
+   dans nos données aujourd'hui. Le vrai correctif est un champ sourcé dans
+   les fiches ; c'est un chantier de données, pas une rustine de code.
+═══════════════════════════════════════════════════════════════════════════ */
+const CONDITIONS_REFUSEES = [
+  {
+    id: 'objectifs chiffrés',
+    signaux: ['pression de chiffre', 'pression du chiffre', 'pression commerciale',
+      'objectifs de vente', 'objectifs chiffres', 'course aux chiffres', 'quota', 'quotas',
+      'concurrence interne', 'resultats chiffres', 'chiffre a faire', 'atteindre des objectifs'],
+    secteurs: ['Commerce & Vente']
+  }
+];
+// Marqueurs de refus : le signal seul ne suffit pas. « J'adore la pression
+// commerciale » contient les mêmes mots que « je ne veux plus de pression
+// commerciale ». On exige donc un marqueur de rejet dans la MÊME phrase.
+const _MARQUEURS_REFUS = ['ne veux plus', 'veux plus', 'ne veux pas', 'plus jamais', 'marre',
+  'fui', 'fuir', 'quitte', 'quitter', 'sans ', 'pas de ', 'plus de ', 'epuise', 'use',
+  'toxique', 'insupportable', 'ne supporte plus'];
+
+function _conditionsRefusees(motsUtilisateur) {
+  const t = _normaliserTexte(String(motsUtilisateur || ''));
+  if (!t) return [];
+  const phrases = t.split(/[.!?;\n]+/);
+  return CONDITIONS_REFUSEES.filter(c =>
+    phrases.some(ph =>
+      c.signaux.some(s => ph.includes(s)) &&
+      _MARQUEURS_REFUS.some(m => ph.includes(m))));
+}
+
+/**
+ * Déclasse en « piste » les métiers dont le secteur porte une condition que la
+ * personne a refusée. On ne supprime jamais, et on garde toujours au moins un
+ * métier en principal : un rapport sans piste principale ne vaut rien.
+ */
+function _retrograderConditions(topMetiers, motsUtilisateur) {
+  if (!Array.isArray(topMetiers) || !topMetiers.length) return topMetiers || [];
+  const refusees = _conditionsRefusees(motsUtilisateur);
+  if (!refusees.length) return topMetiers;
+
+  const secteursEcartes = refusees.reduce((a, c) => a.concat(c.secteurs), []);
+  const principaux = [], pistes = [];
+  topMetiers.forEach(m => {
+    const fiche = METIERS_DB.find(f => f.id === m.id) || {};
+    const heurte = secteursEcartes.includes(fiche.secteur || m.secteur);
+    if (heurte) {
+      console.warn('[CYNTH] « ' + m.titre + ' » passe en piste : secteur ' +
+        (fiche.secteur || m.secteur) + ', alors que la personne a refusé ' +
+        refusees.map(c => c.id).join(', ') + '.');
+      pistes.push({ ...m, type: 'piste', _conditionRefusee: refusees[0].id });
+    } else if (m.type === 'piste') { pistes.push(m); }
+    else { principaux.push(m); }
+  });
+  // Filet : on ne rend jamais un rapport sans aucune piste principale.
+  if (!principaux.length && pistes.length) {
+    const repeche = { ...pistes.shift() };
+    repeche.type = 'principal';
+    principaux.push(repeche);
+  }
+  return principaux.concat(pistes);
+}
+
 function _retrograderContradictions(topMetiers, phrasesNeg) {
   if (!Array.isArray(topMetiers) || !topMetiers.length) return topMetiers || [];
   if (!phrasesNeg || !phrasesNeg.length) return topMetiers;
@@ -6000,6 +6220,19 @@ RÈGLES ABSOLUES :
   privilégie les métiers accessibles par l'art. 32 ou par validation des acquis.
 • Ne propose pas le métier qu'elle veut quitter, ni un quasi-synonyme.
 • Si elle dit ne PAS savoir faire quelque chose, ce n'est pas un intérêt : c'est une lacune.
+• ⛔ SES CONDITIONS DE TRAVAIL SONT AUSSI CONTRAIGNANTES QUE SES REFUS DE SECTEUR.
+  « Je ne veux plus de pression de chiffre », « plus de concurrence interne »,
+  « plus d'horaires décalés », « plus de déplacements » : ce ne sont pas des
+  préférences à arbitrer, ce sont des conditions. Un métier dont c'est le
+  quotidien ne peut pas être une piste principale, même si son expérience y
+  colle parfaitement.
+  ⚠️ ET SURTOUT : n'essaie JAMAIS de contourner en écrivant « vous pourriez
+  chercher une structure moins agressive » ou « une PME plus humaine ». Erreur
+  réelle du 17 août 2026 : à une femme ayant quitté l'assurance à cause de la
+  pression commerciale, le rapport a proposé « conseiller commercial B2B » en
+  n°2, en la rassurant ainsi. Si tu as besoin d'une phrase pour désamorcer une
+  objection que la personne a déjà formulée, c'est que le métier ne va pas :
+  choisis-en un autre. Cette phrase de rassurance est le signal, pas la solution.
 • ⛔ LE TEST QUI COMPTE — À APPLIQUER À CHAQUE MÉTIER AVANT DE LE RETENIR.
   Demande-toi : « qu'est-ce que CETTE personne a raconté qui pointe vers CE
   domaine ? » Si tu ne peux pas répondre en citant une phrase précise de ses
@@ -6285,7 +6518,8 @@ async function generateOrientationReport() {
   // su repérer, il doit le respecter de lui-même.
   const _blocRejets = (_rejets.termes && _rejets.termes.length)
     ? `\n\n⛔ CE QUE LA PERSONNE A DIT NE PLUS VOULOIR : ${_rejets.termes.join(', ')}${_rejets.secteurs.length ? ` (secteur(s) écarté(s) : ${_rejets.secteurs.join(', ')})` : ''}.
-INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal" ni en "piste". Même s'il correspond parfaitement à son expérience passée. Elle l'a dit, tu le respectes. Ses compétences acquises là-bas restent valables et transférables ailleurs : sers-t'en pour justifier d'AUTRES métiers.\n`
+INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal" ni en "piste". Même s'il correspond parfaitement à son expérience passée. Elle l'a dit, tu le respectes. Ses compétences acquises là-bas restent valables et transférables ailleurs : sers-t'en pour justifier d'AUTRES métiers.
+⚠️ CECI VAUT AUSSI POUR LE TEXTE LIBRE : aucune phrase du rapport ne doit citer ce domaine comme une piste, même en passant, même dans un recadrage, même sous un intitulé voisin. Écrire "vous pourriez faire de l'assurance non-vie" à quelqu'un qui a quitté l'assurance, c'est lui dire qu'on ne l'a pas écoutée.\n`
     : '';
 
   /* SÉLECTION DES MÉTIERS — voir le pavé d'explication au-dessus de
@@ -6355,7 +6589,20 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
   // partie a son retry (dans _part) et son fallback PAR SECTION — le rapport sort
   // donc toujours complet, même si un morceau échoue. (Les variables dataBlock /
   // partie a son retry et son fallback PAR SECTION.)
-  const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}`;
+  /* ⛔ LE REJET DOIT ATTEINDRE LES QUATRE APPELS (17 août 2026)
+     Défaut trouvé sur un rapport réel : une cliente qui a quitté l'assurance
+     après sept mois, en disant explicitement pourquoi, lisait en page 9
+     « conseillère en assurances-dommages, conseillère en prévoyance » parmi
+     ses pistes. Aucun métier d'assurance ne figurait pourtant dans la liste
+     des cinq — la correction tenait là où elle avait été posée.
+     Cause : le bloc de rejet n'était collé qu'à `dataBlock`, qui n'alimente
+     QUE l'appel métiers. Le portrait, les actions et le plan recevaient
+     `convBlock`, qui ne le contenait pas : ces trois appels ignoraient
+     purement et simplement qu'elle avait rejeté quelque chose.
+     C'est le même schéma que le 4 août — une correction appliquée à un seul
+     des chemins d'appel. On le colle donc à la SOURCE commune, une fois, pour
+     que personne n'ait à y repenser en ajoutant un cinquième appel. */
+  const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}${_blocRejets}`;
   const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.'
     + ' LANGUE ET TYPOGRAPHIE (dictionnaire Cynth.IA, 15 août 2026). Ce rapport se lit comme un document professionnel suisse, pas comme une sortie de machine :'
     + ' (a) SUISSE ROMANDE, jamais français de France : écris "assurance-chômage" et non "la Sécu" ou "le chômage" seul, "salaire minimum" et non "SMIC", "formation continue" et non "VAE". Aucun sigle français.'
@@ -6374,7 +6621,9 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
   + ' (3) MONTANTS ET DURÉES — ne donne un chiffre que s\'il vient de la fiche métier ou de la personne. N\'arrondis JAMAIS une ancienneté : si elle dit dix ans, écris dix ans, pas neuf. Si tu n\'as pas le montant exact d\'une aide, dis "montant à vérifier auprès du canton" plutôt qu\'un nombre.'
   + ' (4) INTITULÉS DE POSTE — recopie le statut et l\'intitulé exacts qu\'elle a donnés. Ne transforme pas un conseiller clientèle salarié en "courtier itinérant". Le statut (salarié, indépendant, intérim) est un fait, jamais une interprétation.'
   + ' (5) CERTIFICATIONS — ne devine pas ce que recouvre un sigle. IOBSP est une certification BANCAIRE (intermédiaire en opérations de banque et services de paiement), pas de l\'assurance. Si tu ne sais pas, cite le sigle sans l\'expliquer.'
-  + ' (6) PUCES DE CV — ne mets un chiffre dans cv_bullets QUE si la personne l\'a donné. Pas de "50+ clients" ni de "taux de fidélisation élevé" inventés : elle devra les défendre en entretien. Sans chiffre de sa part, reste qualitatif et concret.';
+  + ' (6) PUCES DE CV — ne mets un chiffre dans cv_bullets QUE si la personne l\'a donné. Pas de "50+ clients" ni de "taux de fidélisation élevé" inventés : elle devra les défendre en entretien. Sans chiffre de sa part, reste qualitatif et concret.'
+  + ' (7) NE DÉVELOPPE JAMAIS UN SIGLE D\'ENTREPRISE. Recopie-le tel quel. Erreur réelle du 17 août 2026 : un rapport a écrit "la Banque cantonale de Genève (BCV)" — BCV est la banque cantonale VAUDOISE, celle de Genève est la BCGE. La fiche était pourtant juste, c\'est l\'explicitation du sigle qui a créé l\'erreur. Si tu ne peux pas recopier, écris "votre banque cantonale".'
+  + ' (8) CITATION EN EXERGUE — citation_forte est affichée en grand, seule, en tête du portrait. Choisis une phrase de la personne qui est grammaticalement correcte et qui se comprend hors contexte. Si sa formulation la plus marquante comporte une faute ou une tournure bancale, prends-en une autre, ou mets null : mieux vaut pas de citation qu\'une citation qui donne l\'impression que le rapport est mal écrit. Ne corrige JAMAIS ses mots pour les faire entrer — un verbatim retouché n\'est plus un verbatim.';
 
   async function _part(context, instruction, schema) {
     // La date réelle, sinon le plan sur 6 mois part d'une année déjà écoulée :
@@ -6508,7 +6757,9 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
     // personne a dit ne pas savoir faire descend en « piste ». Voir
     // _retrograderContradictions. Appliqué ici, donc valable aussi bien pour la
     // rédaction par le modèle que pour le rapport de secours.
-    top_metiers: _retrograderContradictions(_mt.top_metiers || [], _phrasesNegatives(_motsUtilisateur)),
+    top_metiers: _retrograderConditions(
+      _retrograderContradictions(_mt.top_metiers || [], _phrasesNegatives(_motsUtilisateur)),
+      _motsUtilisateur),
     plan_action_6_mois: _pl.plan_action_6_mois || {},
     ressources_utiles: _pl.ressources_utiles || {},
     message_fin: _pl.message_fin || _fb.message_fin,
@@ -6929,7 +7180,27 @@ function downloadRapport(){
     return;
   }
   const data = window._reportData;
-  const prenom = data.prenom || chatProfile.prenom || 'Vous';
+  /* ── LE PRÉNOM DE LA COUVERTURE (17 août 2026) ──────────────────────────────
+     Il s'affiche en 2,9 rem, seul, sur la première page. C'est le premier mot
+     que la personne lit de son rapport. Vu sur un vrai document : « Prod »,
+     parce que c'est ce qui avait été tapé dans le champ prénom.
+     On ne peut pas décider à sa place comment elle s'appelle — les prénoms
+     courts existent, les prénoms d'ailleurs aussi, et rejeter un vrai prénom
+     serait bien pire que d'en afficher un bizarre. On se limite donc à deux
+     choses sûres : mettre la casse en ordre (« jean-marc » → « Jean-Marc »),
+     et écarter la petite liste de mots qu'on tape en testant, jamais en
+     s'inscrivant. Dans le doute, on garde ce qu'elle a écrit. */
+  const _MOTS_DE_TEST = ['test', 'tests', 'prod', 'production', 'demo', 'essai', 'azerty',
+    'qwerty', 'aaa', 'bbb', 'xxx', 'toto', 'tata', 'titi', 'asdf', 'admin', 'user', 'moi', 'nom'];
+  function _prenomCouverture(v) {
+    const brut = String(v || '').trim().replace(/\s+/g, ' ');
+    if (!brut) return 'Vous';
+    if (_MOTS_DE_TEST.includes(brut.toLowerCase())) return 'Vous';
+    // Casse propre, y compris sur les prénoms composés et les particules.
+    return brut.slice(0, 40).toLowerCase()
+      .replace(/(^|[\s'’-])([a-zà-ÿ])/g, (m, sep, c) => sep + c.toUpperCase());
+  }
+  const prenom = _prenomCouverture(data.prenom || chatProfile.prenom);
   const date = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
   const refNum = 'CYN-' + Date.now().toString(36).toUpperCase().slice(-6);
 
@@ -6987,7 +7258,12 @@ function downloadRapport(){
   const portraitGrid = (portraitLeft||portraitRight) ? `<div class="grid2" style="margin-top:26px"><div>${portraitLeft}</div><div style="display:grid;gap:14px;align-content:start">${portraitRight}</div></div>` : '';
   // Numérotation dynamique : seules les sections non vides reçoivent un numéro.
   let _sn = 0;
-  const secWrap = (title, sub, inner) => inner ? `<div class="pad"><h2 class="sec"><span class="snum">${++_sn}</span> ${title}</h2>${sub?`<div class="sec-sub">${sub}</div>`:''}${inner}</div><div class="divider"></div>` : '';
+  /* 4e paramètre ajouté le 17 août 2026 : une classe optionnelle sur la section.
+     Sert uniquement à l'impression — seule la section des métiers commence
+     encore sur une page neuve (voir le bloc @media print). Sans ce crochet, il
+     aurait fallu viser les sections par leur rang, ce qui casse dès qu'une
+     section vide est masquée et que la numérotation se décale. */
+  const secWrap = (title, sub, inner, cls) => inner ? `<div class="pad${cls ? ' ' + cls : ''}"><h2 class="sec"><span class="snum">${++_sn}</span> ${title}</h2>${sub?`<div class="sec-sub">${sub}</div>`:''}${inner}</div><div class="divider"></div>` : '';
 
   // ── Votre parcours (CV si présent, sinon récap de la conversation) ──
   const parcoursInner = data.parcours_recap ? String(data.parcours_recap).split(/\n\n+/).filter(Boolean).map(x=>`<p class="body">${esc(x)}</p>`).join('') : '';
@@ -7205,7 +7481,7 @@ function downloadRapport(){
      plus élevé, la première question d'un client sera « comment calculez-vous
      88 % ? », et la réponse honnête doit déjà être écrite. */
   const noteScore = '<p class="scorenote">Le pourcentage d\'affinité est une estimation produite par l\'analyse de votre entretien, pas une mesure. Il sert à ordonner les pistes entre elles, pas à prédire votre réussite. Deux métiers séparés de quelques points sont à considérer à égalité.</p>';
-  const secMetiers = secWrap('Vos métiers, alignés sur le marché suisse', 'Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.', metiersHtml + noteScore);
+  const secMetiers = secWrap('Vos métiers, alignés sur le marché suisse', 'Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.', metiersHtml + noteScore, 'sec-metiers');
 
   // ── Votre plan ──
   const planSrc = (data.plan_action_6_mois && Object.keys(data.plan_action_6_mois).length) ? data.plan_action_6_mois : (data.plan_action||{});
@@ -7375,6 +7651,65 @@ footer .disc{font-size:.76rem;opacity:.85;margin-top:8px}
    balise format-detection le désactive ; cette règle rattrape les cas où le
    moteur l'applique quand même. */
 a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;pointer-events:none}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LE RAPPORT SUR UN TÉLÉPHONE (17 août 2026)
+
+   Constat mesuré : ce gabarit n'avait qu'UN seul point de rupture mobile, et
+   il ne traitait que les étiquettes. Tout le reste gardait sa mise en page
+   d'ordinateur — deux grilles à deux colonnes (.grid2, .mgrid) et un padding
+   de 44 px sur 56 px. Sur un écran de 390 px, ça laisse deux colonnes
+   d'environ 130 px : les listes « ce que vous avez déjà » et « à développer »
+   se retrouvent en colonnes d'un mot par ligne.
+
+   C'est le livrable qu'on veut vendre 119 CHF, et la plupart des gens le
+   liront d'abord sur leur téléphone, juste après l'entretien. Il doit être
+   aussi soigné là que sur papier.
+
+   Rien n'est retiré, tout est réagencé : une colonne au lieu de deux, des
+   marges proportionnées, et des titres qui ne débordent plus.
+   ⚠️ Ce bloc ne touche PAS l'impression : les règles @media print qui suivent
+   restent seules maîtres du PDF, et elles passent après.
+══════════════════════════════════════════════════════════════════════════ */
+@media(max-width:640px){
+  .pad{padding:28px 20px}
+  .cover{padding:40px 20px}
+  .cover h1{font-size:2rem;line-height:1.12}
+  .cover .who{font-size:.95rem}
+  .cover .meta{gap:16px;margin-top:26px}
+  .cover .glow,.cover .glow2{display:none}   /* halos hors cadre sur petit écran */
+
+  /* Les deux grilles repassent en une seule colonne. C'est la correction
+     principale : sans elle, les listes sont illisibles. */
+  .grid2,.mgrid{grid-template-columns:1fr;gap:18px}
+
+  /* Le titre du métier et son score se superposaient : on les empile, et le
+     score revient à gauche sous le titre plutôt qu'en équilibre bancal. */
+  .mhead{flex-direction:column;gap:6px}
+  .score{text-align:left;margin-top:4px}
+  .score .n{font-size:1.5rem}
+
+  .metier{padding:20px 18px;border-radius:14px}
+  .metier h3{font-size:1.12rem;line-height:1.25}
+  /* La pastille de rang est en position absolue : sur mobile elle passait
+     par-dessus le titre. On lui laisse la place. */
+  .metier .rank{font-size:.68rem;padding:5px 10px}
+  .mhead{padding-right:64px}
+
+  .callout,.lead-quote,.firststep{padding:18px 16px;border-radius:14px}
+  .lead-quote{font-size:1rem}
+  h2.sec{font-size:1.05rem}
+  .chipm{font-size:.75rem;padding:5px 10px}
+  .mfoot{gap:8px}
+
+  /* Les liens « Voir les offres » et les ressources doivent être touchables :
+     ce sont les seules actions du rapport, elles ne doivent pas se rater. */
+  .mfoot a,.res a,.metier a{min-height:44px;display:inline-flex;align-items:center}
+
+  /* Un intitulé long (« Chef·fe de projet IT / Product owner ») ou une adresse
+     ne doit jamais élargir la page et créer un défilement latéral. */
+  body,.metier,.callout,.res{overflow-wrap:anywhere}
+}
 @page{size:A4;margin:0}
 @media print{
   /* Les couleurs de marque doivent survivre à l'impression. */
@@ -7387,12 +7722,30 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
   /* 1. Couverture pleine page. Le break-before des sections suivantes la
         laisse seule sur la page 1 : pas besoin de break-after ici, qui
         provoquerait une page blanche. */
-  .cover{min-height:100vh;padding:38mm 20mm;display:flex;flex-direction:column;justify-content:center}
+  .cover{min-height:100vh;min-height:100dvh;padding:38mm 20mm;display:flex;flex-direction:column;justify-content:center}
   .cover .glow,.cover .glow2{filter:none}
 
-  /* 2. Une section = une page. Marges portées par .pad puisque @page vaut 0,
-        ce qui permet à la couverture d'aller bord à bord. */
-  .pad{break-before:page;page-break-before:always;padding:22mm 18mm}
+  /* 2. LE TEXTE COULE, IL NE SAUTE PLUS — refait le 17 août 2026.
+
+     Ce qu'on avait : « une section = une page », posé le 6 août avec l'idée que
+     chaque page ait son thème. Vu sur un PDF réel de 26 pages, le résultat est
+     l'inverse de ce qu'on visait : « Votre parcours » occupe cinq lignes puis
+     laisse les deux tiers de la page en blanc, « Qui vous êtes » un paragraphe
+     et une citation, pareil. Vingt-six pages pour le contenu de douze. Un
+     document à 119 CHF qui a l'air aéré à l'écran donne, imprimé, l'impression
+     qu'on a gonflé le volume pour faire épais.
+
+     Ce qu'on fait : le contenu coule normalement, et on ne protège plus que ce
+     qui doit vraiment rester d'un seul tenant (règle 3) et les titres, qui ne
+     doivent jamais rester seuls en bas de page (règle 4). Le moteur d'impression
+     est bon à cet exercice dès qu'on cesse de lui forcer la main.
+
+     SEULE EXCEPTION CONSERVÉE : la section des métiers. C'est le cœur du
+     livrable, chaque fiche fait une page à elle seule, et l'ouvrir sur une page
+     neuve évite qu'une première fiche commence trois lignes avant la fin. */
+  .pad{padding:16mm 18mm}
+  .pad + .pad{padding-top:6mm}          /* deux sections qui s'enchaînent respirent, sans trou */
+  #sec-metiers,.sec-metiers{break-before:page;page-break-before:always}
   .divider{display:none}
 
   /* 3. Ce qui ne doit JAMAIS être coupé en deux. */
@@ -8609,7 +8962,7 @@ async function _transcribeWhisper(blob, mimeType, _retryCount) {
       <button onclick="closeRapportOverlay()" style="background:rgba(250,243,224,.08);color:rgba(250,243,224,.8);border:1px solid rgba(250,243,224,.15);padding:9px 16px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Fermer</button>
     </div>
   </div>
-  <iframe id="rapport-frame" style="position:absolute;top:58px;left:0;right:0;bottom:0;width:100%;height:calc(100vh - 58px);border:none;background:#f4f1ff;" sandbox="allow-scripts allow-same-origin allow-modals allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe>
+  <iframe id="rapport-frame" style="position:absolute;top:58px;left:0;right:0;bottom:0;width:100%;height:calc(100vh - 58px);height:calc(100dvh - 58px);border:none;background:#f4f1ff;" sandbox="allow-scripts allow-same-origin allow-modals allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe>
 </div>
 
 <!-- MODAL HTML -->
