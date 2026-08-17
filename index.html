@@ -5941,8 +5941,25 @@ function _catalogueComplet() {
       m.titre,
       m.secteur,
       'niveau:' + _niveauMetier(m.formation) + '/6 (' + _NIVEAU_LABEL[_niveauMetier(m.formation)] + ')',
-      'voie_adulte:' + String(ex.voie_adulte || '?').slice(0, 70),
-      'competences:' + (m.competences || []).join('/'),
+      /* ── LE CHAMP QUI MANQUAIT (17 août 2026) ─────────────────────────────
+         Mesuré en direct sur le worker : « Diététicien » sortait dans 3
+         passages sur 3 pour un conseiller de vente automobile. En regardant
+         ce que le modèle voit réellement, la cause est apparue — la ligne du
+         catalogue disait « Diététicien = sciences/écoute/pédagogie/confiance ».
+         Pas un mot sur la nutrition. Un homme qui raconte « j'expliquais les
+         forfaits à des personnes âgées » (pédagogie + écoute) collait donc
+         parfaitement à Diététicien, d'après nos propres données.
+         Le catalogue décrivait COMMENT on travaille, jamais SUR QUOI. Pire :
+         il ne fournissait au modèle que des traits transversaux, c'est-à-dire
+         exactement le signal que le prompt lui interdit d'utiliser comme
+         preuve. On remplace donc les compétences génériques par la première
+         tâche réelle de la fiche (issue d'orientation.ch, donc sourcée).
+         Bonus non négligeable : c'est moins lourd qu'avant, 9 900 tokens
+         contre 10 600, parce que ce qu'on retire coûtait plus que ce qu'on
+         ajoute. Les compétences ne sont pas perdues : elles servent à RÉDIGER
+         le rapport, où on relit la fiche complète par id. */
+      'concretement:' + String((ex.competences_detaillees || [])[0] || '?').slice(0, 75),
+      'voie_adulte:' + String(ex.voie_adulte || '?').slice(0, 45),
       'salaire:' + (m.salaire_debut || '?') + ' → ' + (m.salaire_exp || '?'),
       'tension:' + (ex.tension || '?')
     ].join('|');
@@ -6118,6 +6135,33 @@ const _SEUIL_PREUVE = 0.6;   // 60% des mots significatifs doivent s'y retrouver
 function _motsPreuve(t) {
   return new Set(_normPreuve(t).split(' ').filter(m => m.length > 3 && !_MOTS_VIDES.has(m)));
 }
+/* ── DEUX MÉCANISMES ESSAYÉS ET RETIRÉS, POUR NE PAS LES REFAIRE ──────────────
+   (17 août 2026, mesuré en direct sur le worker, pas supposé.)
+
+   1) « La citation partagée revient au premier classé. » FAUX, et nuisible.
+      Le modèle proposait Conseiller bancaire, Agent relation client ET
+      Formateur d'adultes avec la même phrase, en plaçant Formateur d'adultes
+      DERNIER dans les deux passages mesurés. Ma règle rétrogradait donc
+      systématiquement la seule bonne réponse. J'avais confié la décision au
+      classement du modèle — la chose même dont on sait qu'elle n'est pas
+      fiable. C'est l'erreur du 5 août refaite un cran plus loin.
+
+   2) « La citation doit toucher le vocabulaire de la fiche. » Séduisant sur le
+      papier, ingérable en pratique. Matrice mesurée sur 9 fiches × 4 citations :
+      « il aime le contact et prendre son temps » marquait 1 point sur
+      Hygiéniste dentaire ET Assistant médical, c'est-à-dire que la règle
+      AURAIT VALIDÉ le bug d'origine ; « Chez Orange j'expliquais les forfaits »
+      marquait autant sur Diététicien que sur Formateur d'adultes ; et
+      Assistant social marquait 0 sur toutes les citations, même factuelles.
+      Le score sort 0 ou 1 quasiment au hasard. Le livrer aurait donné un
+      voyant vert sur un mécanisme aléatoire — exactement ce que la règle n°1
+      de ce projet interdit.
+
+   Ce qui reste, parce que c'est prouvé : la citation doit être RÉELLE
+   (_preuveRetrouvee, 1re couche) et le catalogue doit dire sur quoi on
+   travaille (_catalogueComplet, mesuré : Diététicien disparaît 3 fois sur 3).
+   La réutilisation d'une citation est désormais SIGNALÉE en console sans rien
+   déclasser : je sais la détecter, je ne sais pas encore désigner le gagnant. */
 function _memePreuve(a, b) {
   if (!a.size || !b.size) return false;
   let communs = 0;
@@ -6146,7 +6190,26 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
   const retenus = [];
   const declasses = [];
   const sansPreuve = [];   // retenus en dernier recours seulement
-  const preuvesDeja = [];  // une citation ne justifie qu'un seul métier
+
+  /* Signalement des citations recyclées. On ne déclasse RIEN : voir le bloc
+     « DEUX MÉCANISMES ESSAYÉS ET RETIRÉS » plus haut. Ce journal sert à voir si
+     le modèle continue de recycler, et sur quels métiers — c'est la matière du
+     prochain correctif, pas un correctif en soi. */
+  if (sesMots) {
+    const groupes = [];
+    choix.forEach(c => {
+      const id = c && (c.id || c.identifiant);
+      const sig = _motsPreuve(c && (c.preuve || c.raison));
+      if (!id || !sig.size) return;
+      const g = groupes.find(x => _memePreuve(x.sig, sig));
+      if (g) g.membres.push(id); else groupes.push({ sig: sig, membres: [id], preuve: (c.preuve || c.raison) });
+    });
+    groupes.filter(g => g.membres.length > 1).forEach(g => {
+      console.warn('[CYNTH] une même citation justifie ' + g.membres.length + ' métiers ('
+        + g.membres.join(', ') + ') : "' + String(g.preuve || '').slice(0, 90)
+        + '". Rien n\'est déclassé, mais c\'est le signe d\'une justification trop générale.');
+    });
+  }
 
   choix.forEach(c => {
     const id = c && (c.id || c.identifiant);
@@ -6172,19 +6235,6 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
         sansPreuve.push(entree);
         return;
       }
-      /* La citation est authentique — mais a-t-elle déjà servi ? Si oui, elle ne
-         dit rien de spécifique à CE métier-là. Le premier classé la garde. */
-      const sig = _motsPreuve(c && (c.preuve || c.raison));
-      if (preuvesDeja.some(p => _memePreuve(p, sig))) {
-        console.warn('[CYNTH] « ' + fiche.titre + ' » écarté des premiers choix : '
-          + 'même justification qu\'un métier déjà retenu, donc rien de propre à '
-          + 'celui-ci. Citation réutilisée : "'
-          + String((c && (c.preuve || c.raison)) || '').slice(0, 90) + '"');
-        entree._sansPreuve = true;
-        sansPreuve.push(entree);
-        return;
-      }
-      preuvesDeja.push(sig);
     }
     retenus.push(entree);
   });
