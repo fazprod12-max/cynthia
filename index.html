@@ -6004,7 +6004,15 @@ RÈGLES ABSOLUES :
 • Ne cherche pas la variété pour elle-même. Deux métiers proches mais tous deux
   pertinents valent mieux qu'un troisième secteur choisi pour faire joli. Évite
   seulement les quasi-doublons du même poste.
-• Choisis 8 métiers classés du plus au moins pertinent. Les 3 premiers doivent être solides ; les suivants peuvent être des pistes plus latérales.
+• ⛔ UNE PREUVE NE SERT QU'UNE FOIS. Chaque métier doit avoir SA propre preuve.
+  Si tu justifies deux métiers par la même phrase, c'est le signe que cette
+  phrase ne dit rien de spécifique à l'un des deux : garde celui qu'elle
+  justifie le mieux et abandonne l'autre. Une phrase qui justifie tout ne
+  justifie rien. Ceci est vérifié après ta réponse : une citation réutilisée
+  fait retomber le métier concerné en simple piste latérale.
+• Choisis 6 métiers au MAXIMUM, classés du plus au moins pertinent. Les 3 premiers
+  doivent être solides ; les suivants peuvent être des pistes plus latérales.
+  Six justifiés valent mieux que huit remplis.
 
 FORMAT : uniquement un objet JSON, premier caractère {, dernier }.`;
 
@@ -6019,7 +6027,7 @@ Réponds uniquement ainsi :
 
 niveau_personne = son niveau actuel sur l'échelle 1-6 ci-dessus, diplôme ET expérience confondus.
 accepte_de_redescendre = true UNIQUEMENT si elle a dit vouloir lever le pied, se reconvertir de zéro, ou accepter un poste moins qualifié.
-preuve = un extrait RECOPIÉ de ses messages ou de son CV, pas une reformulation. Il est vérifié automatiquement : si l'extrait ne se retrouve pas dans ce qu'elle a écrit, le métier est écarté. Si tu n'as rien à citer pour un métier, ne le propose pas.`;
+preuve = un extrait RECOPIÉ de ses messages ou de son CV, pas une reformulation. Il est vérifié automatiquement : si l'extrait ne se retrouve pas dans ce qu'elle a écrit, le métier est écarté. Une même citation ne peut servir qu'à UN seul métier — la réutiliser fait écarter le second. Si tu n'as rien de propre à citer pour un métier, ne le propose pas.`;
 
   let brut;
   try { brut = await appel(sys, usr); }
@@ -6096,6 +6104,29 @@ function _preuveRetrouvee(preuve, sesMots) {
 
 const _SEUIL_PREUVE = 0.6;   // 60% des mots significatifs doivent s'y retrouver
 
+/* ── UNE PREUVE NE SERT QU'UNE FOIS (17 août 2026, 2e couche) ────────────────
+   Mesuré en direct sur le worker après la 1re couche : le modèle a arrêté
+   d'inventer des citations, mais il a trouvé la faille suivante — il cite une
+   phrase VRAIE et la recycle pour justifier trois métiers sans rapport entre
+   eux. Sur le profil du conseiller automobile, « quand quelqu'un arrive perdu
+   et repart avec la bonne solution » servait à la fois pour Conseiller
+   bancaire, Gérant d'immeubles et Conseiller en assurance. La citation était
+   authentique à 100 % : la 1re couche la laissait donc passer.
+   Une phrase qui justifie tout ne justifie rien. On n'accepte donc chaque
+   preuve qu'UNE seule fois : le métier le mieux classé la garde, les suivants
+   doivent en trouver une autre ou passer en « à explorer ». */
+function _motsPreuve(t) {
+  return new Set(_normPreuve(t).split(' ').filter(m => m.length > 3 && !_MOTS_VIDES.has(m)));
+}
+function _memePreuve(a, b) {
+  if (!a.size || !b.size) return false;
+  let communs = 0;
+  a.forEach(m => { if (b.has(m)) communs++; });
+  // Recouvrement sur le plus PETIT des deux : une citation raccourcie d'un mot
+  // reste la même citation, et c'est exactement ce que fait le modèle.
+  return communs / Math.min(a.size, b.size) >= 0.8;
+}
+
 function _validerChoixMetiers(choix, rejets, niv, sesMots) {
   const termes = (rejets && rejets.termes) || [];
   const secteurs = (rejets && rejets.secteurs) || [];
@@ -6115,6 +6146,7 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
   const retenus = [];
   const declasses = [];
   const sansPreuve = [];   // retenus en dernier recours seulement
+  const preuvesDeja = [];  // une citation ne justifie qu'un seul métier
 
   choix.forEach(c => {
     const id = c && (c.id || c.identifiant);
@@ -6140,6 +6172,19 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
         sansPreuve.push(entree);
         return;
       }
+      /* La citation est authentique — mais a-t-elle déjà servi ? Si oui, elle ne
+         dit rien de spécifique à CE métier-là. Le premier classé la garde. */
+      const sig = _motsPreuve(c && (c.preuve || c.raison));
+      if (preuvesDeja.some(p => _memePreuve(p, sig))) {
+        console.warn('[CYNTH] « ' + fiche.titre + ' » écarté des premiers choix : '
+          + 'même justification qu\'un métier déjà retenu, donc rien de propre à '
+          + 'celui-ci. Citation réutilisée : "'
+          + String((c && (c.preuve || c.raison)) || '').slice(0, 90) + '"');
+        entree._sansPreuve = true;
+        sansPreuve.push(entree);
+        return;
+      }
+      preuvesDeja.push(sig);
     }
     retenus.push(entree);
   });
