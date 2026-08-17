@@ -6213,7 +6213,9 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
   const pPlan = _part(convBlock,
     'Construis un plan d\'action réaliste sur 6 mois (étapes concrètes et datées, adaptées à SA situation réelle), des ressources suisses réelles, et un message de fin chaleureux qui reprend un détail précis qu\'elle a dit.'
     + ' ⏳ DATE BUTOIR : relis la conversation et cherche une échéance qui lui est propre (fin de droits chômage, fin de contrat, préavis, permis, disponibilité, échéance financière). Si tu en trouves une, DIS-LA dans la première étape et cale tout le plan dessus : les étapes doivent tomber AVANT. Si six mois dépassent cette date, raccourcis le plan au temps réellement disponible et dis franchement ce qui ne tiendra pas. Un rapport a proposé un plan jusqu\'en février à quelqu\'un dont les droits s\'arrêtaient en octobre, sans jamais le mentionner : c\'est la faute à ne pas refaire.'
-    + ' Dans ressources_utiles.financement, n\'écris que des dispositifs réels et nommés en toutes lettres. N\'invente aucun sigle. Si tu n\'es pas sûr du montant d\'une aide, écris "montant à vérifier auprès du canton" au lieu d\'un chiffre.',
+    + ' 🚫 MAIS SI ELLE N\'A PAS D\'ÉCHÉANCE, N\'EN INVENTE AUCUNE. Bug constaté le 17 août 2026 : la personne avait dit explicitement « j\'ai encore des indemnités pour un moment, c\'est pas la catastrophe demain matin », et le plan ouvrait quand même sur « date butoir critique ». Elle est écoutée dans la conversation, puis le rapport lui remet la pression : c\'est incohérent et c\'est anxiogène pour rien. Règle : n\'écris les mots « critique », « urgent », « avant qu\'il ne soit trop tard » QUE si une date réelle et proche a été donnée. Si elle a du temps, dis-le comme une bonne nouvelle et sers-t\'en : le plan devient alors une progression tranquille où elle peut essayer, se former sérieusement, rencontrer des gens. Ton intensité doit épouser SA situation, pas un modèle unique.'
+    + ' Dans ressources_utiles.financement, n\'écris que des dispositifs réels et nommés en toutes lettres. N\'invente aucun sigle : si tu ne peux pas écrire un sigle en toutes lettres, ne l\'écris pas du tout (constaté le 17 août 2026 : un rapport mentionnait « CFC banque (BEM) », sigle qu\'aucune source ne confirme).'
+    + ' ⚠️ CHAQUE DISPOSITIF UNE SEULE FOIS, et avec son montant EXACT quand on le connaît. Les montants vérifiés, à recopier tels quels sans les reformuler : le chèque annuel de formation genevois est de CHF 750 par an au maximum ; la Confédération prend en charge 50% des frais de cours préparatoires aux examens fédéraux ; viamia est gratuit dès 40 ans. N\'écris « montant à vérifier auprès du canton » que pour un dispositif dont le montant n\'est PAS dans cette liste. Bug constaté le 17 août 2026 : le chèque genevois apparaissait deux fois dans le même rapport, une fois avec son montant exact et une fois en « montant à vérifier », ce qui donne l\'impression qu\'on ne connaît pas notre sujet.',
     '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal (GE : max. CHF 750/an)","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
 
   /* On récupère seulement maintenant la sélection lancée plus haut : son temps
@@ -7206,6 +7208,23 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
   h2.sec,h3,h4,.minilabel,.sec-sub,.rank{
     break-after:avoid;page-break-after:avoid}
   p,li{orphans:3;widows:3}
+
+  /* 4bis. TITRE DE SECTION SEUL SUR SA PAGE — corrigé le 17 août 2026.
+     Constaté sur un vrai PDF (21 pages) : la page 7 « Vos métiers » ne contenait
+     QUE son titre, avec son sous-titre coupé en plein milieu (« ...du marché en »
+     d'un côté, « CHF. » de l'autre). Page entière quasi blanche au milieu d'un
+     document par ailleurs soigné.
+     Cause : deux règles se contredisaient. La classe .pad force un saut de page avant
+     chaque section, puis la première fiche métier (jusqu'à 2 600 caractères,
+     protégée par break-inside:avoid) ne tenait plus dans l'espace restant et
+     partait à la page suivante, en abandonnant son titre.
+     Correctif : on COLLE la première fiche à son titre (break-before:avoid). Si
+     l'ensemble ne tient pas, le moteur déplace les DEUX, et le titre voyage avec
+     son contenu au lieu de rester seul. Et on empêche le sous-titre d'être coupé
+     en deux, ce qui n'a aucun sens pour une phrase de deux lignes. */
+  .sec-sub{break-inside:avoid;page-break-inside:avoid}
+  .metier:first-of-type,.trait:first-of-type,.tl .item:first-of-type{
+    break-before:avoid;page-break-before:avoid}
 
   /* 5. LES GRILLES REDEVIENNENT DES BLOCS.
         Diagnostic du 6 août 2026, mesuré sur un vrai rapport : .mgrid, .grid2 et
