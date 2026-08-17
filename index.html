@@ -3971,18 +3971,28 @@ async function callCynthAI(messages) {
   // verrouille RIEN — on retente une vraie synthèse au tour suivant plutôt que
   // de figer un état "synthèse faite" sur une phrase générique sans bullets.
   if (wantSynthesis && !_isProviderFallback) {
-    synthesisFired = true;
-    // Jalon 2/3 : la personne est allée jusqu'à la synthèse.
-    try { _compter('synthese'); } catch (e) {}
-    _synthesisDone = true; // synchronise le fallback local (anti double-synthèse)
-    if (!reply.includes('●')) {
-      reply = 'Voilà ce que je retiens de notre échange, et ce que je vois pour vous :\n\n' + reply;
-    }
+    /* ⚠️ BUG TROUVÉ EN TEST RÉEL LE 17 AOÛT 2026 (profil conseiller automobile).
+       Le drapeau `synthesisFired` était levé ICI, AVANT de regarder la réponse.
+       Résultat observé : le modèle a posé une question de plus au lieu de faire
+       sa synthèse, le drapeau est quand même passé à vrai, et le message de
+       clôture a suivi immédiatement. La personne lisait donc une question, puis
+       « Voilà, j'ai fait le tour de votre parcours, cliquez sur Mon rapport ».
+       Incompréhensible pour un client.
+
+       Pire : le code MAQUILLAIT l'échec en collant devant la réponse une fausse
+       amorce (« Voilà ce que je retiens de notre échange... »), ce qui donnait
+       l'apparence d'une synthèse à un texte qui n'en était pas une.
+
+       Désormais : la synthèse n'est déclarée faite QUE si des pistes ont été
+       réellement captées, ou après avoir épuisé les tentatives. Tant que ce
+       n'est pas le cas, l'entretien continue normalement et une nouvelle
+       tentative aura lieu au tour suivant. Aucune amorce n'est fabriquée. */
     _captureSynthMetiers(reply); // BUG #7 — mémoriser les métiers proposés par Cynthia
 
-    // ── RETRY SYNTHÈSE si LLM a ignoré le format ● ──────────────────────────
-    // Détection : pas de bullets OU _synthMetiers null après capture
-    if (!_synthMetiers && _synthRetryCount < 1) {
+    // ── RETRY SYNTHÈSE si le modèle a ignoré le format ● ────────────────────
+    // Deux tentatives de rattrapage : sur le test du 17 août, la première n'a
+    // pas suffi et il n'y en avait qu'une.
+    if (!_synthMetiers && _synthRetryCount < 2) {
       _synthRetryCount++;
       console.warn('[CYNTH] Synthèse sans bullets — retry #' + _synthRetryCount);
 
@@ -4013,10 +4023,10 @@ ${_allUserMsgsRetry}
 → Pourquoi vous : [cite ses mots exacts issus de la conversation]
 → Premier pas : [action concrète DIFFÉRENTE des premiers pas précédents]
 
-● [Piste] — [pourquoi en 1 phrase]
-● [Piste] — [pourquoi en 1 phrase]
+● [Piste], [pourquoi en 1 phrase]
+● [Piste], [pourquoi en 1 phrase]
 
-Parmi ces pistes, laquelle vous parle le plus en ce moment ?
+🚫 INTERDIT DE POSER UNE QUESTION. Ne termine pas par « laquelle vous parle le plus », ni par aucune autre question : l'entretien est terminé, la suite est dans le rapport. Constaté le 17 août 2026 : au lieu de produire ses pistes, le modèle a répondu « avant que je vous propose des pistes concrètes, il me manque juste une chose » et a posé une question. C'est exactement ce qu'il ne faut pas faire. Tu as assez de matière, produis les pistes MAINTENANT.
 
 🚫 RÈGLE ABSOLUE : Ne cite QUE des compétences EXPLICITEMENT mentionnées dans la conversation. Ne jamais inventer ou inférer des compétences non mentionnées. Premier pas = action différente pour chaque carte.
 
@@ -4038,6 +4048,7 @@ ${_allTitresRetry}`;
           const retryReply = retryData.choices?.[0]?.message?.content?.trim();
           if (retryReply && retryReply.includes('●')) {
             _captureSynthMetiers(retryReply);
+            if (_synthMetiers) _validerSynthese('retry #' + _synthRetryCount);
             return retryReply; // remplace la réponse originale
           }
         }
@@ -4045,8 +4056,35 @@ ${_allTitresRetry}`;
         console.warn('[CYNTH] Retry synthèse échoué :', e);
       }
     }
+
+    /* Verrouillage du drapeau, APRÈS avoir vu la réponse.
+       Deux cas seulement :
+       · des pistes ont été captées : la synthèse a réellement eu lieu ;
+       · les tentatives sont épuisées : on ne peut plus boucler, on accepte, mais
+         SANS fabriquer de fausse amorce et en le laissant dans les logs.
+       Tant qu'aucun des deux n'est vrai, le drapeau reste baissé et l'entretien
+       continue : une nouvelle tentative aura lieu au tour suivant. */
+    if (_synthMetiers) {
+      _validerSynthese('1re tentative');
+    } else if (_synthRetryCount >= 2) {
+      console.warn('[CYNTH] Synthèse sans pistes après ' + _synthRetryCount
+        + ' rattrapages. On clôt quand même : le rapport, lui, sélectionne ses métiers'
+        + ' par son propre appel dédié, il ne dépend pas de cette capture.');
+      _validerSynthese('tentatives épuisées');
+    }
   }
   return reply;
+}
+
+/* Un seul endroit lève le drapeau, pour qu'il ne puisse plus l'être par erreur
+   ailleurs. Regroupe tout ce qui doit se produire au moment où l'entretien
+   basculle en « synthèse faite ». */
+function _validerSynthese(origine) {
+  if (synthesisFired) return;
+  synthesisFired = true;
+  _synthesisDone = true;              // synchronise le repli local (anti double-synthèse)
+  try { _compter('synthese'); } catch (e) {}   // jalon 2/3 du compteur anonyme
+  console.info('[CYNTH] Synthèse validée (' + origine + ').');
 }
 
 // ── FALLBACK SIMULATION (si Groq échoue) ──────────────────────────────────────
