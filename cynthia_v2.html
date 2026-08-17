@@ -4252,9 +4252,12 @@ ${_allTitresRetry}`;
         if (retryResp.ok) {
           const retryData = await retryResp.json();
           const retryReply = retryData.choices?.[0]?.message?.content?.trim();
-          if (retryReply && retryReply.includes('●')) {
-            _captureSynthMetiers(retryReply);
-            if (_synthMetiers) _validerSynthese('retry #' + _synthRetryCount);
+          /* Le retry exigeait lui aussi la puce, donc il ne rattrapait jamais le cas
+   qu'il est censé rattraper. On teste maintenant le RÉSULTAT : des pistes
+   ont-elles pu être captées ? C'est la seule question qui compte. */
+          if (retryReply) { _captureSynthMetiers(retryReply); }
+          if (retryReply && (_synthMetiers || _synthPistesBrutes >= 2)) {
+            _validerSynthese('retry #' + _synthRetryCount);
             return retryReply; // remplace la réponse originale
           }
         }
@@ -4270,7 +4273,7 @@ ${_allTitresRetry}`;
          SANS fabriquer de fausse amorce et en le laissant dans les logs.
        Tant qu'aucun des deux n'est vrai, le drapeau reste baissé et l'entretien
        continue : une nouvelle tentative aura lieu au tour suivant. */
-    if (_synthMetiers) {
+    if (_synthMetiers || _synthPistesBrutes >= 2) {
       _validerSynthese('1re tentative');
     } else if (_synthRetryCount >= 2) {
       console.warn('[CYNTH] Synthèse sans pistes après ' + _synthRetryCount
@@ -4417,6 +4420,21 @@ let _fbTurn = 0;
 let _synthesisDone = false;
 let _fbPostTurn = 0;
 let _synthMetiers = null; // métiers proposés par Cynthia en synthèse (BUG #7)
+/* Pistes DÉTECTÉES dans le texte de la synthèse, avant tout rapprochement avec
+   le catalogue. Introduit le 17 août 2026 après un parcours complet en réel.
+   Ce qui s'était passé : Cynthia a proposé trois directions parfaitement
+   sensées (« responsable de formation en structure médico-sociale »,
+   « aide-soignante en service à domicile »...), mais moins de deux
+   correspondaient à une fiche de la base. Or _synthMetiers n'est renseigné
+   qu'à partir de DEUX correspondances : il est resté nul, `synthesisFired`
+   n'est jamais monté, l'aperçu n'a pas remplacé la synthèse et l'étape de
+   paiement n'est jamais arrivée. La personne a reçu gratuitement, dans le fil
+   de discussion, ce qu'elle est censée acheter.
+   La leçon : « une synthèse a-t-elle eu lieu ? » est un fait de CONVERSATION.
+   « Ces métiers sont-ils dans notre base ? » est une question de DONNÉES. Les
+   deux n'ont rien à voir, et faire dépendre la porte de paiement de la
+   couverture du catalogue était une erreur de conception. */
+let _synthPistesBrutes = 0;
 
 // ── CHAT ENGINE PRINCIPAL ──────────────────────────────────────────────────────
 
@@ -4440,6 +4458,7 @@ async function startChatMode() {
   _fbPostTurn = 0;
   _fbUsed = new Set();
   _synthMetiers = null;
+  _synthPistesBrutes = 0;
 
   const msgs = document.getElementById('chat-msgs');
   if (msgs) msgs.innerHTML = '';
@@ -6935,6 +6954,7 @@ var _synthPourquois = [];
 function _captureSynthMetiers(synthText) {
   _synthMetiers = null;
   _synthPourquois = [];
+  _synthPistesBrutes = 0;
   if (!synthText) return;
 
   const lines = synthText.split('\n');
@@ -6942,10 +6962,30 @@ function _captureSynthMetiers(synthText) {
 
   for (let idx = 0; idx < lines.length; idx++) {
     const trimmed = lines[idx].trim();
-    if (!/^[●•▶►]/.test(trimmed)) continue;
+    /* ── TOLÉRANCE DE FORMAT (17 août 2026, trouvé en test réel) ──────────────
+       Ce filtre n'acceptait que la puce « ● », exactement comme le prompt la
+       demande. Mesuré en direct sur un parcours complet : le modèle a écrit
+       « Direction 1 : Responsable de formation… » et rien n'a été capté.
+       Conséquence en cascade, et elle est grave : _synthMetiers reste nul,
+       donc `synthesisFired` ne se lève pas, donc l'APERÇU ne remplace pas la
+       synthèse et l'étape de PAIEMENT n'arrive jamais. La personne reçoit
+       gratuitement, dans le fil de discussion, ce qu'elle est censée acheter.
+       Un seul caractère manquant suffisait à court-circuiter le modèle
+       économique. On ne peut pas faire dépendre ça du bon vouloir d'un modèle :
+       on accepte donc toutes les formes qu'ils produisent réellement.
+       ⚠️ On reste strict sur le DÉBUT de ligne : sans ça, une phrase du portrait
+       contenant « : » serait prise pour une piste. */
+    const marqueur =
+      /^[●•▶►*-]\s+/.test(trimmed) ? trimmed.replace(/^[●•▶►*-]\s+/, '') :
+      /^\d+[.)]\s+/.test(trimmed) ? trimmed.replace(/^\d+[.)]\s+/, '') :
+      /^(direction|piste|option|voie)\s*(n°\s*)?\d+\s*[:.–-]\s*/i.test(trimmed)
+        ? trimmed.replace(/^(direction|piste|option|voie)\s*(n°\s*)?\d+\s*[:.–-]\s*/i, '') :
+      /^\*\*[^*]{3,70}\*\*/.test(trimmed) ? trimmed :
+      null;
+    if (marqueur === null) continue;
 
     // Ligne type : "● Chargé RSE → Pourquoi vous : votre sens de l'impact..."
-    const withoutBullet = trimmed.replace(/^[●•▶►]\s*/, '').replace(/\*\*/g, '');
+    const withoutBullet = marqueur.replace(/^[●•▶►]\s*/, '').replace(/\*\*/g, '');
     const arrowIdx = withoutBullet.indexOf('→');
     const colonIdx = withoutBullet.indexOf(':');
 
@@ -7004,6 +7044,11 @@ function _captureSynthMetiers(synthText) {
       }
     });
   }
+
+  /* Nombre de pistes RECONNUES DANS LE TEXTE, avant tout rapprochement avec le
+     catalogue. C'est ce chiffre qui dit « une synthèse a eu lieu », et rien
+     d'autre — voir le commentaire au point d'appel. */
+  _synthPistesBrutes = rawEntries.length;
 
   if (rawEntries.length === 0) return;
 
