@@ -5937,10 +5937,58 @@ const CONTRADICTIONS = [
 const CONDITIONS_REFUSEES = [
   {
     id: 'objectifs chiffrés',
+    // Ce qu'elle dit, à elle. Doit apparaître dans une phrase de refus.
     signaux: ['pression de chiffre', 'pression du chiffre', 'pression commerciale',
       'objectifs de vente', 'objectifs chiffres', 'course aux chiffres', 'quota', 'quotas',
       'concurrence interne', 'resultats chiffres', 'chiffre a faire', 'atteindre des objectifs'],
-    secteurs: ['Commerce & Vente']
+    // Secteur entier écarté : champ curé, donc sans faux positif.
+    secteurs: ['Commerce & Vente'],
+    // Rien à chercher dans « ce qui use » : la pression commerciale n'y est pas
+    // décrite de façon fiable. On s'en tient au secteur.
+    motifsFiche: null,
+    /* DÉCLASSEMENT : le secteur entier est bâti sur les objectifs commerciaux.
+       Ce n'est pas une variable d'employeur, c'est le métier. */
+    declasse: true,
+    reserve: 'ce métier est structuré autour d\'objectifs commerciaux, or vous avez dit ne plus en vouloir'
+  },
+  {
+    id: 'nuits et week-ends',
+    signaux: ['nuit', 'nuits', 'de nuit', 'week-end', 'weekend', 'week end',
+      'horaire coupe', 'horaires coupes', 'horaires decales', 'horaire decale',
+      'samedi', 'dimanche', 'jours feries'],
+    secteurs: null,
+    // Ce qu'en dit la FICHE OFFICIELLE, dans son champ `ce_qui_use`.
+    motifsFiche: /\bnuit|nuits\b|week-?end|samedi|dimanche|jours? ferie|horaires? irregulier|horaire coupe|tres tot le matin/,
+    /* PAS DE DÉCLASSEMENT, on SIGNALE. Les horaires dépendent massivement de
+       l'employeur : un éducateur en foyer fait des nuits, le même en école non.
+       Mesuré : déclasser sur ce motif faisait tomber « Formateur d'adultes »,
+       la meilleure piste de la personne à 95 %, en piste latérale — au profit
+       d'un métier à 82 %. Le remède était pire que le mal.
+       La réserve écrite règle la contradiction sans abîmer la recommandation :
+       la personne garde sa meilleure piste ET sait ce qu'elle doit vérifier. */
+    declasse: false,
+    reserve: 'la fiche officielle mentionne des nuits, des week-ends ou des horaires irréguliers'
+  },
+  {
+    id: 'charge physique',
+    signaux: ['porter', 'port de charge', 'charges lourdes', 'lever', 'transferer',
+      'mon dos', 'le dos', 'physiquement', 'charge physique', 'manutention'],
+    secteurs: null,
+    motifsFiche: /physique|porter|port de charge|charges lourdes|station debout|penible|dos\b/,
+    /* DÉCLASSEMENT : un dos abîmé n'est pas une variable d'organisation. Quand
+       la fiche décrit elle-même un travail physique, aucun employeur ne rendra
+       le métier léger. C'est une impossibilité, pas un point à négocier. */
+    declasse: true,
+    reserve: 'la fiche officielle décrit une charge physique ou un travail debout'
+  },
+  {
+    id: 'déplacements',
+    signaux: ['deplacement', 'deplacements', 'sur la route', 'itinerant', 'conduire toute la journee'],
+    secteurs: null,
+    motifsFiche: /deplacement|itinerant|sur la route|par tous les temps/,
+    // Très variable selon le poste : on signale, on ne tranche pas.
+    declasse: false,
+    reserve: 'la fiche officielle mentionne des déplacements fréquents'
   }
 ];
 // Marqueurs de refus : le signal seul ne suffit pas. « J'adore la pression
@@ -5948,7 +5996,8 @@ const CONDITIONS_REFUSEES = [
 // commerciale ». On exige donc un marqueur de rejet dans la MÊME phrase.
 const _MARQUEURS_REFUS = ['ne veux plus', 'veux plus', 'ne veux pas', 'plus jamais', 'marre',
   'fui', 'fuir', 'quitte', 'quitter', 'sans ', 'pas de ', 'plus de ', 'epuise', 'use',
-  'toxique', 'insupportable', 'ne supporte plus'];
+  'toxique', 'insupportable', 'ne supporte plus', 'plus possible', 'je peux plus',
+  'ne peux plus', 'c est fini', 'casse', 'non negociable', 'jamais faire'];
 
 function _conditionsRefusees(motsUtilisateur) {
   const t = _normaliserTexte(String(motsUtilisateur || ''));
@@ -5956,37 +6005,80 @@ function _conditionsRefusees(motsUtilisateur) {
   const phrases = t.split(/[.!?;\n]+/);
   return CONDITIONS_REFUSEES.filter(c =>
     phrases.some(ph =>
-      c.signaux.some(s => ph.includes(s)) &&
-      _MARQUEURS_REFUS.some(m => ph.includes(m))));
+      c.signaux.some(sig => _contientMot(ph, sig) || ph.includes(sig)) &&
+      _MARQUEURS_REFUS.some(mq => ph.includes(mq))));
+}
+
+/* ── CE QUE LA FICHE DIT D'ELLE-MÊME ─────────────────────────────────────────
+   `ce_qui_use` est rempli à la main depuis orientation.ch, sur 125 fiches sur
+   133. C'est donc une donnée SOURCÉE, pas une sortie de modèle : la chercher
+   avec des motifs est légitime, contrairement à ce qu'on a tenté ce matin sur
+   du texte produit par le modèle.
+
+   ⚠️ CE QU'ON NE FAIT PAS, ET POURQUOI. J'ai essayé de graduer la gravité —
+   distinguer « les gardes de nuit sont la règle » de « peut inclure des
+   services de piquet ». Mesuré sur les 133 fiches, ce tri se trompait une fois
+   sur trois : « chef de cuisine » (soir, week-end et jours fériés) tombait en
+   « occasionnel », « infirmier » en « indéterminé ». Le mot d'atténuation
+   parle souvent d'un AUTRE aspect de la même phrase. Juger la gravité d'après
+   la prose, c'est refaire l'erreur de ce matin.
+   Donc : dès que la fiche mentionne la contrainte, le métier ne peut plus être
+   une piste PRINCIPALE. Il reste dans le rapport, en piste à explorer, AVEC la
+   raison écrite noir sur blanc. Le coût d'un faux positif est alors minuscule
+   (« à vérifier structure par structure », ce qui est vrai de toute façon), et
+   on transforme une contradiction en service : un bon conseiller nomme la
+   tension au lieu de faire comme si elle n'existait pas. */
+function _ficheHeurteCondition(fiche, cond) {
+  if (cond.secteurs && cond.secteurs.includes(fiche.secteur)) return true;
+  if (!cond.motifsFiche) return false;
+  const ex = (typeof METIERS_EXTRA !== 'undefined' && METIERS_EXTRA[fiche.id]) || {};
+  if (!ex.ce_qui_use) return false;      // 8 fiches sur 133 : on ne conclut pas
+  return cond.motifsFiche.test(_normaliserTexte(ex.ce_qui_use));
 }
 
 /**
- * Déclasse en « piste » les métiers dont le secteur porte une condition que la
- * personne a refusée. On ne supprime jamais, et on garde toujours au moins un
- * métier en principal : un rapport sans piste principale ne vaut rien.
+ * Déclasse en « piste à explorer » les métiers qui heurtent une condition que la
+ * personne a explicitement refusée, et ATTACHE LA RAISON pour que le rapport la
+ * dise. On ne supprime jamais, et on garde toujours une piste principale : un
+ * rapport sans piste principale ne vaut rien.
  */
 function _retrograderConditions(topMetiers, motsUtilisateur) {
   if (!Array.isArray(topMetiers) || !topMetiers.length) return topMetiers || [];
   const refusees = _conditionsRefusees(motsUtilisateur);
   if (!refusees.length) return topMetiers;
 
-  const secteursEcartes = refusees.reduce((a, c) => a.concat(c.secteurs), []);
   const principaux = [], pistes = [];
   topMetiers.forEach(m => {
-    const fiche = METIERS_DB.find(f => f.id === m.id) || {};
-    const heurte = secteursEcartes.includes(fiche.secteur || m.secteur);
-    if (heurte) {
-      console.warn('[CYNTH] « ' + m.titre + ' » passe en piste : secteur ' +
-        (fiche.secteur || m.secteur) + ', alors que la personne a refusé ' +
-        refusees.map(c => c.id).join(', ') + '.');
-      pistes.push({ ...m, type: 'piste', _conditionRefusee: refusees[0].id });
-    } else if (m.type === 'piste') { pistes.push(m); }
-    else { principaux.push(m); }
+    const fiche = METIERS_DB.find(f => f.id === m.id) || m;
+    const heurts = refusees.filter(c => _ficheHeurteCondition(fiche, c));
+    /* Deux traitements, selon la NATURE de la contrainte — voir le champ
+       `declasse` de chaque entrée. Une impossibilité physique ou un secteur
+       bâti sur ce qu'elle refuse fait tomber le métier en piste latérale. Une
+       contrainte qui dépend de l'employeur est SIGNALÉE, sans déclassement :
+       la personne garde sa meilleure piste et sait quoi vérifier. */
+    const marque = heurts.length
+      ? { _conditionRefusee: heurts.map(c => c.id).join(', '),
+          _reserve: heurts.map(c => c.reserve).join(' ; ') }
+      : null;
+    const bloquant = heurts.some(c => c.declasse);
+    if (bloquant) {
+      console.warn('[CYNTH] « ' + m.titre + ' » passe en piste à explorer : ' +
+        heurts.filter(c => c.declasse).map(c => c.id).join(' + ') + ' — rédhibitoire.');
+      pistes.push({ ...m, ...marque, type: 'piste' });
+    } else if (m.type === 'piste') { pistes.push({ ...m, ...marque }); }
+    else {
+      if (marque) console.info('[CYNTH] « ' + m.titre + ' » reste principale, avec réserve : ' +
+        marque._conditionRefusee);
+      principaux.push({ ...m, ...marque });
+    }
   });
-  // Filet : on ne rend jamais un rapport sans aucune piste principale.
+  /* Filet : on ne rend jamais un rapport sans piste principale. Le repêché
+     GARDE sa réserve — c'est justement quand on est obligé de la proposer
+     qu'il faut être franc sur ce qui coince. */
   if (!principaux.length && pistes.length) {
-    const repeche = { ...pistes.shift() };
-    repeche.type = 'principal';
+    const repeche = { ...pistes.shift(), type: 'principal' };
+    console.warn('[CYNTH] toutes les pistes heurtent une contrainte : « ' + repeche.titre +
+      ' » est maintenue en principale, avec sa réserve affichée.');
     principaux.push(repeche);
   }
   return principaux.concat(pistes);
@@ -6329,6 +6421,18 @@ RÈGLES ABSOLUES :
   n°2, en la rassurant ainsi. Si tu as besoin d'une phrase pour désamorcer une
   objection que la personne a déjà formulée, c'est que le métier ne va pas :
   choisis-en un autre. Cette phrase de rassurance est le signal, pas la solution.
+• ⛔ NE VANTE JAMAIS UN MÉTIER QUI HEURTE UNE DE SES CONDITIONS. Le code
+  vérifie, dans la fiche officielle de chaque métier, si son quotidien comporte
+  ce qu'elle refuse : nuits, week-ends, horaires irréguliers, charge physique,
+  déplacements. Quand c'est le cas, il déclasse le métier en piste à explorer et
+  affiche la réserve à la personne. Toi, tu ne dois pas écrire l'inverse deux
+  paragraphes plus haut. Erreur réelle du 17 août 2026 : à une aide-soignante
+  qui avait dit « plus jamais de nuit, ça a cassé mon couple et mon dos », le
+  rapport a mis « éducateur social » en piste principale à 88 %, alors que la
+  fiche du métier dit elle-même « horaires irréguliers, avec des nuits et des
+  week-ends ». Le document se contredisait à deux encadrés d'écart, avec sa
+  propre source. Si un métier lui va sur le fond mais coince sur les horaires,
+  dis-le franchement dans le « pourquoi » : c'est ça, conseiller.
 • ⛔ LE TEST QUI COMPTE — À APPLIQUER À CHAQUE MÉTIER AVANT DE LE RETENIR.
   Demande-toi : « qu'est-ce que CETTE personne a raconté qui pointe vers CE
   domaine ? » Si tu ne peux pas répondre en citant une phrase précise de ses
@@ -7534,7 +7638,22 @@ function downloadRapport(){
        On affiche désormais la pastille et sa précision sur les pistes aussi. Le
        reste (salaire, formation, premier pas) reste réservé aux pistes
        principales : une piste doit rester plus légère à lire. */
-    if (!isPrinc(m)) return `<div class="metier piste"><div class="rank">À explorer</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why" style="margin-bottom:${hzChip ? '10px' : '0'}">${why}</p>${hzChip ? `<div class="mfoot">${hzChip}${jobChip}</div>` : ''}${hzLine}</div>`;
+    /* ── LA RÉSERVE (17 août 2026) ────────────────────────────────────────
+       Trouvé sur un parcours complet en réel. Le rapport écrivait, page « Ce
+       qui vous porte » : « NON NÉGOCIABLE : zéro nuit, zéro week-end ». Et
+       trois pages plus loin, en piste principale à 88 % : « Éducateur social ·
+       Ce qui use : les horaires sont irréguliers, avec des nuits et des
+       week-ends. » Le document se contredisait lui-même, avec sa propre source,
+       à deux encadrés d'écart.
+       On ne masque pas la piste — pour cette personne, éducatrice sociale reste
+       un très bon terrain, sauf les horaires. On la déclasse en « à explorer »
+       et ON ÉCRIT LA RÉSERVE. Nommer la tension, c'est le travail d'un
+       conseiller ; faire comme si elle n'existait pas, c'est ce qui fait
+       demander un remboursement. */
+    const reserve = m._reserve
+      ? `<div class="reserve"><b>À vérifier avant de vous lancer :</b> ${esc(m._reserve)}. Ça ne disqualifie pas la piste, mais ça se vérifie structure par structure, avant de vous engager.</div>`
+      : '';
+    if (!isPrinc(m)) return `<div class="metier piste"><div class="rank">À explorer</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why" style="margin-bottom:${hzChip ? '10px' : '0'}">${why}</p>${reserve}${hzChip ? `<div class="mfoot">${hzChip}${jobChip}</div>` : ''}${hzLine}</div>`;
     const salChip = (sd||se)?`<span class="chipm sal">${esc([sd,se].filter(Boolean).join(' → '))}</span>`:'';
     const mcls = (tension.includes('haute')||/pénurie|porteur/i.test(marche))?'p':(/stable/i.test(marche)?'s':'p');
     const marcheChip = marche?`<span class="chipm ${mcls}">${esc(marche)}</span>`:'';
@@ -7593,7 +7712,7 @@ function downloadRapport(){
       ? `<p style="margin:8px 0 0;font-size:.78rem;color:var(--muted);font-style:italic">Salaires : ${esc(_fiche.salaire_source)}${_fiche.verifie_le ? ' · fiche vérifiée le ' + esc(String(_fiche.verifie_le).split('-').reverse().join('.')) : ''}</p>`
       : `<p style="margin:8px 0 0;font-size:.78rem;color:var(--muted);font-style:italic">Salaires : d'après nos sources, nous n'avons pas de chiffre distinct et vérifié pour ce métier précis — <a href="${_jobsChSalaireUrl(m.titre)}" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">vérifiez vous-même sur jobs.ch ↗</a>.</p>`;
 
-    return `<div class="metier principal"><div class="rank">Piste principale</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why">${why}</p>${grid}<div class="mfoot">${hzChip}${salChip}${marcheChip}${formChip}${jobChip}</div>${hzLine}${srcSal}${art32}${first}${route}${noteM}${useM}</div>`;
+    return `<div class="metier principal"><div class="rank">Piste principale</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div><div class="score"><div class="n">${score}%</div><div class="l">affinité estimée</div></div></div><p class="why">${why}</p>${reserve}${grid}<div class="mfoot">${hzChip}${salChip}${marcheChip}${formChip}${jobChip}</div>${hzLine}${srcSal}${art32}${first}${route}${noteM}${useM}</div>`;
   };
   const metiersHtml = metiers.filter(isPrinc).map(metierCard).join('') + metiers.filter(function(m){return !isPrinc(m);}).map(metierCard).join('');
   /* Note d'honnêteté sur le pourcentage (15 août 2026). Le Big Five avait déjà
@@ -7690,6 +7809,12 @@ p.body{font-size:1rem;margin-bottom:14px}
 .mlist.plus li::before{content:"✓";color:var(--emerald);font-weight:700}
 .mlist.dev li::before{content:"→";color:var(--coral);font-weight:700}
 .mfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:16px}
+/* La réserve : visible sans être alarmante. Corail, la couleur d'accent de la
+   marque, déjà utilisée pour « à développer » — c'est une nuance, pas une
+   alerte rouge. */
+.reserve{border-left:3px solid var(--coral);background:#FFF6F3;border-radius:0 10px 10px 0;
+  padding:12px 16px;margin:0 0 16px;font-size:.9rem;line-height:1.55}
+.reserve b{color:#A8452F}
 .chipm{font-size:.8rem;font-weight:600;padding:6px 12px;border-radius:100px;background:var(--cream2)}
 .chipm.sal{background:var(--ink);color:#fff;font-family:'Space Grotesk'}
 .chipm.p{background:var(--emerald-soft);color:var(--emerald-d)}
