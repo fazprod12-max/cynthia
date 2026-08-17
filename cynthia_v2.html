@@ -1845,7 +1845,13 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-logo .lp-dot{width:.42em;height:.42em;margin:0 .06em;border-radius:0;background:var(--cyn-star) center/contain no-repeat;box-shadow:none;flex-shrink:0;}
   .lp-links{display:flex;gap:28px;align-items:center;font-size:.95rem;font-weight:500;color:var(--c-muted);}
   .lp-links a{color:inherit;text-decoration:none;cursor:pointer;} .lp-links a:hover{color:var(--c-ink);}
-  .lp-btn{display:inline-flex;align-items:center;gap:8px;font-family:'Space Grotesk';font-weight:600;border-radius:100px;padding:13px 26px;font-size:.98rem;cursor:pointer;border:none;transition:transform .18s,box-shadow .25s;}
+  /* justify-content:center ajouté le 17 août 2026. Sans lui, un bouton en
+   inline-flex colle son libellé à GAUCHE dès qu'il est plus large que son
+   texte — ce qui arrive à chaque fois qu'on lui donne une largeur (pleine
+   largeur sur téléphone, colonne centrée, grille). Le défaut ne se voit
+   jamais tant que le bouton fait exactement la taille de son texte, et il
+   saute aux yeux le jour où on l'élargit. Il vaut pour TOUS les boutons. */
+.lp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:'Space Grotesk';font-weight:600;border-radius:100px;padding:13px 26px;font-size:.98rem;cursor:pointer;border:none;transition:transform .18s,box-shadow .25s;}
   .lp-btn-primary{background:linear-gradient(120deg,var(--c-emerald),var(--c-emerald-d));color:#fff;box-shadow:0 12px 28px -10px rgba(18,135,106,.75);}
   .lp-btn-primary:hover{transform:translateY(-3px);box-shadow:0 20px 38px -12px rgba(18,135,106,.85);}
   .lp-btn-ghost{background:rgba(255,255,255,.55);color:var(--c-ink);border:1.5px solid var(--c-line);}
@@ -2042,7 +2048,9 @@ document.addEventListener('DOMContentLoaded', function () {
    axe unique. Aucune largeur d'écran ne peut le remettre de travers. */
 .lp-rfoot{flex-direction:column;align-items:center;text-align:center;gap:14px;}
 .lp-ract{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
-.lp-ract .lp-btn{min-width:min(100%,280px);}
+/* Sur grand écran, le bouton garde la taille de son texte : c'est la colonne
+   qui le centre. Il ne s'étire qu'au doigt, sur téléphone (règle plus bas). */
+.lp-ract .lp-btn{min-width:220px;}
 .lp-rnote{font-size:.78rem;color:var(--c-muted);}
 @media(max-width:760px){
   .lp-rfoot{padding:20px 18px;}
