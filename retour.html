@@ -353,10 +353,24 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
   <!-- 4 ─────────────────────────────────────────────── -->
   <section class="sec">
     <div class="hd"><span class="num">04</span><h2>Ce que ça vaut</h2></div>
-    <p class="hint">Répondez comme si vous deviez sortir votre carte pour de vrai. Ne soyez pas gentil avec moi, ça ne m'aiderait pas.</p>
+    <p class="hint">Ne soyez pas gentil avec moi, ça ne m'aiderait pas. C'est la section qui décide du prix, et je n'ai personne d'autre pour me le dire.</p>
+
+    <!-- Question d'entrée ajoutée le 18 août 2026. Le questionnaire était écrit
+         pour des testeurs qui n'avaient rien payé. À partir du lancement, deux
+         publics le remplissent : ceux qui ont payé, et les parcours offerts.
+         Demander « auriez-vous payé ? » à quelqu'un qui vient de payer est
+         absurde, et fausse la lecture des réponses. On sépare donc les deux
+         dès le départ. -->
+    <div class="q">
+      <span class="lab">Comment avez-vous obtenu ce rapport ? <span class="req">*</span></span>
+      <div class="opts" data-champ="acquisition">
+        <button type="button">Je l'ai payé</button>
+        <button type="button">Il m'a été offert</button>
+      </div>
+    </div>
 
     <div class="q">
-      <span class="lab">Auriez-vous payé pour ce rapport ? <span class="req">*</span></span>
+      <span class="lab" id="lab-paierait">Auriez-vous payé pour ce rapport ? <span class="req">*</span></span>
       <div class="opts" data-champ="paierait">
         <button type="button">Oui, sans hésiter</button>
         <button type="button">Oui, mais moins cher</button>
@@ -376,8 +390,12 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
         <button type="button">49 CHF</button>
         <button type="button">59 CHF</button>
         <button type="button">69 CHF</button>
+        <button type="button">79 CHF</button>
         <button type="button">89 CHF</button>
-        <button type="button">Plus de 89 CHF</button>
+        <button type="button">99 CHF</button>
+        <button type="button">119 CHF</button>
+        <button type="button">149 CHF</button>
+        <button type="button">Plus de 149 CHF</button>
       </div>
     </div>
 
@@ -394,7 +412,8 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
         <button type="button">Dès 29 CHF</button>
         <button type="button">Dès 49 CHF</button>
         <button type="button">Dès 69 CHF</button>
-        <button type="button">Dès 89 CHF</button>
+        <button type="button">Dès 79 CHF</button>
+        <button type="button">Dès 99 CHF</button>
         <button type="button">Dès 129 CHF</button>
         <button type="button">Au-delà de 129 CHF</button>
       </div>
@@ -450,6 +469,23 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     <div class="q">
       <label for="garder">Et une chose à surtout ne pas changer ?</label>
       <textarea id="garder" data-champ="garder" placeholder="Ce qui m'a vraiment plu…"></textarea>
+    </div>
+
+    <div class="q">
+      <span class="lab">Est-ce que je peux citer votre retour publiquement ?</span>
+      <div class="sub">Sur le site ou dans un article de presse. Vous choisissez sous quelle forme, et vous pouvez changer d'avis à tout moment en m'écrivant.</div>
+      <div class="opts" data-champ="citation_accord">
+        <button type="button">Oui, avec mon prénom</button>
+        <button type="button">Oui, mais anonyme</button>
+        <button type="button">Oui, prénom et métier</button>
+        <button type="button">Non, gardez ça pour vous</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <label for="citation">Si oui, y a-t-il une phrase que vous diriez à quelqu'un qui hésite ?</label>
+      <div class="sub">Avec vos mots, même maladroits. C'est ce qui parle le mieux aux gens qui sont là où vous étiez il y a une heure.</div>
+      <textarea id="citation" data-champ="citation_texte" placeholder="Si j'avais un truc à dire à quelqu'un qui hésite…"></textarea>
     </div>
 
     <div class="q">
@@ -587,6 +623,21 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     });
   }
   restaurer();
+
+  /* ── La section prix s'adresse à deux publics ────────────────────
+     Ajouté le 18 août 2026. Jusqu'ici tous les répondants avaient reçu le
+     rapport gratuitement. À partir du lancement, une partie l'aura payé :
+     leur demander « auriez-vous payé ? » n'a aucun sens et rend leurs
+     réponses inexploitables. On reformule la question dès qu'ils l'indiquent. */
+  var labPaierait = document.getElementById('lab-paierait');
+  var TEXTE_PAYE  = 'Avec le recul, est-ce que ça les valait ? ';
+  var TEXTE_OFFERT = 'Auriez-vous payé pour ce rapport ? ';
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('.opts[data-champ="acquisition"] button');
+    if (!b || !labPaierait) return;
+    var paye = /pay/i.test(b.textContent) && b.getAttribute('aria-pressed') === 'true';
+    labPaierait.innerHTML = (paye ? TEXTE_PAYE : TEXTE_OFFERT) + '<span class="req">*</span>';
+  });
 
   /* ── Envoi ──────────────────────────────────────────────────── */
   var bouton = document.getElementById('envoyer');
