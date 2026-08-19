@@ -3544,7 +3544,7 @@ La personne doit sentir qu'elle parle à quelqu'un qui la capte vraiment, pas à
 TU ES SUISSE, ET ÇA DOIT SE SENTIR TRÈS VITE (ton avantage décisif)
 Tu connais le système suisse dans le détail, parce que tes données viennent de sources officielles suisses (orientation.ch, OFS, jobs.ch) et pas d'une culture générale approximative. Ce n'est pas un décor : c'est ce qui te rend crédible là où une IA généraliste raconte n'importe quoi. Tu ne prétends pas pour autant l'avoir vécu, tu le SAIS, tu ne l'as pas exercé.
 - DANS LES 2 OU 3 PREMIERS ÉCHANGES, place naturellement UN vrai repère suisse. Pas un cours, pas une liste : une question ou une remarque de pro. Par exemple : « Vous avez un CFC, ou vous êtes arrivée dans le métier autrement ? », « Vous êtes plutôt sur Genève, ou Vaud ? », « Vous avez déjà passé par un ORP ? ». La personne doit se dire : « elle connaît vraiment le terrain ici ».
-- LE RÉFLEXE ARTICLE 32 : si quelqu'un a des années d'expérience mais pas de titre, dis-lui tôt qu'en Suisse on peut faire valider son expérience et obtenir un CFC par l'article 32, sans refaire tout un apprentissage. C'est LE truc que les gens ignorent et qui change une vie. Une phrase suffit, pas un exposé.
+- LE RÉFLEXE ARTICLE 32, MAIS AU BON ENDROIT : si quelqu'un a des années d'expérience mais pas de titre, dis-lui tôt qu'en Suisse on peut faire valider son expérience sans refaire tout un apprentissage. C'est LE truc que les gens ignorent et qui change une vie. Une phrase suffit, pas un exposé. ATTENTION, ERREUR RÉELLE COMMISE LE 19 AOÛT 2026 : l'article 32 OFPr ne délivre QUE des CFC et des AFP, et seulement pour des métiers qui en ont un. Il n'existe PAS de CFC de formateur d'adultes, de spécialiste RH, de coach, de manager, d'assistant de direction, ni d'aucun métier dont l'entrée se fait par un brevet fédéral, une école supérieure ou une haute école. Pour ces métiers-là le mécanisme s'appelle autrement : certificat FSEA puis brevet fédéral pour la formation d'adultes, validation des acquis propre à la filière, admission sur dossier. Tu as le droit de dire « il existe une voie de validation, à confirmer auprès de votre canton » ; tu n'as JAMAIS le droit d'inventer le nom d'un titre. Si on te demande si un titre existe, et que tu n'en es pas certaine, tu réponds que tu n'en es pas certaine — tu ne confirmes pas pour rassurer.
 - TON VOCABULAIRE : CFC, AFP, maturité professionnelle, brevet fédéral, diplôme fédéral, HES, ES, apprentissage dual, formation en cours d'emploi, article 32, chèque annuel de formation (Genève, Vaud, Neuchâtel, Jura), viamia (dès 40 ans), ORP, caisse de chômage, OrTra, jobup, 13e salaire, permis B/C/frontalier. Salaires TOUJOURS en CHF, en général mensuels bruts.
 - INTERDIT ABSOLU (ça sent l'IA française et ça te décrédibilise instantanément) : CPF, France Travail, Pôle emploi, BTS, DUT, licence, bac+2/bac+5, SMIC, Sécurité sociale, RIASEC, euros, Master 2.
 - HONNÊTETÉ : tu ne promets jamais un financement ou une équivalence sans dire qu'il faut vérifier auprès du canton, de l'école ou de l'ORP. Tu donnes le bon nom du bon dispositif, pas une garantie.
@@ -3596,7 +3596,8 @@ CE QUE TU NE FAIS JAMAIS
 - Le tiret cadratin ou demi-cadratin (— ou –). JAMAIS. À la place : une virgule, un point, ou deux-points. Le tiret long fait « écrit par une IA », et ça casse tout.
 - Deux questions dans une réponse.
 - Reposer une question déjà répondue, ou retourner autour du même thème.
-- La même ouverture de phrase deux fois de suite.
+- La même ouverture de phrase, même espacée de plusieurs tours. Interdits en particulier, parce qu'ils sont revenus neuf fois sur seize dans un entretien réel : « Vous venez de… », « Là, vous me dites… », « Vous avez dit quelque chose de… », « Ça, c'est… », « Là, c'est… ». N'annonce pas ce que la personne vient de faire, réponds-y.
+- Dire qu'elle vient de dire « quelque chose d'important », « de très parlant », « de très clair ». C'est un compliment de politesse : répété, il ne vaut plus rien, et tu n'es pas là pour flatter. Si c'est important, montre POURQUOI en une phrase, ou enchaîne sans le dire.
 - "Bonjour" ou toute salutation d'accueil après ton tout premier message. Tu as déjà salué la personne une fois au tout début de la conversation (avant son premier message à elle) : ne le refais JAMAIS, même si tu connais son prénom, même après un silence. Une conversation en cours ne recommence pas à chaque tour.
 - "Je comprends ce que vous traversez", "Merci pour cette précision", "C'est génial !" : faux ou chatbot.
 - Des listes ou des puces dans la conversation.
@@ -3980,6 +3981,88 @@ let _optionsShown = false;
 // jusqu'à ce que le menu soit réellement affiché.
 let _holdInputForOptions = false;
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE TIC D'OUVERTURE  (19 août 2026)
+
+   Repéré par Faouzi en relisant une conversation réelle, et il avait raison :
+   « elle répète souvent "là vous me dites quelque chose d'important", "vous
+   venez de nommer quelque chose d'important"… ils ne se suivent pas, mais j'ai
+   l'impression qu'elle dit la même chose au début. »
+
+   Mesuré sur cette conversation : sur 16 réponses, 6 ouvraient par « Vous venez
+   de… / Vous me dites… », 3 par « Là, … », et 4 ajoutaient le même compliment
+   (« quelque chose d'important », « de très parlant », « de très clair »).
+   Neuf messages sur seize sur deux moules.
+
+   Pourquoi la règle existante ne l'attrapait pas : elle interdit « la même
+   ouverture DEUX FOIS DE SUITE ». Or ces répétitions sont espacées. Faouzi a
+   diagnostiqué le défaut exactement : ils ne se suivent pas.
+
+   Deuxième problème, plus grave que le style : « vous venez de dire quelque
+   chose d'important » est un compliment. Répété quatre fois, il ne vaut plus
+   rien, et il contredit ce qu'on vend — une coach qui ne flatte pas.
+
+   Une consigne statique ne suffit pas (le modèle ne sait pas ce qu'il a déjà
+   écrit s'il ne le relit pas). On lui renvoie donc SES PROPRES ouvertures,
+   comme un fait. C'est le même principe que partout ici : le code fournit la
+   donnée, le modèle rédige.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// Les moules qui reviennent. Ils sont interdits en OUVERTURE, pas dans le
+// corps de la réponse : « ce que vous venez de dire » en milieu de phrase est
+// une formulation normale, ce n'est pas le tic.
+const _MOULES_OUVERTURE = [
+  /^(là\s*,?\s*)?vous venez de/i,
+  /^(là\s*,?\s*)?vous (me )?dites/i,
+  /^(là\s*,?\s*)?vous avez (dit|gardé|raison)/i,
+  /^ça\s*,?\s*c'est/i,
+  /^là\s*,/i,
+  /^voilà\s*,/i,
+  /^bon\s*,/i
+];
+
+// Le compliment automatique : quatre fois dans une conversation, il ne veut
+// plus rien dire.
+const _COMPLIMENT_AUTO =
+  /quelque chose (?:de |d')(?:important|très |vraiment |assez )?[a-zà-ÿ]*/i;
+
+function _ouverturesRecentes(messages, combien) {
+  return (messages || [])
+    .filter(m => m && m.role === 'assistant' && typeof m.content === 'string')
+    .slice(-(combien || 4))
+    .map(m => m.content.trim().split(/\s+/).slice(0, 6).join(' '))
+    .filter(Boolean);
+}
+
+/* Renvoie le bloc à coller au prompt, ou '' s'il n'y a rien à dire.
+   Volontairement court : un pavé de consignes dilue les autres. */
+function _blocOuvertures(messages) {
+  const dernieres = _ouverturesRecentes(messages, 4);
+  if (!dernieres.length) return '';
+
+  const textes = (messages || [])
+    .filter(m => m && m.role === 'assistant' && typeof m.content === 'string')
+    .map(m => m.content.trim());
+
+  const moulesVus = _MOULES_OUVERTURE.filter(re => textes.filter(t => re.test(t)).length >= 2);
+  const complimentVu = textes.filter(t => _COMPLIMENT_AUTO.test(t)).length >= 2;
+
+  let bloc = '\n\n🔁 TES DERNIÈRES OUVERTURES (ne réutilise AUCUNE de ces tournures) :\n'
+    + dernieres.map(o => '· « ' + o + '… »').join('\n');
+
+  if (moulesVus.length) {
+    bloc += '\n⛔ Tu ouvres trop souvent de la même façon. Ce tour-ci, commence AUTREMENT :'
+      + ' entre dans le vif, pose ta question, réagis au contenu, reprends un de ses mots à elle.'
+      + ' N\'annonce pas ce qu\'elle vient de faire, réponds-y.';
+  }
+  if (complimentVu) {
+    bloc += '\n⛔ Tu as déjà dit plusieurs fois qu\'elle venait de dire « quelque chose d\'important ».'
+      + ' Répété, ce compliment ne vaut plus rien et te fait passer pour une machine polie.'
+      + ' Ne le redis pas : montre en quoi c\'est important, ou n\'en parle pas.';
+  }
+  return bloc;
+}
+
 async function callCynthAI(messages) {
   if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) throw new Error('no-proxy');
 
@@ -4026,6 +4109,7 @@ async function callCynthAI(messages) {
      On l'injecte donc à CHAQUE appel, pas une fois au chargement. */
   let systemPrompt = CYNTH_PROMPT + '\n\n' + _blocDateDuJour() +
     (profileContext ? `\n\n📋 PROFIL CONNU : ${profileContext.trim()}` : '');
+  systemPrompt += _blocOuvertures(messages);
   if (_cvText) systemPrompt += `\n\n📄 CV DE LA PERSONNE (texte réel extrait de son CV — sers-t'en pour ancrer tes questions sur son vrai parcours et ses vraies compétences ; ne le récite pas, rebondis dessus) :\n${_cvText.slice(0, 4000)}`;
 
   // ── Contexte questionnaire (si rempli avant le chat) ────────────────────────
@@ -6042,6 +6126,152 @@ function _ficheHeurteCondition(fiche, cond) {
  * dise. On ne supprime jamais, et on garde toujours une piste principale : un
  * rapport sans piste principale ne vaut rien.
  */
+/* ═══════════════════════════════════════════════════════════════════════════
+   L'ARTICLE 32 NE VAUT PAS POUR TOUT LE MONDE  (19 août 2026)
+
+   Trouvé sur un parcours réel joué de bout en bout. Profil : 22 ans de vente
+   en horlogerie, aucun titre suisse, veut passer à la formation. Cynthia lui a
+   dit, dans le chat puis SIX FOIS dans le rapport payant, qu'elle pouvait
+   « transformer son expérience en CFC de formatrice d'adultes via l'article 32 ».
+
+   Ce titre n'existe pas. L'article 32 OFPr ne délivre QUE des CFC et des AFP,
+   et seulement pour des métiers qui en ont un. La formation d'adultes passe par
+   le certificat FSEA, puis le brevet fédéral. Notre propre fiche le disait
+   correctement, sur la même page du rapport : le document se contredisait
+   lui-même. Et le plan des deux premières semaines consistait à aller demander
+   ce titre à son ORP, qui lui aurait répondu qu'il n'existe pas — exactement la
+   humiliation qu'elle avait dit redouter.
+
+   Cause racine : le prompt ordonnait « LE RÉFLEXE ARTICLE 32 » sans condition.
+   Or 54 des 133 fiches n'ont ni CFC ni AFP. Sur 41 % de la base, la consigne
+   fabriquait donc une fausseté. Ce n'est pas le modèle qui a dérapé, c'est nous
+   qui lui avons demandé de le faire.
+
+   ⚠️ Le prompt a été corrigé AUSSI, mais il ne suffit pas : le modèle a
+   maintenu son invention quand on l'a challengée en direct (« oui, ça existe,
+   le titre officiel c'est CFC de Formatrice d'adultes »). D'où ce filet en
+   code, appliqué à l'assemblage final. Le modèle propose, le code dispose.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// L'article 32 ne mène qu'à un CFC ou une AFP : il ne s'applique qu'aux métiers
+// qui en ont un. On le lit sur la fiche, pas sur une intuition.
+function _art32Applicable(fiche) {
+  if (!fiche || !fiche.formation) return false;
+  return /\bCFC\b|\bAFP\b/.test(fiche.formation);
+}
+
+// Le vrai titre d'entrée du métier, tiré du champ formation de la fiche.
+// « Certificat FSEA puis brevet fédéral de formateur·rice » → « certificat FSEA ».
+function _qualifReelle(fiche) {
+  const f = (fiche && fiche.formation) || '';
+  const tete = f.split(/\s+puis\s+|\s*;\s*|\s*,\s*/)[0].trim();
+  if (!tete) return 'la formation indiquée sur la fiche';
+  return tete.charAt(0).toLowerCase() + tete.slice(1);
+}
+
+// Les façons d'écrire un titre : « Formateur·rice d'adultes » s'écrit aussi
+// « formatrice d'adultes » et « formateur d'adultes ». Sans ça le filet rate
+// la forme exacte que le modèle a employée.
+function _variantesTitre(titre) {
+  const base = (titre || '').replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+  const out = new Set([base]);
+  if (base.includes('·')) {
+    out.add(base.replace(/·[a-zà-ÿ]+/gi, ''));                 // formateur d'adultes
+    out.add(base.replace(/([a-zà-ÿ]+)·([a-zà-ÿ]+)/gi, '$1$2')); // formateurrice (rare)
+    const m = base.match(/^([A-Za-zÀ-ÿ]+)·([a-zà-ÿ]+)(.*)$/);
+    if (m) out.add(m[1].replace(/eur$/, '') + m[2] + m[3]);     // formatrice d'adultes
+  }
+  return [...out].filter(Boolean).map(t => t.trim());
+}
+
+const _ECHAP_RE = /[.*+?^${}()|[\]\\]/g;
+
+/* Remplace les affirmations impossibles par ce que dit la fiche.
+   Ne supprime jamais une section : on corrige la phrase, on ne l'ampute pas.
+   Renvoie {rapport, corrections:[...]} pour qu'on puisse le MESURER. */
+function _corrigerVoies(rapport) {
+  const corrections = [];
+  const retenus = (rapport && Array.isArray(rapport.top_metiers)) ? rapport.top_metiers : [];
+  const fiches = retenus
+    .map(m => METIERS_DB.find(f => f.id === m.id) || null)
+    .filter(Boolean);
+  if (!fiches.length) return { rapport: rapport, corrections: corrections };
+
+  const sansCfc = fiches.filter(f => !_art32Applicable(f));
+  const avecCfc = fiches.filter(_art32Applicable);
+
+  // (1) « CFC de <métier sans CFC> » → le vrai titre d'entrée.
+  const regles = [];
+  sansCfc.forEach(f => {
+    _variantesTitre(f.titre).forEach(v => {
+      const esc = v.replace(_ECHAP_RE, '\\$&').replace(/['’]/g, "['’]").replace(/\s+/g, '\\s+');
+      regles.push({
+        re: new RegExp('(?:CFC|AFP)\\s*(?:de\\s+|d[\'’]\\s*|en\\s+)?(?:la\\s+|le\\s+|l[\'’]\\s*)?' + esc, 'gi'),
+        par: _qualifReelle(f),
+        quoi: 'titre inexistant (' + f.titre + ')'
+      });
+    });
+  });
+
+  // (2) Si AUCUN métier retenu n'a de CFC, toute mention de l'article 32 est
+  //     fausse par construction. On nomme le bon mécanisme à la place.
+  if (avecCfc.length === 0) {
+    regles.push({ re: /de\s+l['’]\s*articles?\s*32(?:\s*OFPr)?/gi, par: 'de la validation des acquis', quoi: 'article 32 hors de son champ' });
+    regles.push({ re: /l['’]\s*articles?\s*32(?:\s*OFPr)?/gi,      par: 'la validation des acquis',    quoi: 'article 32 hors de son champ' });
+    regles.push({ re: /\bart(?:icle)?\.?\s*32(?:\s*OFPr)?/gi,      par: 'la validation des acquis',    quoi: 'article 32 hors de son champ' });
+  }
+
+  // (3) Montant d'un chèque cantonal qu'aucune fiche ne porte : on l'efface
+  //     plutôt que de laisser un nombre inventé. (Vu : « CHF 1 000/an » à
+  //     Genève, où le maximum réel est CHF 750/an.)
+  const financements = fiches.map(f => f.financement || '').join(' ');
+  regles.push({
+    re: /chèques?\s+(?:annuels?\s+)?(?:de\s+)?formation[^.;)\n]{0,40}?CHF\s*[\d\u00a0 '’]+\s*\/?\s*an\)?/gi,
+    par: null, // calculé au vol : dépend du montant trouvé
+    quoi: 'montant de chèque non sourcé',
+    verifie: function (trouve) {
+      const montant = (trouve.match(/CHF\s*([\d\u00a0 '’]+)/) || [])[1];
+      if (!montant) return null;
+      const propre = montant.replace(/[\u00a0 '’]/g, '');
+      // Le montant est légitime s'il figure tel quel dans une fiche retenue.
+      if (financements.replace(/[\u00a0 '’]/g, '').includes(propre)) return null;
+      return 'chèque annuel de formation cantonal (montant à vérifier auprès de votre canton)';
+    }
+  });
+
+  const passe = txt => {
+    let t = txt;
+    regles.forEach(r => {
+      t = t.replace(r.re, function (trouve) {
+        const remplacement = r.verifie ? r.verifie(trouve) : r.par;
+        if (remplacement === null || remplacement === undefined) return trouve;
+        corrections.push({ quoi: r.quoi, avant: trouve.slice(0, 70), apres: remplacement });
+        return remplacement;
+      });
+    });
+    return t;
+  };
+
+  const parcourir = v => {
+    if (typeof v === 'string') return passe(v);
+    if (Array.isArray(v)) return v.map(parcourir);
+    if (v && typeof v === 'object') {
+      const o = {};
+      Object.keys(v).forEach(k => { o[k] = parcourir(v[k]); });
+      return o;
+    }
+    return v;
+  };
+
+  return { rapport: parcourir(rapport), corrections: corrections };
+}
+
+// Ce qu'on a dû rattraper sur le dernier rapport, lisible en console.
+// Si ce compteur monte, c'est que le prompt lâche : il faut le reprendre,
+// pas se contenter du filet.
+var _voiesCorrigees = [];
+function voiesCorrigees() { console.table(_voiesCorrigees); return _voiesCorrigees.length; }
+
 function _retrograderConditions(topMetiers, motsUtilisateur) {
   if (!Array.isArray(topMetiers) || !topMetiers.length) return topMetiers || [];
   const refusees = _conditionsRefusees(motsUtilisateur);
@@ -6823,6 +7053,8 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
   + ' (5) CERTIFICATIONS — ne devine pas ce que recouvre un sigle. IOBSP est une certification BANCAIRE (intermédiaire en opérations de banque et services de paiement), pas de l\'assurance. Si tu ne sais pas, cite le sigle sans l\'expliquer.'
   + ' (6) PUCES DE CV — ne mets un chiffre dans cv_bullets QUE si la personne l\'a donné. Pas de "50+ clients" ni de "taux de fidélisation élevé" inventés : elle devra les défendre en entretien. Sans chiffre de sa part, reste qualitatif et concret.'
   + ' (7) NE DÉVELOPPE JAMAIS UN SIGLE D\'ENTREPRISE. Recopie-le tel quel. Erreur réelle du 17 août 2026 : un rapport a écrit "la Banque cantonale de Genève (BCV)" — BCV est la banque cantonale VAUDOISE, celle de Genève est la BCGE. La fiche était pourtant juste, c\'est l\'explicitation du sigle qui a créé l\'erreur. Si tu ne peux pas recopier, écris "votre banque cantonale".'
+  + ' (9) ARTICLE 32 ET NOMS DE TITRES — l\'article 32 OFPr ne délivre QUE des CFC et des AFP, et uniquement pour des métiers qui en ont un. N\'écris "CFC de X" ou "AFP de X" QUE si le champ formation de la fiche de X contient le mot CFC ou AFP. Sinon, recopie le champ formation TEL QUEL (par exemple "certificat FSEA puis brevet fédéral"), et ne parle pas d\'article 32 pour ce métier. Erreur réelle du 19 août 2026 : un rapport a promis six fois un "CFC de formatrice d\'adultes via l\'article 32". Ce titre n\'existe pas, la fiche disait la vérité sur la même page, et le plan des deux premières semaines consistait à aller le demander à un ORP. Inventer un titre est pire qu\'une piste imparfaite : la personne le découvre devant un guichet.'
+  + ' (10) AIDES CANTONALES — ne chiffre une aide que si le montant figure dans le champ financement d\'une fiche. Le chèque annuel de formation genevois est plafonné à CHF 750 par an ; un rapport a écrit CHF 1 000. Sans montant sourcé, écris "montant à vérifier auprès de votre canton".'
   + ' (8) CITATION EN EXERGUE — citation_forte est affichée en grand, seule, en tête du portrait. Choisis une phrase de la personne qui est grammaticalement correcte et qui se comprend hors contexte. Si sa formulation la plus marquante comporte une faute ou une tournure bancale, prends-en une autre, ou mets null : mieux vaut pas de citation qu\'une citation qui donne l\'impression que le rapport est mal écrit. Ne corrige JAMAIS ses mots pour les faire entrer — un verbatim retouché n\'est plus un verbatim.';
 
   async function _part(context, instruction, schema) {
@@ -6935,7 +7167,10 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
   const _mt = (rMetiers && Array.isArray(rMetiers.top_metiers) && rMetiers.top_metiers.length) ? rMetiers : { top_metiers: _fb.top_metiers };
   const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal (GE : max. CHF 750/an)','ORP / assurance-chômage','Confédération — 50% des cours pour examens fédéraux'], formations:['orientation.ch — fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
 
-  return {
+  /* Dernier filet, APRÈS l'assemblage complet : il faut connaître les métiers
+     finalement retenus pour savoir si l'article 32 les concerne. Voir
+     _corrigerVoies. Placé ici, il couvre aussi le rapport de secours. */
+  const _assemble = {
     prenom: chatProfile.prenom || _pf.prenom || null,
     age: null,
     situation: _pf.situation || _fb.situation,
@@ -6967,6 +7202,14 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
     valeurs: (_pf.valeurs_professionnelles && _pf.valeurs_professionnelles.cles) || _fb.valeurs,
     profil_resume: (_pf.profil_personnalite && _pf.profil_personnalite.resume) || _fb.profil_resume
   };
+
+  const _verif = _corrigerVoies(_assemble);
+  _voiesCorrigees = _verif.corrections;
+  if (_verif.corrections.length) {
+    console.warn('[Cynth.IA] ' + _verif.corrections.length
+      + ' affirmation(s) impossible(s) rattrapée(s) par le code. voiesCorrigees() pour le détail.');
+  }
+  return _verif.rapport;
 }
 
 function buildFallbackReport() {
