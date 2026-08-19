@@ -7809,6 +7809,11 @@ p.body{font-size:1rem;margin-bottom:14px}
 .mlist.plus li::before{content:"✓";color:var(--emerald);font-weight:700}
 .mlist.dev li::before{content:"→";color:var(--coral);font-weight:700}
 .mfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:16px}
+/* Le lien vers le questionnaire complet : un vrai bouton, pas un lien gris de
+   13 px. C'est notre seule source de données sur le prix et sur ce qui cloche. */
+.lienq{display:inline-flex;align-items:center;justify-content:center;min-height:44px;
+  margin-top:14px;padding:12px 24px;border-radius:100px;background:var(--emerald);
+  color:#fff;font-weight:600;text-decoration:none;font-size:.95rem}
 /* La réserve : visible sans être alarmante. Corail, la couleur d'accent de la
    marque, déjà utilisée pour « à développer » — c'est une nuance, pas une
    alerte rouge. */
@@ -8058,7 +8063,12 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
     var b=ev.target.closest('button[data-v]');
     if(!b) return;
     var note=Number(b.getAttribute('data-v'))||0;
-    box.innerHTML='<div class="done">Merci, c&rsquo;est noté.</div>';
+    box.innerHTML='<div class="done">Merci, c&rsquo;est noté.</div>'
+      + '<div class="sub" style="margin-top:14px">Si vous avez cinq minutes, le questionnaire complet '
+      + 'm&rsquo;aide beaucoup plus qu&rsquo;une note. C&rsquo;est là que vous pouvez me dire '
+      + 'ce qui vous a gêné, et ce que ce rapport vaut selon vous.</div>'
+      + '<a class="lienq" href="https://cynthia-orientation.ch/retour.html" target="_blank" rel="noopener">'
+      + 'Donner mon avis complet &rarr;</a>';
     try{
       fetch('${GROQ_PROXY_URL}/feedback',{
         method:'POST',
