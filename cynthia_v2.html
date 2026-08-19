@@ -2300,6 +2300,7 @@ document.addEventListener('DOMContentLoaded', function () {
            qu'on collecte prénom, email, CV et une conversation personnelle. Corrigé. -->
       <a role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">Confidentialité · nLPD &amp; RGPD</a>
       <a role="button" tabindex="0" onclick="showModal('cgu')" onkeydown="if(event.key==='Enter')showModal('cgu')">Conditions d'utilisation</a>
+      <a role="button" tabindex="0" onclick="showModal('cgv')" onkeydown="if(event.key==='Enter')showModal('cgv')">Conditions de vente</a>
       <a role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">Contact</a>
     </div>
     <div>© 2026 Cynth.IA · Genève, Suisse</div>
@@ -2752,6 +2753,17 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Bouton gratuit (rapport basique) -->
         <button class="btn-outline" id="btn-download-rapport" style="border:none;cursor:pointer;font-family:inherit;opacity:.5;pointer-events:none;" onclick="downloadRapport()">⏳ Génération en cours…</button>
         <!-- Bouton Premium (rapport complet PDF) -->
+        <!-- ⚠️ ACCEPTATION DES CGV (19 août 2026). Des conditions de vente qui
+             existent quelque part sur le site ne sont PAS opposables : il faut
+             que le client les ait acceptées activement avant de payer, et que
+             ce soit horodaté. Le bloc est masqué tant que le rapport est offert
+             (rien n'est vendu, donc rien à accepter) et affiché avec le bouton
+             d'achat dès que CONFIG.RAPPORT_GRATUIT passe à false. -->
+        <label id="cgv-accept-wrap" style="display:none;align-items:flex-start;gap:9px;max-width:430px;margin:0 auto 14px;text-align:left;font-size:13.5px;line-height:1.5;color:var(--c-slate);cursor:pointer;">
+          <input type="checkbox" id="cgv-accept" style="margin-top:3px;width:18px;height:18px;flex:0 0 auto;accent-color:var(--c-emerald-d);cursor:pointer;">
+          <span>J&rsquo;ai lu et j&rsquo;accepte les <a role="button" tabindex="0" onclick="event.preventDefault();event.stopPropagation();showModal('cgv')" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();showModal('cgv');}" style="color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;">conditions de vente</a>. J&rsquo;ai compris qu&rsquo;en Suisse un achat en ligne n&rsquo;ouvre pas de droit de r&eacute;tractation, et que le rapport m&rsquo;est remis imm&eacute;diatement.</span>
+        </label>
+        <div id="cgv-erreur" role="alert" style="display:none;max-width:430px;margin:-6px auto 12px;font-size:13px;color:#B4472F;text-align:left;">Merci de cocher la case avant de continuer.</div>
         <button class="btn-main" id="btn-premium" style="display:none;" onclick="startStripeCheckout()">
           📄 Télécharger le rapport complet
         </button>
@@ -3205,12 +3217,27 @@ function showToast(icon,msg,type='info',duration=3500){
    - email      : une adresse que tu relèves vraiment (obligation légale :
                   les gens doivent pouvoir exercer leurs droits)
 ══════════════════════════════════════════════════════════════════════════ */
+/* ⚠️ SEUL ENDROIT À ÉDITER pour l'identité légale. Les CGU, les CGV et la
+   politique de confidentialité lisent toutes ces champs : ne recopie jamais
+   une adresse ou un nom ailleurs dans le fichier.
+
+   La LCD (art. 3 al. 1 let. s) impose au vendeur en ligne d'indiquer « de
+   manière claire et complète son identité et son adresse de contact, y
+   compris pour le courrier électronique ». Une ville seule ne suffit pas le
+   jour où l'on vend : il faut une adresse postale.
+   → `adresse` est à compléter par Faouzi AVANT d'activer le paiement.
+   Les CGV le disent honnêtement tant que le champ est vide, plutôt que
+   d'afficher un blanc ou une adresse inventée. */
 const LEGAL = {
   exploitant: 'Faouzi Samhoud',
   lieu: 'Genève, Suisse',
+  adresse: '',                 // ← à compléter avant la première vente (LCD art. 3 al. 1 let. s)
+  ide: '',                     // ← numéro IDE si inscription au registre du commerce
   email: 'contact@cynthia-orientation.ch',   // adresse incluse avec le domaine Infomaniak
   version: '2.0',
   maj: '27 juillet 2026',
+  cgv_version: '1.0',
+  cgv_maj: '19 août 2026',
   for_juridique: 'Genève, Suisse'
 };
 
@@ -3303,6 +3330,98 @@ function showModal(type){
       <p>Le service est destiné aux personnes de 16 ans et plus.</p>
 
       <div class="legal-date">Version ${LEGAL.version} du ${LEGAL.maj}. Nous mettrons ce texte à jour si nos outils changent.</div>`,
+    /* ═══════════════════════════════════════════════════════════════════════
+       CONDITIONS GÉNÉRALES DE VENTE (19 août 2026)
+
+       Écrites pour le cas décidé avec Faouzi : vente en nom propre, à des
+       clients EN SUISSE uniquement, avec l'engagement de correction déjà en
+       vigueur depuis le 15 août (on écoute, on corrige, on rembourse si on ne
+       peut pas corriger).
+
+       Trois points de droit suisse vérifiés aux sources officielles, et qui
+       expliquent la rédaction :
+
+       1. IL N'EXISTE AUCUN DROIT DE RÉTRACTATION pour un achat sur internet en
+          Suisse. L'art. 40a CO vise le démarchage à domicile et le téléphone,
+          pas le commerce en ligne (e-commerce-guide.admin.ch). Un vendeur peut
+          en offrir un volontairement. On le DIT au lieu de laisser croire au
+          contraire : la moitié des sites suisses laissent planer le doute.
+
+       2. PAS DE TVA sous CHF 100 000 de chiffre d'affaires annuel
+          (art. 10 al. 2 LTVA, seuil confirmé auprès de l'AFC). Le prix affiché
+          est donc le prix payé, sans taxe à ajouter. Le jour où le seuil est
+          franchi, il faudra changer cette clause ET le prix affiché.
+
+       3. LA LCD (art. 3 al. 1 let. s) impose quatre choses au vendeur en ligne :
+          identité et adresse de contact complètes, description des étapes
+          techniques menant au contrat, moyen de corriger une erreur de saisie
+          avant de valider, et CONFIRMATION DE COMMANDE SANS DÉLAI PAR EMAIL.
+          ⚠️ La quatrième n'est pas remplie aujourd'hui : le produit n'envoie
+          aucun email. Les CGV décrivent donc la confirmation Stripe, qui est
+          ce qui existe réellement, et l'envoi d'une confirmation reste un
+          chantier à faire avant d'activer la vente.
+
+       Ce texte n'a pas été relu par un juriste. Il est écrit pour être
+       défendable et pour servir de base au rendez-vous, pas pour le remplacer.
+       ═══════════════════════════════════════════════════════════════════════ */
+    cgv:`
+      <div class="modal-tag">📄 Vente</div>
+      <h3>Conditions générales de vente</h3>
+
+      <p style="font-size:14px;color:var(--c-slate)">Ces conditions s'appliquent à l'achat du rapport d'orientation sur ${'cynthia-orientation.ch'}. Pour l'usage du service lui-même, voyez les conditions d'utilisation.</p>
+
+      <h4>Qui vend</h4>
+      <p>${LEGAL.exploitant}, ${LEGAL.lieu}${LEGAL.adresse ? ', ' + LEGAL.adresse : ''}.${LEGAL.ide ? ' Numéro IDE : ' + LEGAL.ide + '.' : ''}<br>
+      Contact : <a href="mailto:${LEGAL.email}" style="color:var(--c-emerald-d)">${LEGAL.email}</a>. Vous pouvez écrire à cette adresse pour toute question avant ou après un achat, et on vous répond.</p>
+
+      <h4>Ce que vous achetez</h4>
+      <p>Un rapport d'orientation personnalisé, construit à partir de votre entretien avec Cynthia et, si vous l'avez déposé, de votre CV. Il est produit une fois, pour vous, et il vous est remis sous forme numérique, consultable et enregistrable en PDF.</p>
+      <p>Ce que vous n'achetez pas : un accompagnement dans la durée, un placement, une garantie d'emploi ou une prestation de conseil agréée. Le détail est dans les conditions d'utilisation, et il compte autant que le reste.</p>
+
+      <h4>Prix</h4>
+      <p>Le prix est celui affiché sur la page au moment où vous commandez, en francs suisses. Il est indiqué toutes taxes comprises : il n'y a rien à ajouter.</p>
+      <p><strong>Pas de TVA.</strong> Le chiffre d'affaires de l'activité reste en dessous du seuil légal d'assujettissement de CHF 100 000 par an. Aucune TVA n'est donc facturée ni récupérable. Si cela change, le prix affiché changera aussi, et cette clause avec.</p>
+
+      <h4>Comment la commande se conclut</h4>
+      <p>Dans l'ordre, et vous pouvez vous arrêter à chaque étape :</p>
+      <ol>
+        <li>Vous passez l'entretien et vous voyez un aperçu de ce que le rapport contiendra.</li>
+        <li>Vous cliquez sur le bouton d'achat, ce qui vous amène sur la page de paiement.</li>
+        <li>Vous y vérifiez le montant et vos informations, et vous pouvez les corriger ou revenir en arrière tant que vous n'avez pas validé.</li>
+        <li>Le contrat est conclu au moment où vous validez le paiement, pas avant.</li>
+      </ol>
+      <p>Vous recevez une confirmation de paiement de notre prestataire, avec le montant et la date. Conservez-la : c'est votre preuve d'achat.</p>
+
+      <h4>Paiement</h4>
+      <p>Le paiement est traité par Stripe. Vos données de carte sont saisies chez Stripe et ne transitent jamais par ce site : nous ne les voyons pas, nous ne les stockons pas. Si le paiement échoue ou est refusé, la commande n'existe pas et rien ne vous est prélevé.</p>
+
+      <h4>Livraison</h4>
+      <p>Le rapport est mis à disposition immédiatement après le paiement, dans votre navigateur. Enregistrez-le en PDF : il n'est pas conservé sur nos serveurs, et nous ne pourrons pas vous le renvoyer si vous fermez la fenêtre sans l'avoir sauvegardé. C'est un choix de confidentialité, pas une négligence, et il a cette conséquence-là.</p>
+
+      <h4>Rétractation : ce que dit vraiment la loi suisse</h4>
+      <p>Le droit suisse ne prévoit <strong>aucun droit de rétractation</strong> pour un achat conclu sur internet. Le délai de quatorze jours dont on entend parfois parler vise le démarchage à domicile et le téléphone, pas le commerce en ligne, et il vient du droit européen qui ne s'applique pas ici.</p>
+      <p>On préfère vous le dire plutôt que de rester flou. En revanche, ce qui suit nous engage.</p>
+
+      <h4>Si le rapport ne vous convient pas</h4>
+      <p>Écrivez à <a href="mailto:${LEGAL.email}" style="color:var(--c-emerald-d)">${LEGAL.email}</a> en disant ce qui ne va pas. Nous lisons chaque message et nous faisons le maximum pour corriger : reprendre le rapport, préciser un point, refaire un entretien.</p>
+      <p><strong>Si rien de tout cela ne répond à votre situation, nous vous remboursons.</strong> Ce n'est pas une formule : un rapport qui rate sa cible nous est plus utile qu'un client mécontent qui s'en va sans rien dire. Le remboursement se fait sur le moyen de paiement utilisé.</p>
+      <p>Pour que ce soit gérable des deux côtés, écrivez-nous dans les trente jours suivant l'achat.</p>
+
+      <h4>Ce dont nous ne répondons pas</h4>
+      <p>Cynth.IA est un outil d'aide à la réflexion. Les métiers, salaires, formations et financements indiqués sont des repères tirés de sources publiques suisses, pas des garanties, et une intelligence artificielle peut se tromper. Vérifiez ce qui est important auprès d'orientation.ch, de votre office cantonal, de votre ORP ou de l'école concernée.</p>
+      <p>Vous restez seul décideur de votre parcours. ${LEGAL.exploitant} ne répond pas des choix faits à la suite d'un entretien ou d'un rapport, ni des conséquences indirectes d'une décision professionnelle, ni d'une interruption temporaire du service. En cas de responsabilité retenue, elle est limitée au montant que vous avez payé, sauf faute grave ou intentionnelle, que la loi ne permet pas d'exclure.</p>
+
+      <h4>Où nous vendons</h4>
+      <p>Le service est conçu pour le marché du travail suisse et proposé aux personnes résidant en Suisse. Nous ne le vendons pas hors de Suisse, notamment parce que le droit de la consommation d'autres pays impose des obligations que nous ne pourrions pas tenir aujourd'hui.</p>
+
+      <h4>Vos données</h4>
+      <p>Le traitement de vos données est décrit dans la politique de confidentialité, qui fait partie de ces conditions. Rien de ce que vous dites pendant l'entretien n'est conservé sur nos serveurs, et votre CV est lu dans votre navigateur.</p>
+
+      <h4>Droit applicable</h4>
+      <p>Ces conditions sont soumises au droit suisse. Le for est à ${LEGAL.for_juridique}, sous réserve des règles impératives qui protègent le consommateur et lui permettent d'agir à son domicile.</p>
+
+      <p style="margin-top:18px;font-size:13px;color:var(--c-slate)">Version ${LEGAL.cgv_version} du ${LEGAL.cgv_maj} · Droit suisse · For : ${LEGAL.for_juridique}</p>
+    `,
     cgu:`
       <div class="modal-tag">📄 Conditions</div>
       <h3>Conditions d'utilisation</h3>
@@ -9165,10 +9284,74 @@ window.addEventListener('pagehide', _stashChat);
  * Lance le checkout Stripe via le Worker.
  * Si déjà payé → télécharge directement le rapport.
  */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCEPTATION DES CONDITIONS DE VENTE  (19 août 2026)
+
+   Des CGV publiées mais jamais acceptées ne servent à rien : en cas de litige,
+   c'est au vendeur de prouver que le client en a pris connaissance AVANT de
+   payer. D'où une case à cocher, non pré-cochée (une case pré-cochée ne vaut
+   pas consentement), et une trace horodatée de l'acceptation.
+
+   La trace reste dans le navigateur : on ne stocke rien côté serveur, c'est la
+   ligne de conduite du produit depuis le début. Elle sert à retrouver la
+   version acceptée, pas à ficher qui que ce soit.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// Rien n'est vendu tant que le rapport est offert : dans ce cas, rien à accepter.
+function _venteActive() {
+  return !(typeof CONFIG !== 'undefined' && CONFIG.RAPPORT_GRATUIT);
+}
+
+function _cgvAcceptees() {
+  if (!_venteActive()) return true;
+  const box = document.getElementById('cgv-accept');
+  if (!box) return false;          // le bloc doit exister avant qu'on vende
+  if (!box.checked) return false;
+  try {
+    localStorage.setItem('cynthia_cgv_acceptees', JSON.stringify({
+      version: LEGAL.cgv_version,
+      date: new Date().toISOString()
+    }));
+  } catch (e) { /* navigation privée : l'acceptation reste valable pour cette session */ }
+  return true;
+}
+
+// Affiche le bloc en même temps que le bouton d'achat, jamais avant.
+function _majAffichageCgv() {
+  const wrap = document.getElementById('cgv-accept-wrap');
+  if (!wrap) return;
+  wrap.style.display = _venteActive() ? 'flex' : 'none';
+  const err = document.getElementById('cgv-erreur');
+  if (err) err.style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', _majAffichageCgv);
+// La case décochée efface l'erreur affichée : on ne laisse pas un message rouge
+// qui ne correspond plus à ce que la personne voit.
+document.addEventListener('DOMContentLoaded', function () {
+  const box = document.getElementById('cgv-accept');
+  if (box) box.addEventListener('change', function () {
+    const err = document.getElementById('cgv-erreur');
+    if (err && box.checked) err.style.display = 'none';
+  });
+});
+
 async function startStripeCheckout() {
   // Si déjà payé → télécharger directement
   if (hasPaidReport()) {
     downloadRapport();
+    return;
+  }
+
+  /* Sans acceptation active et horodatée, les CGV ne sont pas opposables : on
+     ne part pas vers Stripe. Le message est affiché à côté de la case, pas
+     dans une alerte : une alerte bloque le lien vers les CGV qu'on demande
+     justement de lire. */
+  if (!_cgvAcceptees()) {
+    const err = document.getElementById('cgv-erreur');
+    const box = document.getElementById('cgv-accept');
+    if (err) err.style.display = 'block';
+    if (box) { box.focus(); box.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     return;
   }
 
