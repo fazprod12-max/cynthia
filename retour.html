@@ -182,7 +182,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     <div class="brand">Cynth<span class="star"></span><span class="ia">IA</span></div>
     <h1>Vous venez de tester Cynthia. Dites-moi tout.</h1>
     <p>Vous faites partie des toutes premières personnes à l'essayer. Vos réponses vont directement servir à corriger ce qui ne va pas. Soyez franc, surtout quand c'est négatif : c'est là que ça m'aide le plus.</p>
-    <div class="dur">Environ 5 minutes · anonyme si vous voulez</div>
+    <div class="dur">Cinq minutes. Quatre questions à écrire, tout le reste se répond en un clic. Les questions marquées d'une étoile sont celles qui comptent vraiment : le reste, sautez-le sans scrupule. Anonyme si vous voulez.</div>
   </div>
 </header>
 
@@ -242,18 +242,8 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
          data-sub="Est-ce qu'elle posait les bonnes questions, ou est-ce qu'elle tournait autour du pot ?"
          data-g="À côté de la plaque" data-d="Très justes"></div>
 
-    <div class="q" data-scale="naturel"
-         data-lab="Est-ce que ça ressemblait à une vraie conversation ?"
-         data-sub="Ou est-ce que ça sentait le questionnaire automatique ?"
-         data-g="Un robot" data-d="Une vraie personne"></div>
 
-    <div class="q">
-      <label for="juste">Y a-t-il eu un moment où elle a tapé juste ? <span class="req">*</span></label>
-      <div class="sub">Une question ou une phrase qui vous a fait dire « ah, oui, c'est vrai ». Même approximatif, dites-le avec vos mots.</div>
-      <textarea id="juste" data-champ="moment_juste" placeholder="Par exemple : quand elle m'a demandé ce qui m'épuisait le plus dans mon travail actuel…"></textarea>
-    </div>
-
-    <div class="q">
+<div class="q">
       <label for="cote">Y a-t-il eu un moment où elle est tombée complètement à côté ? <span class="req">*</span></label>
       <div class="sub">C'est la réponse la plus utile de tout le questionnaire. N'hésitez pas à être dur.</div>
       <textarea id="cote" data-champ="moment_rate" placeholder="Par exemple : elle a insisté sur un sujet dont je m'en fichais, ou elle n'a pas compris que…"></textarea>
@@ -343,12 +333,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       </div>
     </div>
 
-    <div class="q">
-      <label for="manque">Qu'est-ce qui manquait dans le rapport ?</label>
-      <div class="sub">Ce que vous espériez y trouver et qui n'y était pas.</div>
-      <textarea id="manque" data-champ="manque" placeholder="J'aurais aimé y trouver…"></textarea>
-    </div>
-  </section>
+</section>
 
   <!-- 4 ─────────────────────────────────────────────── -->
   <section class="sec">
@@ -419,19 +404,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       </div>
     </div>
 
-    <div class="q">
-      <span class="lab">En dessous de quel prix vous vous méfieriez de la qualité ?</span>
-      <div class="sub">Trop peu cher pour être sérieux.</div>
-      <div class="opts" data-champ="prix_suspect">
-        <button type="button">En dessous de 10 CHF</button>
-        <button type="button">En dessous de 20 CHF</button>
-        <button type="button">En dessous de 30 CHF</button>
-        <button type="button">En dessous de 50 CHF</button>
-        <button type="button">Le prix ne change rien pour moi</button>
-      </div>
-    </div>
-
-  </section>
+</section>
 
   <!-- 4bis ─── Est-ce que ça compte pour vous ? ─────────────────────────
        Ces deux questions ne parlent PAS d'argent : elles mesurent l'attachement.
@@ -452,9 +425,6 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       </div>
     </div>
 
-    <div class="q" data-scale="recommander"
-         data-lab="Recommanderiez-vous Cynthia à un proche qui se cherche ?"
-         data-g="Jamais" data-d="Sans hésiter"></div>
   </section>
 
   <!-- 5 ─────────────────────────────────────────────── -->
@@ -462,16 +432,11 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     <div class="hd"><span class="num">06</span><h2>Le mot de la fin</h2></div>
 
     <div class="q">
-      <label for="priorite">S'il n'y avait qu'une seule chose à améliorer, ce serait quoi ? <span class="req">*</span></label>
-      <textarea id="priorite" data-champ="priorite" placeholder="La chose qui m'a le plus gêné…"></textarea>
+      <label for="priorite">S'il n'y avait qu'une seule chose à améliorer ou à ajouter, ce serait quoi ? <span class="req">*</span></label>
+      <textarea id="priorite" data-champ="priorite" placeholder="Ce qui m'a gêné, ou ce que j'aurais aimé y trouver…"></textarea>
     </div>
 
-    <div class="q">
-      <label for="garder">Et une chose à surtout ne pas changer ?</label>
-      <textarea id="garder" data-champ="garder" placeholder="Ce qui m'a vraiment plu…"></textarea>
-    </div>
-
-    <div class="q">
+<div class="q">
       <span class="lab">Est-ce que je peux citer votre retour publiquement ?</span>
       <div class="sub">Sur le site ou dans un article de presse. Vous choisissez sous quelle forme, et vous pouvez changer d'avis à tout moment en m'écrivant.</div>
       <div class="opts" data-champ="citation_accord">
@@ -482,28 +447,19 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       </div>
     </div>
 
-    <div class="q">
+    <div class="q" id="q-citation" hidden>
       <label for="citation">Si oui, y a-t-il une phrase que vous diriez à quelqu'un qui hésite ?</label>
       <div class="sub">Avec vos mots, même maladroits. C'est ce qui parle le mieux aux gens qui sont là où vous étiez il y a une heure.</div>
       <textarea id="citation" data-champ="citation_texte" placeholder="Si j'avais un truc à dire à quelqu'un qui hésite…"></textarea>
     </div>
 
-    <div class="q">
-      <span class="lab">Sur quoi l'avez-vous utilisé ?</span>
-      <div class="opts" data-champ="appareil">
-        <button type="button">Ordinateur</button>
-        <button type="button">Téléphone</button>
-        <button type="button">Tablette</button>
-      </div>
-    </div>
-
-    <div class="q">
+<div class="q">
       <span class="lab">Avez-vous rencontré un bug, un blocage, une lenteur ?</span>
       <div class="opts warm" data-champ="bug_oui">
         <button type="button">Non, tout a fonctionné</button>
         <button type="button">Oui</button>
       </div>
-      <textarea id="bug" data-champ="bug_detail" placeholder="Si oui, racontez ce qui s'est passé et à quel moment…"></textarea>
+      <textarea id="bug" hidden data-champ="bug_detail" placeholder="Si oui, racontez ce qui s'est passé et à quel moment…"></textarea>
     </div>
 
     <div class="q">
@@ -638,6 +594,29 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     var paye = /pay/i.test(b.textContent) && b.getAttribute('aria-pressed') === 'true';
     labPaierait.innerHTML = (paye ? TEXTE_PAYE : TEXTE_OFFERT) + '<span class="req">*</span>';
   });
+
+  /* ── Les questions conditionnelles ───────────────────────────────
+     Elles n'apparaissent que pour ceux qu'elles concernent. Le questionnaire
+     paraît alors nettement plus court à celui qui n'a rencontré aucun bug et
+     ne souhaite pas être cité, sans qu'on perde une seule réponse chez les
+     autres. Si le JavaScript ne tourne pas, on les affiche : mieux vaut une
+     question de trop qu'une donnée jamais collectée. */
+  (function conditionnelles () {
+    var champBug = document.getElementById('bug');
+    var blocCit  = document.getElementById('q-citation');
+    document.addEventListener('click', function (ev) {
+      var b = ev.target.closest('.opts button');
+      if (!b) return;
+      var champ = b.parentElement.getAttribute('data-champ');
+      var choisi = b.getAttribute('aria-pressed') === 'true';
+      if (champ === 'bug_oui' && champBug) {
+        champBug.hidden = !(choisi && /oui/i.test(b.textContent));
+      }
+      if (champ === 'citation_accord' && blocCit) {
+        blocCit.hidden = !(choisi && /^oui/i.test(b.textContent.trim()));
+      }
+    });
+  })();
 
   /* ── Envoi ──────────────────────────────────────────────────── */
   var bouton = document.getElementById('envoyer');
