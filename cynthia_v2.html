@@ -4268,6 +4268,134 @@ function _blocFaitsCv(cv) {
     + ' dis « vous y êtes resté presque neuf ans, qu\'est-ce qui vous y retenait ? ».';
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   QUAND LA PERSONNE SÈCHE  (19 août 2026)
+
+   Parcours réel de Faouzi, joué en entier sur le site déployé. Son tout premier
+   message : « à 36 ans avec dix ans de commercial je veux trouver un emploi
+   stable et définitif [...] mais je sais pas quel métier est fait pour moi ».
+   C'est exactement notre client.
+
+   Sur ses quinze réponses, SIX ne portaient presque aucune information :
+   « je ne serais te dire », « rien me viens la », et « les 2 » trois fois.
+   Cynthia les a enregistrées et est passée à la question suivante.
+
+   C'est plus grave que n'importe quelle erreur factuelle : notre promesse,
+   c'est « elle creuse ». Devant quelqu'un qui sèche, elle n'insistait pas, elle
+   ne reformulait pas, elle ne proposait aucun angle. Un conseiller humain, quand
+   on lui dit « rien ne me vient », ne passe pas à la suite.
+
+   LA SOLUTION VIENT DE FAOUZI, et elle est meilleure que « insiste » :
+   « si elle lit le CV et qu'elle voit tout son parcours, il y a des questions
+     qui viendraient toutes seules, et ça aiderait une personne comme moi qui a
+     la flemme d'écrire. »
+
+   D'où ce mécanisme : quand une réponse est vide, on ne dit pas au modèle
+   « insiste », on lui REDONNE les faits du CV et on lui demande d'ancrer sa
+   relance dessus. Une question ancrée sur un fait précis se répond en trois
+   mots ; « qu'est-ce qui vous motive ? » ne se répond pas du tout.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Les formes d'une réponse qui n'en est pas une. Volontairement littérales et
+   tolérantes aux fautes : la personne qui sèche écrit vite et mal. */
+const _NON_REPONSES = [
+  /\bje (ne )?(sais|serais|saurais) (pas|te dire|plus)\b/i,
+  /\brien (ne )?(me )?(vient|viens)\b/i,
+  /\baucune ide[ée]\b/i,
+  /\bj'?en sais rien\b/i,
+  /\bpas d'?id[ée]e?\b/i,
+  /\bpeu importe\b/i,
+  /\bcomme tu veux\b/i,
+  /\bles? (2|deux|3|trois)\b/i,        // « les 2 » : choisit tout, donc rien
+  /\bles deux serai?[ts]? id[ée]al/i,
+  /\bj'?sais pas\b/i,
+  /\bbof\b/i,
+  /^(oui|non|si|ok|ouais|nan)[\s.!]*$/i,
+  /c'?est (ecri|écri)[a-z]*\s+(sur|dans)\s+(le|mon)\s+cv/i   // « c'est ecris sur le cv »
+];
+
+/* Une réponse peut aussi être vide par sa seule longueur : trois mots ne
+   nourrissent pas un rapport, même sans formule d'esquive. */
+function _reponsePauvre(texte) {
+  const t = (texte || '').trim();
+  if (!t) return true;
+
+  /* ⚠️ FAUX POSITIF trouvé par le test, sur le message n°1 de Faouzi :
+     « à 36 ans avec dix ans de commercial je veux trouver un emploi stable et
+       définitif [...] mais JE SAIS PAS quel métier est fait pour moi ».
+     Il contient « je sais pas », mais c'est le message le plus riche de tout
+     l'entretien — et ne pas savoir quel métier est fait pour soi, c'est la
+     RAISON DE VENIR, pas une esquive. Relancer là-dessus serait absurde.
+     On retire donc la formule d'esquive et on juge sur ce qui reste. */
+  const sansEsquive = _NON_REPONSES.reduce((acc, re) =>
+    acc.replace(new RegExp(re.source, 'gi'), ' '), t).replace(/\s+/g, ' ').trim();
+  const motsRestants = sansEsquive.split(/\s+/).filter(Boolean).length;
+  if (motsRestants >= 8) return false;   // il reste une vraie phrase : elle a répondu
+
+  if (_NON_REPONSES.some(re => re.test(t))) return true;
+  const mots = t.split(/\s+/).filter(Boolean);
+  return mots.length <= 4;
+}
+
+// Combien de réponses pauvres d'affilée, et combien depuis le début.
+function _bilanSecheresse(messages) {
+  const dits = (messages || [])
+    .filter(m => m && m.role === 'user' && typeof m.content === 'string')
+    .map(m => m.content);
+  let suite = 0;
+  for (let i = dits.length - 1; i >= 0; i--) {
+    if (_reponsePauvre(dits[i])) suite++; else break;
+  }
+  return { total: dits.filter(_reponsePauvre).length, suite: suite, nb: dits.length };
+}
+
+/* Le bloc de relance. Vide tant que la personne répond normalement : on
+   n'encombre pas le prompt pour rien. */
+function _blocRelance(messages, cv) {
+  const b = _bilanSecheresse(messages);
+  if (!b.suite) return '';
+
+  const faits = (typeof _faitsConnusCv === 'function') ? _faitsConnusCv(cv) : [];
+
+  let bloc = '\n\n🔄 SA DERNIÈRE RÉPONSE N\'EN EST PAS UNE.'
+    + ' Elle a répondu « je ne sais pas », « rien ne me vient », ou en trois mots.'
+    + ' ⛔ N\'ENCHAÎNE PAS sur une nouvelle question ouverte : tu obtiendrais le même vide.'
+    + ' Ce n\'est pas de la mauvaise volonté, c\'est que ta question était trop large,'
+    + ' ou qu\'elle demande une introspection que personne ne fait sur commande.';
+
+  bloc += '\n✅ CE QUE TU FAIS À LA PLACE, dans cet ordre de préférence :'
+    + '\n1. PARS D\'UN FAIT PRÉCIS de son parcours et demande le comment, pas le pourquoi.'
+    + ' « Vous êtes passé de commis à chef de rang en treize mois, ça s\'est fait comment ? »'
+    + ' se répond en une phrase ; « qu\'est-ce qui vous motive ? » ne se répond pas.'
+    + '\n2. PROPOSE UN CHOIX FERMÉ, deux ou trois options concrètes tirées de ce qu\'elle'
+    + ' t\'a déjà dit, et laisse-la dire « plutôt la première ». Si elle répond « les deux »,'
+    + ' ce n\'est pas une réponse : demande LAQUELLE elle garderait si elle devait en perdre une.'
+    + '\n3. RACONTE UNE SITUATION et demande sa réaction. « Un lundi matin, vous arrivez,'
+    + ' la salle est vide et tout est à installer. Ça vous plaît ou ça vous pèse ? »'
+    + '\n4. Si elle sèche encore, DIS-LE elle-même simplement : « on va prendre par un autre'
+    + ' bout » et change complètement d\'angle. Ne repose jamais la même question reformulée.';
+
+  if (faits.length) {
+    bloc += '\n\n📎 DE QUOI ANCRER TA RELANCE (son parcours réel, sers-t\'en comme matière à'
+      + ' questions, un fait à la fois, jamais en liste) :\n'
+      + faits.map(f => '· ' + f).join('\n');
+  }
+
+  if (b.suite >= 2) {
+    bloc += '\n\n⚠️ C\'est la ' + b.suite + 'e réponse vide d\'affilée. Change de terrain'
+      + ' MAINTENANT : arrête les questions sur ce qu\'elle ressent et passe à du concret'
+      + ' vérifiable (une journée type, une tâche qu\'elle a vraiment faite, un collègue,'
+      + ' un horaire, un salaire). Le ressenti viendra en parlant du concret, jamais l\'inverse.';
+  }
+  if (b.total >= 4 && b.nb >= 6) {
+    bloc += '\n\n⚠️ Elle a donné ' + b.total + ' réponses vides depuis le début. C\'est une'
+      + ' personne qui n\'a pas envie d\'écrire, pas une personne sans réponse. Fais des'
+      + ' questions AUXQUELLES ON RÉPOND EN TROIS MOTS, et fais le travail de synthèse'
+      + ' toi-même à partir de son CV et du peu qu\'elle donne.';
+  }
+  return bloc;
+}
+
 async function callCynthAI(messages) {
   if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) throw new Error('no-proxy');
 
@@ -4317,6 +4445,7 @@ async function callCynthAI(messages) {
   systemPrompt += _blocOuvertures(messages);
   if (_cvText) systemPrompt += `\n\n📄 CV DE LA PERSONNE (texte réel extrait de son CV — sers-t'en pour ancrer tes questions sur son vrai parcours et ses vraies compétences ; ne le récite pas, rebondis dessus) :\n${_cvText.slice(0, 4000)}`;
   if (_cvText) systemPrompt += _blocFaitsCv(_cvText);
+  systemPrompt += _blocRelance(messages, _cvText);
 
   // ── Contexte questionnaire (si rempli avant le chat) ────────────────────────
   const _qCtxStr = _buildQuizContext();
@@ -6427,6 +6556,24 @@ function _corrigerVoies(rapport) {
     regles.push({ re: /\bart(?:icle)?\.?\s*32(?:\s*OFPr)?/gi,      par: 'la validation des acquis',    quoi: 'article 32 hors de son champ' });
   }
 
+  /* (2 bis) « Vos N ans couvrent largement les 5 ans exigés » : la formule est
+     fausse dès que les années invoquées viennent d'un autre domaine, et le
+     rapport du 19 août la contenait EN MÊME TEMPS que la version correcte.
+     On ne peut pas compter ses années par métier de façon fiable en code ; on
+     supprime donc l'affirmation, on garde le renvoi à la vérification. C'est
+     moins riche, et ça ne ment pas. */
+  regles.push({
+    re: /vos?\s+\S+\s+ans?\s+d[’']expérience[^.]{0,60}(couvrent?|dépassent?|suffisent?)[^.]{0,50}(5|cinq)\s+ans[^.]{0,30}/gi,
+    par: "l'article 32 exige 5 ans d'expérience au total, dont 2 à 5 ans dans le métier visé : "
+       + "faites vérifier votre situation exacte par votre canton",
+    quoi: 'années d\'un autre domaine présentées comme suffisantes'
+  });
+  regles.push({
+    re: /vous avez l[’']expérience requise/gi,
+    par: "il faut vérifier si vous avez les années exigées dans ce métier précis",
+    quoi: 'expérience déclarée suffisante sans vérification'
+  });
+
   // (3) Montant d'un chèque cantonal qu'aucune fiche ne porte : on l'efface
   //     plutôt que de laisser un nombre inventé. (Vu : « CHF 1 000/an » à
   //     Genève, où le maximum réel est CHF 750/an.)
@@ -7260,6 +7407,7 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
   + ' (6) PUCES DE CV — ne mets un chiffre dans cv_bullets QUE si la personne l\'a donné. Pas de "50+ clients" ni de "taux de fidélisation élevé" inventés : elle devra les défendre en entretien. Sans chiffre de sa part, reste qualitatif et concret.'
   + ' (7) NE DÉVELOPPE JAMAIS UN SIGLE D\'ENTREPRISE. Recopie-le tel quel. Erreur réelle du 17 août 2026 : un rapport a écrit "la Banque cantonale de Genève (BCV)" — BCV est la banque cantonale VAUDOISE, celle de Genève est la BCGE. La fiche était pourtant juste, c\'est l\'explicitation du sigle qui a créé l\'erreur. Si tu ne peux pas recopier, écris "votre banque cantonale".'
   + ' (9) ARTICLE 32 ET NOMS DE TITRES — l\'article 32 OFPr ne délivre QUE des CFC et des AFP, et uniquement pour des métiers qui en ont un. N\'écris "CFC de X" ou "AFP de X" QUE si le champ formation de la fiche de X contient le mot CFC ou AFP. Sinon, recopie le champ formation TEL QUEL (par exemple "certificat FSEA puis brevet fédéral"), et ne parle pas d\'article 32 pour ce métier. Erreur réelle du 19 août 2026 : un rapport a promis six fois un "CFC de formatrice d\'adultes via l\'article 32". Ce titre n\'existe pas, la fiche disait la vérité sur la même page, et le plan des deux premières semaines consistait à aller le demander à un ORP. Inventer un titre est pire qu\'une piste imparfaite : la personne le découvre devant un guichet.'
+  + ' (11) ARTICLE 32, LA RÈGLE DES ANNÉES — l\'article 32 OFPr exige 5 ans d\'expérience professionnelle AU TOTAL, DONT 2 à 5 ans DANS LE MÉTIER VISÉ au moment de la procédure (le nombre exact figure dans l\'ordonnance de formation du métier). Une longue carrière dans un AUTRE domaine ne remplace jamais les années exigées dans le métier visé. N\'écris JAMAIS « vos N ans d\'expérience couvrent largement les 5 ans exigés » ni « vous avez l\'expérience requise » sans avoir compté ses années DANS CE MÉTIER-LÀ. Erreur réelle du 19 août 2026 : un rapport a écrit à quelqu\'un qui avait 13 mois d\'hôtellerie et 10 ans de commercial que ses dix ans « couvraient largement » l\'exigence, tout en écrivant trois paragraphes plus loin, correctement, qu\'il lui manquait 2 à 3 ans dans le domaine. Le même document affirmait donc une chose et son contraire. Si ses années dans le métier visé sont insuffisantes, DIS-LE, chiffres à l\'appui, et indique ce qui manque : c\'est une information utile, pas un échec.'
   + ' (10) AIDES CANTONALES — ne chiffre une aide que si le montant figure dans le champ financement d\'une fiche. Le chèque annuel de formation genevois est plafonné à CHF 750 par an ; un rapport a écrit CHF 1 000. Sans montant sourcé, écris "montant à vérifier auprès de votre canton".'
   + ' (8) CITATION EN EXERGUE — citation_forte est affichée en grand, seule, en tête du portrait. Choisis une phrase de la personne qui est grammaticalement correcte et qui se comprend hors contexte. Si sa formulation la plus marquante comporte une faute ou une tournure bancale, prends-en une autre, ou mets null : mieux vaut pas de citation qu\'une citation qui donne l\'impression que le rapport est mal écrit. Ne corrige JAMAIS ses mots pour les faire entrer — un verbatim retouché n\'est plus un verbatim.';
 
