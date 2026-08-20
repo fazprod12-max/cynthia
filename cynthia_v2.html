@@ -2128,12 +2128,20 @@ document.addEventListener('DOMContentLoaded', function () {
     <div>
       <span class="lp-eyebrow"><span class="lp-live"></span> Votre premier pas, maintenant</span>
       <h1><span class="ln"><i>Vous savez que ça doit changer.</i></span><span class="ln"><i class="lp-accent">Reste à savoir vers quoi.</i></span></h1>
-      <p class="lp-lead">Pas un test de personnalité. Une vraie conversation, qui finit par un rapport que vous gardez. Disponible maintenant, sans rendez-vous.</p>
+      <!-- Accroche réécrite le 20 août 2026, phrase de Faouzi.
+           L'ancienne (« Pas un test de personnalité. Une vraie conversation, qui
+           finit par un rapport que vous gardez. Disponible maintenant, sans
+           rendez-vous. ») était juste mais froide : elle décrivait un service.
+           Celle-ci nomme ce que la personne vient réellement chercher.
+           ⚠️ La dernière phrase n'est PAS décorative : sans elle, le visiteur
+           quitte le premier écran sans savoir ce qu'il obtient en cliquant.
+           Ne pas la retirer pour raccourcir. -->
+      <p class="lp-lead">Ce n&rsquo;est pas un rendez-vous chez un conseiller. C&rsquo;est un rendez-vous avec vous-même. Le premier, peut-être. Vous en repartez avec un rapport que vous gardez.</p>
       <div class="lp-hcta">
         <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer maintenant →</button>
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Découvrir la méthode</button>
       </div>
-      <div class="lp-reassure"><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans rendez-vous</span><span>✦ Sans engagement</span><span>↩ Pas satisfait ? Écrivez-nous</span></div>
+      <div class="lp-reassure"><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans attendre</span><span>✦ Sans engagement</span><span>↩ Pas satisfait ? Écrivez-nous</span></div>
     </div>
     <div class="lp-chatcard">
       <div class="lp-ctop"><div class="lp-orb"></div><div><div class="lp-who">Cynthia</div><div class="lp-cstat">● en ligne · vous écoute</div></div></div>
