@@ -4182,6 +4182,92 @@ function _blocOuvertures(messages) {
   return bloc;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   NE JAMAIS REDEMANDER CE QUI EST DANS LE CV  (19 août 2026)
+
+   Trouvé en direct sur le parcours réel de Faouzi. Il dépose son CV, l'écran
+   affiche en vert « CV lu, Cynthia connaît votre parcours », et au quatrième
+   échange elle lui demande : « Vous aviez quel rôle exactement chez Orange ? »
+   Sa réponse, mot pour mot : « c'est ecris sur le cv ».
+
+   Elle s'est rattrapée à la ligne suivante, exactement et au mois près, donc le
+   CV était bien dans son contexte. Le problème n'est pas qu'elle ne l'a pas lu,
+   c'est qu'elle a posé une question dont elle avait la réponse. Le mal est fait
+   en une seconde : la personne croit qu'on lui a menti sur l'écran d'avant.
+
+   Le prompt disait déjà « sers-t'en pour ancrer tes questions, ne le récite pas,
+   rebondis dessus ». Ça n'a pas suffi : noyé dans 4 000 caractères de CV brut,
+   un fait précis ne se repère pas. On sort donc les faits durs du CV et on les
+   présente à part, nommés, avec l'interdiction de les redemander. Le code
+   fournit la donnée, le modèle rédige : même principe que partout ici.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// Les lignes d'un CV qui portent un fait vérifiable : un poste avec ses dates,
+// une formation, une certification. On ne devine pas, on repère des motifs.
+function _faitsConnusCv(cv) {
+  if (!cv) return [];
+  /* Un PDF n'a pas de vrais retours à la ligne : pdf.js rend souvent tout le
+     bloc « expérience » d'un seul tenant. On coupe donc AUSSI devant chaque
+     intitulé de poste (« Chef de rang | Fairmont... »), sinon deux emplois se
+     retrouvent dans le même fait et la liste devient illisible. */
+  /* Trois pièges rencontrés sur le vrai CV, dans cet ordre :
+     · couper au milieu d'un mot : « B2C et B2B » devenait « C et B2B » ;
+     · couper dans un titre composé : « Call Center » devenait « Center » ;
+     · couper après une liaison : « Commis de rang puis Chef de rang » perdait
+       la progression, qui est justement l'information intéressante.
+     D'où : frontière de mot obligatoire, mot précédent en minuscule (sinon on
+     est à l'intérieur d'un titre), et liste courte de liaisons interdites. */
+  const LIAISONS = 'puis|et|ou|de|du|des|en|ainsi|alors|comme|dont';
+  const coupe = new RegExp(
+    '\\n|(?=•)|(?<=\\s(?!' + LIAISONS + '\\s)[a-zà-ÿ][\\wà-ÿ\'-]*\\s)'
+    /* ⚠️ PAS de drapeau « i » : toute la logique repose sur la casse. Avec « i »,
+       [A-ZÀ-Ý] matche aussi les minuscules et la coupure tombe devant
+       « clientele », ce qui décapite chaque intitulé de poste. Erreur commise
+       et corrigée dans la même heure, le 19 août. */
+    + '(?=[A-ZÀ-Ý][^|\\n]{4,70}\\|\\s*[A-ZÀ-Ý0-9])');
+  const lignes = cv
+    .split(coupe)
+    .map(l => (l || '').replace(/\s+/g, ' ').trim())
+    .filter(l => l.length > 8);
+  const faits = [];
+  const vu = new Set();
+
+  // Une période : « 01.2015 – 11.2023 », « 2013 – 2015 », « depuis 2024 ».
+  const periode = /((0?[1-9]|1[0-2])[.\/])?(19|20)\d\d\s*(–|-|à|au)\s*(((0?[1-9]|1[0-2])[.\/])?(19|20)\d\d|aujourd'hui|présent|en cours)/i;
+  // Un titre suivi d'un employeur : « Conseiller commercial | Orange, Nice ».
+  const posteEmployeur = /^[A-ZÀ-Ý][^|]{4,70}\|/;
+  const diplome = /\b(CFC|AFP|brevet fédéral|diplôme fédéral|bachelor|master|maturité|BTS|licence|certification|certifié|diplôme|HES|ES)\b/i;
+
+  lignes.forEach(l => {
+    const aPeriode = periode.test(l);
+    if (!aPeriode && !posteEmployeur.test(l) && !diplome.test(l)) return;
+    // Une puce de description de tâche n'est pas un fait d'état civil.
+    if (/^•/.test(l) && !aPeriode && !diplome.test(l)) return;
+    const propre = l.replace(/^•\s*/, '').trim();
+    const cle = propre.toLowerCase().slice(0, 45);
+    if (vu.has(cle)) return;
+    vu.add(cle);
+    faits.push(propre.slice(0, 160));
+  });
+  return faits.slice(0, 14);
+}
+
+/* Le bloc collé au prompt. Vide s'il n'y a pas de CV : on ne fabrique pas de
+   contexte à partir de rien. */
+function _blocFaitsCv(cv) {
+  const faits = _faitsConnusCv(cv);
+  if (!faits.length) return '';
+  return '\n\n📌 CE QUE TU SAIS DÉJÀ, ET QUE TU NE DOIS JAMAIS REDEMANDER :\n'
+    + faits.map(f => '· ' + f).join('\n')
+    + '\n⛔ Ces faits sont ACQUIS. Demander « vous faisiez quoi exactement chez X ? »'
+    + ' ou « vous avez quel diplôme ? » quand la réponse est ci-dessus donne à la personne'
+    + ' l\'impression que tu n\'as pas lu son CV, alors que l\'écran précédent lui a affirmé le contraire.'
+    + ' Tu ÉNONCES ces faits pour montrer que tu as lu, puis tu demandes ce que le CV ne dit PAS :'
+    + ' ce qui l\'a usée, ce qu\'elle a aimé, pourquoi elle est partie, ce qu\'elle refuse de refaire.'
+    + ' Exemple de ce qu\'il faut faire : au lieu de « vous aviez quel rôle chez Orange ? »,'
+    + ' dis « vous y êtes resté presque neuf ans, qu\'est-ce qui vous y retenait ? ».';
+}
+
 async function callCynthAI(messages) {
   if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) throw new Error('no-proxy');
 
@@ -4230,6 +4316,7 @@ async function callCynthAI(messages) {
     (profileContext ? `\n\n📋 PROFIL CONNU : ${profileContext.trim()}` : '');
   systemPrompt += _blocOuvertures(messages);
   if (_cvText) systemPrompt += `\n\n📄 CV DE LA PERSONNE (texte réel extrait de son CV — sers-t'en pour ancrer tes questions sur son vrai parcours et ses vraies compétences ; ne le récite pas, rebondis dessus) :\n${_cvText.slice(0, 4000)}`;
+  if (_cvText) systemPrompt += _blocFaitsCv(_cvText);
 
   // ── Contexte questionnaire (si rempli avant le chat) ────────────────────────
   const _qCtxStr = _buildQuizContext();
