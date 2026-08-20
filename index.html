@@ -2995,6 +2995,12 @@ function gp(name){
     try { sessionStorage.removeItem(_REPORT_STASH_KEY); } catch(e){}
     // Nouveau parcours = l'entretien précédent n'a plus lieu d'être proposé.
     try { _clearChatStash(); } catch(e){}
+    /* On lève AUSSI le marqueur « entretien terminé », sinon la conversation
+       qui commence ne serait jamais sauvegardée : _stashChat refuserait
+       d'écrire, et la personne perdrait son entretien au premier appel reçu.
+       Le correctif du 20 août aurait recréé, en le corrigeant, le bug qu'il
+       corrige. */
+    try { sessionStorage.removeItem(_CHAT_FINI_KEY); } catch(e){}
     window._reportData = null;
   }
   if(name==='chat'){startChatMode();}
@@ -5045,6 +5051,7 @@ function _preparerRapportEnFond() {
       window._reportData = _corrigerLangueProfond(deepStripDash(data));
       _signalerMontantsDouteux(window._reportData);
       try { _stashReport(); } catch (e) {}
+      try { _marquerEntretienTermine(); } catch (e) {}
       try { _compter('rapport', (Date.now() - t0) / 1000); } catch (e) {}
       try {
         const b = document.getElementById('chat-end-btn');
@@ -5394,6 +5401,7 @@ function doEndChat() {
       // échouent ou dépassent le délai, et la personne reçoit un rapport pauvre.
       _compter('rapport_repli', (Date.now() - _tDebutRapport) / 1000);
       window._reportData = _corrigerLangueProfond(deepStripDash(buildFallbackReport()));
+      try { _marquerEntretienTermine(); } catch (e) {}
       _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📋 Aperçu du rapport'; }
@@ -9377,13 +9385,42 @@ function _restoreReport() {
    Et au retour, on DEMANDE avant de reprendre : la personne garde le contrôle,
    et si ce n'est pas elle qui revient, elle ne lit pas une conversation intime. */
 const _CHAT_STASH_KEY = 'cynthia_chat_stash';
+/* ═══════════════════════════════════════════════════════════════════════════
+   « J'AI TERMINÉ, ARRÊTE DE ME PROPOSER DE REPRENDRE »  (20 août 2026)
+
+   Signalé par Faouzi après son parcours complet : il génère son rapport, la
+   conversation est finie, il revient sur l'accueil, et le site lui demande
+   « Vous avez un entretien en cours, il vous restait 5 messages ».
+
+   Le garde-fou existait pourtant dans _stashChat : il refusait d'ÉCRIRE une
+   nouvelle sauvegarde une fois le rapport produit. Mais il n'effaçait pas
+   celle écrite PENDANT la conversation. C'est ce vieux cliché qu'on lui
+   reproposait. Empêcher d'écrire n'efface rien : il fallait le dire au code.
+
+   Et le simple `window._reportData` ne suffit pas : il est perdu au premier
+   rechargement de page, alors que la sauvegarde de l'entretien, elle, survit
+   dans sessionStorage. D'où ce marqueur écrit à côté, qui vit aussi longtemps
+   que l'onglet. Un entretien terminé le reste. */
+const _CHAT_FINI_KEY = 'cynthia_entretien_termine';
+
+/** L'entretien est-il allé jusqu'au bout ? Vrai dès qu'un rapport a existé. */
+function _entretienTermine() {
+  if (window._reportData) return true;
+  try { return sessionStorage.getItem(_CHAT_FINI_KEY) === '1'; } catch (e) { return false; }
+}
+
+/** À appeler au moment où le rapport est produit. Ferme le dossier. */
+function _marquerEntretienTermine() {
+  try { sessionStorage.setItem(_CHAT_FINI_KEY, '1'); } catch (e) {}
+  try { _clearChatStash(); } catch (e) {}
+}
 const _CHAT_STASH_MAX_AGE = 6 * 60 * 60 * 1000; // 6 h : au-delà, ce n'est plus « je reviens »
 
 /** Sauvegarde l'entretien en cours. Silencieux : ne doit JAMAIS casser le chat. */
 function _stashChat() {
   try {
     if (!Array.isArray(chatHistory) || chatHistory.length < 2) return; // rien d'utile à garder
-    if (typeof synthesisFired !== 'undefined' && window._reportData) return; // entretien fini
+    if (_entretienTermine()) return; // entretien fini : plus rien à sauvegarder
     sessionStorage.setItem(_CHAT_STASH_KEY, JSON.stringify({
       v: 1,
       ts: Date.now(),
@@ -9468,6 +9505,9 @@ function _restoreChat() {
 
 /** Propose de reprendre — on ne décide pas à la place de la personne. */
 function _proposerRepriseChat() {
+  /* Le vrai correctif est ici : même si une sauvegarde traîne encore, on ne
+     propose JAMAIS de reprendre un entretien qui a déjà donné un rapport. */
+  if (_entretienTermine()) { _clearChatStash(); return false; }
   const d = _peekStashedChat();
   if (!d) return false;
   const nbUser = d.chatHistory.filter(function (m) { return m && m.role === 'user'; }).length;
