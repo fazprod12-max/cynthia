@@ -2809,7 +2809,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="conf-card">
       <div class="conf-orb">✅</div>
       <h2>Entretien terminé !</h2>
-      <p class="conf-sub">Bravo. Vous venez de faire ce que peu osent : prendre 20 minutes pour vraiment réfléchir à votre avenir. Votre rapport est en cours de génération.</p>
+      <p class="conf-sub" id="conf-sub">Bravo. Vous venez de faire ce que peu osent : prendre 20 minutes pour vraiment réfléchir à votre avenir. Votre rapport est en cours de génération.</p>
       <div class="conf-report">
         <h4>📄 Votre rapport contient</h4>
         <div class="ri"><span class="rc">✓</span><p>Le récapitulatif de votre parcours et votre portrait, avec votre profil de personnalité chiffré</p></div>
@@ -5520,7 +5520,8 @@ function _apercuRapport(data) {
     h += '<div class="apercu-bloc"><div class="apercu-lab">Ce que vous savez faire</div><ul class="apercu-liste">'
       + sf.map(function (x) { return '<li>' + e(x) + '</li>'; }).join('')
       + (data.savoir_faire.length > 3
-          ? '<li class="apercu-plus">et ' + (data.savoir_faire.length - 3) + ' autres</li>' : '')
+          ? '<li class="apercu-plus">et ' + (data.savoir_faire.length - 3)
+              + (data.savoir_faire.length - 3 > 1 ? ' autres' : ' autre') + '</li>' : '')
       + '</ul></div>';
   }
 
@@ -5549,6 +5550,12 @@ function _apercuRapport(data) {
    d'origine reste, et elle vaut mieux qu'un trou. */
 function _afficherApercu() {
   try {
+    /* Le sous-titre annonçait encore « en cours de génération » alors que
+       l'aperçu et le bouton « Obtenir mon rapport » étaient déjà à l'écran.
+       Vu en test réel le 21 août : trois éléments, deux messages contraires. */
+    const sub = document.getElementById('conf-sub');
+    if (sub) sub.textContent = "Votre rapport est prêt. En voici un extrait, "
+      + "pour que vous sachiez ce qu'il contient avant de l'ouvrir.";
     const zone = document.querySelector('#page-confirm .conf-report');
     if (!zone) return;
     const h = _apercuRapport(window._reportData);
@@ -6897,8 +6904,16 @@ function _corrigerVoies(rapport) {
      On ne peut pas compter ses années par métier de façon fiable en code ; on
      supprime donc l'affirmation, on garde le renvoi à la vérification. C'est
      moins riche, et ça ne ment pas. */
+  /* ⚠️ ÉLARGI le 21 août, après un test réel : le motif ne couvrait que
+     « VOS 12 ans […] COUVRENT les 5 ans ». Le rapport de Sonia a écrit
+     « VOUS AVEZ 12 ans d'expérience professionnelle au total, CE QUI COUVRE
+     les 5 ans exigés » — même mensonge, autre tournure, et le filet l'a
+     laissée passer. Ses douze ans étaient en fiduciaire, pas dans le domaine
+     visé. Leçon : un filet écrit sur UNE formulation observée ne tient pas ;
+     il faut viser la structure (des années + un verbe de suffisance + le
+     seuil), pas la phrase. */
   regles.push({
-    re: /vos?\s+\S+\s+ans?\s+d[’']expérience[^.]{0,60}(couvrent?|dépassent?|suffisent?)[^.]{0,50}(5|cinq)\s+ans[^.]{0,30}/gi,
+    re: /(?:vos?|vous avez)\s+[^.]{0,50}\bans?\b[^.]{0,70}(couvre[nz]?t?|dépasse[nz]?t?|suffise?n?t?|remplisse?n?t?)[^.]{0,50}(5|cinq)\s+ans[^.]{0,30}/gi,
     par: "l'article 32 exige 5 ans d'expérience au total, dont 2 à 5 ans dans le métier visé : "
        + "faites vérifier votre situation exacte par votre canton",
     quoi: 'années d\'un autre domaine présentées comme suffisantes'
@@ -9345,8 +9360,34 @@ Contexte utilisateur : ${chatProfile.prenom ? 'Prénom : ' + chatProfile.prenom 
  * Rend la section Avatars Métiers sur la page de confirmation.
  * @param {Array} metiers — tableau top_metiers du rapport
  */
+/* ═══════════════════════════════════════════════════════════════════════════
+   LA FUITE DES CINQ MÉTIERS  (21 août 2026)
+
+   Repéré par Faouzi juste après la mise en ligne de l'aperçu, et il a raison :
+   « quand il génère le rapport il voit déjà les 5 métiers proposés, vu qu'on
+     donne le lien de où chercher sur jobup. »
+
+   L'aperçu masque soigneusement les métiers 2 à 5 — et deux blocs plus bas, la
+   même page les affichait TOUS LES CINQ, nommés, avec une recherche jobup prête
+   à cliquer. On protégeait la porte d'entrée en laissant la fenêtre ouverte.
+
+   C'est mon défaut : j'ai construit l'aperçu sans regarder ce que la page
+   affichait déjà en dessous. Un aperçu ne vaut que par ce que le RESTE de
+   l'écran ne dit pas.
+
+   Ces deux sections sont la récompense d'après paiement : dialoguer avec un
+   professionnel de chaque métier, et les recherches d'emploi prêtes. Elles
+   n'ont rien à faire avant.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function _peutVoirSesMetiers() {
+  // En phase de test le rapport est offert : il n'y a rien à protéger.
+  if (typeof CONFIG !== 'undefined' && CONFIG.RAPPORT_GRATUIT) return true;
+  try { return utilisateurAPaye(); } catch (e) { return false; }
+}
+
 function renderMetiersSection(metiers) {
   if (!metiers || metiers.length === 0) return;
+  if (!_peutVoirSesMetiers()) return;   // voir LA FUITE DES CINQ MÉTIERS
   const section = document.getElementById('conf-metiers-section');
   const grid = document.getElementById('conf-metiers-grid');
   if (!section || !grid) return;
@@ -9604,6 +9645,8 @@ function fetchAllJobOffers(metiers) {
   const section = document.getElementById('conf-offres-section');
   const list = document.getElementById('conf-offres-list');
   if (!section || !list) return;
+  // Les recherches jobup nomment les cinq métiers : même règle que ci-dessus.
+  if (!_peutVoirSesMetiers()) { section.style.display = 'none'; return; }
 
   const liste = (metiers || []).filter(function (m) { return m && m.titre; }).slice(0, 5);
   if (liste.length === 0) { section.style.display = 'none'; return; }
