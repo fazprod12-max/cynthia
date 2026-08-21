@@ -5017,11 +5017,25 @@ async function startChatMode() {
    y compris les listes en tirets ou astérisques en début de ligne. */
 function _mdInline(t) {
   return String(t)
+    /* ⚠️ LES TRAITS DE SÉPARATION D'ABORD. Vu en test réel le 21 août, au
+       moment de la synthèse : « J'ai tout ce qu'il me faut maintenant. ---
+       Sonia, vous avez 12 ans… ». Le modèle sépare son intro de sa synthèse
+       comme dans un document, et les tirets arrivent bruts dans la bulle.
+       Ça n'a l'air de rien, mais ça fait « sortie de machine » au moment le
+       plus important de l'entretien.
+       L'ORDRE COMPTE : traité après la règle d'emphase, « *** » devenait
+       « <em>*</em> ». Le structurel se nettoie avant le décoratif.
+       ⚠️ TROIS caractères au minimum : « 2013 - 2015 », « peut-être » et
+       « 8h - 12h » ne doivent jamais être touchés. */
+    .replace(/^[\t ]*[-*_]{3,}[\t ]*$/gm, '')
+    .replace(/[ \t]+[-*_]{3,}[ \t]+/g, '\n\n')
+    .replace(/\n{3,}/g, '\n\n')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')            // **gras**
     .replace(/(^|[\s(“"'])\*(\S[^*\n]*?\S|\S)\*(?=$|[\s.,;:!?)”"'])/g, '$1<em>$2</em>') // *emphase*
     .replace(/(^|[\s(“"'])_(\S[^_\n]*?\S|\S)_(?=$|[\s.,;:!?)”"'])/g, '$1<em>$2</em>')   // _emphase_
     .replace(/^[\t ]*[*•][\t ]+/gm, '• ');                        // puce markdown → puce propre
 }
+
 
 function formatChatText(rawText) {
   // Sanitisation HTML pour éviter les injections XSS dans les bulles de l'utilisateur
