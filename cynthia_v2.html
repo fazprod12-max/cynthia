@@ -2108,6 +2108,89 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-foot-links{display:flex;gap:20px;} .lp-foot-links a{color:inherit;text-decoration:none;cursor:pointer;} .lp-foot-links a:hover{color:var(--c-ink);}
   @media(max-width:900px){.lp-hgrid{grid-template-columns:1fr;gap:40px;}.lp-hero h1{font-size:2.6rem;}.lp-cards,.lp-steps,.lp-rgrid{grid-template-columns:1fr 1fr;}.lp-links a:not(.lp-btn){display:none;}}
   @media(max-width:600px){.lp-cards,.lp-steps,.lp-rgrid{grid-template-columns:1fr;}.lp-hero h1{font-size:2.1rem;}.lp-sechead h2{font-size:1.8rem;}.lp-band{padding:38px 24px;}}
+
+/* ── APERÇU AVANT PAIEMENT (20 août 2026) ─────────────────────────────────
+   Remplace la liste de promesses génériques par un extrait du vrai rapport.
+   Voir _apercuRapport. Le flouté n'est pas décoratif : montrer la FORME
+   d'une information qu'on n'a pas encore est plus convaincant que de la
+   masquer complètement. */
+.conf-report--apercu{text-align:left}
+.apercu-tag{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  color:var(--c-emerald-d,#0E5C46);margin-bottom:14px}
+.apercu-cit{margin:0 0 16px;padding:0 0 0 16px;border-left:3px solid var(--c-emerald,#2F7D5F);
+  font-size:1.06rem;line-height:1.5;font-style:italic;color:var(--c-ink,#12211C)}
+.apercu-src{display:block;margin-top:7px;font-style:normal;font-size:.78rem;
+  color:var(--c-muted,#6B7A73)}
+.apercu-p{margin:0 0 16px;font-size:.95rem;line-height:1.6;color:var(--c-slate,#3A4A43)}
+.apercu-bloc{margin-top:18px;padding-top:16px;border-top:1px solid rgba(20,32,28,.1)}
+.apercu-lab{font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+  color:var(--c-muted,#6B7A73);margin-bottom:9px}
+.apercu-liste{margin:0;padding-left:18px;font-size:.93rem;line-height:1.7;color:var(--c-slate,#3A4A43)}
+.apercu-plus{list-style:none;margin-left:-18px;color:var(--c-muted,#6B7A73);font-style:italic}
+.apercu-metier{font-size:1.12rem;font-weight:700;color:var(--c-ink,#12211C);margin-bottom:11px}
+.apercu-floute{display:flex;flex-wrap:wrap;gap:7px}
+.apercu-floute span{font-size:.82rem;padding:6px 11px;border-radius:8px;
+  background:rgba(20,32,28,.05);color:transparent;text-shadow:0 0 7px rgba(20,32,28,.42);
+  user-select:none}
+.apercu-reste{margin-top:13px;font-size:.88rem;color:var(--c-muted,#6B7A73)}
+.apercu-suite{margin-top:18px;padding-top:15px;border-top:1px solid rgba(20,32,28,.1);
+  font-size:.88rem;line-height:1.6;color:var(--c-muted,#6B7A73)}
+@media(max-width:600px){
+  .apercu-cit{font-size:1rem}
+  .apercu-floute span{font-size:.78rem}
+}
+
+
+/* ── LE BOUTON QUI SE REMPLIT (20 août 2026) ──────────────────────────────
+   Demande de Faouzi : reprendre les codes couleur de l'accueil sur l'écran de
+   fin, et animer le bouton comme un chargement jusqu'à 100 %.
+   Le dégradé est celui de .lp-btn-primary, à l'identique : deux écrans, une
+   seule identité. */
+#btn-download-rapport{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1rem;
+  border-radius:100px;border:none;width:100%;padding:17px 28px;cursor:pointer;
+  color:#fff;background:linear-gradient(120deg,var(--c-emerald),var(--c-emerald-d));
+  box-shadow:0 12px 28px -10px rgba(18,135,106,.75);
+  transition:transform .18s,box-shadow .25s,filter .2s;
+}
+#btn-download-rapport.btn-prog--fini:hover{transform:translateY(-2px);
+  box-shadow:0 16px 34px -10px rgba(18,135,106,.85);}
+#btn-download-rapport.btn-prog--fini:active{transform:translateY(0)}
+
+/* Pendant la génération : le fond vert ne remplit que --prog du bouton.
+   Le reste est le même vert très atténué, pas du gris : on montre un bouton
+   qui se charge, pas un bouton désactivé. */
+#btn-download-rapport.btn-prog{
+  --prog:0%;
+  cursor:default;
+  background:linear-gradient(90deg,
+    var(--c-emerald-d) 0%, var(--c-emerald) var(--prog),
+    rgba(18,135,106,.16) var(--prog), rgba(18,135,106,.16) 100%);
+  box-shadow:none;
+  transition:background .25s linear;
+}
+#btn-download-rapport.btn-prog .prog-texte{
+  display:inline-block;color:#fff;mix-blend-mode:normal;
+  text-shadow:0 1px 2px rgba(8,30,22,.45);   /* lisible sur les deux moitiés */
+  font-size:.95rem;letter-spacing:.01em;
+}
+/* Un léger balayage : sans lui, une barre lente paraît figée. */
+#btn-download-rapport.btn-prog::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.22) 50%,transparent 70%);
+  background-size:220% 100%;animation:progBalai 1.7s linear infinite;
+}
+#btn-download-rapport{position:relative;overflow:hidden}
+@keyframes progBalai{from{background-position:120% 0}to{background-position:-120% 0}}
+
+@media(prefers-reduced-motion:reduce){
+  #btn-download-rapport.btn-prog::after{animation:none;display:none}
+  #btn-download-rapport{transition:none}
+}
+@media(max-width:600px){
+  #btn-download-rapport{font-size:.95rem;padding:16px 20px}
+}
+
 </style>
 
 <div class="lp">
@@ -5060,6 +5143,7 @@ function _preparerRapportEnFond() {
       _signalerMontantsDouteux(window._reportData);
       try { _stashReport(); } catch (e) {}
       try { _marquerEntretienTermine(); } catch (e) {}
+      try { _afficherApercu(); } catch (e) {}
       try { _compter('rapport', (Date.now() - t0) / 1000); } catch (e) {}
       try {
         const b = document.getElementById('chat-end-btn');
@@ -5355,14 +5439,241 @@ function _compter(type, secondes) {
   } catch (e) { /* jamais bloquant */ }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   L'APERÇU AVANT PAIEMENT  (20 août 2026)
+
+   Retour d'Armand, 4e testeur, et c'est le meilleur qu'on ait eu sur la
+   monétisation. Il savait déjà ce qu'il voulait, la conversation a duré dix
+   minutes, et il a dit : « si une personne paye 79 pour un rapport où la
+   conversation a duré 10 minutes, elle peut se sentir roulée. »
+
+   Il a raison, et le diagnostic est plus profond que le prix : LA VALEUR
+   PERÇUE NE DÉPEND PAS DU RAPPORT, ELLE DÉPEND DE CE QUE LA PERSONNE A
+   L'IMPRESSION D'AVOIR DONNÉ. Tant qu'elle ne voit pas ce qu'elle achète,
+   elle juge sur la seule chose qu'elle a sous les yeux : la durée.
+
+   Ce que l'écran affichait jusqu'ici : sept promesses génériques, identiques
+   pour tout le monde, écrites à l'avance. « Votre rapport contient le
+   récapitulatif de votre parcours… » Rien d'elle. Rien de ce qu'elle vient
+   de raconter pendant vingt minutes.
+
+   Ce qu'il affiche maintenant : SES mots. Sa phrase, son portrait, ses
+   savoir-faire, le nom de sa première piste. Le reste reste couvert.
+
+   ⚠️ RÈGLE DE DOSAGE, et elle est délicate : on montre assez pour qu'elle se
+   reconnaisse, jamais assez pour qu'elle reparte sans payer. Ce qu'elle est
+   venue chercher, ce sont les MÉTIERS, les SALAIRES et le PLAN. On nomme la
+   première piste (preuve que le travail est fait, et ancrage) et on couvre
+   tout le reste. Ne pas céder à la tentation d'en montrer plus : un aperçu
+   qui suffit n'est plus un aperçu.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function _txt(v) {
+  return (v === null || v === undefined) ? '' : String(v).trim();
+}
+
+/* Construit l'aperçu à partir du VRAI rapport. Renvoie '' si on n'a rien de
+   personnel à montrer : mieux vaut la liste générique qu'un cadre vide. */
+function _apercuRapport(data) {
+  if (!data) return '';
+  const P = data.profil_personnalite || {};
+  const e = (typeof esc === 'function') ? esc : function (x) {
+    return String(x).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  };
+
+  const cit = _txt(P.citation_forte || data.citation_forte);
+  const citation = (cit && cit.toLowerCase() !== 'null') ? cit : '';
+
+  /* Le portrait complet fait plusieurs paragraphes. On en prend le premier,
+     coupé à une phrase entière : une phrase tronquée en plein milieu donne
+     l'impression d'un bug, pas d'un teaser. */
+  let portrait = _txt(P.resume || data.profil_resume || data.situation).split(/\n\n+/)[0];
+  if (portrait.length > 260) {
+    const coupe = portrait.slice(0, 260);
+    const fin = Math.max(coupe.lastIndexOf('. '), coupe.lastIndexOf(' ! '), coupe.lastIndexOf(' ? '));
+    portrait = (fin > 120 ? coupe.slice(0, fin + 1) : coupe.trim() + '…');
+  }
+
+  const sf = (Array.isArray(data.savoir_faire) ? data.savoir_faire : [])
+    .map(_txt).filter(Boolean).slice(0, 3);
+
+  const metiers = (Array.isArray(data.top_metiers) ? data.top_metiers : [])
+    .filter(function (m) { return m && _txt(m.titre); });
+  const premier = metiers.length ? _txt(metiers[0].titre) : '';
+  const restants = Math.max(0, metiers.length - 1);
+
+  // Rien de personnel à montrer : on ne fabrique pas un aperçu vide.
+  if (!citation && !portrait && !sf.length && !premier) return '';
+
+  let h = '<div class="apercu">';
+  h += '<div class="apercu-tag">Un extrait de VOTRE rapport</div>';
+
+  if (citation) {
+    h += '<blockquote class="apercu-cit">&laquo;&nbsp;' + e(citation) + '&nbsp;&raquo;'
+      + '<span class="apercu-src">vos mots, pendant l&rsquo;entretien</span></blockquote>';
+  }
+  if (portrait) h += '<p class="apercu-p">' + e(portrait) + '</p>';
+
+  if (sf.length) {
+    h += '<div class="apercu-bloc"><div class="apercu-lab">Ce que vous savez faire</div><ul class="apercu-liste">'
+      + sf.map(function (x) { return '<li>' + e(x) + '</li>'; }).join('')
+      + (data.savoir_faire.length > 3
+          ? '<li class="apercu-plus">et ' + (data.savoir_faire.length - 3) + ' autres</li>' : '')
+      + '</ul></div>';
+  }
+
+  if (premier) {
+    h += '<div class="apercu-bloc"><div class="apercu-lab">Votre première piste</div>'
+      + '<div class="apercu-metier">' + e(premier) + '</div>'
+      /* Le salaire et la formation sont FLOUTÉS, pas absents : voir la forme
+         d'une information qu'on n'a pas encore vaut mieux que ne rien voir. */
+      + '<div class="apercu-floute"><span>Salaire en Suisse</span><span>Formation et financement</span>'
+      + '<span>Où ça recrute</span><span>Par quoi commencer</span></div>';
+    if (restants) {
+      h += '<div class="apercu-reste">+ ' + restants + ' autres pistes, avec pour chacune '
+        + 'le salaire réel, la voie de formation et son coût</div>';
+    }
+    h += '</div>';
+  }
+
+  h += '<div class="apercu-suite">Et aussi : votre plan sur six mois, vos puces de CV '
+    + 'prêtes à coller, votre pitch, et les ressources suisses qui vous concernent.</div>';
+  h += '</div>';
+  return h;
+}
+
+/* Remplace la liste générique par l'aperçu réel, dès que le rapport existe.
+   Si l'aperçu ne peut pas être construit, on ne touche à rien : la liste
+   d'origine reste, et elle vaut mieux qu'un trou. */
+function _afficherApercu() {
+  try {
+    const zone = document.querySelector('#page-confirm .conf-report');
+    if (!zone) return;
+    const h = _apercuRapport(window._reportData);
+    if (!h) return;
+    zone.innerHTML = h;
+    zone.classList.add('conf-report--apercu');
+  } catch (e) { /* jamais bloquer l'accès au rapport pour un souci d'affichage */ }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE BOUTON QUI SE REMPLIT  (20 août 2026)
+
+   Demande de Faouzi : « mettre en animation le bouton comme s'il se chargeait,
+   et dès qu'il arrive à 100 % il clique et il a le rapport direct, comme ça il
+   n'y a pas l'effet de trop attendre. »
+
+   Le rapport prend une cinquantaine de secondes (quatre appels parallèles).
+   Jusqu'ici on montrait un rond qui tourne et un bouton grisé : deux signaux
+   d'attente passive, sans repère de fin. Cinquante secondes devant un rond qui
+   tourne paraissent trois minutes.
+
+   Le même temps devant une barre qui avance paraît court, parce qu'on sait où
+   on va. Et à l'arrivée le rapport est DÉJÀ là : un seul clic, pas de deuxième
+   attente. C'est exactement ce que Faouzi décrit.
+
+   ⚠️ RÈGLE D'HONNÊTETÉ, non négociable ici : la barre ne dit JAMAIS 100 %
+   avant que le rapport existe vraiment. Elle progresse jusqu'à 92 % sur la
+   durée attendue, puis attend. Si le rapport arrive avant, elle saute à 100 %.
+   Une barre qui atteint 100 % puis fait patienter, c'est le mensonge le plus
+   courant du web, et c'est précisément ce qu'on ne fait pas ici.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// Mesuré sur des générations réelles : ~50 s. On vise un peu large pour que la
+// barre ne stagne pas trop souvent en fin de course.
+const _DUREE_ATTENDUE_MS = 55000;
+let _progTimer = null;
+
+function _progBouton() { return document.getElementById('btn-download-rapport'); }
+
+function _progSet(pct, libelle) {
+  const b = _progBouton();
+  if (!b) return;
+  const p = Math.max(0, Math.min(100, Math.round(pct)));
+  b.style.setProperty('--prog', p + '%');
+  const t = b.querySelector('.prog-texte');
+  if (t) t.textContent = libelle || (p + ' %');
+}
+
+/* Démarre le remplissage. Appelé au moment où la génération commence. */
+function _progDemarrer() {
+  const b = _progBouton();
+  if (!b) return;
+  _progArreter();
+  b.classList.add('btn-prog');
+  b.classList.remove('btn-prog--fini');
+  b.innerHTML = '<span class="prog-texte">Analyse de votre profil…</span>';
+  b.disabled = true;
+  b.style.pointerEvents = 'none';
+  b.style.opacity = '1';          // plus de bouton grisé : il est vivant
+
+  const t0 = Date.now();
+  /* Courbe volontairement décélérante : vite au début (ça rassure), lentement
+     vers la fin (ça évite d'arriver à 92 % en dix secondes puis de stagner). */
+  const etapes = [
+    [0.00, 'Analyse de votre profil…'],
+    [0.22, 'Lecture de votre parcours…'],
+    [0.44, 'Sélection de vos pistes métier…'],
+    [0.66, 'Vérification des salaires suisses…'],
+    [0.84, 'Construction de votre plan…']
+  ];
+  _progTimer = setInterval(function () {
+    const r = Math.min(1, (Date.now() - t0) / _DUREE_ATTENDUE_MS);
+    const pct = 92 * (1 - Math.pow(1 - r, 2.2));   // ne dépasse jamais 92
+    let lib = etapes[0][1];
+    for (let i = 0; i < etapes.length; i++) if (r >= etapes[i][0]) lib = etapes[i][1];
+    _progSet(pct, lib);
+  }, 180);
+}
+
+/* Le rapport est réellement là : on va à 100 %, puis on ouvre le bouton. */
+function _progTerminer(libelle) {
+  const b = _progBouton();
+  _progArreter();
+  if (!b) return;
+  _progSet(100, 'Prêt');
+  setTimeout(function () {
+    b.classList.remove('btn-prog');
+    b.classList.add('btn-prog--fini');
+    b.innerHTML = libelle || 'Obtenir mon rapport →';
+    b.disabled = false;
+    b.style.pointerEvents = 'auto';
+    b.style.opacity = '1';
+  }, 420);   // le temps de voir la barre finir : sans ça, le 100 % est invisible
+}
+
+function _progArreter() {
+  if (_progTimer) { clearInterval(_progTimer); _progTimer = null; }
+}
+
+/* Échec de génération : on ne laisse pas une barre figée à 92 %. */
+function _progEchec(libelle) {
+  const b = _progBouton();
+  _progArreter();
+  if (!b) return;
+  b.classList.remove('btn-prog');
+  b.classList.add('btn-prog--fini');
+  b.innerHTML = libelle || 'Réessayer';
+  b.disabled = false;
+  b.style.pointerEvents = 'auto';
+  b.style.opacity = '1';
+}
+
 function doEndChat() {
   document.getElementById('end-modal-bg').classList.remove('show');
   gp('confirm');
   window._reportData = null;
   const btn = document.getElementById('btn-download-rapport');
   const loadDiv = document.getElementById('conf-loading');
-  if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
-  if (loadDiv) loadDiv.style.display = 'block';
+  /* Le bouton DEVIENT la barre de progression (voir _progDemarrer).
+     L'ancien duo « bouton grisé + rond qui tourne » donnait deux signaux
+     d'attente passive et aucun repère de fin. */
+  try { _progDemarrer(); } catch (e) {
+    if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
+  }
+  if (loadDiv) loadDiv.style.display = 'none';
 
   const _tDebutRapport = Date.now();
   const _reportTimeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout-report')), 120000));
@@ -5383,10 +5694,14 @@ function doEndChat() {
       if (loadDiv) loadDiv.style.display = 'none';
       // Bouton rapport — comportement selon CONFIG.RAPPORT_GRATUIT (test / production)
       if (btn) {
-        btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
-        btn.innerHTML = CONFIG.RAPPORT_GRATUIT
-          ? '📄 Télécharger le rapport complet — Gratuit (bêta)'
-          : (utilisateurAPaye() ? '📄 Télécharger votre rapport complet' : '🔒 Rapport complet — accès après paiement');
+        const _lib = (CONFIG.RAPPORT_GRATUIT || utilisateurAPaye())
+          ? 'Obtenir mon rapport →'
+          : 'Débloquer mon rapport →';
+        try { _progTerminer(_lib); }
+        catch (e) {
+          btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+          btn.innerHTML = _lib;
+        }
       }
       // Bouton Premium + hint : visibles uniquement en mode production non payé
       const pBtn = document.getElementById('btn-premium');
@@ -5410,9 +5725,13 @@ function doEndChat() {
       _compter('rapport_repli', (Date.now() - _tDebutRapport) / 1000);
       window._reportData = _corrigerLangueProfond(deepStripDash(buildFallbackReport()));
       try { _marquerEntretienTermine(); } catch (e) {}
+      try { _afficherApercu(); } catch (e) {}
       _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
-      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = '📋 Aperçu du rapport'; }
+      if (btn) {
+        try { _progTerminer('Obtenir mon rapport →'); }
+        catch (e) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = 'Obtenir mon rapport →'; }
+      }
       renderMetiersSection((window._reportData.top_metiers) || []);
       showToast('📄','Rapport généré !','success',4000);
     });
