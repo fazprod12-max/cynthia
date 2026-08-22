@@ -6877,6 +6877,25 @@ function _noterMetierManquant(titre, ou) {
     localStorage.setItem(cle, JSON.stringify(reg));
     console.warn('[CYNTH] métier proposé mais ABSENT de la base : « ' + t + ' » (' + ou + ')');
   } catch (e) { /* localStorage plein ou bloqué : on ne casse rien pour ça */ }
+
+  /* ── Et on le fait remonter au serveur (22 août 2026) ──────────────────────
+     Jusqu'ici tout ça restait dans le localStorage du navigateur du testeur,
+     donc invisible pour nous : la base grandissait sur nos suppositions au
+     lieu de la demande réelle. « Architecte » et « hôtesse de l'air » ont fini
+     par remonter parce que quelqu'un a pris la peine de le dire — trop tard et
+     trop fragile.
+     ⚠️ ON N'ENVOIE QUE LE TITRE ET L'ENDROIT. Pas un mot de la conversation,
+     pas de prénom, pas de CV, aucun identifiant. Un compteur, pas un profil.
+     Rien de bloquant : si l'envoi échoue, la personne ne le saura jamais. */
+  try {
+    if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) return;
+    fetch(GROQ_PROXY_URL.replace(/\/+$/, '') + '/metier-manquant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titre: String(titre || '').slice(0, 80), ou: String(ou || '').slice(0, 40) }),
+      keepalive: true
+    }).catch(function () {});
+  } catch (e) { /* jamais bloquant */ }
 }
 /* ═══════════════════════════════════════════════════════════════════════════
    LE MÉTIER QUE LA PERSONNE NOMME ELLE-MÊME  (22 août 2026)
