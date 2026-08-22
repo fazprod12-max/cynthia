@@ -2191,6 +2191,20 @@ document.addEventListener('DOMContentLoaded', function () {
   #btn-download-rapport{font-size:.95rem;padding:16px 20px}
 }
 
+
+/* ── LE CHAMP QUI GRANDIT (22 août 2026) ─────────────────────────────────
+   Voir _autoGrandirSaisie. Le champ est devenu un <textarea> : sans ces
+   règles il aurait la poignée de redimensionnement, une hauteur figée et
+   une police par défaut différente du reste. */
+textarea.chat-input{
+  resize:none;                       /* pas de poignée : la hauteur est automatique */
+  overflow-y:hidden;                 /* remis à auto par le script au-delà du plafond */
+  font-family:inherit;               /* un textarea prend sinon une police système */
+  line-height:1.45;
+  max-height:140px;                  /* = _SAISIE_HAUTEUR_MAX */
+  display:block;
+}
+
 </style>
 
 <div class="lp">
@@ -2747,8 +2761,18 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
       <div class="chat-input-area">
         <div class="chat-input-row">
-          <input type="text" class="chat-input" id="chat-input" placeholder="Écrivez votre message et appuyez sur Entrée..." maxlength="1500"
-            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}">
+          <!-- ⚠️ TEXTAREA, PAS INPUT (22 août 2026). Une testeuse de 22 ans a parlé
+               45 minutes avec Cynthia et a dû remonter au tout début de sa phrase
+               pour se relire : un <input type="text"> ne va JAMAIS à la ligne, le
+               texte défile horizontalement. Ce n'était pas un réglage à ajuster,
+               c'était le mauvais élément.
+               Le gestionnaire testait pourtant déjà !event.shiftKey : le retour à
+               la ligne était prévu depuis le début, il était juste impossible.
+               Voir _autoGrandirSaisie. -->
+          <textarea class="chat-input" id="chat-input" rows="1" maxlength="1500"
+            placeholder="Écrivez votre message et appuyez sur Entrée..."
+            oninput="_autoGrandirSaisie(this)"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></textarea>
           <span id="mic-timer"></span>
           <!-- MICRO DÉSACTIVÉ (juillet 2026, raison juridique) : la transcription envoyait
                l'enregistrement vocal à l'API publique HuggingFace, sans clé, sans contrat de
@@ -2883,8 +2907,10 @@ document.addEventListener('DOMContentLoaded', function () {
       <div class="typing-bubble"><div class="td"></div><div class="td"></div><div class="td"></div></div>
     </div>
     <div class="avatar-input-row">
-      <input type="text" class="chat-input" id="avatar-input" placeholder="Posez votre question…" maxlength="400"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAvatarMsg();}">
+      <textarea class="chat-input" id="avatar-input" rows="1" maxlength="400"
+        placeholder="Posez votre question…"
+        oninput="_autoGrandirSaisie(this)"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAvatarMsg();}"></textarea>
       <button class="chat-send" id="avatar-send-btn" onclick="sendAvatarMsg()" title="Envoyer">↑</button>
     </div>
   </div>
@@ -2909,7 +2935,8 @@ var _URL_PARAMS = (function () {
   return {
     payment:    p.get('payment'),
     session_id: p.get('session_id'),
-    debug:      p.get('debug')
+    debug:      p.get('debug'),
+    paiement:   p.get('paiement')   // mode vente privé, voir _MODE_VENTE
   };
 })();
 if (location.search) { history.replaceState(null, '', location.pathname + location.hash); }
@@ -3581,8 +3608,45 @@ document.addEventListener('DOMContentLoaded',()=>{
 // RAPPORT_GRATUIT = true  → mode TEST : rapport complet gratuit pour tous
 // RAPPORT_GRATUIT = false → mode PRODUCTION : rapport payant (Stripe)
 // Un seul changement de ligne suffit pour basculer.
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE MODE VENTE PRIVÉ  (21 août 2026)
+
+   Le tunnel Stripe n'a jamais encaissé un franc, et on ne peut pas ouvrir la
+   vente sans l'avoir vu marcher au moins une fois. Mais basculer
+   RAPPORT_GRATUIT à false coupe le rapport gratuit pour TOUS les testeurs en
+   cours : on paierait le test par une journée de testeurs perdus.
+
+   D'où cette porte : le mode vente ne s'active que pour qui ouvre le site avec
+   « ?paiement=1 ». Tout le monde d'autre continue d'avoir le rapport offert.
+
+   ⚠️ POURQUOI C'EST MÉMORISÉ DANS L'ONGLET : au retour de Stripe, l'adresse
+   est reconstruite sans le paramètre. Sans mémoire, on repasserait en gratuit
+   juste après avoir payé, et on ne verrait jamais le comportement réel du
+   chemin payant, donc on ne testerait rien. Même famille de piège que le
+   1er août, où le nettoyage d'URL effaçait la confirmation Stripe avant
+   qu'elle soit lue.
+
+   Pour en sortir : « ?paiement=0 », ou simplement fermer l'onglet.
+   ⚠️ Ce n'est PAS une protection : n'importe qui peut ajouter le paramètre.
+   Le jour de l'ouverture réelle, on passe RAPPORT_GRATUIT à false en dur et
+   ce mécanisme devient inutile. */
+const _MODE_VENTE = (function () {
+  try {
+    if (_URL_PARAMS && _URL_PARAMS.paiement === '1') {
+      sessionStorage.setItem('cynthia_mode_vente', '1');
+      return true;
+    }
+    if (_URL_PARAMS && _URL_PARAMS.paiement === '0') {
+      sessionStorage.removeItem('cynthia_mode_vente');
+      return false;
+    }
+    return sessionStorage.getItem('cynthia_mode_vente') === '1';
+  } catch (e) { return false; }   // navigation privée : on reste en gratuit
+})();
+
 const CONFIG = {
-  RAPPORT_GRATUIT: true,   // ← Passer à false pour activer le paiement
+  // true = rapport offert (phase de test). Voir _MODE_VENTE pour l'exception.
+  RAPPORT_GRATUIT: !_MODE_VENTE,
   PRIX_RAPPORT: 49.00,   // Prix du rapport complet, en CHF. Seul endroit à modifier.
 };
 // ────────────────────────────────────────────────────────────
@@ -3760,7 +3824,7 @@ La personne doit sentir qu'elle parle à quelqu'un qui la capte vraiment, pas à
 TU ES SUISSE, ET ÇA DOIT SE SENTIR TRÈS VITE (ton avantage décisif)
 Tu connais le système suisse dans le détail, parce que tes données viennent de sources officielles suisses (orientation.ch, OFS, jobs.ch) et pas d'une culture générale approximative. Ce n'est pas un décor : c'est ce qui te rend crédible là où une IA généraliste raconte n'importe quoi. Tu ne prétends pas pour autant l'avoir vécu, tu le SAIS, tu ne l'as pas exercé.
 - DANS LES 2 OU 3 PREMIERS ÉCHANGES, place naturellement UN vrai repère suisse. Pas un cours, pas une liste : une question ou une remarque de pro. Par exemple : « Vous avez un CFC, ou vous êtes arrivée dans le métier autrement ? », « Vous êtes plutôt sur Genève, ou Vaud ? », « Vous avez déjà passé par un ORP ? ». La personne doit se dire : « elle connaît vraiment le terrain ici ».
-- LE RÉFLEXE ARTICLE 32, MAIS AU BON ENDROIT : si quelqu'un a des années d'expérience mais pas de titre, dis-lui tôt qu'en Suisse on peut faire valider son expérience sans refaire tout un apprentissage. C'est LE truc que les gens ignorent et qui change une vie. Une phrase suffit, pas un exposé. ATTENTION, ERREUR RÉELLE COMMISE LE 19 AOÛT 2026 : l'article 32 OFPr ne délivre QUE des CFC et des AFP, et seulement pour des métiers qui en ont un. Il n'existe PAS de CFC de formateur d'adultes, de spécialiste RH, de coach, de manager, d'assistant de direction, ni d'aucun métier dont l'entrée se fait par un brevet fédéral, une école supérieure ou une haute école. Pour ces métiers-là le mécanisme s'appelle autrement : certificat FSEA puis brevet fédéral pour la formation d'adultes, validation des acquis propre à la filière, admission sur dossier. Tu as le droit de dire « il existe une voie de validation, à confirmer auprès de votre canton » ; tu n'as JAMAIS le droit d'inventer le nom d'un titre. Si on te demande si un titre existe, et que tu n'en es pas certaine, tu réponds que tu n'en es pas certaine — tu ne confirmes pas pour rassurer.
+- LE RÉFLEXE ARTICLE 32, MAIS AU BON ENDROIT : si quelqu'un a des années d'expérience mais pas de titre, dis-lui tôt qu'en Suisse on peut faire valider son expérience sans refaire tout un apprentissage. C'est LE truc que les gens ignorent et qui change une vie. Une phrase suffit, pas un exposé. ATTENTION, ERREUR RÉELLE COMMISE LE 19 AOÛT 2026 : l'article 32 OFPr ne délivre QUE des CFC et des AFP, et seulement pour des métiers qui en ont un. Il n'existe PAS de CFC de formateur d'adultes, de spécialiste RH, de coach, de manager, d'assistant de direction, ni d'aucun métier dont l'entrée se fait par un brevet fédéral, une école supérieure ou une haute école. Pour ces métiers-là le mécanisme s'appelle autrement : certificat FSEA puis brevet fédéral pour la formation d'adultes, validation des acquis propre à la filière, admission sur dossier. Tu as le droit de dire « il existe une voie de validation, à confirmer auprès de votre canton » ; tu n'as JAMAIS le droit d'inventer le nom d'un titre. Si on te demande si un titre existe, et que tu n'en es pas certaine, tu réponds que tu n'en es pas certaine. Tu ne confirmes pas pour rassurer.
 - TON VOCABULAIRE : CFC, AFP, maturité professionnelle, brevet fédéral, diplôme fédéral, HES, ES, apprentissage dual, formation en cours d'emploi, article 32, chèque annuel de formation (Genève, Vaud, Neuchâtel, Jura), viamia (dès 40 ans), ORP, caisse de chômage, OrTra, jobup, 13e salaire, permis B/C/frontalier. Salaires TOUJOURS en CHF, en général mensuels bruts.
 - INTERDIT ABSOLU (ça sent l'IA française et ça te décrédibilise instantanément) : CPF, France Travail, Pôle emploi, BTS, DUT, licence, bac+2/bac+5, SMIC, Sécurité sociale, RIASEC, euros, Master 2.
 - HONNÊTETÉ : tu ne promets jamais un financement ou une équivalence sans dire qu'il faut vérifier auprès du canton, de l'école ou de l'ORP. Tu donnes le bon nom du bon dispositif, pas une garantie.
@@ -3822,6 +3886,60 @@ CE QUE TU NE FAIS JAMAIS
 - Les questions fermées à rallonge du type "est-ce X, Y ou autre chose ?" : pose plutôt une vraie question ouverte.
 - AFFIRMER UN FAIT DE MARCHÉ que tu ne peux pas sourcer : « ce métier n'existe presque pas ici », « ça ne paie pas assez pour vivre », « il n'y a aucun débouché en Suisse romande », « ce secteur recrute énormément ». Tu n'as PAS de données d'emploi en temps réel pendant la conversation : les vrais chiffres, salaires et tensions du marché sont dans le rapport, tirés de sources officielles, et c'est là qu'ils sortent. Constaté en test le 15 août 2026 : une affirmation de ce genre, dite avec assurance, a orienté toute la fin d'un entretien alors que la base de données disait plutôt le contraire. Si tu as un doute sur un débouché, tu le formules comme un doute (« ça, il faudra le vérifier »), ou tu ne le dis pas.
 - AFFIRMER un fait biographique (employeur, poste, ville, durée, diplôme...) que tu ne retrouves pas noir sur blanc dans ce que la personne a dit. Si tu as un doute sur un détail, ne le donne pas comme acquis : pose la question ("Vous travailliez où, déjà ?") au lieu de deviner et de te tromper. Se tromper sur son propre parcours casse la confiance instantanément.
+
+LE RÊVE DE QUELQU'UN N'EST PAS UNE HYPOTHÈSE À DÉMOLIR
+(ajouté le 22 août 2026, après le retour d'une testeuse de 22 ans)
+
+Elle rêvait d'être hôtesse de l'air. Tu lui as répondu que ce choix comportait
+des risques, qu'on peut ne pas réussir dans ce milieu. Elle venait de quitter
+le Sud parce qu'elle ne s'y sentait plus après le décès de sa mère. Elle a
+reçu ça comme un désaccord, et ça lui a fait mal.
+
+Le problème n'est pas que tu aies été honnête. Le problème, c'est que
+TU N'AVAIS AUCUNE DONNÉE. Hôtesse de l'air ne fait pas partie des métiers sur
+lesquels tu as une fiche suisse. Tu as donc découragé quelqu'un sur la base de
+rien : une opinion, pas une information. C'est exactement ce qu'on reproche
+aux IA généralistes.
+
+LA RÈGLE :
+- Tu ne dis JAMAIS d'un métier qu'il est risqué, bouché, difficile ou incertain
+  si tu n'as pas de fiche pour lui. Sans chiffres, tu n'as pas d'avis.
+- Quand quelqu'un nomme un métier que tu ne connais pas en données, tu le DIS
+  simplement : « je n'ai pas de données suisses fiables sur ce métier, donc je
+  ne vais pas vous raconter n'importe quoi ». Puis tu poses des questions
+  dessus, comme sur n'importe quel autre : qu'est-ce qui l'attire là-dedans,
+  qu'est-ce qu'elle en connaît, a-t-elle rencontré quelqu'un du métier.
+- Même avec des données, ton rôle n'est pas de valider ou d'invalider un rêve.
+  Tu donnes les faits (formation, salaire, marché) et tu laisses la personne
+  décider. Un fait se vérifie, un découragement se subit.
+- Un rêve est une information précieuse sur la personne : ce qu'elle y cherche
+  compte souvent plus que le métier lui-même. Creuse-le au lieu de le trier.
+
+ACCUSER RÉCEPTION AVANT DE CONTINUER
+(même retour, même testeuse)
+
+Elle a compris que tu es une IA, et elle ne te demandait pas d'être
+psychologue. Elle te demandait une phrase. Elle venait de te parler du décès
+de sa mère et d'un déménagement subi, et tu es passée au sujet suivant.
+
+Quand quelqu'un confie une perte, un deuil, un déracinement, une rupture, une
+maladie, une peur intime : tu t'arrêtes UNE phrase. Tu nommes ce que tu viens
+d'entendre, simplement, sans commentaire ni leçon. « Perdre sa mère et devoir
+tout recommencer ailleurs, ce n'est pas rien. » Puis tu reviens au travail,
+dans le même message, sans transition solennelle.
+
+⚠️ Ce n'est PAS le protocole de détresse ci-dessous, et il ne faut surtout pas
+le confondre : on ne sort pas un numéro d'urgence parce que quelqu'un évoque
+un deuil. Sortir le 143 à quelqu'un qui raconte simplement sa vie serait
+violent et disproportionné. Ici il s'agit d'une phrase, pas d'un dispositif.
+
+CE QUE TU NE FAIS PAS :
+- « Je comprends ce que vous traversez », « ça a dû être difficile » : des
+  formules toutes faites, elle les reconnaîtra pour ce qu'elles sont.
+- T'attarder, poser des questions sur le deuil, faire de l'écoute
+  thérapeutique. Une phrase, et tu continues.
+- Faire comme si de rien n'était. C'est ça qu'elle a vécu, et c'est ça qui
+  blesse.
 
 QUAND QUELQU'UN VA VRAIMENT MAL (règle absolue, elle passe avant tout le reste)
 Tu parles à des gens usés par leur travail. La plupart sont fatigués ou démoralisés, et ça fait partie de ton métier : tu les écoutes et tu continues. Mais il arrive qu'une personne aille bien plus mal que ça, et là tu changes complètement de posture.
@@ -4161,6 +4279,42 @@ let chatProfile = {
 let usedQs = new Set();
 // Flag : synthèse déjà envoyée — évite la boucle infinie post-synthèse
 let synthesisFired = false;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ON DEMANDE AVANT DE CONCLURE  (22 août 2026)
+
+   Retour d'une testeuse de 22 ans, après 45 minutes de conversation nourrie :
+   Cynthia a coupé net en annonçant que le rapport était prêt. Elle a trouvé ça
+   brusque — et elle a raison. On venait de lui parler du décès de sa mère et on
+   enchaîne sur un livrable.
+
+   Le seuil (15 ou 20 messages) est une mécanique interne. La personne, elle,
+   n'a aucune idée qu'il existe : de son point de vue la conversation s'arrête
+   sans prévenir, au milieu de quelque chose.
+
+   Sa proposition, reprise telle quelle : à partir du seuil, Cynthia DEMANDE.
+   « Est-ce qu'il reste quelque chose, ou je vous prépare le rapport ? »
+
+   ⚠️ PAR DÉFAUT ON CONTINUE. Il faut un feu vert clair pour conclure. Couper
+   quelqu'un qui avait encore quelque chose à dire coûte bien plus cher que
+   trois messages de trop.
+   ⚠️ Mais il faut un plafond, sinon l'entretien ne finit jamais : au-delà de
+   SYNTH_MAX, on conclut — en le disant, et sans faire semblant de demander.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SYNTH_MAX = 30;          // au-delà, on conclut même sans feu vert
+let _synthProposee = false;    // la question a-t-elle été posée ?
+let _synthRelances = 0;        // combien de fois (on ne harcèle pas)
+
+/* Le feu vert doit être EXPLICITE. Dans le doute, on continue.
+   Une réponse longue n'est jamais un feu vert : si elle écrit trois lignes,
+   c'est qu'elle avait encore quelque chose à dire. */
+function _feuVertSynthese(texte) {
+  const t = (texte || '').trim().toLowerCase();
+  if (!t) return false;
+  if (t.split(/\s+/).length > 12) return false;
+  return /\b(c'?est bon|c'?est tout|j'?ai (tout )?dit|allez[- ]?y|vas[- ]?y|on peut y aller|rien d'?autre|non merci|pr[ée]parez|lancez|g[ée]n[ée]rez|je suis pr[êe]te?|on y va)\b/.test(t)
+      || /^(non|nan|ok|d'?accord|parfait|go|oui allez[- ]?y|oui vas[- ]?y)[\s.!]*$/.test(t);
+}
 let _synthRetryCount = 0; // Nombre de retry synthèse déjà tentés (max 1)
 
 // ── APPEL IA via Worker (cascade Claude → Groq → réponse locale) ─────────────
@@ -4493,6 +4647,81 @@ function _blocRelance(messages, cv) {
   return bloc;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CE SUR QUOI ELLE A VRAIMENT DES DONNÉES  (22 août 2026)
+
+   Retour d'une testeuse de 22 ans : elle rêve d'être hôtesse de l'air, et
+   Cynthia lui a dit que ce choix comportait des risques et qu'on pouvait ne
+   pas réussir dans ce milieu.
+
+   Vérifié : « hôtesse de l'air » ne figure dans AUCUNE de nos 133 fiches.
+   Cynthia a donc découragé quelqu'un sans le moindre chiffre, sur un métier
+   dont elle ne sait rien. C'est une opinion déguisée en information, et c'est
+   précisément ce qu'on reproche aux IA généralistes.
+
+   La règle « ne juge pas ce que tu ne connais pas » est écrite dans le prompt,
+   mais elle est INAPPLICABLE si le modèle ne sait pas ce qu'il connaît. On lui
+   donne donc la liste, une fois, en début de prompt.
+
+   ⚠️ Coût mesuré : ~1 000 tokens par appel, soit environ deux centimes de plus
+   par conversation. Négligeable face aux six centimes actuels, et c'est le
+   seul moyen que la règle veuille dire quelque chose.
+
+   ⚠️ La liste sert à SAVOIR, pas à PROPOSER : la règle de pré-synthèse qui
+   interdit de citer des métiers avant la fin reste en vigueur et prime.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function _blocMetiersConnus() {
+  try {
+    const titres = METIERS_DB.map(function (m) { return m.titre; }).join(' · ');
+    return '\n\n📚 LES MÉTIERS SUR LESQUELS TU AS DES DONNÉES SUISSES RÉELLES'
+      + ' (salaire en CHF, formation, marché, financement) :\n' + titres
+      + '\n\n⚠️ Pour TOUT autre métier, tu n\'as AUCUNE donnée. Tu peux en parler,'
+      + ' poser des questions, t\'y intéresser, mais tu ne dis jamais qu\'il est'
+      + ' risqué, bouché ou difficile : tu ne le sais pas. Tu dis franchement que'
+      + ' tu n\'as pas de chiffres suisses fiables dessus, et tu invites à vérifier'
+      + ' sur orientation.ch ou auprès d\'un ORP.'
+      + '\n⚠️ Cette liste sert à savoir ce que tu maîtrises, PAS à proposer des'
+      + ' métiers avant la synthèse. La règle de pré-synthèse reste prioritaire.';
+  } catch (e) { return ''; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE CHAMP QUI GRANDIT  (22 août 2026)
+
+   Retour d'une testeuse de 22 ans, après 45 minutes de conversation : « ça ne
+   saute pas à la ligne, du coup tout s'écrit sur une seule phrase, et à un
+   moment j'ai dû revenir tout au début pour voir si je n'avais pas fait de
+   faute. »
+
+   Le champ était un <input type="text"> : par construction, il ne va jamais à
+   la ligne. Sur une conversation qui devient profonde, on écrit long, et on
+   perd le fil de sa propre phrase. Converti en <textarea> qui grandit.
+
+   ⚠️ On plafonne la hauteur : sans limite, un long message finirait par
+   pousser les bulles de conversation hors de l'écran, surtout sur téléphone.
+   Au-delà, le champ défile.
+   ⚠️ Entrée envoie, Maj+Entrée va à la ligne — le gestionnaire testait déjà
+   !event.shiftKey avant cette correction, l'intention était là depuis le début.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const _SAISIE_HAUTEUR_MAX = 140;   // ~5 lignes, puis on défile
+
+function _autoGrandirSaisie(el) {
+  if (!el) return;
+  try {
+    el.style.height = 'auto';                       // sinon il ne rétrécit jamais
+    const h = Math.min(el.scrollHeight, _SAISIE_HAUTEUR_MAX);
+    el.style.height = h + 'px';
+    el.style.overflowY = el.scrollHeight > _SAISIE_HAUTEUR_MAX ? 'auto' : 'hidden';
+  } catch (e) { /* jamais bloquer la saisie pour une histoire de hauteur */ }
+}
+
+/* Après un envoi, le champ est vidé : il doit reprendre sa taille d'origine,
+   sinon il reste haut et vide. */
+function _reinitSaisie(el) {
+  if (!el) return;
+  try { el.style.height = ''; el.style.overflowY = 'hidden'; } catch (e) {}
+}
+
 async function callCynthAI(messages) {
   if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) throw new Error('no-proxy');
 
@@ -4514,10 +4743,28 @@ async function callCynthAI(messages) {
   // Détresse profonde : détectée AVANT tout, car elle court-circuite la synthèse.
   // On ne présente pas une liste de métiers à quelqu'un qui parle de disparaître.
   const _detresse = detectDetresse(lastUserMsg);
-  const wantSynthesis = !synthesisFired && !_detresse && (
-    userMsgCount >= SYNTH_MIN ||
-    (hasDeepProfile && userMsgCount >= SYNTH_MIN_RICHE)
+  /* Le seuil atteint veut dire « on est PRÊT à conclure », pas « on conclut ».
+     Voir le bloc « ON DEMANDE AVANT DE CONCLURE ». */
+  const _seuilAtteint = userMsgCount >= SYNTH_MIN ||
+    (hasDeepProfile && userMsgCount >= SYNTH_MIN_RICHE);
+
+  const _feuVert = _feuVertSynthese(lastUserMsg);
+
+  /* On pose la question. Une fois, puis on attend. */
+  const _demanderLaFin = !synthesisFired && !_detresse && _seuilAtteint
+    && !_synthProposee && userMsgCount < SYNTH_MAX;
+
+  const wantSynthesis = !synthesisFired && !_detresse && _seuilAtteint && (
+    userMsgCount >= SYNTH_MAX ||          // plafond dur : l'entretien doit finir
+    (_synthProposee && _feuVert)          // elle a dit oui
   );
+
+  if (_demanderLaFin) { _synthProposee = true; _synthRelances++; }
+  /* Elle avait encore quelque chose à dire : on repart, et on redemandera plus
+     tard. Sans ce retour à zéro on reposerait la question à chaque message. */
+  else if (_synthProposee && !wantSynthesis && !_feuVert && _synthRelances < 3) {
+    _synthProposee = false;
+  }
 
   // ── Phase courante — calcul commun avec l'affichage (voir cynthPhase) ──────
   chatProfile.currentPhase = cynthPhase(userMsgCount, synthesisFired || wantSynthesis);
@@ -4543,6 +4790,7 @@ async function callCynthAI(messages) {
   if (_cvText) systemPrompt += `\n\n📄 CV DE LA PERSONNE (texte réel extrait de son CV — sers-t'en pour ancrer tes questions sur son vrai parcours et ses vraies compétences ; ne le récite pas, rebondis dessus) :\n${_cvText.slice(0, 4000)}`;
   if (_cvText) systemPrompt += _blocFaitsCv(_cvText);
   systemPrompt += _blocRelance(messages, _cvText);
+  systemPrompt += _blocMetiersConnus();
 
   // ── Contexte questionnaire (si rempli avant le chat) ────────────────────────
   const _qCtxStr = _buildQuizContext();
@@ -4617,6 +4865,16 @@ async function callCynthAI(messages) {
   // ── Post-synthèse : approfondissement, plus de nouvelles listes ─────────────
   if (synthesisFired && !wantSynthesis) {
     systemPrompt += `\n\n✅ POST-APERÇU. Tu viens de donner un aperçu : le portrait de la personne et UNE piste. Le reste est dans son rapport. RÈGLES :\n1. Ne cite AUCUN autre nom de métier, et n'en propose aucun nouveau. Ni liste, ni « il y a aussi... », ni « je pensais également à... ». Les autres pistes appartiennent au rapport, c'est ce qui en fait la valeur. Si on te demande « c'était quoi les autres ? », tu réponds simplement qu'elles sont détaillées dans le rapport, avec ce qui rend la personne légitime pour chacune, et tu proposes de parler de celle que tu as déjà nommée.\n2. Sur la piste déjà nommée, tu peux approfondir librement : le quotidien, la réalité du métier, ce qui use, un premier pas. 2 à 4 phrases, une question au plus.\n3. Pas de chiffres précis de salaire ni de financement : ils sont dans le rapport, vérifiés et sourcés. Tu peux dire une tendance en mots (« ça paie correctement en Suisse »), jamais un montant.\n4. S'il exprime un doute : accueille-le, recadre avec un fait qu'il t'a donné, propose une micro-action.\n5. Tu ne redemandes PAS « laquelle vous parle le plus » : l'entretien est terminé, la suite est dans le rapport.`;
+  }
+
+  /* ── On demande avant de conclure ────────────────────────────────────────
+     Le seuil est atteint, mais on ne coupe pas : on demande. Cette question
+     n'existait pas — Cynthia annonçait le rapport, point. Retour de la testeuse
+     de 22 ans : « le chat était brusque en mettant fin ».
+     ⚠️ Elle doit POSER la question et s'arrêter là. Si elle enchaîne sur la
+     synthèse dans le même message, on n'a rien changé pour la personne. */
+  if (_demanderLaFin) {
+    systemPrompt += `\n\n📌 ON APPROCHE DE LA FIN — TU DEMANDES, TU NE CONCLUS PAS.\nVous avez beaucoup échangé. Tu as de quoi préparer son rapport, mais c'est à elle de dire si elle a fini.\nDANS CE MESSAGE :\n1. Réponds normalement à ce qu'elle vient de dire (1 à 2 phrases, comme d'habitude).\n2. Puis, en fin de message, demande-lui simplement s'il reste quelque chose dont elle aimerait parler, ou si tu peux préparer son rapport. Avec tes mots, pas une formule toute faite.\n3. Dis-lui que si elle a encore quelque chose, on prend le temps — rien ne presse.\nINTERDIT dans ce message : faire la synthèse, lister des métiers, annoncer que le rapport est prêt, dire « votre rapport vous attend ». Tu poses la question et tu t'arrêtes. C'est elle qui décide.`;
   }
 
   // ── Synthèse : format imposé (3 métiers + 2 pistes) ─────────────────────────
@@ -4964,6 +5222,8 @@ async function startChatMode() {
   };
   usedQs = new Set();
   synthesisFired = false;
+  _synthProposee = false;
+  _synthRelances = 0;
   _synthRetryCount = 0;
   restitutionDone = false;
   _franchiseDone = false;
@@ -5239,7 +5499,7 @@ async function sendChatMsg() {
   // ── Détection d'injection de prompt ──────────────────────────────────────────
   if (detectJailbreak(text)) {
     addChatBubble('user', sanitizeHtml(text));
-    if (input) input.value = '';
+    if (input) { input.value = ''; _reinitSaisie(input); }
     await new Promise(r => setTimeout(r, 600));
     addChatBubble('ai', "Je suis CYNTH.IA, votre conseillère d'orientation — et je le reste. Revenons à ce qui compte vraiment : votre avenir professionnel.");
     return;
@@ -5281,7 +5541,7 @@ async function sendChatMsg() {
 
   // ── Verrouillage UI ───────────────────────────────────────────────────────────
   chatHistory.push({ role: 'user', content: text });
-  if (input) input.value = '';
+  if (input) { input.value = ''; _reinitSaisie(input); }   // hauteur remise à zéro
   chatWaiting = true;
   if (btn)   btn.disabled   = true;
   if (input) input.disabled = true;
@@ -6603,6 +6863,108 @@ function _noterMetierManquant(titre, ou) {
     console.warn('[CYNTH] métier proposé mais ABSENT de la base : « ' + t + ' » (' + ou + ')');
   } catch (e) { /* localStorage plein ou bloqué : on ne casse rien pour ça */ }
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE MÉTIER QUE LA PERSONNE NOMME ELLE-MÊME  (22 août 2026)
+
+   Jusqu'ici _noterMetierManquant ne se déclenchait QUE sur un métier nommé par
+   Cynthia (sa synthèse, la sélection du rapport). Jamais sur celui que la
+   PERSONNE nomme.
+
+   La testeuse de 22 ans a dit son rêve : hôtesse de l'air. Ce n'est pas dans la
+   base. Résultat : le mot le plus important de ses 45 minutes n'était enregistré
+   nulle part, et le rapport l'ignorait en silence. C'est le même défaut que le
+   2e testeur, architecte, dont le métier s'évaporait entre le chat et le
+   rapport — sauf qu'ici on ne le voyait même pas passer.
+
+   ⚠️ CE QUE ÇA FAIT ET NE FAIT PAS : ça REMONTE la demande réelle (à lire avec
+   metiersManquants(), pour savoir quelles fiches sourcer en priorité). Ça ne
+   met PAS le métier dans le rapport : on ne propose pas une fiche qu'on n'a pas.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const _AMORCES_REVE = [
+  "je r[êe]ve d'?[êe]tre", "je r[êe]ve de devenir", "mon r[êe]ve c'?est",
+  "mon r[êe]ve (?:serait|c'?est) d'?[êe]tre", "j'?ai toujours voulu [êe]tre",
+  "j'?ai toujours voulu devenir", "j'?aimerais (?:bien )?(?:devenir|[êe]tre)",
+  "je voudrais (?:devenir|[êe]tre)", "je veux (?:devenir|[êe]tre)",
+  "j'?aimerais travailler comme", "je me verrais bien (?:comme|en tant que)",
+  "depuis (?:toute )?petite? je veux [êe]tre", "mon objectif c'?est de devenir"
+];
+
+/* ⚠️ LE FILTRE QUI ÉVITE LE RIDICULE. Sans lui, « je veux être tranquille
+   financièrement » donnait le métier « tranquille financièrement », enregistré
+   comme demande et injecté dans le prompt d'un rapport PAYANT. Une phrase de
+   vie n'est pas un métier.
+   On garde donc uniquement ce qui a une terminaison de nom de métier. C'est
+   volontairement étroit : rater un rêve rare coûte beaucoup moins cher qu'un
+   paragraphe absurde dans le rapport de quelqu'un. */
+const _FINS_METIER = /(eur|euse|ier|iere|ière|iste|ien|ienne|aire|teur|trice|logue|graphe|esse|ant|ante|ien·ne|man|ise|cien|iste)$/i;
+function _ressembleAUnMetier(c) {
+  const mot = String(c || '').trim().split(/\s+/)[0].replace(/[^A-Za-zÀ-ÿ'-]/g, '');
+  if (mot.length < 4) return false;
+  if (/ment$/i.test(mot)) return false;   // adverbe : « financièrement »
+  return _FINS_METIER.test(mot);
+}
+
+/* Extrait ce que la personne dit vouloir devenir. Volontairement étroit : on
+   préfère rater un rêve que d'enregistrer du bruit à la place. */
+function _reveDeclare(messages) {
+  const trouves = [];
+  (messages || []).forEach(function (m) {
+    if (!m || m.role !== 'user') return;
+    const txt = String(m.content || '');
+    _AMORCES_REVE.forEach(function (a) {
+      const re = new RegExp(a + "\\s+([^.,;!?\\n]{2,45})", "gi");
+      let x;
+      while ((x = re.exec(txt)) !== null) {
+        let c = x[1].trim()
+          .replace(/^(un|une|le|la|les|l'|d'|des)\s+/i, '')
+          .replace(/\s+(mais|parce que|car|depuis|quand|si|et)\b[\s\S]*$/i, '')
+          .trim();
+        /* Un rêve tient en quelques mots. Au-delà c'est une phrase, pas un
+           métier : « je veux être quelqu'un qui compte pour les autres ». */
+        if (c && c.split(/\s+/).length <= 4 && c.length >= 3
+            && _ressembleAUnMetier(c)) trouves.push(c);
+      }
+    });
+  });
+  return trouves;
+}
+
+/* Le rêve est-il dans notre base ? On compare sur les variantes du titre
+   (« Infirmier·ère » doit reconnaître « infirmière »). */
+function _reveEnBase(reve) {
+  const n = _normaliserTexte(reve);
+  if (!n) return null;
+  for (let i = 0; i < METIERS_DB.length; i++) {
+    const vars = _variantesTitre(METIERS_DB[i].titre);
+    for (let j = 0; j < vars.length; j++) {
+      const v = _normaliserTexte(vars[j]);
+      if (!v) continue;
+      if (v === n || v.indexOf(n) === 0 || n.indexOf(v) === 0) return METIERS_DB[i];
+      /* ⚠️ _variantesTitre('Infirmier·ère') rend Infirmier, jamais Infirmière :
+         « je rêve d'être infirmière » passait donc pour un métier hors base.
+         On compare la RACINE (le titre moins sa terminaison de genre) plutôt
+         que d'aller modifier _variantesTitre, dont d'autres endroits dépendent. */
+      const racine = v.slice(0, Math.max(5, v.length - 2));
+      if (racine.length >= 5 && n.indexOf(racine) === 0) return METIERS_DB[i];
+    }
+  }
+  return null;
+}
+
+/* Appelé au moment du rapport : c'est là qu'on sait que la conversation est
+   finie et qu'on a tout entendu. */
+function _noterRevesHorsBase(messages) {
+  const dehors = [];
+  _reveDeclare(messages).forEach(function (r) {
+    if (_reveEnBase(r)) return;
+    if (dehors.indexOf(r) === -1) {
+      dehors.push(r);
+      _noterMetierManquant(r, 'rêve dit par la personne');
+    }
+  });
+  return dehors;
+}
+
 /* ── SANTÉ DE LA BASE MÉTIERS ────────────────────────────────────────────────
    Sans cet outil, le champ `verifie_le` ne servirait à rien : une base vieillit
    en silence, les salaires bougent, et on ne s'en aperçoit que le jour où un
@@ -7841,8 +8203,30 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
     })
     .join('\n');
 
+  /* ── Le rêve qu'on n'a pas en base ────────────────────────────────────────
+     On le NOMME au lieu de faire comme s'il n'avait pas été dit. La testeuse
+     de 22 ans rêvait d'être hôtesse de l'air : sans ce bloc, son rapport ne
+     contient pas une ligne là-dessus et elle en conclut, à raison, qu'on ne
+     l'a pas écoutée. On ne peut pas lui donner une fiche qu'on n'a pas — on
+     peut lui dire franchement pourquoi et où chercher. */
+  let _blocReve = '';
+  try {
+    const _reves = _noterRevesHorsBase(chatHistory);
+    if (_reves.length) {
+      _blocReve = `
+
+⚠️ ELLE A NOMMÉ UN MÉTIER SUR LEQUEL TU N'AS PAS DE FICHE : ${_reves.map(function (r) { return '« ' + r + ' »'; }).join(', ')}.
+Tu ne l'ignores PAS, et tu ne l'inventes PAS. Dans le message final :
+- tu redis ce métier avec ses mots, sans le juger, sans dire qu'il est risqué, bouché ou difficile (tu n'as aucune donnée : tu n'as pas d'avis) ;
+- tu expliques en une phrase que tu n'as pas de fiche suisse vérifiée dessus et que tu préfères le dire plutôt que d'écrire des chiffres au hasard ;
+- tu l'envoies à orientation.ch pour les faits, et à un professionnel du métier pour le reste ;
+- tu fais le lien entre ce qui l'attire là-dedans et ce que tu lui proposes, quand le lien existe vraiment.
+Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pas partie.`;
+    }
+  } catch (e) { /* rien ne doit empêcher le rapport de sortir */ }
+
   const dataBlock = `CONVERSATION INTÉGRALE :
-${conversationText}${_cvForReport}${_blocRejets}
+${conversationText}${_cvForReport}${_blocRejets}${_blocReve}
 
 MÉTIERS DÉJÀ RETENUS POUR CETTE PERSONNE — choisis dans la base suisse après
 lecture de tout son entretien. Tu n'as PAS à en chercher d'autres : tu prends
@@ -9520,7 +9904,7 @@ async function sendAvatarMsg() {
 
   // Sanitiser l'input utilisateur
   const safeText = text.substring(0, 400); // limite de longueur
-  input.value = '';
+  input.value = ''; _reinitSaisie(input);
   _avatarWaiting = true;
   if (sendBtn) sendBtn.disabled = true;
 
@@ -9812,6 +10196,8 @@ function _stashChat() {
       chatProfile: chatProfile,
       usedQs: Array.from(usedQs || []),
       synthesisFired: synthesisFired,
+      _synthProposee: _synthProposee,
+      _synthRelances: _synthRelances,
       _synthRetryCount: _synthRetryCount,
       restitutionDone: restitutionDone,
       _franchiseDone: _franchiseDone,
@@ -9851,6 +10237,8 @@ function _restoreChat() {
     chatProfile          = d.chatProfile || chatProfile;
     usedQs               = new Set(d.usedQs || []);
     synthesisFired       = !!d.synthesisFired;
+    _synthProposee       = !!d._synthProposee;
+    _synthRelances       = d._synthRelances || 0;
     _synthRetryCount     = d._synthRetryCount || 0;
     restitutionDone      = !!d.restitutionDone;
     _franchiseDone       = !!d._franchiseDone;
