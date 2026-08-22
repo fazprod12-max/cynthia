@@ -4754,9 +4754,16 @@ async function callCynthAI(messages) {
   const _demanderLaFin = !synthesisFired && !_detresse && _seuilAtteint
     && !_synthProposee && userMsgCount < SYNTH_MAX;
 
+  /* ⚠️ DÉFAUT TROUVÉ EN TEST LIVE (profil Nadia, 22 août). J'avais écrit
+     `_synthProposee && _feuVert`. Or quand la personne répond « oui il reste
+     quelque chose », l'état retombe à false. Au message suivant elle dit
+     « c'est bon, allez-y »… et Cynthia REDEMANDE au lieu de conclure, parce
+     que _synthProposee valait false au moment de l'évaluation. Vu en direct.
+     La bonne condition est : la question a été posée AU MOINS UNE FOIS
+     (_synthRelances > 0), et la personne donne un feu vert clair. */
   const wantSynthesis = !synthesisFired && !_detresse && _seuilAtteint && (
     userMsgCount >= SYNTH_MAX ||          // plafond dur : l'entretien doit finir
-    (_synthProposee && _feuVert)          // elle a dit oui
+    (_synthRelances > 0 && _feuVert)      // on a demandé, elle a dit oui
   );
 
   if (_demanderLaFin) { _synthProposee = true; _synthRelances++; }
@@ -6863,10 +6870,30 @@ function _phrasesNegatives(texteUtilisateur) {
    partir de la demande RÉELLE des testeurs, pas de nos suppositions.
 
    Pour les lire : ouvrir la console et taper  metiersManquants() */
+/* ⚠️ NETTOYAGE AJOUTÉ APRÈS LE TEST LIVE DU 22 AOÛT (profil Nadia).
+   La capture de la synthèse remontait des morceaux de mise en forme, pas des
+   métiers : « ● laborantine (cfc via article 32) », « deux pistes
+   complémentaires ». Envoyés tels quels au serveur, ils auraient pollué la
+   liste censée dire quelle fiche sourcer en priorité — donc rendu inutile le
+   travail qu'on vient de faire. On nettoie et on écarte ce qui n'est
+   visiblement pas un titre de métier. */
+const _PAS_UN_METIER = /^(deux|trois|quatre|cinq)?\s*(pistes?|m[ée]tiers?|options?|id[ée]es?|autres?)\b|^(compl[ée]mentaires?|principa|explorer)/i;
+
 function _noterMetierManquant(titre, ou) {
+  /* ⚠️ Le nettoyage vit HORS des try : le second try (envoi au serveur) en a
+     besoin. Je l'avais mis dans le premier, donc « t » était hors de portée et
+     PLUS RIEN ne partait — l'erreur était avalée par le catch. Trouvé par le
+     test, pas à la lecture. */
+  const t = String(titre || '').trim()
+    .replace(/^[\s●•▶►◆\-–*\d.)\]]+/, '')      // puces et numérotation
+    .replace(/\s*\((?:cfc|afp|bf|es|df|hes)[^)]*\)\s*$/i, '')  // « (CFC via art. 32) »
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  if (!t || t.length > 90) return;
+  if (t.split(/\s+/).length > 6) return;          // une phrase, pas un métier
+  if (_PAS_UN_METIER.test(t)) return;              // « deux pistes complémentaires »
+
   try {
-    const t = String(titre || '').trim();
-    if (!t || t.length > 90) return;
     const cle = 'cynthia_metiers_manquants';
     const reg = JSON.parse(localStorage.getItem(cle) || '{}');
     const k = t.toLowerCase();
@@ -6892,7 +6919,11 @@ function _noterMetierManquant(titre, ou) {
     fetch(GROQ_PROXY_URL.replace(/\/+$/, '') + '/metier-manquant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ titre: String(titre || '').slice(0, 80), ou: String(ou || '').slice(0, 40) }),
+      /* ⚠️ On envoie « t », la version NETTOYÉE, pas « titre » brut. J'avais
+         écrit le brut : le nettoyage servait au localStorage et le serveur
+         recevait quand même « ● laborantine (cfc via article 32) ». Trouvé par
+         le test, pas par moi. */
+      body: JSON.stringify({ titre: t.slice(0, 80), ou: String(ou || '').slice(0, 40) }),
       keepalive: true
     }).catch(function () {});
   } catch (e) { /* jamais bloquant */ }
@@ -8158,7 +8189,35 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
      C'est le même schéma que le 4 août — une correction appliquée à un seul
      des chemins d'appel. On le colle donc à la SOURCE commune, une fois, pour
      que personne n'ait à y repenser en ajoutant un cinquième appel. */
-  const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}${_blocRejets}`;
+  /* ── Le rêve qu'on n'a pas en base ────────────────────────────────────────
+     On le NOMME au lieu de faire comme s'il n'avait pas été dit. La testeuse
+     de 22 ans rêvait d'être hôtesse de l'air : sans ce bloc, son rapport ne
+     contient pas une ligne là-dessus et elle en conclut, à raison, qu'on ne
+     l'a pas écoutée. On ne peut pas lui donner une fiche qu'on n'a pas — on
+     peut lui dire franchement pourquoi et où chercher. */
+  let _blocReve = '';
+  try {
+    const _reves = _noterRevesHorsBase(chatHistory);
+    if (_reves.length) {
+      _blocReve = `
+
+⚠️ ELLE A NOMMÉ UN MÉTIER SUR LEQUEL TU N'AS PAS DE FICHE : ${_reves.map(function (r) { return '« ' + r + ' »'; }).join(', ')}.
+Tu ne l'ignores PAS, et tu ne l'inventes PAS. Dans le message final :
+- tu redis ce métier avec ses mots, sans le juger, sans dire qu'il est risqué, bouché ou difficile (tu n'as aucune donnée : tu n'as pas d'avis) ;
+- tu expliques en une phrase que tu n'as pas de fiche suisse vérifiée dessus et que tu préfères le dire plutôt que d'écrire des chiffres au hasard ;
+- tu l'envoies à orientation.ch pour les faits, et à un professionnel du métier pour le reste ;
+- tu fais le lien entre ce qui l'attire là-dedans et ce que tu lui proposes, quand le lien existe vraiment.
+Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pas partie.`;
+    }
+  } catch (e) { /* rien ne doit empêcher le rapport de sortir */ }
+
+  /* ⚠️ `_blocReve` DOIT être ici. Il était accroché au seul `dataBlock`, lu
+     par l'appel « métiers ». Or le message final vient de l'appel « plan »,
+     qui lit convBlock : le rapport ne pouvait donc JAMAIS mentionner le rêve.
+     Vérifié en test live (profil Nadia, rêve « chercheuse ») : zéro mention
+     dans tout le rapport. Mon test de ce matin vérifiait que le bloc était
+     CONSTRUIT, pas qu'il arrivait au bon endroit. */
+  const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}${_blocRejets}${_blocReve}`;
   const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.'
     + ' LANGUE ET TYPOGRAPHIE (dictionnaire Cynth.IA, 15 août 2026). Ce rapport se lit comme un document professionnel suisse, pas comme une sortie de machine :'
     + ' (a) SUISSE ROMANDE, jamais français de France : écris "assurance-chômage" et non "la Sécu" ou "le chômage" seul, "salaire minimum" et non "SMIC", "formation continue" et non "VAE". Aucun sigle français.'
@@ -8249,28 +8308,6 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
       ].join('|');
     })
     .join('\n');
-
-  /* ── Le rêve qu'on n'a pas en base ────────────────────────────────────────
-     On le NOMME au lieu de faire comme s'il n'avait pas été dit. La testeuse
-     de 22 ans rêvait d'être hôtesse de l'air : sans ce bloc, son rapport ne
-     contient pas une ligne là-dessus et elle en conclut, à raison, qu'on ne
-     l'a pas écoutée. On ne peut pas lui donner une fiche qu'on n'a pas — on
-     peut lui dire franchement pourquoi et où chercher. */
-  let _blocReve = '';
-  try {
-    const _reves = _noterRevesHorsBase(chatHistory);
-    if (_reves.length) {
-      _blocReve = `
-
-⚠️ ELLE A NOMMÉ UN MÉTIER SUR LEQUEL TU N'AS PAS DE FICHE : ${_reves.map(function (r) { return '« ' + r + ' »'; }).join(', ')}.
-Tu ne l'ignores PAS, et tu ne l'inventes PAS. Dans le message final :
-- tu redis ce métier avec ses mots, sans le juger, sans dire qu'il est risqué, bouché ou difficile (tu n'as aucune donnée : tu n'as pas d'avis) ;
-- tu expliques en une phrase que tu n'as pas de fiche suisse vérifiée dessus et que tu préfères le dire plutôt que d'écrire des chiffres au hasard ;
-- tu l'envoies à orientation.ch pour les faits, et à un professionnel du métier pour le reste ;
-- tu fais le lien entre ce qui l'attire là-dedans et ce que tu lui proposes, quand le lien existe vraiment.
-Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pas partie.`;
-    }
-  } catch (e) { /* rien ne doit empêcher le rapport de sortir */ }
 
   const dataBlock = `CONVERSATION INTÉGRALE :
 ${conversationText}${_cvForReport}${_blocRejets}${_blocReve}
