@@ -3647,7 +3647,13 @@ const _MODE_VENTE = (function () {
 const CONFIG = {
   // true = rapport offert (phase de test). Voir _MODE_VENTE pour l'exception.
   RAPPORT_GRATUIT: !_MODE_VENTE,
-  PRIX_RAPPORT: 49.00,   // Prix du rapport complet, en CHF. Seul endroit à modifier.
+  /* Prix du rapport complet, en CHF. SEUL endroit à modifier dans le site.
+     ⚠️ Il doit être IDENTIQUE au prix créé dans Stripe. Si les deux divergent,
+     la personne voit un montant sur le site et en paie un autre au moment de
+     payer : c'est un bug, et c'est aussi un problème d'affichage de prix.
+     Passé de 49 à 79 le 22 août 2026 (décision de Faouzi, après le retour
+     d'Armand qui avait spontanément situé le rapport à 79). */
+  PRIX_RAPPORT: 79.00,
 };
 // ────────────────────────────────────────────────────────────
 // PROXY IA — les clés API sont stockées côté serveur (Cloudflare Worker), jamais ici.
