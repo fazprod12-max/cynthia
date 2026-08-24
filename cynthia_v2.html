@@ -2669,21 +2669,30 @@ textarea.chat-input{
         <!-- Étape 5 — Frein principal -->
         <div class="quiz-step" id="qs-5">
           <div class="qs-tag">Préparation · 5 / 6</div>
-          <h2 class="qs-title">Qu'est-ce qui vous retient le plus ?</h2>
+          <h2 class="qs-title">Qu'est-ce qui vous retient ?</h2>
+          <!-- ⚠️ Le titre disait « le plus » et n'acceptait qu'une réponse. Or ces
+               quatre freins vont rarement seuls : quelqu'un qui doute de lui à
+               50 ans avec un crédit en cours en vit trois à la fois. L'obliger à
+               n'en cocher qu'un, c'est lui faire dire quelque chose de faux dès
+               la 5e question, et c'est cette réponse qui ouvre la conversation.
+               Le sous-titre reprend mot pour mot celui de l'étape 3, déjà en
+               multi : deux formulations différentes pour le même geste, c'est
+               le lecteur qui hésite. -->
+          <p class="qs-sub">Plusieurs réponses possibles.</p>
           <div class="qs-cards qs-cards-2" id="q5-cards">
-            <div class="qc" data-val="confiance" onclick="selectCard(this,'q5')">
+            <div class="qc" data-val="confiance" onclick="toggleCard(this,'q5')">
               <div class="qc-icon">🪞</div>
               <div class="qc-label">Manque de confiance</div>
             </div>
-            <div class="qc" data-val="age" onclick="selectCard(this,'q5')">
+            <div class="qc" data-val="age" onclick="toggleCard(this,'q5')">
               <div class="qc-icon">⏳</div>
               <div class="qc-label">Peur liée à l'âge</div>
             </div>
-            <div class="qc" data-val="financier" onclick="selectCard(this,'q5')">
+            <div class="qc" data-val="financier" onclick="toggleCard(this,'q5')">
               <div class="qc-icon">💳</div>
               <div class="qc-label">Contraintes financières</div>
             </div>
-            <div class="qc" data-val="idees" onclick="selectCard(this,'q5')">
+            <div class="qc" data-val="idees" onclick="toggleCard(this,'q5')">
               <div class="qc-icon">💡</div>
               <div class="qc-label">Manque d'idées</div>
             </div>
@@ -6118,7 +6127,7 @@ let quizAnswers = {
   etatEsprit  : null,   // 1-5  (5=sait, 1=très flou)
   motivations : [],     // ['sens','equilibre',...]
   talents     : '',     // texte libre
-  frein       : null,
+  frein       : [],      // multi depuis le 24.08.2026
   ancrage     : null,   // resident / frontalier / etranger / curieux   // 'confiance'|'age'|'financier'|'idees'
 };
 let _quizStep = 1;
@@ -6130,7 +6139,6 @@ function selectCard(el, group) {
   container.querySelectorAll('.qc').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   if (group === 'q1') quizAnswers.situation = el.dataset.val;
-  if (group === 'q5') quizAnswers.frein = el.dataset.val;
   if (group === 'q6') quizAnswers.ancrage = el.dataset.val;
   const nb = document.getElementById('qnext-' + _quizStep);
   if (nb) nb.disabled = false;
@@ -6142,6 +6150,22 @@ function selectMood(el) {
   quizAnswers.etatEsprit = parseInt(el.dataset.val, 10);
   const nb = document.getElementById('qnext-2');
   if (nb) nb.disabled = false;
+}
+
+/* Sélection MULTIPLE sur des cartes (étape 5). On ne réutilise pas toggleTag :
+   celui-ci vise les étiquettes .qt de l'étape 3 par un sélecteur en dur, et il
+   ne pilote aucun bouton. Ici il faut aussi remettre « Continuer » hors service
+   si la personne décoche tout, sinon elle avance en ayant l'impression d'avoir
+   répondu. */
+function toggleCard(el, group) {
+  el.classList.toggle('selected');
+  const conteneur = el.closest('.qs-cards');
+  const choisis = conteneur
+    ? Array.from(conteneur.querySelectorAll('.qc.selected')).map(function (c) { return c.dataset.val; })
+    : [];
+  if (group === 'q5') quizAnswers.frein = choisis;
+  const nb = document.getElementById('qnext-' + _quizStep);
+  if (nb) nb.disabled = choisis.length === 0;
 }
 
 function toggleTag(el) {
@@ -6169,7 +6193,7 @@ function nextStep(from) {
 }
 
 function skipQuestionnaire() {
-  quizAnswers = { situation:null, etatEsprit:null, motivations:[], talents:'', frein:null, ancrage:null };
+  quizAnswers = { situation:null, etatEsprit:null, motivations:[], talents:'', frein:[], ancrage:null };
   _doLaunchChat();
 }
 
@@ -6186,7 +6210,7 @@ function _doLaunchChat() {
 }
 
 function resetQuiz() {
-  quizAnswers = { situation:null, etatEsprit:null, motivations:[], talents:'', frein:null, ancrage:null };
+  quizAnswers = { situation:null, etatEsprit:null, motivations:[], talents:'', frein:[], ancrage:null };
   _quizStep = 1;
   for (let i = 1; i <= _QUIZ_TOTAL; i++) {
     const s = document.getElementById('qs-' + i);
@@ -6253,8 +6277,33 @@ const _QUIZ_FREIN = {
    On garde UN repere concret (la situation, et le frein s'il existe) : assez
    pour prouver qu'on a lu, sans reciter. Le reste part quand meme au modele
    via _buildQuizContext, donc rien n'est perdu pour la suite de l'entretien. */
+/* Le frein est passé de chaîne à tableau le 24.08.2026. Ces deux fonctions
+   existent pour que ce changement de TYPE ne se propage pas dans le reste du
+   code : tout ce qui lit un frein passe par elles. _freinsListe tolère encore
+   une chaîne — pas par superstition, mais parce que quizAnswers est reconstruit
+   à deux endroits et qu'un oubli là-bas ne doit pas casser l'accueil. */
+function _freinsListe(v) {
+  if (!v) return [];
+  const t = Array.isArray(v) ? v : [v];
+  return t.filter(Boolean).map(function (f) { return _QUIZ_FREIN[f] || f; });
+}
+
+/* « a, b et c » — la virgule partout ferait liste de courses dans une phrase
+   qui doit s'entendre comme parlée. */
+function _enumerer(t) {
+  if (t.length <= 1) return t[0] || '';
+  return t.slice(0, -1).join(', ') + ' et ' + t[t.length - 1];
+}
+
 function _buildPersonalizedIntro(prenom) {
-  const { situation, frein } = quizAnswers;
+  const { situation } = quizAnswers;
+  const freins = _freinsListe(quizAnswers.frein);
+  /* On n'en cite que DEUX à l'oral. Quelqu'un qui coche les quatre s'entendrait
+     réciter ses quatre problèmes en guise de bonjour. Les autres partent quand
+     même au modèle via _buildQuizContext : rien n'est perdu, c'est juste dit
+     ailleurs. Même principe que la coupe du 15 août sur cette phrase. */
+  const dits = _enumerer(freins.slice(0, 2));
+  const frein = freins.length ? dits : null;
   const bonjour  = "Bonjour" + (prenom ? " " + prenom : "") + ", je suis Cynthia.";
   const question = "Qu\u2019est-ce qui vous a d\u00e9cid\u00e9 \u00e0 franchir le pas aujourd\u2019hui ?";
 
@@ -6265,11 +6314,11 @@ function _buildPersonalizedIntro(prenom) {
   var repere;
   if (situation && frein) {
     repere = "Vous \u00eates " + (_QUIZ_SITUATION[situation] || situation)
-           + ", et ce qui vous retient, c\u2019est surtout " + (_QUIZ_FREIN[frein] || frein) + ".";
+           + ", et ce qui vous retient, c\u2019est " + (freins.length > 1 ? "" : "surtout ") + frein + ".";
   } else if (situation) {
     repere = "Vous \u00eates " + (_QUIZ_SITUATION[situation] || situation) + ".";
   } else {
-    repere = "Ce qui vous retient, c\u2019est surtout " + (_QUIZ_FREIN[frein] || frein) + ".";
+    repere = "Ce qui vous retient, c\u2019est " + (freins.length > 1 ? "" : "surtout ") + frein + ".";
   }
 
   return bonjour + "\n\n" + repere
@@ -6292,7 +6341,10 @@ function _buildQuizContext() {
     etranger   : "vit a l'etranger et envisage la Suisse",
     curieux    : "regarde par curiosite, sans projet immediat"
   }[ancrage] || ancrage));
-  if (frein) lines.push("Frein principal : " + (_QUIZ_FREIN[frein] || frein));
+  /* « Frein principal » au singulier laissait croire au modèle qu'il n'y en
+     avait qu'un, et l'invitait à ne traiter que celui-là. */
+  const _fr = _freinsListe(frein);
+  if (_fr.length) lines.push((_fr.length > 1 ? "Freins declares : " : "Frein declare : ") + _fr.join(", "));
   return lines.join("\n");
 }
 
