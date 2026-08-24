@@ -1961,12 +1961,9 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-steps-sec .lp-sechead h2{color:#fff;} .lp-steps-sec .lp-sechead p{color:#A9C0B7;}
   .lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
   /* ── Bloc fondateur ──────────────────────────────────────────────────────
-     Le portrait : tant que --portrait vaut none, le monogramme s'affiche.
-     POUR METTRE LA PHOTO : déposer faouzi.jpg dans refonte_deepseek (carrée,
-     800x800 suffit) puis remplacer la ligne --portrait ci-dessous par :
-        --portrait: url('faouzi.jpg');
-     Le script de déploiement copie le fichier automatiquement. */
-  .lp-fond{--portrait:none;
+     Posé le 24 août 2026 : faouzi.jpg (800x800), recadré en carré centré sur
+     le visage. Le script de déploiement copie le fichier automatiquement. */
+  .lp-fond{--portrait:url('faouzi.jpg');
     display:flex;gap:34px;align-items:flex-start;background:#fff;
     border:1px solid var(--c-line);border-radius:24px;padding:38px 40px;max-width:860px;margin:0 auto;}
   .lp-fond-av{flex-shrink:0;width:104px;height:104px;border-radius:50%;
