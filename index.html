@@ -5155,14 +5155,28 @@ function _validerSynthese(origine) {
 // Répond au CONTENU de ce que dit la personne, pas à une phase générique.
 
 function _getFbSynthesis(prenom) {
-  // Synthèse de secours basée sur les mots-clés détectés dans l'historique
-  const history = chatHistory.map(m => m.content.toLowerCase()).join(' ');
+  /* Synthèse de secours basée sur les mots-clés détectés dans l'historique.
+     ⚠️ Bug trouvé et corrigé le 25 août 2026 : les regex tapaient en sous-chaîne
+     brute (/form/, /soin/, /art/...), exactement le défaut corrigé le 5 août
+     dans _scoreMetiersRelevance mais jamais reporté ici — deux chemins, un seul
+     corrigé, la rechute classique du projet. Mesuré avant correction :
+     « je voudrais faire une formation en comptabilité » (formation ≠ envie
+     d'enseigner) déclenchait hasTeach ; « j'ai besoin de changer de métier »
+     (besoin ⊃ soin) déclenchait hasHelp ; « je veux partir de cette entreprise »
+     et « le quartier où je travaille » (partir/quartier ⊃ art) déclenchaient
+     hasCreat. Résultat concret : « Formateur / Coach professionnel » sortait
+     dès qu'une conversation évoquait une formation, quel qu'en soit le sujet —
+     ce qui est très fréquent dans un entretien d'orientation. Remplacé par
+     _contientMot (mot entier, déjà utilisé ailleurs dans le fichier depuis le
+     5 août) sur des termes qui signent vraiment l'intention, pas un mot valise. */
+  const history = _normaliserTexte(chatHistory.map(m => m.content).join(' '));
   const p = prenom ? prenom + ', ' : '';
-  const hasTech = /tech|digital|informatique|code|développ|web|data/.test(history);
-  const hasTeach = /form|enseign|apprendr|transmettre|expliqu|pedagog|prof|coach/.test(history);
-  const hasHelp = /aide|accompagn|soin|social|personnes|humain|écoute|conseil/.test(history);
-  const hasCreat = /créat|design|art|graphi|visuel|créer|innov/.test(history);
-  const hasManage = /gestion|manage|équipe|organis|pilotage|chef|diriger/.test(history);
+  const _mot = (...termes) => termes.some(t => _contientMot(history, t));
+  const hasTech = _mot('technique', 'digital', 'informatique', 'code', 'developpement', 'developpeur', 'web', 'donnees');
+  const hasTeach = _mot('formateur', 'formatrice', 'enseigner', 'enseignant', 'enseignante', 'apprendre', 'transmettre', 'expliquer', 'pedagogie', 'professeur', 'coach', 'coaching');
+  const hasHelp = _mot('aider', 'accompagnement', 'accompagner', 'soin', 'social', 'sociale', 'humain', 'ecoute', 'conseiller');
+  const hasCreat = _mot('creatif', 'creative', 'design', 'artistique', 'graphisme', 'visuel', 'creer', 'innovation', 'innover');
+  const hasManage = _mot('gestion', 'management', 'manager', 'equipe', 'organisation', 'pilotage', 'chef', 'diriger', 'direction');
 
   let pistes = [];
   if (hasTeach) pistes.push('● Formateur / Coach professionnel\n→ Pourquoi vous : vous aimez transmettre et aider les autres à progresser.\n→ Premier pas : explorer le certificat FSEA de formateur·rice d\'adultes, première marche vers le brevet fédéral.');
@@ -5191,11 +5205,16 @@ function _getFbReply(msg, prenom) {
 
   // ── Post-synthèse : ancrage sur le choix, pas de nouveau coaching ─────────────
   if (_synthesisDone) {
-    if (/conseiller|accompagn|insertion|mission|social/.test(t))
+    // Même correction que dans _getFbSynthesis (25 août 2026) : mot entier via
+    // _contientMot, pas de sous-chaîne (« form » matchait « formation », sans lien
+    // avec l'envie d'enseigner).
+    const tn = _normaliserTexte(t);
+    const tmot = (...termes) => termes.some(x => _contientMot(tn, x));
+    if (tmot('conseiller', 'accompagnement', 'accompagner', 'insertion', 'mission', 'social', 'sociale'))
       return `Ce que vous décrivez là — l'envie d'être utile à quelqu'un concrètement — c'est exactement ce que ce métier demande. Qu'est-ce qui vous attire le plus dans cet accompagnement ?`;
-    if (/entrepren|projet|créer|creer|lancer|indép|freelance|auto.?entrepreneur/.test(t))
+    if (tmot('entreprendre', 'entrepreneuriat', 'projet', 'creer', 'lancer', 'independant', 'freelance', 'entrepreneur'))
       return `Avoir un projet, c'est une chose. Le tester avant de se lancer, c'en est une autre. Avec qui pourriez-vous en parler cette semaine — quelqu'un qui vous dirait vraiment ce qu'il en pense ?`;
-    if (/formateur|form|coach|enseign|transmettre/.test(t))
+    if (tmot('formateur', 'formatrice', 'coach', 'enseigner', 'enseignant', 'enseignante', 'transmettre'))
       return `Transmettre, ça demande de savoir à qui et quoi. Dans votre parcours, qu'est-ce que vous êtes le mieux placé pour enseigner — pas le plus valorisé, le plus maîtrisé ?`;
     if (/les deux|deux|2|combiner|et l'autre|les 2/.test(t))
       return `Les deux, c'est possible — mais pas en même temps. Lequel vous permettrait de vous stabiliser pendant que l'autre prend forme ?`;
