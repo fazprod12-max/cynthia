@@ -997,7 +997,7 @@ footer{
   .chat-send{width:40px;height:40px;font-size:18px;}
   #mic-async-btn{font-size:18px;padding:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;}
   .chat-hint{font-size:10px;}
-  .btn-doute-float{bottom:80px;right:12px;padding:10px 14px;font-size:13px;}
+  .btn-start-float{bottom:16px;right:12px;padding:12px 18px;font-size:14px;}
 }
 
 
@@ -1199,77 +1199,26 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 }
 
 /* ══════════════════════════════════════════════════════════════
-   MODE DOUTE — bouton flottant + modal
+   BOUTON FLOTTANT « COMMENCER » (landing)
+   Remplace, le 5 septembre 2026, le bouton flottant « J'ai un doute » :
+   aucun testeur ne l'a utilisé (retour de Faouzi), et le besoin observé est
+   l'inverse, rejoindre la conversation sans remonter en haut de page.
+   Il vit DANS #page-landing, donc il disparaît de lui-même au changement de
+   page. Il apparaît une fois le premier écran passé.
 ══════════════════════════════════════════════════════════════ */
-.btn-doute-float{
-  position:fixed;bottom:90px;left:20px;z-index:900;
-  display:none; /* affiché dynamiquement par JS après réponse Cynthia (msg 5+) */
-  align-items:center;gap:8px;
-  background:linear-gradient(120deg,var(--c-coral),var(--c-coral-2,#FF9166));
-  color:#fff;border:none;border-radius:100px;padding:12px 18px;
-  font-size:14px;font-weight:600;font-family:'Space Grotesk',sans-serif;
-  cursor:pointer;box-shadow:0 10px 24px -8px rgba(255,111,94,.6);
-  transition:transform .2s,box-shadow .2s,opacity .3s;
-  animation:doute-appear .35s ease;
+.btn-start-float{
+  position:fixed;bottom:24px;right:24px;z-index:900;
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(120deg,var(--c-emerald),var(--c-emerald-d));
+  color:#fff;border:none;border-radius:100px;padding:14px 24px;
+  font-size:15px;font-weight:600;font-family:'Space Grotesk',sans-serif;
+  cursor:pointer;box-shadow:0 12px 28px -8px rgba(15,74,58,.55);
+  opacity:0;visibility:hidden;transform:translateY(10px);
+  transition:opacity .28s ease,transform .28s ease,visibility .28s;
 }
-@keyframes doute-appear{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-.btn-doute-float:hover{transform:translateY(-2px);box-shadow:0 16px 30px -10px rgba(255,111,94,.7);}
-.btn-doute-float:disabled{opacity:.45;cursor:not-allowed;transform:none;}
-/* Icône info + tooltip hover */
-.doute-info-btn{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:18px;height:18px;border-radius:50%;
-  background:rgba(255,255,255,.25);font-size:11px;font-weight:700;
-  color:#fff;cursor:default;flex-shrink:0;position:relative;
-  border:1px solid rgba(255,255,255,.35);line-height:1;
-}
-.doute-info-btn:hover .doute-tooltip{display:block;}
-.doute-tooltip{
-  display:none;
-  position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
-  width:240px;background:#0D2118;border:1px solid rgba(143,188,139,.4);
-  border-radius:14px;padding:14px 15px;font-size:12px;font-weight:400;
-  color:rgba(250,243,224,.9);line-height:1.55;text-align:left;
-  box-shadow:0 6px 30px rgba(0,0,0,.55);z-index:1000;pointer-events:none;
-  white-space:normal;
-}
-.doute-tooltip::after{
-  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
-  border:7px solid transparent;border-top-color:#0D2118;
-}
-.doute-modal-bg{
-  position:fixed;inset:0;background:rgba(14,42,36,.5);backdrop-filter:blur(6px);
-  z-index:1100;display:none;align-items:flex-end;justify-content:center;padding:0 12px 20px;
-}
-.doute-modal-bg.show{display:flex;}
-.doute-modal{
-  width:100%;max-width:520px;background:#fff;
-  border:1px solid var(--c-line);border-radius:20px;
-  padding:22px 20px 18px;display:flex;flex-direction:column;gap:14px;
-  box-shadow:0 -10px 50px -12px rgba(14,42,36,.35);
-}
-.doute-modal-head{display:flex;align-items:flex-start;gap:14px;}
-.doute-modal-icon{font-size:28px;line-height:1;flex-shrink:0;}
-.doute-modal-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;color:var(--c-ink);margin-bottom:2px;}
-.doute-modal-sub{font-size:12px;color:var(--c-muted);line-height:1.4;}
-.doute-modal-close{margin-left:auto;background:none;border:none;color:var(--c-muted);font-size:18px;cursor:pointer;padding:0 4px;flex-shrink:0;}
-.doute-modal-close:hover{color:var(--c-ink);}
-.doute-textarea{
-  width:100%;box-sizing:border-box;background:var(--c-cream);
-  border:1px solid var(--c-line);border-radius:12px;
-  color:var(--c-ink);font-family:inherit;font-size:14px;line-height:1.5;
-  padding:12px 14px;resize:none;outline:none;
-}
-.doute-textarea:focus{border-color:var(--c-emerald);box-shadow:0 0 0 3px var(--c-emerald-soft);}
-.doute-textarea::placeholder{color:var(--c-muted);opacity:.7;}
-.doute-modal-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.doute-counter{font-size:11px;color:var(--c-muted);}
-.doute-send-btn{
-  background:linear-gradient(120deg,var(--c-emerald),var(--c-emerald-d));color:#fff;border:none;
-  border-radius:100px;padding:10px 20px;font-size:14px;font-weight:600;
-  font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:opacity .15s;white-space:nowrap;
-}
-.doute-send-btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-start-float.on{opacity:1;visibility:visible;transform:translateY(0);}
+.btn-start-float:hover{transform:translateY(-2px);box-shadow:0 18px 34px -10px rgba(15,74,58,.6);}
+@media(prefers-reduced-motion:reduce){.btn-start-float{transition:none;}}
 
 /* ══════════════════════════════════════════════════════════════
    AVATARS MÉTIERS — grille de cartes + modal chat
@@ -1518,7 +1467,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
   .chat-send{width:40px;height:40px;font-size:18px;}
   #mic-async-btn{font-size:18px;padding:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;}
   .chat-hint{font-size:10px;}
-  .btn-doute-float{bottom:80px;right:12px;left:auto;padding:10px 14px;font-size:13px;}
+  .btn-start-float{bottom:16px;right:12px;left:auto;padding:12px 18px;font-size:14px;}
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -1559,7 +1508,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
     padding-left:calc(12px + env(safe-area-inset-left,0px));
     padding-right:calc(12px + env(safe-area-inset-right,0px));
   }
-  .btn-doute-float{bottom:calc(80px + env(safe-area-inset-bottom,0px));}
+  .btn-start-float{bottom:calc(16px + env(safe-area-inset-bottom,0px));}
 
   /* ── 2. Cibles tactiles : 44 px minimum ───────────────────────────────── */
   .chat-send,#mic-async-btn{width:44px;height:44px;min-width:44px;}
@@ -2243,13 +2192,34 @@ textarea.chat-input{
     </div>
   </div></section>
 
-  <section class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Le premier pas, <span class="lp-pop">sans attendre trois mois</span></h2><p>Un bilan de compétences en Suisse, c'est 280 CHF la séance et près de 2 000 CHF au total, étalés sur trois mois. viamia est gratuit, mais réservé aux 40 ans et plus. Entre les deux, il n'y avait rien. Cynthia, c'est ce rien-là qu'elle vient combler.</p></div>
+  <!-- ── POURQUOI CYNTH.IA — section unique qui remplace, depuis le 5 sept 2026 :
+       (a) l'ancien bloc « Le premier pas, sans attendre trois mois », (b) le tableau
+       de comparaison avec une IA généraliste (#lp-vs), (c) la première version de
+       #lp-pourquoi, qui citait orientation.ch.
+       DÉCISION DE FAOUZI : aucun concurrent nommé sur la page de vente. Nommer une
+       alternative gratuite la fait connaître au prospect, et se comparer au portail
+       officiel abîmerait les futures relations ORP, écoles et cantons. Les arguments
+       restent, formulés en affirmatif, sans pointer personne.
+       L'argument du prix apparaissait TROIS fois sur la page (ici, dans la FAQ, et
+       dans #lp-franc) : il est consolidé une seule fois, dans le chapeau ci-dessous.
+       Ton imposé : aucune négation, aucun tiret cadratin. Tenu par des gardes dans
+       tests/test_pourquoi_cynthia.js. ── -->
+  <section id="lp-pourquoi" class="lp-sec"><div class="lp-wrap">
+    <div class="lp-sechead lp-rv"><h2>Pourquoi <span class="lp-pop">CYNTH.IA</span></h2><p>Un bilan de compétences en Suisse, c'est 280 CHF la séance et près de 2 000 CHF au total, étalés sur trois mois. viamia est gratuit, à partir de 40 ans. Entre les deux, il reste un espace, et c'est celui que Cynthia occupe.</p></div>
     <div class="lp-cards cyn-stag cyn-spot">
-      <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Immédiat</h3><p>Disponible 24/7, sans rendez-vous ni liste d'attente. Vous commencez quand l'envie est là.</p></div>
-      <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Une vraie conversation</h3><p>Cynthia vous écoute et rebondit sur vos mots. Pas une grille de cases à cocher.</p></div>
-      <div class="lp-card lp-rv"><div class="lp-ic g">🎯</div><h3>Concret</h3><p>Vous repartez avec des métiers qui vous ressemblent et un premier pas à faire cette semaine.</p></div>
-      <div class="lp-card lp-rv"><div class="lp-ic e">🇨🇭</div><h3>Pensé pour la Suisse</h3><p>Métiers, formations et salaires du marché suisse, avec les références locales : CFC, HES, brevet fédéral.</p></div>
+      <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Un vrai entretien</h3><p>Comptez 20 minutes, plus si vous avez à raconter. C'est elle qui mène, comme un conseiller, et chaque réponse nourrit la suivante jusqu'à dessiner votre profil.</p></div>
+      <div class="lp-card lp-rv"><div class="lp-ic g">📄</div><h3>Un rapport PDF à garder</h3><p>Votre portrait, vos pistes métier avec les salaires en francs, chaque chiffre avec sa source et sa date de relevé, et les liens pour faire votre premier pas dès demain.</p></div>
+      <div class="lp-card lp-rv"><div class="lp-ic e">🇨🇭</div><h3>Pensée pour la Suisse</h3><p>Le CFC, le brevet fédéral, l'article 32, les HES, les chèques de formation cantonaux : elle connaît les repères d'ici, et elle vous parle avec.</p></div>
+      <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Disponible ce soir</h3><p>Ouverte 24h/24, sans rendez-vous. Vous commencez au moment précis où l'envie est là.</p></div>
+    </div>
+    <div class="lp-row cyn-stag" style="margin-top:26px;">
+      <div class="lp-pill"><b>Vous arrivez de l'étranger</b>Cynthia décode avec vous le marché du travail suisse : les équivalences pour votre diplôme, un salaire réaliste en francs pour votre profil, et les codes qui comptent en entretien ici.</div>
+      <div class="lp-pill"><b>Vous êtes suisse et cherchez du sens</b>Cynthia prend le temps de comprendre ce qui vous anime vraiment, au-delà du prochain poste à pourvoir, pour construire une direction qui vous ressemble.</div>
+    </div>
+    <div class="lp-row cyn-stag" style="margin-top:18px;">
+      <div class="lp-pill"><b>Combien coûte un entretien avec Cynthia ?</b>Pendant la phase de test, l'entretien complet et le rapport sont offerts. Vous gardez le rapport, quoi qu'il arrive ensuite.</div>
+      <div class="lp-pill"><b>Je viens d'arriver en Suisse, ça vaut le coup avant même d'avoir un emploi ?</b>C'est le bon moment. En vingt minutes, gratuitement, vous repartez avec une idée claire de la valeur de votre diplôme ici, d'une fourchette de salaire réaliste, et des codes suisses utiles avant un entretien.</div>
+      <div class="lp-pill"><b>Je suis en poste, simplement en questionnement : le temps investi se justifie ?</b>Oui, c'est exactement le profil pensé pour Cynthia. Vous repartez avec une vraie photographie de vos moteurs, de vos compétences transférables, et de deux ou trois pistes concrètes, construites à partir de ce que vous avez raconté.</div>
     </div>
   </div></section>
 
@@ -2315,53 +2285,14 @@ textarea.chat-input{
     <p class="lp-cairn-foot lp-rv">Chaque pierre repose sur la précédente. C'est pour ça que Cynthia ne vous propose jamais un métier avant de vous avoir écouté.</p>
   </div></div></section>
 
-  <!-- ── COMPARAISON HONNÊTE avec une IA généraliste ── -->
-  <section id="lp-vs" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>« Je pourrais demander <span class="lp-pop">à une IA gratuite</span> »</h2><p>Vous pouvez, et parfois ça aide. Voici honnêtement ce qui change.</p></div>
-    <div class="lp-rv" style="max-width:760px;margin:0 auto;border:1px solid var(--c-line);border-radius:18px;overflow:hidden;background:#fff;">
-      <div class="lp-vshead" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0;font-family:'Space Grotesk';font-weight:600;font-size:.82rem;background:var(--c-ink);color:#fff;">
-        <div style="padding:14px 16px;"></div>
-        <div style="padding:14px 10px;text-align:center;">IA généraliste</div>
-        <div style="padding:14px 10px;text-align:center;background:var(--c-emerald-d);">Cynthia</div>
-      </div>
-      <div class="lp-vsrow"><div>Connaît le CFC, le brevet fédéral, l'article 32</div><div class="lp-vsno">Souvent confondu avec le système français</div><div class="lp-vsyes">Oui, c'est sa base</div></div>
-      <div class="lp-vsrow"><div>Qui mène l'échange</div><div class="lp-vsno">Vous, si vous savez quoi demander</div><div class="lp-vsyes">Elle, comme un conseiller</div></div>
-      <div class="lp-vsrow"><div>Ce qu'il vous reste après</div><div class="lp-vsno">Une conversation qui se perd</div><div class="lp-vsyes">Un rapport que vous gardez</div></div>
-    </div>
-  </div></section>
-
-  <!-- ── POURQUOI CYNTH.IA — face au chatbot d'orientation.ch (ajouté 5 sept
-       2026, veille concurrentielle). Le 12 août 2026, orientation.ch a mis en
-       ligne un assistant IA (info transmise par Faouzi, date non retrouvée par
-       recherche publique). Comportement VÉRIFIÉ EN DIRECT le 5 septembre sur le
-       vrai site : accueil à choix guidés, puis question de suivi type « niveau
-       de formation et expérience », puis réponse construite à partir des fiches
-       déjà publiées (liens « Page métier : X »), et renvoi vers l'outil
-       « Questionnaires » du site. Aucun profil de personnalité, aucun rapport,
-       constaté dans cet échange. Copie ci-dessous : positionnement complémentaire,
-       jamais un dénigrement du portail officiel, qui reste la référence suisse. ── -->
-  <section id="lp-pourquoi" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Pourquoi <span class="lp-pop">CYNTH.IA</span></h2><p>orientation.ch reste la référence suisse pour les métiers et les formations, avec son propre assistant pour répondre à vos questions. Cynthia vient compléter cette base par un accompagnement personnalisé, taillé pour votre situation.</p></div>
-    <div class="lp-rv" style="max-width:760px;margin:0 auto;border:1px solid var(--c-line);border-radius:18px;overflow:hidden;background:#fff;">
-      <div class="lp-vshead" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0;font-family:'Space Grotesk';font-weight:600;font-size:.82rem;background:var(--c-ink);color:#fff;">
-        <div style="padding:14px 16px;"></div>
-        <div style="padding:14px 10px;text-align:center;">orientation.ch</div>
-        <div style="padding:14px 10px;text-align:center;background:var(--c-emerald-d);">Cynthia</div>
-      </div>
-      <div class="lp-vsrow"><div>Face à une question sur votre avenir pro</div><div class="lp-vsno">Une réponse rapide, à partir des pages déjà publiées</div><div class="lp-vsyes">Un entretien de 20 minutes qui construit votre profil</div></div>
-      <div class="lp-vsrow"><div>Ce qu'il vous reste après l'échange</div><div class="lp-vsno">Des liens vers les bonnes pages et les bons outils</div><div class="lp-vsyes">Un rapport PDF personnalisé, à garder</div></div>
-      <div class="lp-vsrow"><div>Le public visé</div><div class="lp-vsno">Toute la Suisse, tous âges, toutes situations</div><div class="lp-vsyes">Deux publics précis, en profondeur</div></div>
-    </div>
-    <div class="lp-row cyn-stag" style="margin-top:26px;">
-      <div class="lp-pill"><b>Vous arrivez de l'étranger</b>Cynthia décode avec vous le marché du travail suisse : les équivalences pour votre diplôme, un salaire réaliste en francs pour votre profil, et les codes qui comptent en entretien ici.</div>
-      <div class="lp-pill"><b>Vous êtes suisse et cherchez du sens</b>Cynthia prend le temps de comprendre ce qui vous anime vraiment, au-delà du prochain poste à pourvoir, pour construire une direction qui vous ressemble.</div>
-    </div>
-    <div class="lp-row cyn-stag" style="margin-top:18px;">
-      <div class="lp-pill"><b>Combien coûte un entretien avec Cynthia ?</b>Pendant la phase de test, l'entretien complet et le rapport sont gratuits. Un bilan de compétences classique en Suisse coûte environ 280 francs la séance, pour un temps de conversation comparable.</div>
-      <div class="lp-pill"><b>Je viens d'arriver en Suisse, ça vaut le coup avant même d'avoir un emploi ?</b>C'est le bon moment. En vingt minutes, gratuitement, vous repartez avec une idée claire de la valeur de votre diplôme ici, d'une fourchette de salaire réaliste, et des codes suisses utiles avant un entretien.</div>
-      <div class="lp-pill"><b>Je suis en poste, simplement en questionnement : le temps investi se justifie ?</b>Oui, c'est exactement le profil pensé pour Cynthia. Vous repartez avec une vraie photographie de vos moteurs, de vos compétences transférables, et de deux ou trois pistes concrètes, construites à partir de ce que vous avez raconté.</div>
-    </div>
-  </div></section>
+  <!-- ⚠️ RETIRÉ le 5 septembre 2026 : le tableau « Je pourrais demander à une IA
+       gratuite » (#lp-vs) et la version de #lp-pourquoi qui comparait à
+       orientation.ch. Deux tableaux de comparaison se suivaient, et la page
+       nommait deux alternatives gratuites à son propre prospect.
+       Les trois arguments du tableau vivent désormais en affirmatif dans les
+       cartes de #lp-pourquoi, plus haut : « elle connaît les repères d'ici »
+       (CFC, brevet fédéral, article 32), « c'est elle qui mène » et « un rapport
+       PDF à garder ». Rien de perdu, personne de nommé. -->
 
   <!-- Le bloc « Pourquoi on peut se permettre cette garantie » a été RETIRÉ le
        15 août 2026 à la demande de Faouzi. Il annonçait « trois personnes l'ont
@@ -2381,7 +2312,10 @@ textarea.chat-input{
     <h2>On préfère <span class="lp-accent">vous le dire franchement</span></h2>
     <p>Vous allez nous confier des choses personnelles. Autant commencer par être clairs.</p>
     <div class="lp-row cyn-stag" style="margin-top:26px;">
-      <div class="lp-pill"><b>Oui, Cynthia est une intelligence artificielle</b>C'est pour ça qu'elle est là ce soir à 23h, sans rendez-vous, sans liste d'attente, et sans les 2 000 CHF d'un bilan.</div>
+      <!-- L'argument prix vivait ici aussi (« sans les 2 000 CHF d'un bilan ») :
+           c'était la 3e fois sur la même page. Il est désormais porté une seule
+           fois, dans le chapeau de #lp-pourquoi. -->
+      <div class="lp-pill"><b>Oui, Cynthia est une intelligence artificielle</b>C'est pour ça qu'elle est là ce soir à 23h, sans rendez-vous et sans liste d'attente.</div>
       <div class="lp-pill"><b>Elle vous dira ce que vos proches n'osent pas</b>Votre entourage vous encourage, c'est normal. Cynthia, elle, regarde vos réponses en face. Si une piste ne tient pas, elle le dit maintenant. Pas dans deux ans.</div>
       <div class="lp-pill"><b>Vous n'arriverez plus jamais en disant « je ne sais pas »</b>Chez un conseiller, à l'ORP ou en entretien, vous saurez enfin nommer ce que vous savez faire et vers quoi vous allez. C'est là que ça bascule.</div>
       <div class="lp-pill us"><b>Ce qu'elle fait le mieux</b>Transformer un flou qui traîne depuis des mois en une direction claire, et un premier pas à faire cette semaine.</div>
@@ -2440,6 +2374,16 @@ textarea.chat-input{
     </div>
     <div>© 2026 Cynth.IA · Genève, Suisse</div>
   </div></footer>
+
+  <!-- ── BOUTON FLOTTANT « COMMENCER » ──────────────────────────────────────
+       Constat de Faouzi (5 sept 2026) : les testeurs défilent peu et veulent
+       rejoindre la conversation tout de suite. Ce bouton la rend accessible à
+       n'importe quelle hauteur de page, sans remonter en haut.
+       Il vit DANS #page-landing : au changement de page il disparaît de
+       lui-même, aucune logique à maintenir pour ça. Il s'affiche une fois le
+       premier écran passé, pour laisser le grand bouton du hero jouer son rôle
+       d'abord. ─────────────────────────────────────────────────────────── -->
+  <button id="btn-start-float" class="btn-start-float" onclick="gp('preappel')">Commencer →</button>
 
 </div></div>
 
@@ -2839,36 +2783,11 @@ textarea.chat-input{
     </div>
   </div>
 
-  <!-- ── BOUTON FLOTTANT "J'AI UN DOUTE" ── -->
-  <button id="btn-doute" class="btn-doute-float" onclick="openDoubtModal()" aria-label="Exprimer un doute">
-    💬 J'ai un doute
-    <span class="doute-info-btn" onclick="event.stopPropagation()">ⓘ
-      <span class="doute-tooltip">
-        <strong style="color:#fff;">À quoi ça sert ?</strong><br>
-        Si quelque chose freine votre élan — une peur, un doute, un "et si…" — partagez-le à Cynthia. Elle répond avec empathie et des éléments concrets.<br><br>
-        <em style="color:rgba(250,243,224,.6);">Ex : "J'ai peur d'être trop âgé pour changer de voie."</em>
-      </span>
-    </span>
-  </button>
-
-  <!-- ── MODAL SAISIE DU DOUTE ── -->
-  <div id="doute-modal-bg" class="doute-modal-bg" role="dialog" aria-modal="true" aria-labelledby="doute-modal-title">
-    <div class="doute-modal">
-      <div class="doute-modal-head">
-        <div class="doute-modal-icon">🤔</div>
-        <div>
-          <div id="doute-modal-title" class="doute-modal-title">Exprimez votre doute</div>
-          <div class="doute-modal-sub">CYNTH.IA vous répond avec empathie et des faits concrets.</div>
-        </div>
-        <button class="doute-modal-close" onclick="closeDoubtModal()" aria-label="Fermer">✕</button>
-      </div>
-      <textarea id="doute-input" class="doute-textarea" placeholder="Ex : J'ai peur de ne pas y arriver, j'ai 48 ans…" maxlength="600" rows="4"></textarea>
-      <div class="doute-modal-footer">
-        <span id="doute-counter-label" class="doute-counter"></span>
-        <button id="doute-send-btn" class="doute-send-btn" onclick="submitDoubt()">Envoyer mon doute →</button>
-      </div>
-    </div>
-  </div>
+  <!-- ⚠️ RETIRÉ le 5 septembre 2026 : le bouton flottant « J'ai un doute » et sa
+       modale. Aucun testeur ne s'en est servi (retour de Faouzi). Le code JS associé
+       (openDoubtModal / closeDoubtModal / submitDoubt / handleDoubt / _getDoubtFallback)
+       est retiré dans le même passage : une fonction que plus rien n'appelle finit
+       toujours par tomber sur quelqu'un. Récupérable dans cynthia_v2.html.bak_doute_*. -->
 </div>
 
 <!-- ══════════════════════════════════════
@@ -3171,10 +3090,6 @@ function gp(name){
   if(name==='questionnaire'){resetQuiz();}
   if(name==='landing'){initReveal();}
 
-  // Masque le bouton "J'ai un doute" à chaque changement de page
-  // (il réapparaîtra dynamiquement après la réponse de Cynthia dès le msg 5)
-  const btnD = document.getElementById('btn-doute');
-  if(btnD) btnD.style.display = 'none';
   // Ferme le menu mobile si ouvert
   const mn=document.getElementById('gnav-mobile');
   const mb=document.getElementById('gnav-menu');
@@ -3226,7 +3141,23 @@ document.addEventListener('click',function(e){
 });
 
 /* ── SCROLL REVEAL ── */
+/* Bouton flottant « Commencer » : visible dès que le premier écran est passé.
+   Observé sur le hero plutôt que calculé au scroll, donc aucun listener de
+   défilement à faire tourner en continu (batterie mobile, même raison que le
+   canvas arrêté le 1er août). Si le hero manque, le bouton reste affiché : mieux
+   vaut un bouton visible en trop qu'un bouton d'entrée introuvable. */
+function initStartFloat(){
+  const btn=document.getElementById('btn-start-float');
+  if(!btn) return;
+  const hero=document.querySelector('.lp-hero');
+  if(!hero){ btn.classList.add('on'); return; }
+  new IntersectionObserver(es=>{
+    es.forEach(e=>btn.classList.toggle('on', !e.isIntersecting));
+  },{threshold:.15}).observe(hero);
+}
+
 function initReveal(){
+  initStartFloat();
   const obs=new IntersectionObserver(entries=>{
     entries.forEach(e=>{
       if(e.isIntersecting){
@@ -5706,9 +5637,6 @@ async function sendChatMsg() {
   if (btn)   btn.disabled   = true;
   if (input) input.disabled = true;
   showChatTyping(true);
-  // Masquer le bouton "J'ai un doute" pendant que l'IA réfléchit
-  const _btnDoute = document.getElementById('btn-doute');
-  if (_btnDoute) _btnDoute.style.display = 'none';
 
   const _wasSynthFired = synthesisFired;
   let reply = '';
@@ -5779,11 +5707,6 @@ async function sendChatMsg() {
        attente tomberait après le paiement, au pire moment possible. */
     if (_estSynthese) { try { _preparerRapportEnFond(); } catch (e) {} }
 
-    // ── Bouton "J'ai un doute" : apparaît après la réponse de Cynthia dès le 5e message ──
-    const _userMsgCount = chatHistory.filter(m => m.role === 'user').length;
-    if (_btnDoute && _userMsgCount >= 5 && !synthesisFired) {
-      setTimeout(() => { _btnDoute.style.display = 'flex'; }, 600);
-    }
 
     // ── Options post-synthèse ─────────────────────────────────────────────────
     // BUG CORRIGÉ (test réel du 31.07) : l'input se rouvrait immédiatement (via le
@@ -9757,217 +9680,6 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   CHANTIER 3A — MODE "DOUTE"
-   Permet à l'utilisateur d'exprimer une peur ou une incertitude à tout
-   moment pendant la conversation, sans perturber le compteur userCount.
-   Limite : 3 doutes par session (sessionStorage). Anti-XSS.
-══════════════════════════════════════════════════════════════════════════ */
-
-const DOUBT_MAX = 3;
-const DOUBT_PROMPT = `Tu es CYNTH.IA, conseillère d'orientation professionnelle.
-L'utilisateur traverse un moment de doute ou d'anxiété face à sa reconversion.
-Il vient d'exprimer la pensée suivante :
-
-"{DOUTE}"
-
-━━━ TON RÔLE ━━━
-Répondre avec EMPATHIE PROFONDE d'abord (valider son ressenti), puis apporter
-des FAITS CONCRETS et RASSURANTS, et enfin proposer 1 à 2 ACTIONS CONCRÈTES.
-
-━━━ DÉTECTE LE TYPE DE DOUTE ━━━
-● DOUTE FINANCIER ("je vais perdre de l'argent", "les formations coûtent cher")
-  → Cite : le chèque annuel de formation cantonal, l'art. 32 (CFC adulte en emploi),
-    le remboursement de 50% des cours par la Confédération, les mesures ORP si au chômage.
-● DOUTE D'ÂGE ("je suis trop vieux/vieille", "à mon âge c'est trop tard")
-  → Rappelle : en Suisse, les reconversions d'adultes et la formation continue sont
-    très répandues, et l'expérience est un atout réel sur le marché. Cite 1-2 exemples concrets.
-● DOUTE DE CAPACITÉ ("je n'y arriverai pas", "je ne suis pas assez")
-  → Valide : le syndrome de l'imposteur touche 70% des reconvertis. Rappelle
-    que les compétences s'acquièrent, que l'élan compte plus que les diplômes.
-● DOUTE FAMILIAL / ENTOURAGE ("ma famille ne croit pas en moi")
-  → Empathie forte : c'est normal et douloureux. Propose : 1) en parler
-    directement, 2) montrer des données concrètes sur la reconversion réussie,
-    3) avancer à petit pas pour montrer l'exemple.
-● DOUTE GÉNÉRIQUE (non catégorisé)
-  → Empathie, puis 3 faits positifs sur la reconversion professionnelle en Suisse.
-
-━━━ FORMAT DE RÉPONSE ━━━
-1. Une phrase d'empathie (reconnaît le ressenti, sans minimiser).
-2. 2-3 faits concrets ou chiffres pertinents (crédibles, sourcés).
-3. 1-2 actions concrètes à faire MAINTENANT ou cette semaine.
-
-Longueur : 6 à 10 phrases maximum. Ton : chaleureux, humain, expert.
-Tu parles TOUJOURS en "vous". Jamais condescendant.`;
-
-/**
- * Retourne le nombre de doutes envoyés dans cette session.
- */
-function getDoubtCount() {
-  return parseInt(sessionStorage.getItem('cynthia_doubt_count') || '0', 10);
-}
-
-/**
- * Ouvre le modal de saisie du doute.
- * Vérifie la limite DOUBT_MAX avant d'ouvrir.
- */
-function openDoubtModal() {
-  const count = getDoubtCount();
-  if (count >= DOUBT_MAX) {
-    showToast('💬', 'Vous avez utilisé vos 3 questions de doute. Continuons ensemble !', 'info', 4000);
-    return;
-  }
-  const remaining = DOUBT_MAX - count;
-  const label = document.getElementById('doute-counter-label');
-  if (label) label.textContent = `${remaining} question${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`;
-  const ta = document.getElementById('doute-input');
-  if (ta) { ta.value = ''; ta.focus(); }
-  document.getElementById('doute-modal-bg').classList.add('show');
-}
-
-/**
- * Ferme le modal du doute.
- */
-function closeDoubtModal() {
-  document.getElementById('doute-modal-bg').classList.remove('show');
-}
-
-/**
- * Sanitise le texte utilisateur pour prévenir les injections XSS.
- * @param {string} str
- * @returns {string}
- */
-function _sanitize(str) {
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-/**
- * Lit le texte du textarea doute, vérifie les guards, appelle Groq.
- */
-async function submitDoubt() {
-  const ta = document.getElementById('doute-input');
-  const sendBtn = document.getElementById('doute-send-btn');
-  if (!ta) return;
-  const raw = ta.value.trim();
-  if (!raw || raw.length < 5) {
-    showToast('✏️', 'Exprimez votre doute en quelques mots.', 'info', 3000);
-    return;
-  }
-  if (getDoubtCount() >= DOUBT_MAX) {
-    closeDoubtModal();
-    showToast('💬', 'Limite de 3 doutes atteinte pour cette session.', 'info', 4000);
-    return;
-  }
-  // ── Sécurité : bloquer les tentatives de jailbreak dans le modal Doute ───────
-  if (detectJailbreak(raw)) {
-    closeDoubtModal();
-    showToast('🔒', 'Je suis CYNTH.IA, votre conseillère en orientation. Exprimez-moi une vraie crainte ou hésitation.', 'info', 5000);
-    return;
-  }
-  // Désactiver le bouton le temps de la requête
-  if (sendBtn) sendBtn.disabled = true;
-  closeDoubtModal();
-  await handleDoubt(raw);
-  if (sendBtn) sendBtn.disabled = false;
-}
-
-/**
- * Appelle Groq avec le prompt Mode Doute, insère la réponse dans le chat
- * SANS incrémenter chatHistory côté utilisateur (donc sans toucher userCount).
- * @param {string} userDoubt — texte brut du doute utilisateur
- */
-async function handleDoubt(userDoubt) {
-  // Incrémenter le compteur de doutes (sessionStorage)
-  const newCount = getDoubtCount() + 1;
-  sessionStorage.setItem('cynthia_doubt_count', String(newCount));
-
-  // Mettre à jour le label du bouton
-  const remaining = DOUBT_MAX - newCount;
-  const btnD = document.getElementById('btn-doute');
-  if (btnD) {
-    if (remaining <= 0) {
-      btnD.disabled = true;
-      btnD.title = 'Limite de doutes atteinte pour cette session.';
-    }
-  }
-
-  // Afficher le message de l'utilisateur dans le chat (en tant qu'aside visuel)
-  addChatBubble('user', '💭 ' + userDoubt);
-
-  // Afficher l'indicateur de saisie
-  showChatTyping(true);
-
-  let reply = '';
-  const prompt = DOUBT_PROMPT.replace('{DOUTE}', userDoubt.replace(/"/g, '\\"'));
-
-  try {
-    if (GROQ_PROXY_URL && !GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
-      try {
-        const resp = await fetch(GROQ_PROXY_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 450,
-            temperature: 0.65,
-            top_p: 0.9
-          })
-        });
-        clearTimeout(timeout);
-        if (!resp.ok) throw new Error('groq-' + resp.status);
-        const data = await resp.json();
-        reply = data.choices?.[0]?.message?.content?.trim() || '';
-        if (!reply) throw new Error('empty-response');
-      } catch (fetchErr) {
-        clearTimeout(timeout);
-        throw fetchErr;
-      }
-    } else {
-      // Fallback si proxy non configuré
-      await new Promise(r => setTimeout(r, 1200));
-      reply = _getDoubtFallback(userDoubt);
-    }
-  } catch (e) {
-    console.warn('Doubt API error:', e.message || e);
-    reply = _getDoubtFallback(userDoubt);
-  }
-
-  // Délai naturel minimum
-  await new Promise(r => setTimeout(r, 400));
-  showChatTyping(false);
-
-  // Insérer la réponse en tant que message assistant SANS toucher chatHistory côté user
-  // On l'ajoute à chatHistory pour contexte futur mais sans que ça compte dans userMsgCount
-  addChatBubble('ai', reply);
-  // Note : on n'ajoute PAS ce message à chatHistory pour ne pas perturber le compteur.
-  // Le doute est une sidebar contextuelle, pas un échange du flow principal.
-}
-
-/**
- * Réponse de secours si l'API est indisponible.
- * @param {string} doubt
- * @returns {string}
- */
-function _getDoubtFallback(doubt) {
-  const d = doubt.toLowerCase();
-  if (/vieux|âge|tard|48|50|55|45/.test(d)) {
-    return "Ce que vous ressentez est tout à fait normal — et très courant. En Suisse, se reconvertir à 40 ou 50 ans est fréquent : le système est fait pour ça (CFC pour adultes via l'art. 32, brevets fédéraux en emploi), et dès 40 ans viamia propose un bilan gratuit. L'expérience que vous avez accumulée est un atout que les jeunes diplômés n'ont pas : vous savez ce qui compte vraiment dans un environnement professionnel. Premier pas concret : cherchez 3 témoignages de personnes qui ont réussi une reconversion après 45 ans — ils existent, et ils vous ressemblent.";
-  }
-  if (/argent|salaire|financ|coût|cher|payer/.test(d)) {
-    return "La peur financière est légitime — et c'est souvent ce qui bloque le plus. Bonne nouvelle : en Suisse, des dispositifs existent. Dès 40 ans, viamia offre un bilan d'orientation gratuit. Les cantons proposent des chèques annuels de formation, et la Confédération rembourse 50% des cours préparatoires aux brevets et diplômes fédéraux. Si vous êtes inscrit·e au chômage, l'ORP peut cofinancer une reconversion, et l'article 32 permet d'obtenir un CFC tout en travaillant. Premier pas : cherchez « chèque annuel de formation » suivi du nom de votre canton.";
-  }
-  if (/famille|mari|femme|enfants|entourage|conjoint|croire/.test(d)) {
-    return "C'est douloureux quand ceux qu'on aime ne voient pas encore ce qu'on voit en soi. Souvent, leur inquiétude vient de l'amour — ils ont peur pour vous, pas contre vous. Ce qui peut changer les choses : non pas les convaincre avec des mots, mais avancer à petits pas et leur montrer des résultats concrets. Premier pas concret : faites un test gratuit (type MBTI ou test de forces) et partagez les résultats avec eux. Ça donne une base objective à la conversation.";
-  }
-  return "Ce doute que vous ressentez est normal — il touche 9 personnes sur 10 en début de reconversion. Ce n'est pas un signal d'alarme, c'est un signal de sérieux. Vous prenez ça au sérieux parce que ça compte pour vous. Premier pas : notez noir sur blanc ce qui vous fait peur. Une peur qu'on formule précisément perd la moitié de sa puissance.";
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
    CHANTIER 3B — AVATARS MÉTIERS
    Après la synthèse, affiche des cartes cliquables pour dialoguer avec
    un professionnel IA qui incarne chaque métier recommandé.
@@ -10274,7 +9986,6 @@ async function sendAvatarMsg() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (document.getElementById('avatar-modal-bg').classList.contains('show')) closeAvatarModal();
-    if (document.getElementById('doute-modal-bg').classList.contains('show')) closeDoubtModal();
   }
 });
 
