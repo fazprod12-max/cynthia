@@ -2764,13 +2764,13 @@ textarea.chat-input{
             oninput="_autoGrandirSaisie(this)"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></textarea>
           <span id="mic-timer"></span>
-          <!-- MICRO DÉSACTIVÉ (juillet 2026, raison juridique) : la transcription envoyait
-               l'enregistrement vocal à l'API publique HuggingFace, sans clé, sans contrat de
-               sous-traitance et sans mention dans la politique de confidentialité. Un
-               enregistrement de voix est une donnée personnelle sensible. À réactiver
-               seulement avec un prestataire déclaré + contrat + mention explicite.
+          <!-- MICRO RÉACTIVÉ le 5 septembre 2026, aux trois conditions posées en juillet
+               quand il avait été coupé : prestataire déclaré (Groq, qui traite déjà les
+               conversations), route par notre worker au lieu d'une API publique sans clé,
+               et mention explicite dans la politique de confidentialité. Le texte transcrit
+               arrive dans le champ de saisie : la personne relit et corrige avant d'envoyer,
+               rien ne part tout seul. -->
           <button id="mic-async-btn" onclick="toggleMicAsync()" title="Parler (max 2 min)">🎤</button>
-          -->
           <button class="chat-send" id="chat-send-btn" onclick="sendChatMsg()" title="Envoyer">↑</button>
         </div>
         <div class="chat-hint">Entrée pour envoyer · CYNTH.IA analyse vos réponses pour construire votre profil</div>
@@ -3395,7 +3395,11 @@ function showModal(type){
       <p>• Votre prénom, si vous le donnez (facultatif)<br>
       • Votre email, si vous le donnez (facultatif)<br>
       • Ce que vous écrivez pendant la conversation<br>
-      • Le texte de votre CV, si vous en déposez un</p>
+      • Le texte de votre CV, si vous en déposez un<br>
+      • Votre voix, uniquement si vous utilisez le bouton micro</p>
+
+      <h4>Si vous utilisez le micro</h4>
+      <p>L'enregistrement part vers notre serveur relais, qui le transmet à <strong>Groq</strong> (États-Unis) pour être transcrit en texte, puis il est abandonné : nous ne le stockons nulle part et il ne sert à entraîner aucun modèle. Le texte obtenu s'affiche dans le champ de saisie, vous le relisez et le corrigez avant d'envoyer quoi que ce soit. Le micro reste facultatif : tout fonctionne à l'écrit.</p>
 
       <h4>Votre CV ne quitte pas votre appareil</h4>
       <p>Le fichier est lu directement dans votre navigateur. Il n'est ni envoyé, ni stocké chez nous. Seul le <em>texte</em> qui en est extrait est transmis à l'IA pour préparer votre analyse.</p>
@@ -10528,20 +10532,29 @@ document.addEventListener('DOMContentLoaded', function () {
   setTimeout(_tenterRepriseChat, 400);
 });
 
-/* ─────────────────────────────────────────────────────────
-   MINI MICRO ASYNCHRONE
-   Primaire  : Web Speech API (Chrome / Edge / Safari)
-   Fallback  : MediaRecorder + HuggingFace Whisper large-v3
-   Zéro coût API · Compatible desktop & mobile
-───────────────────────────────────────────────────────── */
-let _micRecording = false;
-let _speechRec    = null;
-let _mediaRec     = null;
-let _audioChunks  = [];
+/* ───────────────────────────────────────
+   MICRO — dictée vocale dans le chat        (refait le 5 septembre 2026)
+
+   HISTORIQUE, à ne pas répéter : le micro avait été désactivé en juillet 2026
+   parce qu'il envoyait l'enregistrement à l'API publique HuggingFace, sans
+   clé, sans contrat et sans un mot dans la politique de confidentialité.
+
+   UN SEUL CHEMIN désormais : on enregistre, on envoie à NOTRE worker, qui
+   transcrit via Groq (déjà notre prestataire, déjà nommé dans la politique).
+   L'ancienne version avait deux chemins, et le chemin propre basculait en
+   silence sur le sale dès la moindre erreur : c'est exactement comme ça qu'on
+   se retrouve à envoyer la voix de quelqu'un chez un tiers sans le savoir.
+   La reconnaissance native du navigateur est écartée volontairement : elle
+   transmet aussi la voix (à Google sur Chrome), et elle décroche sur les
+   accents et les phrases longues, donc précisément sur les deux publics à qui
+   le micro sert le plus.
+──────────────────────────────────────── */
+let _micRecording  = false;
+let _mediaRec      = null;
+let _audioChunks   = [];
 let _micIntervalId = null;
-let _micSec       = 0;
-const MIC_MAX_SEC = 120;
-const _SpeechAPI  = window.SpeechRecognition || window.webkitSpeechRecognition;
+let _micSec        = 0;
+const MIC_MAX_SEC  = 120;
 
 function _setMicState(state) {
   const btn = document.getElementById('mic-async-btn');
@@ -10559,128 +10572,87 @@ function _setMicState(state) {
     btn.textContent = '🎤';
     btn.classList.remove('mic-rec', 'mic-proc');
     btn.title = 'Parler (max 2 min)';
-    if (tmr) { tmr.textContent = ''; tmr.classList.remove('show'); }
+    if (tmr) tmr.textContent = '';
   }
 }
 
 function _startMicTimer() {
   _micSec = 0;
   const tmr = document.getElementById('mic-timer');
-  if (tmr) tmr.classList.add('show');
   _micIntervalId = setInterval(() => {
     _micSec++;
-    const m = String(Math.floor(_micSec / 60)).padStart(2, '0');
-    const s = String(_micSec % 60).padStart(2, '0');
-    if (tmr) tmr.textContent = m + ':' + s;
+    if (tmr) tmr.textContent = Math.floor(_micSec / 60) + ':' + String(_micSec % 60).padStart(2, '0');
     if (_micSec >= MIC_MAX_SEC) stopMicAsync();
   }, 1000);
 }
 
 function _stopMicTimer() {
-  clearInterval(_micIntervalId);
-  _micIntervalId = null;
+  if (_micIntervalId) { clearInterval(_micIntervalId); _micIntervalId = null; }
+  const tmr = document.getElementById('mic-timer');
+  if (tmr) tmr.textContent = '';
 }
 
+/* Le texte transcrit s'AJOUTE à ce qui est déjà écrit, sans jamais l'écraser :
+   quelqu'un qui a tapé trois lignes puis dicte la suite garde ses trois lignes.
+   Rien n'est envoyé automatiquement, la personne relit et corrige avant. */
 function _injectText(text) {
-  const inp = document.getElementById('chat-input');
-  if (!inp || !text.trim()) return;
-  inp.value = (inp.value ? inp.value + ' ' : '') + text.trim();
-  inp.focus();
-  inp.dispatchEvent(new Event('input'));
+  const input = document.getElementById('chat-input');
+  if (!input) return;
+  input.value = (input.value.trim() ? input.value.trim() + ' ' : '') + text;
+  input.focus();
+  if (typeof _autoGrandirSaisie === 'function') _autoGrandirSaisie(input);
 }
 
 function toggleMicAsync() {
-  if (_micRecording) { stopMicAsync(); } else {
-    _SpeechAPI ? _startWithSpeechAPI() : _startWithMediaRecorder();
-  }
-}
-
-function _startWithSpeechAPI() {
-  _speechRec = new _SpeechAPI();
-  _speechRec.lang = 'fr-FR';
-  _speechRec.continuous = true;
-  _speechRec.interimResults = false;
-  _speechRec.maxAlternatives = 1;
-  let transcript = '';
-
-  _speechRec.onstart = () => {
-    _micRecording = true; _setMicState('rec'); _startMicTimer();
-    showToast('🎤', 'Parlez… cliquez ⏹ pour arrêter', 'success', 2500);
-  };
-  _speechRec.onresult = (e) => {
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) transcript += e.results[i][0].transcript + ' ';
-    }
-  };
-  _speechRec.onend = () => {
-    _micRecording = false; _stopMicTimer(); _setMicState('idle');
-    if (transcript.trim()) _injectText(transcript.trim());
-  };
-  _speechRec.onerror = (e) => {
-    _micRecording = false; _stopMicTimer();
-    if (e.error === 'not-allowed') {
-      showToast('🎤', 'Micro refusé — autorisez-le dans les paramètres', 'error', 5000);
-      _setMicState('idle');
-    } else if (e.error === 'no-speech') {
-      showToast('🎤', 'Aucune parole détectée', 'warning', 3000); _setMicState('idle');
-    } else {
-      _startWithMediaRecorder();
-    }
-  };
-  try { _speechRec.start(); } catch(err) { _startWithMediaRecorder(); }
+  if (_micRecording) { stopMicAsync(); } else { _demarrerMicro(); }
 }
 
 function stopMicAsync() {
   _micRecording = false; _stopMicTimer();
-  if (_speechRec) { try { _speechRec.stop(); } catch(e) {} _speechRec = null; }
   if (_mediaRec && _mediaRec.state !== 'inactive') { _mediaRec.stop(); return; }
   _setMicState('idle');
 }
 
-async function _startWithMediaRecorder() {
+async function _demarrerMicro() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     _audioChunks = [];
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
-    _mediaRec = new MediaRecorder(stream, { mimeType });
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+    _mediaRec = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     _mediaRec.ondataavailable = (e) => { if (e.data.size > 0) _audioChunks.push(e.data); };
     _mediaRec.onstop = async () => {
       stream.getTracks().forEach(t => t.stop());
       _micRecording = false; _stopMicTimer(); _setMicState('proc');
-      await _transcribeWhisper(new Blob(_audioChunks, { type: mimeType }), mimeType);
+      await _transcrireAudio(new Blob(_audioChunks, { type: _mediaRec.mimeType || 'audio/webm' }));
     };
     _mediaRec.start(500);
     _micRecording = true; _setMicState('rec'); _startMicTimer();
-    showToast('🎤', 'Enregistrement… cliquez ⏹ pour transcrire', 'success', 2500);
-  } catch(err) {
+    showToast('🎤', 'Parlez, puis cliquez ⏹ pour transcrire', 'success', 2500);
+  } catch (err) {
     _setMicState('idle');
     showToast('🎤', 'Micro inaccessible : ' + (err.message || 'permission refusée'), 'error', 5000);
   }
 }
 
-async function _transcribeWhisper(blob, mimeType, _retryCount) {
-  _retryCount = _retryCount || 0;
+async function _transcrireAudio(blob) {
   try {
-    const resp = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3', {
-      method: 'POST', headers: { 'Content-Type': mimeType }, body: blob
-    });
-    if (resp.status === 503) {
-      if (_retryCount >= 2) {
-        showToast('❌', 'Modèle vocal indisponible — réessayez dans quelques minutes', 'error', 5000);
-        _setMicState('idle'); return;
-      }
-      showToast('⏳', 'Modèle IA en démarrage — réessai dans 20s…', 'warning', 5000);
-      await new Promise(r => setTimeout(r, 20000));
-      return _transcribeWhisper(blob, mimeType, _retryCount + 1);
+    if (!blob || blob.size < 1000) {
+      showToast('🎤', 'Enregistrement trop court, réessayez', 'warning', 3000);
+      return;
     }
-    if (!resp.ok) throw new Error('HF ' + resp.status);
+    const form = new FormData();
+    form.append('audio', blob, 'audio.webm');
+    const resp = await fetch(GROQ_PROXY_URL + '/transcrire', { method: 'POST', body: form });
+    if (!resp.ok) throw new Error('worker ' + resp.status);
     const data = await resp.json();
-    const text = data.text || data.generated_text || (Array.isArray(data) && data[0]?.generated_text) || '';
-    if (text.trim()) { _injectText(text.trim()); showToast('✅', 'Texte injecté dans le chat', 'success', 2500); }
-    else showToast('🎤', 'Aucun texte détecté — réessayez', 'warning', 3000);
-  } catch(err) {
-    console.error('Whisper error:', err);
-    showToast('❌', 'Transcription échouée — vérifiez votre connexion', 'error', 4000);
+    const texte = (data && data.texte || '').trim();
+    if (texte) { _injectText(texte); showToast('✅', 'Relisez, corrigez, puis envoyez', 'success', 3000); }
+    else showToast('🎤', 'Aucune parole détectée, réessayez', 'warning', 3000);
+  } catch (err) {
+    console.error('Transcription :', err);
+    showToast('❌', 'Transcription indisponible, écrivez votre message', 'error', 4000);
   } finally { _setMicState('idle'); }
 }
 
