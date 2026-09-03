@@ -33,7 +33,13 @@
 <title>CYNTH.IA — Retrouvez votre voie en 20 minutes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- display=fallback (pas swap) : sur une police déjà chargée (le cas normal), ça
+     ne change rien. Sur un chargement lent, ça évite le vrai défaut signalé par
+     Faouzi (un titre affiché brièvement dans une police système avant de basculer
+     vers Space Grotesk, ce qui « fait bizarre ») — le texte reste invisible ~100ms
+     puis apparaît directement dans la bonne police, au lieu d'apparaître deux fois
+     dans deux polices différentes. -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=fallback" rel="stylesheet">
 <style>
 /* ── Identité visuelle Cynth.IA (alignée landing/rapport) ── */
 :root{
@@ -9244,7 +9250,7 @@ function downloadRapport(){
 
   const section6 = data.message_fin ? `<div class="pad"><div class="msgfin"><div class="minilabel">Un mot pour la suite</div><p>${esc(data.message_fin)}</p><div class="signature"><div class="orb"></div><div><b>Cynthia</b><small>Votre coach d'orientation</small></div></div></div></div>` : '';
 
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="format-detection" content="telephone=no,date=no,address=no,email=no"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="format-detection" content="telephone=no,date=no,address=no,email=no"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=fallback" rel="stylesheet"><style>
 :root{--cream:#FAF6F0;--cream2:#F1E9DC;--ink:#0E2A24;--ink2:#0A211C;--muted:#5C6B64;--emerald:#1FB488;--emerald-d:#12876A;--emerald-soft:#E7F4EE;--coral:#FF6F5E;--gold:#E8A93C;--gold-soft:#FBF0D8;--coral-soft:#FFE9E4;--line:#E8E1D6}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:#EFE7DB;line-height:1.62;-webkit-font-smoothing:antialiased}
