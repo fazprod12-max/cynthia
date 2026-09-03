@@ -1266,32 +1266,6 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 .avatar-typing-wrap.show{display:block;}
 .avatar-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--c-line);flex-shrink:0;background:var(--c-cream);}
 
-/* ══════════════════════════════════════════════════════════════
-   OFFRES D'EMPLOI (jobup.ch)
-   CORRIGÉ (1er août 2026) : ce bloc avait gardé les couleurs du thème SOMBRE
-   d'origine (texte blanc / crème). Depuis le reskin, la carte de confirmation est
-   blanche → titre blanc sur fond blanc = section entièrement INVISIBLE pour le
-   client, juste après un paiement. Repassé en identité claire.
-══════════════════════════════════════════════════════════════ */
-.offre-card{
-  background:var(--c-cream);border:1px solid var(--c-line);
-  border-radius:12px;padding:14px 16px;margin-bottom:10px;
-  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-}
-.offre-card-info{flex:1;min-width:0;}
-.offre-card-titre{font-size:14px;font-weight:600;color:var(--c-ink);margin-bottom:4px;}
-.offre-card-meta{font-size:12px;color:var(--c-muted);}
-.offre-card-link{
-  flex-shrink:0;padding:8px 14px;background:var(--c-emerald-soft);
-  border:1px solid transparent;border-radius:8px;
-  font-size:12px;font-weight:600;color:var(--c-emerald-d);text-decoration:none;
-  transition:background .2s;white-space:nowrap;
-}
-.offre-card-link:hover{background:#D6EDE2;}
-.offre-metier-group{margin-bottom:16px;}
-.offre-metier-label{font-size:13px;font-weight:700;color:var(--c-ink);
-  margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--c-line);}
-.offre-note{font-size:13px;color:var(--c-muted);line-height:1.6;}
 /* ════════════════════════════════════════
    PAGE QUESTIONNAIRE — Préparation
 ════════════════════════════════════════ */
@@ -2769,12 +2743,6 @@ textarea.chat-input{
         <div id="conf-metiers-grid" class="conf-metiers-grid"></div>
       </div>
 
-      <!-- Section Offres emploi (remplie dynamiquement) -->
-      <div id="conf-offres-section" style="display:none;margin-top:28px;width:100%;">
-        <h3 style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;color:var(--c-ink);margin:0 0 6px;">💼 Où postuler en Suisse</h3>
-        <p style="font-size:13px;color:var(--c-muted);margin:0 0 16px;">Une recherche jobup.ch déjà prête pour chacun de vos métiers.</p>
-        <div id="conf-offres-list"></div>
-      </div>
 
       <div class="conf-actions">
         <!-- Bouton gratuit (rapport basique) -->
@@ -6071,7 +6039,6 @@ function doEndChat() {
            reste intact et c'est LUI que la personne reçoit. */
       try {
         renderMetiersSection(window._reportData.top_metiers || []);
-        fetchAllJobOffers(window._reportData.top_metiers || []);
       } catch (uiErr) {
         console.error('[CYNTH] Rendu post-rapport en échec — le rapport lui-même est intact, seul l\'affichage des cartes a un problème :', uiErr);
       }
@@ -10067,34 +10034,6 @@ function _orientationRechercheUrl(intitule) {
   return 'https://www.orientation.ch/fr/recherche?q=' + encodeURIComponent(_termeRecherche(intitule));
 }
 
-/**
- * Affiche un lien « voir les offres » par métier recommandé.
- * @param {Array} metiers — tableau top_metiers
- */
-function fetchAllJobOffers(metiers) {
-  const section = document.getElementById('conf-offres-section');
-  const list = document.getElementById('conf-offres-list');
-  if (!section || !list) return;
-  // Les recherches jobup nomment les cinq métiers : même règle que ci-dessus.
-  if (!_peutVoirSesMetiers()) { section.style.display = 'none'; return; }
-
-  const liste = (metiers || []).filter(function (m) { return m && m.titre; }).slice(0, 5);
-  if (liste.length === 0) { section.style.display = 'none'; return; }
-
-  section.style.display = 'block';
-  list.innerHTML = liste.map(function (m) {
-    const t = sanitizeHtml(m.titre);
-    const sect = sanitizeHtml(m.secteur || '');
-    return '<div class="offre-card">'
-         +   '<div class="offre-card-info">'
-         +     '<div class="offre-card-titre">' + t + '</div>'
-         +     (sect ? '<div class="offre-card-meta">' + sect + '</div>' : '')
-         +   '</div>'
-         +   '<a href="' + _jobupUrl(m.titre) + '" target="_blank" rel="noopener noreferrer" class="offre-card-link">Voir sur jobup ↗</a>'
-         + '</div>';
-  }).join('')
-  + '<p class="offre-note" style="margin-top:12px;">Les recherches s\'ouvrent sur jobup.ch, le site d\'emploi de référence en Suisse. Pensez aussi à jobs.ch et au site de votre ORP.</p>';
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    CHANTIER 4 — MONÉTISATION FREEMIUM (Stripe Checkout via Worker)
