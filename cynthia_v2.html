@@ -1996,6 +1996,13 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-row{display:flex;justify-content:center;gap:14px;margin-top:30px;flex-wrap:wrap;}
   .lp-pill{background:rgba(255,255,255,.8);border-radius:15px;padding:15px 20px;font-size:.9rem;text-align:left;max-width:235px;}
   .lp-pill b{font-family:'Space Grotesk';display:block;margin-bottom:3px;}
+  /* Police du bloc « Pourquoi CYNTH.IA » agrandie (3 sept 2026, Faouzi la trouvait
+     petite). Scopé à #lp-pourquoi pour ne pas changer .lp-card/.lp-pill ailleurs
+     sur le site (elles servent aussi à #lp-comment et #lp-franc). */
+  #lp-pourquoi .lp-sechead p{font-size:1.15rem;}
+  #lp-pourquoi .lp-card h3{font-size:1.3rem;}
+  #lp-pourquoi .lp-card p{font-size:1.02rem;line-height:1.5;}
+  #lp-pourquoi .lp-pill{font-size:1rem;max-width:260px;}
   .lp-pill.us{background:var(--c-ink);color:#fff;} .lp-pill.us b{color:#FF9166;}
   .lp-price-wrap{display:flex;justify-content:center;}
   .lp-price{background:#fff;border:2px solid var(--c-emerald);border-radius:28px;padding:42px;max-width:450px;width:100%;text-align:center;box-shadow:0 40px 80px -32px rgba(18,135,106,.5);position:relative;}
