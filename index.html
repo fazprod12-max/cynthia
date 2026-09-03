@@ -2142,12 +2142,12 @@ textarea.chat-input{
            ⚠️ La dernière phrase n'est PAS décorative : sans elle, le visiteur
            quitte le premier écran sans savoir ce qu'il obtient en cliquant.
            Ne pas la retirer pour raccourcir. -->
-      <p class="lp-lead">Ce n&rsquo;est pas un rendez-vous chez un conseiller. C&rsquo;est un rendez-vous avec vous-même. Le premier, peut-être. Disponible maintenant. À la fin, un rapport à garder.</p>
+      <p class="lp-lead">Ce n'est pas un rendez-vous chez un conseiller. C'est un rendez-vous avec vous-même. Le premier, peut-être. Disponible maintenant. À la fin, un rapport à garder.</p>
       <div class="lp-hcta">
         <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer maintenant →</button>
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Découvrir la méthode</button>
       </div>
-      <div class="lp-reassure"><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans engagement</span><span>↩ Pas satisfait ? Écrivez-nous</span></div>
+      <div class="lp-reassure"><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans engagement</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">↩ Pas satisfait ? <b style="text-decoration:underline">Écrivez-nous</b></span></div>
     </div>
     <div class="lp-chatcard">
       <div class="lp-ctop"><div class="lp-orb"></div><div><div class="lp-who">Cynthia</div><div class="lp-cstat">● en ligne · vous écoute</div></div></div>
@@ -2782,7 +2782,7 @@ textarea.chat-input{
              d'achat dès que CONFIG.RAPPORT_GRATUIT passe à false. -->
         <label id="cgv-accept-wrap" style="display:none;align-items:flex-start;gap:9px;max-width:430px;margin:0 auto 14px;text-align:left;font-size:13.5px;line-height:1.5;color:var(--c-slate);cursor:pointer;">
           <input type="checkbox" id="cgv-accept" style="margin-top:3px;width:18px;height:18px;flex:0 0 auto;accent-color:var(--c-emerald-d);cursor:pointer;">
-          <span>J&rsquo;ai lu et j&rsquo;accepte les <a role="button" tabindex="0" onclick="event.preventDefault();event.stopPropagation();showModal('cgv')" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();showModal('cgv');}" style="color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;">conditions de vente</a>. J&rsquo;ai compris qu&rsquo;en Suisse un achat en ligne n&rsquo;ouvre pas de droit de r&eacute;tractation, et que le rapport m&rsquo;est remis imm&eacute;diatement.</span>
+          <span>J'ai lu et j'accepte les <a role="button" tabindex="0" onclick="event.preventDefault();event.stopPropagation();showModal('cgv')" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();showModal('cgv');}" style="color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;">conditions de vente</a>. J'ai compris qu'en Suisse un achat en ligne n'ouvre pas de droit de rétractation, et que le rapport m'est remis immédiatement.</span>
         </label>
         <div id="cgv-erreur" role="alert" style="display:none;max-width:430px;margin:-6px auto 12px;font-size:13px;color:#B4472F;text-align:left;">Merci de cocher la case avant de continuer.</div>
         <button class="btn-main" id="btn-premium" style="display:none;" onclick="startStripeCheckout()">
@@ -5818,7 +5818,7 @@ function _apercuRapport(data) {
 
   if (citation) {
     h += '<blockquote class="apercu-cit">&laquo;&nbsp;' + e(citation) + '&nbsp;&raquo;'
-      + '<span class="apercu-src">vos mots, pendant l&rsquo;entretien</span></blockquote>';
+      + '<span class="apercu-src">vos mots, pendant l\'entretien</span></blockquote>';
   }
   if (portrait) h += '<p class="apercu-p">' + e(portrait) + '</p>';
 
@@ -9571,9 +9571,9 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
     var b=ev.target.closest('button[data-v]');
     if(!b) return;
     var note=Number(b.getAttribute('data-v'))||0;
-    box.innerHTML='<div class="done">Merci, c&rsquo;est noté.</div>'
+    box.innerHTML='<div class="done">Merci, c\'est noté.</div>'
       + '<div class="sub" style="margin-top:14px">Si vous avez cinq minutes, le questionnaire complet '
-      + 'm&rsquo;aide beaucoup plus qu&rsquo;une note. C&rsquo;est là que vous pouvez me dire '
+      + 'm\'aide beaucoup plus qu\'une note. C\'est là que vous pouvez me dire '
       + 'ce qui vous a gêné, et ce que ce rapport vaut selon vous.</div>'
       + '<a class="lienq" href="https://cynthia-orientation.ch/retour.html" target="_blank" rel="noopener">'
       + 'Donner mon avis complet &rarr;</a>';
@@ -9599,7 +9599,7 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
         setTimeout(function(){ inpS.style.borderColor=''; },1800);
         return;
       }
-      boxS.innerHTML='<div class="done">C&rsquo;est noté. On vous écrit dans six mois, pas avant.</div>';
+      boxS.innerHTML='<div class="done">C\'est noté. On vous écrit dans six mois, pas avant.</div>';
       try{
         fetch('${GROQ_PROXY_URL}/suivi',{
           method:'POST',
