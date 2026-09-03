@@ -7608,6 +7608,137 @@ function _retrograderContradictions(topMetiers, phrasesNeg) {
   return principaux.concat(pistes);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   TRANSFÉRABILITÉ — « est-ce que je peux postuler maintenant ? » (3 sept 2026)
+
+   POURQUOI CE CODE EXISTE, ET POURQUOI IL EST DÉTERMINISTE
+   Le champ `horizon` existe depuis le 17 août, mais il est écrit par le
+   MODÈLE : c'est une consigne de prompt, donc un conseil, pas une garantie.
+   S'il est oublié, la pastille ne s'affiche pas ; s'il est faux, personne ne
+   le corrige. Or c'est l'information la plus actionnable du rapport, pour
+   deux raisons mesurées :
+   1. Retours testeurs : la note « je sais quoi faire lundi » est à 10/10 chez
+      les personnes en transition quand une piste est ouverte tout de suite,
+      et à 5/10 quand aucune ne l'est.
+   2. Vocabulaire officiel : la plateforme des mesures de l'OCE (ZETEO) ne
+      parle jamais de « reconversion ». Son thème s'appelle « Évaluation des
+      compétences » et parle de « positionner vos compétences » par rapport
+      « aux attentes du marché du travail ». Un rapport qui sépare ce qui est
+      transférable MAINTENANT de ce qui demande une formation est lisible par
+      un conseiller ORP. Un rapport qui empile cinq métiers sans cette
+      distinction ne l'est pas.
+
+   CE QUE CETTE FONCTION FAIT — ET SURTOUT CE QU'ELLE NE FAIT PAS
+   Elle ne remplace pas le jugement du modèle : lui a lu la conversation, pas
+   nous. Elle n'intervient que dans deux cas :
+   - horizon ABSENT → on le déduit des données de la fiche (niveau exigé
+     comparé au niveau estimé de la personne, puis durée écrite dans la voie
+     de formation). Si on ne peut rien déduire honnêtement, on n'écrit RIEN
+     plutôt que d'inventer un délai.
+   - horizon = « maintenant » alors que la fiche exige un niveau STRICTEMENT
+     au-dessus du sien → on corrige. On ne peut pas être employable lundi sur
+     un métier dont le titre d'entrée n'est pas acquis. C'est le seul cas où
+     l'on contredit le modèle, et il se vérifie sur pièces.
+   Si le niveau de la personne est inconnu (0), on ne corrige RIEN : sans
+   point de comparaison, une correction serait une invention.
+══════════════════════════════════════════════════════════════════════════ */
+var _HZ_MAINTENANT = 'maintenant';
+var _HZ_COURT      = '6-12 mois';
+var _HZ_LONG       = '2 ans';
+
+/** Ramène un horizon écrit librement à l'une des trois valeurs connues.
+    Tout ce qui n'est pas reconnu devient '' — donc rien ne s'affiche, plutôt
+    qu'une pastille approximative. */
+function _hzNormalise(v) {
+  var t = String(v || '').toLowerCase();
+  if (!t) return '';
+  if (t.indexOf('maintenant') !== -1) return _HZ_MAINTENANT;
+  if (t.indexOf('6') !== -1 || t.indexOf('12') !== -1) return _HZ_COURT;
+  if (/2\s*an/.test(t)) return _HZ_LONG;
+  return '';
+}
+
+/** La voie de formation décrite se compte-t-elle en heures/semaines/mois
+    (courte) ou en années (longue) ?
+    Renvoie true (courte), false (longue) ou null (on ne sait pas).
+    Les années l'emportent : « certificat de 150 h puis brevet en 2 ans » est
+    une voie longue, et l'annoncer courte serait un mensonge par raccourci. */
+function _dureeCourte(texte) {
+  var t = _normaliserTexte(texte);
+  if (/ \d+ ans? /.test(t) || / (un|deux|trois|quatre|cinq|six) ans? /.test(t) || / annees? /.test(t)) return false;
+  if (/ (heures?|h|jours?|semaines?|mois) /.test(t)) return true;
+  return null;
+}
+
+/**
+ * Fiabilise l'horizon de chaque métier, puis remonte en tête celles qui sont
+ * ouvertes tout de suite — à l'intérieur de leur groupe seulement : une piste
+ * « à explorer » ne devient jamais une piste principale ici, ce tri-là
+ * appartient à _retrograderContradictions et _retrograderConditions.
+ * @param {Array} topMetiers
+ * @param {number} niveauPersonne — 1 à 6, ou 0 si le modèle n'a pas su l'estimer
+ */
+function _classerTransferabilite(topMetiers, niveauPersonne) {
+  var liste = Array.isArray(topMetiers) ? topMetiers : [];
+  var niv = Number(niveauPersonne) || 0;
+
+  var avec = liste.map(function (m) {
+    var fiche = (typeof METIERS_DB !== 'undefined') ? METIERS_DB.find(function (x) { return x.id === m.id; }) : null;
+    var nivMetier = fiche ? _niveauMetier(fiche.formation) : 0;
+    var dit = _hzNormalise(m.horizon);
+
+    // Déduction à partir des DONNÉES de la fiche, jamais d'une impression.
+    var deduit = '';
+    if (niv && nivMetier && nivMetier <= niv) {
+      deduit = _HZ_MAINTENANT;
+    } else if (nivMetier) {
+      var court = _dureeCourte(String(m.route_formation || '') + ' ' + String((fiche && fiche.formation) || ''));
+      if (court === true) deduit = _HZ_COURT;
+      else if (court === false) deduit = _HZ_LONG;
+    }
+
+    var retenu = dit;
+    var corrige = false;
+    if (!retenu) {
+      retenu = deduit;                                  // le modèle n'a rien dit
+    } else if (retenu === _HZ_MAINTENANT && niv && nivMetier > niv) {
+      retenu = deduit || _HZ_COURT;                     // incohérent avec la fiche
+      corrige = true;
+      console.warn('[CYNTH] « ' + (m.titre || m.id) + " » annoncé accessible maintenant, mais la fiche exige "
+        + (_NIVEAU_LABEL[nivMetier] || nivMetier) + ' et le niveau estimé de la personne est '
+        + (_NIVEAU_LABEL[niv] || niv) + " — horizon corrigé en « " + retenu + " ».");
+    }
+
+    var copie = Object.assign({}, m);
+    copie.horizon = retenu;                             // '' = on n'affiche rien
+    copie._hz = retenu;
+    copie._hzCorrige = corrige;
+    copie._hzDeduit = !dit && !!retenu;
+    return copie;
+  });
+
+  var rang = {};
+  rang[_HZ_MAINTENANT] = 0; rang[_HZ_COURT] = 1; rang[_HZ_LONG] = 2; rang[''] = 3;
+  var tri = function (arr) {
+    return arr.map(function (m, i) { return { m: m, i: i }; })
+      .sort(function (a, b) {
+        var d = (rang[a.m._hz] === undefined ? 3 : rang[a.m._hz]) - (rang[b.m._hz] === undefined ? 3 : rang[b.m._hz]);
+        return d || (a.i - b.i);                        // tri stable
+      })
+      .map(function (x) { return x.m; });
+  };
+  return tri(avec.filter(function (m) { return m.type !== 'piste'; }))
+    .concat(tri(avec.filter(function (m) { return m.type === 'piste'; })));
+}
+
+/** Compte les pistes par horizon. Sert la phrase de tête de la section
+    métiers — celle qu'un conseiller lit en premier. */
+function _resumeTransferabilite(topMetiers) {
+  var l = Array.isArray(topMetiers) ? topMetiers : [];
+  var n = function (h) { return l.filter(function (m) { return _hzNormalise(m.horizon) === h; }).length; };
+  return { maintenant: n(_HZ_MAINTENANT), court: n(_HZ_COURT), long: n(_HZ_LONG), total: l.length };
+}
+
 /* ── Recherche par MOTS ENTIERS ──────────────────────────────────────────────
    DÉFAUT CORRIGÉ (4 août 2026) : le matching utilisait includes() sur le texte
    brut, donc il trouvait des mots à l'intérieur d'autres mots. « main » était
@@ -8202,6 +8333,14 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
       + ' piste(s) sans preuve retrouvée, placées en fin de liste');
     while (retenus.length < 5 && sansPreuve.length) retenus.push(sansPreuve.shift());
   }
+  /* Le niveau estimé de la personne ne servait qu'ICI, pour écarter les métiers
+     trop en dessous d'elle. Il sert désormais aussi PLUS TARD, pour juger si un
+     métier est vraiment accessible tout de suite (voir _classerTransferabilite).
+     On l'attache au résultat plutôt que de le stocker dans une variable de
+     module : une variable partagée finit toujours par être lue au mauvais
+     moment, alors qu'ici la donnée voyage avec la liste qu'elle décrit. */
+  retenus._niveauPersonne = niveauPersonne;
+  retenus._accepteDeRedescendre = accepte;
   return retenus;
 }
 
@@ -8401,6 +8540,9 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
      d'attente (mesuré à 7,6 s) a été absorbé par les TROIS appels ci-dessus,
      qui tournent déjà. Le rapport ne prend donc pas plus de temps qu'avant. */
   let _metiersRetenus = await _pSelection;
+  /* À lire AVANT toute reconstruction de la liste (le filet ci-dessous en
+     recrée une) : la propriété disparaîtrait avec l'ancien tableau. */
+  const _niveauPersonneEstime = Number(_metiersRetenus && _metiersRetenus._niveauPersonne) || 0;
 
   if (_metiersRetenus.length < 5) {
     // Filet : on complète avec le score hors ligne, sans doublon.
@@ -8505,9 +8647,16 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
     // personne a dit ne pas savoir faire descend en « piste ». Voir
     // _retrograderContradictions. Appliqué ici, donc valable aussi bien pour la
     // rédaction par le modèle que pour le rapport de secours.
-    top_metiers: _retrograderConditions(
-      _retrograderContradictions(_mt.top_metiers || [], _phrasesNegatives(_motsUtilisateur)),
-      _motsUtilisateur),
+    /* Dernière étape : fiabiliser l'horizon et remonter ce qui est ouvert tout
+       de suite. Volontairement APRÈS les deux rétrogradations : celles-ci
+       décident QUI est piste principale, celui-ci décide seulement de l'ORDRE
+       à l'intérieur de chaque groupe. Inverser les deux ferait remonter en tête
+       un métier qu'on venait de déclasser pour contradiction. */
+    top_metiers: _classerTransferabilite(
+      _retrograderConditions(
+        _retrograderContradictions(_mt.top_metiers || [], _phrasesNegatives(_motsUtilisateur)),
+        _motsUtilisateur),
+      _niveauPersonneEstime),
     plan_action_6_mois: _pl.plan_action_6_mois || {},
     ressources_utiles: _pl.ressources_utiles || {},
     message_fin: _pl.message_fin || _fb.message_fin,
@@ -9278,7 +9427,26 @@ function downloadRapport(){
      plus élevé, la première question d'un client sera « comment calculez-vous
      88 % ? », et la réponse honnête doit déjà être écrite. */
   const noteScore = '<p class="scorenote">Le pourcentage d\'affinité est une estimation produite par l\'analyse de votre entretien, pas une mesure. Il sert à ordonner les pistes entre elles, pas à prédire votre réussite. Deux métiers séparés de quelques points sont à considérer à égalité.</p>';
-  const secMetiers = secWrap('Vos métiers, alignés sur le marché suisse', 'Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.', metiersHtml + noteScore, 'sec-metiers');
+  /* ── LA PHRASE QU'UN CONSEILLER LIT EN PREMIER (3 septembre 2026) ────────
+     Jusqu'ici, il fallait ouvrir les cinq cartes une par une pour savoir si
+     UNE seule piste était ouverte tout de suite. C'est pourtant la première
+     question de quelqu'un dont le revenu s'arrête, et c'est aussi la première
+     question d'un conseiller ORP — dont le dispositif raisonne en transfert de
+     compétences et en employabilité, jamais en reconversion.
+     On ne compte que ce qu'on sait : un horizon indéterminé n'est jamais
+     rangé dans une case pour faire joli, il n'est simplement pas compté. Et si
+     on ne sait rien du tout, la phrase ne s'affiche pas. */
+  const _rt = _resumeTransferabilite(metiers);
+  const _bouts = [];
+  if (_rt.maintenant) _bouts.push('<b>' + _rt.maintenant + (_rt.maintenant > 1 ? ' sont ouvertes' : ' est ouverte')
+    + ' avec vos compétences actuelles</b>');
+  if (_rt.court) _bouts.push(_rt.court + (_rt.court > 1 ? ' demandent' : ' demande') + ' une formation courte, chiffrée plus bas');
+  if (_rt.long) _bouts.push(_rt.long + (_rt.long > 1 ? ' se construisent' : ' se construit') + ' sur un horizon plus long');
+  const bandeauTransfert = _bouts.length
+    ? '<p class="transfert-note">Sur ' + _rt.total + (_rt.total > 1 ? ' pistes : ' : ' piste : ')
+      + _bouts.join(' · ') + '.</p>'
+    : '';
+  const secMetiers = secWrap('Vos métiers, alignés sur le marché suisse', 'Des pistes principales et des pistes à explorer. Salaires et tension du marché en CHF.', bandeauTransfert + metiersHtml + noteScore, 'sec-metiers');
 
   // ── Votre plan ──
   const planSrc = (data.plan_action_6_mois && Object.keys(data.plan_action_6_mois).length) ? data.plan_action_6_mois : (data.plan_action||{});
@@ -9392,6 +9560,7 @@ p.body{font-size:1rem;margin-bottom:14px}
 .art32 b{color:var(--emerald-d)}
 /* Même exigence d'honnêteté que pour le Big Five : ce pourcentage est une
    estimation produite par un modèle, pas une mesure. On le dit. */
+.transfert-note{background:var(--emerald-soft);border-left:3px solid var(--emerald-d);border-radius:8px;padding:10px 14px;margin:0 0 16px;font-size:.94rem;line-height:1.55;color:var(--ink)}
 .scorenote{margin:14px 0 0;font-size:.78rem;color:var(--muted);font-style:italic;line-height:1.5}
 .firststep{margin-top:16px;background:var(--coral-soft);border-radius:12px;padding:14px 16px;font-size:.92rem}
 .firststep b{color:#C6402F;font-family:'Space Grotesk'}
