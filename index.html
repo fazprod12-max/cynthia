@@ -1951,59 +1951,17 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:24px 22px;}
   .lp-step .lp-n{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--c-coral),#FF9166);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
   .lp-step h3{color:#fff;font-size:1.2rem;margin-bottom:9px;} .lp-step p{color:#A9C0B7;font-size:.95rem;}
-  .lp-report{background:#fff;border:1px solid var(--c-line);border-radius:28px;box-shadow:0 40px 90px -42px rgba(14,42,36,.42);overflow:hidden;max-width:960px;margin:0 auto;}
-  .lp-rhead{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:24px 32px;background:linear-gradient(135deg,var(--c-ink),#0A211C);color:#fff;}
-  .lp-rtitle{font-family:'Space Grotesk';font-weight:700;font-size:1.3rem;} .lp-rsub{color:#A9C0B7;font-size:.84rem;margin-top:2px;}
-  .lp-rbadge{background:linear-gradient(120deg,var(--c-coral),#FF9166);color:#fff;font-family:'Space Grotesk';font-weight:600;font-size:.8rem;padding:8px 16px;border-radius:100px;white-space:nowrap;}
-  .lp-rgrid{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding:32px;}
-  .lp-rlabel{font-family:'Space Grotesk';font-weight:600;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--c-emerald-d);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-  .lp-rlabel .lp-k{width:6px;height:6px;border-radius:50%;background:var(--c-coral);}
-  .lp-trait{margin-bottom:12px;} .lp-tt{display:flex;justify-content:space-between;font-size:.87rem;margin-bottom:5px;font-weight:500;}
-  .lp-bar{height:8px;border-radius:100px;background:var(--c-emerald-soft);overflow:hidden;}
-  .lp-bar span{display:block;height:100%;border-radius:100px;background:linear-gradient(90deg,var(--c-emerald),var(--c-emerald-d));}
-  .lp-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
-  .lp-tag{background:var(--c-cream2);border-radius:100px;padding:7px 13px;font-size:.83rem;font-weight:500;}
-  .lp-tag.c{background:var(--c-coral-soft);color:#C6402F;}
-  .lp-rfull{padding:0 32px 8px;}
-  .lp-metier{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--c-line);border-radius:15px;margin-bottom:10px;}
-  .lp-mt{font-family:'Space Grotesk';font-weight:600;} .lp-ms{font-size:.82rem;color:var(--c-muted);margin-top:2px;}
-  .lp-mr{text-align:right;flex-shrink:0;} .lp-sal{font-family:'Space Grotesk';font-weight:600;color:var(--c-ink);font-size:.93rem;}
-  .lp-tension{font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:100px;display:inline-block;margin-top:5px;}
-  .lp-tension.p{background:var(--c-emerald-soft);color:var(--c-emerald-d);} .lp-tension.s{background:#FFF3D9;color:#8A6100;}
-  .lp-rfoot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:22px 32px;border-top:1px solid var(--c-line);background:var(--c-cream);}
-/* ── LE BLOC D'ACTION DE L'APERÇU (17 août 2026, deuxième version) ──────────
-   Faouzi, sur capture : « c'est pas centré, pourquoi c'est moche comme ça ».
-
-   Le défaut d'origine : ce bloc portait ses styles EN DUR dans le HTML
-   (style="display:flex;align-items:flex-end"). Tant que la légende et le
-   bouton tiennent sur une ligne, ça passe. Dès que ça passe à la ligne, la
-   colonne ne fait plus que la largeur de sa légende, et le bouton se cale à
-   droite de CELLE-CI : ni aligné à gauche sur le texte, ni centré, ni au bord
-   de la carte. Posé au hasard. Et un attribut style ne peut être corrigé par
-   aucune feuille de style — c'est pour ça que tout le reste s'est adapté et
-   pas lui.
-
-   Ma première correction alignait à droite au-dessus de 760 px et ne centrait
-   qu'en dessous. Autrement dit, elle ne réglait le problème que sur téléphone,
-   alors que la capture vient d'un grand écran. Corriger à moitié un défaut
-   d'alignement, c'est le laisser.
-
-   Version retenue : ce bloc est une invitation à agir, pas une barre d'outils.
-   Il est donc CENTRÉ, à toutes les largeurs, sans exception et sans point de
-   rupture — la légende, le bouton, puis la note de réassurance, empilés sur un
-   axe unique. Aucune largeur d'écran ne peut le remettre de travers. */
-.lp-rfoot{flex-direction:column;align-items:center;text-align:center;gap:14px;}
-.lp-ract{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
-/* Sur grand écran, le bouton garde la taille de son texte : c'est la colonne
-   qui le centre. Il ne s'étire qu'au doigt, sur téléphone (règle plus bas). */
-.lp-ract .lp-btn{min-width:220px;}
-.lp-rnote{font-size:.78rem;color:var(--c-muted);}
-@media(max-width:760px){
-  .lp-rfoot{padding:20px 18px;}
-  .lp-ract .lp-btn{width:100%;max-width:340px;}
-}
-}
-  .lp-rfoot .lp-fn{font-size:.92rem;color:var(--c-muted);} .lp-rfoot .lp-fn b{color:var(--c-ink);}
+  /* ── ANCIEN MOCKUP DE RAPPORT (.lp-report et tout son contenu) RETIRÉ le
+     3 septembre 2026, à la demande de Faouzi : trop de place pour trop peu
+     d'effet, et à moitié générique (barres Big Five, tags de personnalité).
+     Voir le commentaire au même endroit dans le HTML de #lp-rapport.
+     Seul .lp-ract survit : c'est la classe qui centre le bouton final,
+     réutilisée telle quelle (elle avait déjà réglé un bug d'alignement au
+     17 août — un style écrit en dur dans le HTML qu'aucune règle CSS ne
+     pouvait corriger ; la leçon reste dans test_mobile.js). ── */
+  .lp-ract{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+  .lp-ract .lp-btn{min-width:220px;}
+  @media(max-width:760px){.lp-ract .lp-btn{width:100%;max-width:340px;}}
   .lp-band{background:linear-gradient(135deg,var(--c-emerald-soft),var(--c-coral-soft));border-radius:34px;padding:56px 44px;text-align:center;}
   .lp-band h2{font-size:2rem;margin-bottom:16px;} .lp-band>p{color:var(--c-ink);font-size:1.1rem;max-width:62ch;margin:0 auto;opacity:.82;}
   /* Sommaire du rapport : les 9 sections, présentées comme un vrai dossier */
@@ -2233,35 +2191,17 @@ textarea.chat-input{
       <div class="lp-so"><b>09</b>Vos ressources en Suisse<span>Qui finance quoi, et où frapper à la porte</span></div>
     </div>
 
-    <div class="lp-report lp-rv">
-      <div class="lp-rhead"><div><div class="lp-rtitle">Rapport d'orientation</div><div class="lp-rsub">Exemple · 9 sections · à télécharger et garder</div></div><span class="lp-rbadge">100 % personnalisé</span></div>
-      <div class="lp-rgrid">
-        <div>
-          <div class="lp-rlabel"><span class="lp-k"></span> Profil de personnalité · approche Big Five</div>
-          <div class="lp-trait"><div class="lp-tt"><span>Ouverture</span><span>82 %</span></div><div class="lp-bar"><span style="width:82%"></span></div></div>
-          <div class="lp-trait"><div class="lp-tt"><span>Rigueur</span><span>74 %</span></div><div class="lp-bar"><span style="width:74%"></span></div></div>
-          <div class="lp-trait"><div class="lp-tt"><span>Extraversion</span><span>61 %</span></div><div class="lp-bar"><span style="width:61%"></span></div></div>
-          <div class="lp-trait"><div class="lp-tt"><span>Amabilité</span><span>88 %</span></div><div class="lp-bar"><span style="width:88%"></span></div></div>
-        </div>
-        <div>
-          <div class="lp-rlabel"><span class="lp-k"></span> Vos savoir-faire</div>
-          <div class="lp-tags"><span class="lp-tag">Relation client</span><span class="lp-tag">Analyse</span><span class="lp-tag">Organisation</span><span class="lp-tag">Rédaction</span></div>
-          <div class="lp-rlabel"><span class="lp-k"></span> Vos savoir-être</div>
-          <div class="lp-tags"><span class="lp-tag c">Écoute</span><span class="lp-tag c">Empathie</span><span class="lp-tag c">Adaptabilité</span><span class="lp-tag c">Rigueur</span></div>
-        </div>
-      </div>
-      <div class="lp-rfull">
-        <div class="lp-rlabel"><span class="lp-k"></span> 3 à 5 métiers alignés sur le marché suisse</div>
-        <div class="lp-metier"><div><div class="lp-mt">Conseiller·ère en insertion professionnelle</div><div class="lp-ms">Social &amp; RH · formation courte possible</div></div><div class="lp-mr"><div class="lp-sal">CHF 78–95k</div><span class="lp-tension p">Marché porteur</span></div></div>
-      </div>
-      <!-- EXTRAIT RÉEL : ce que personne d'autre ne donne -->
-      <div class="lp-rfull">
-        <div class="lp-rlabel"><span class="lp-k"></span> Prêt à coller dans votre CV ou LinkedIn</div>
-        <div class="lp-cvb">Formation et intégration de 15+ nouvelles collaboratrices, taux de rétention de 90%</div>
-        <div class="lp-pitch">« Après douze ans à organiser un cabinet médical et à former les nouvelles arrivantes, je veux faire de l'accompagnement mon métier, pas seulement la partie invisible de mon poste. »</div>
-      </div>
-      <div class="lp-rfoot"><div class="lp-fn"><b>Et aussi :</b> le coût réel de chaque formation en CHF, qui la finance, et votre plan semaine par semaine.</div><div class="lp-ract"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button><span class="lp-rnote">Un souci avec votre rapport ? On le reprend avec vous</span></div></div>
-    </div>
+    <!-- ⚠️ RETIRÉ le 3 septembre 2026, à la demande de Faouzi : le mockup du
+         rapport (barres Big Five, tags de personnalité, métier fictif, puce
+         CV, citation) prenait trop de place pour trop peu d'effet. La moitié
+         du contenu était générique — des pourcentages et des tags qu'affiche
+         n'importe quel test de personnalité, sans rien de spécifique à la
+         personne. Le sommaire des 9 cases ci-dessus dit déjà la structure
+         du rapport ; ce mockup la répétait avec des données fictives, sans
+         rien ajouter. Bonus : il affichait le Big Five en pourcentages
+         précis, alors que le vrai rapport dit explicitement que ce n'est pas
+         un score validé (correctif du 11 août) — contradiction discrète. -->
+    <div class="lp-ract" style="margin-top:8px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
   </div></section>
 
   <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:48px 40px;">
