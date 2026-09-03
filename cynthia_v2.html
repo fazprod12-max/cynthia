@@ -6031,10 +6031,42 @@ function doEndChat() {
         pBtn.innerHTML = `📄 Télécharger le rapport complet`;
       }
       if (pHint) pHint.style.display = showPay ? 'block' : 'none';
-      // Rendre les cartes Avatar Métiers
-      renderMetiersSection(data.top_metiers || []);
-      // Liens jobup.ch pré-remplis par métier
-      fetchAllJobOffers(data.top_metiers || []);
+      /* ═══════════════════════════════════════════════════════════════════
+         INCIDENT GRAVE (3 septembre 2026) — un vrai rapport écrasé en silence
+
+         renderMetiersSection() appelait une fonction « sanitize » interne
+         (préfixe souligné) qui n'a JAMAIS existé dans ce fichier (grep :
+         zéro définition, 5 usages orphelins). Elle plantait ICI — donc APRÈS que le vrai rapport,
+         généré avec succès par les 4 appels Claude, ait déjà été stocké
+         dans window._reportData deux lignes plus haut. L'exception
+         remontait au .catch() ci-dessous, qui écrasait alors SILENCIEUSEMENT
+         ce vrai rapport par le rapport de secours générique (buildFallbackReport)
+         — portrait vide, 3 métiers au lieu de 5, sans aucun rapport avec la
+         conversation. Rien ne le signalait à l'écran : pas d'erreur visible,
+         juste un rapport plus pauvre que ce qui avait réellement été produit.
+         Repéré lors du test persona « Marc » (coach Genilem, entretien réel,
+         3 septembre 2026) : le rapport final ne correspondait à rien de ce
+         qui avait été dit. Preuve en console, pas supposition :
+           Report gen error: ReferenceError: _sanitize is not defined
+           at cynthia_v2.html:6035 (avant renommage de la ligne)
+
+         La faute n'est pas seulement le nom de fonction manquant — c'est
+         que le CODE AUTOUR laissait un plantage de RENDU faire perdre des
+         DONNÉES déjà bonnes. Ça peut se reproduire avec n'importe quel autre
+         bug de rendu si on ne pose pas une règle structurelle :
+
+         ► UNE FOIS que window._reportData contient un vrai rapport, RIEN de
+           ce qui suit (cartes métier, liens jobup) n'a le droit de l'écraser
+           en cas de plantage. Le rendu UI est donc isolé dans son propre
+           try/catch, séparé du calcul des données : s'il échoue, on le crie
+           dans la console (jamais silencieux) mais le rapport déjà obtenu
+           reste intact et c'est LUI que la personne reçoit. */
+      try {
+        renderMetiersSection(window._reportData.top_metiers || []);
+        fetchAllJobOffers(window._reportData.top_metiers || []);
+      } catch (uiErr) {
+        console.error('[CYNTH] Rendu post-rapport en échec — le rapport lui-même est intact, seul l\'affichage des cartes a un problème :', uiErr);
+      }
       showToast('✅','Votre rapport est prêt !','success',5000);
     })
     .catch(e => {
@@ -6051,7 +6083,11 @@ function doEndChat() {
         try { _progTerminer('Obtenir mon rapport →'); }
         catch (e) { btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.innerHTML = 'Obtenir mon rapport →'; }
       }
-      renderMetiersSection((window._reportData.top_metiers) || []);
+      try {
+        renderMetiersSection((window._reportData.top_metiers) || []);
+      } catch (uiErr) {
+        console.error('[CYNTH] Rendu post-rapport (repli) en échec :', uiErr);
+      }
       showToast('📄','Rapport généré !','success',4000);
     });
 }
@@ -9752,8 +9788,8 @@ function renderMetiersSection(metiers) {
     const card = document.createElement('div');
     card.className = 'conf-metier-card';
     // Sanitisation
-    const titre = _sanitize(m.titre || 'Métier');
-    const secteur = _sanitize(m.secteur || '');
+    const titre = sanitizeHtml(m.titre || 'Métier');
+    const secteur = sanitizeHtml(m.secteur || '');
     const score = m.score ? m.score + '% de compatibilité' : '';
     card.innerHTML = `
       <div class="conf-metier-card-title">● ${titre}</div>
@@ -9839,7 +9875,7 @@ function _addAvatarBubble(role, text) {
      qualités de rendu : on aligne le coach sur Cynthia. */
   const safe = (role === 'ai')
     ? formatChatText(stripDash(String(text || '')))
-    : _sanitize(text).replace(/\n/g, '<br>');
+    : sanitizeHtml(text).replace(/\n/g, '<br>');
   if (role === 'ai') {
     wrap.innerHTML = `<div class="cb-av">🧑‍💼</div><div style="flex:1"><div class="cb-text">${safe}</div></div>`;
   } else {
@@ -10008,8 +10044,8 @@ function fetchAllJobOffers(metiers) {
 
   section.style.display = 'block';
   list.innerHTML = liste.map(function (m) {
-    const t = _sanitize(m.titre);
-    const sect = _sanitize(m.secteur || '');
+    const t = sanitizeHtml(m.titre);
+    const sect = sanitizeHtml(m.secteur || '');
     return '<div class="offre-card">'
          +   '<div class="offre-card-info">'
          +     '<div class="offre-card-titre">' + t + '</div>'
