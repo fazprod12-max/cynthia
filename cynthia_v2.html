@@ -8132,10 +8132,32 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
   const declasses = [];
   const sansPreuve = [];   // retenus en dernier recours seulement
 
-  /* Signalement des citations recyclées. On ne déclasse RIEN : voir le bloc
-     « DEUX MÉCANISMES ESSAYÉS ET RETIRÉS » plus haut. Ce journal sert à voir si
-     le modèle continue de recycler, et sur quels métiers — c'est la matière du
-     prochain correctif, pas un correctif en soi. */
+  /* ── CITATIONS RECYCLÉES : DÉSORMAIS DÉCLASSÉES (3 septembre 2026) ──────────
+     Jusqu'ici, ce bloc ne faisait QUE signaler en console (voir « DEUX
+     MÉCANISMES ESSAYÉS ET RETIRÉS » plus haut, 17 août) — les deux tentatives
+     d'agir avaient été abandonnées parce qu'elles essayaient de DÉSIGNER LE
+     GAGNANT parmi les métiers qui partagent une citation (par rang du modèle,
+     ou par recoupement de vocabulaire), et les deux se sont montrées peu
+     fiables sur mesure réelle.
+     Preuve que ce trou coûtait cher, en vrai : le rapport de Nathalie (test
+     OTP New Job, profil 10 ans de relation client) proposait « Hygiéniste
+     dentaire ES » à 72 %, justifié par « mes clients revenaient vers moi tout
+     le temps » — la MÊME phrase que celle qui justifiait Assistant·e
+     social·e. Rien dans cette phrase ne parle de santé bucco-dentaire : c'est
+     un signe de fidélité relationnelle, pas une preuve de domaine. Faouzi,
+     à raison : « 10 ans de relation client pour avoir hygiéniste dentaire, ça
+     n'a rien à voir, et c'est pas possible pour le rôle qu'a Cynthia dans
+     l'avenir des gens. »
+     La correction ne désigne plus de gagnant : une citation partagée par 2+
+     métiers n'est une preuve SPÉCIFIQUE d'AUCUN d'entre eux, donc TOUS les
+     membres du groupe basculent dans le même filet que « sans preuve »
+     (fin de liste, jamais en tête, utilisés seulement s'il manque des pistes
+     pour atteindre 5). Choix assumé : on préfère démoter par excès de
+     prudence un métier qui aurait pu être bon, plutôt que d'afficher un
+     métier hors-sujet comme piste sérieuse — c'est la RÈGLE N°1 de ce
+     projet (une mauvaise nouvelle tôt vaut mieux qu'une fausse bonne
+     nouvelle), appliquée ici au code, pas seulement au discours. */
+  const _idsPreuveReutilisee = new Set();
   if (sesMots) {
     const groupes = [];
     choix.forEach(c => {
@@ -8146,9 +8168,10 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
       if (g) g.membres.push(id); else groupes.push({ sig: sig, membres: [id], preuve: (c.preuve || c.raison) });
     });
     groupes.filter(g => g.membres.length > 1).forEach(g => {
+      g.membres.forEach(id => _idsPreuveReutilisee.add(id));
       console.warn('[CYNTH] une même citation justifie ' + g.membres.length + ' métiers ('
         + g.membres.join(', ') + ') : "' + String(g.preuve || '').slice(0, 90)
-        + '". Rien n\'est déclassé, mais c\'est le signe d\'une justification trop générale.');
+        + '". Aucune preuve spécifique : les ' + g.membres.length + ' métiers sont déclassés en fin de liste.');
     });
   }
 
@@ -8172,6 +8195,13 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
           + 'la justification ne se retrouve pas dans ses mots ('
           + Math.round(part * 100) + '% des termes). Citation reçue : "'
           + String((c && (c.preuve || c.raison)) || '').slice(0, 90) + '"');
+        entree._sansPreuve = true;
+        sansPreuve.push(entree);
+        return;
+      }
+      if (_idsPreuveReutilisee.has(id)) {
+        console.warn('[CYNTH] « ' + fiche.titre + ' » écarté des premiers choix : '
+          + 'sa preuve est partagée avec un autre métier — pas spécifique à celui-ci.');
         entree._sansPreuve = true;
         sansPreuve.push(entree);
         return;
@@ -8388,7 +8418,8 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
     + ' ⏳ DATE BUTOIR : relis la conversation et cherche une échéance qui lui est propre (fin de droits chômage, fin de contrat, préavis, permis, disponibilité, échéance financière). Si tu en trouves une, DIS-LA dans la première étape et cale tout le plan dessus : les étapes doivent tomber AVANT. Si six mois dépassent cette date, raccourcis le plan au temps réellement disponible et dis franchement ce qui ne tiendra pas. Un rapport a proposé un plan jusqu\'en février à quelqu\'un dont les droits s\'arrêtaient en octobre, sans jamais le mentionner : c\'est la faute à ne pas refaire.'
     + ' 🚫 MAIS SI ELLE N\'A PAS D\'ÉCHÉANCE, N\'EN INVENTE AUCUNE. Bug constaté le 17 août 2026 : la personne avait dit explicitement « j\'ai encore des indemnités pour un moment, c\'est pas la catastrophe demain matin », et le plan ouvrait quand même sur « date butoir critique ». Elle est écoutée dans la conversation, puis le rapport lui remet la pression : c\'est incohérent et c\'est anxiogène pour rien. Règle : n\'écris les mots « critique », « urgent », « avant qu\'il ne soit trop tard » QUE si une date réelle et proche a été donnée. Si elle a du temps, dis-le comme une bonne nouvelle et sers-t\'en : le plan devient alors une progression tranquille où elle peut essayer, se former sérieusement, rencontrer des gens. Ton intensité doit épouser SA situation, pas un modèle unique.'
     + ' Dans ressources_utiles.financement, n\'écris que des dispositifs réels et nommés en toutes lettres. N\'invente aucun sigle : si tu ne peux pas écrire un sigle en toutes lettres, ne l\'écris pas du tout (constaté le 17 août 2026 : un rapport mentionnait « CFC banque (BEM) », sigle qu\'aucune source ne confirme).'
-    + ' ⚠️ CHAQUE DISPOSITIF UNE SEULE FOIS, et avec son montant EXACT quand on le connaît. Les montants vérifiés, à recopier tels quels sans les reformuler : le chèque annuel de formation genevois est de CHF 750 par an au maximum ; la Confédération prend en charge 50% des frais de cours préparatoires aux examens fédéraux ; viamia est gratuit dès 40 ans. N\'écris « montant à vérifier auprès du canton » que pour un dispositif dont le montant n\'est PAS dans cette liste. Bug constaté le 17 août 2026 : le chèque genevois apparaissait deux fois dans le même rapport, une fois avec son montant exact et une fois en « montant à vérifier », ce qui donne l\'impression qu\'on ne connaît pas notre sujet.',
+    + ' ⚠️ CHAQUE DISPOSITIF UNE SEULE FOIS, et avec son montant EXACT quand on le connaît. Les montants vérifiés, à recopier tels quels sans les reformuler : le chèque annuel de formation genevois est de CHF 750 par an au maximum ; la Confédération prend en charge 50% des frais de cours préparatoires aux examens fédéraux ; viamia est gratuit dès 40 ans. N\'écris « montant à vérifier auprès du canton » que pour un dispositif dont le montant n\'est PAS dans cette liste. Bug constaté le 17 août 2026 : le chèque genevois apparaissait deux fois dans le même rapport, une fois avec son montant exact et une fois en « montant à vérifier », ce qui donne l\'impression qu\'on ne connaît pas notre sujet.'
+    + ' ⛔ NE BÂTIS PAS LE PLAN AUTOUR D\'UN MÉTIER QU\'ELLE A DIT VOULOIR QUITTER, OU DONT LE QUOTIDIEN CONTREDIT UNE CONDITION QU\'ELLE A POSÉE (pression de chiffres, horaires irréguliers, déplacements, concurrence interne, etc.) — même s\'il ressemble à ce qu\'elle connaît déjà et que c\'est plus facile à écrire un plan dessus. Ses conditions de travail comptent AUTANT que ses refus de secteur explicites : ne les traite pas comme de simples préférences. Erreur réelle du 3 septembre 2026 (rapport « Nathalie », test OTP New Job) : la personne avait quitté la vente à cause de la pression commerciale ; les pistes principales du rapport étaient des métiers du social, mais le plan sur 6 mois était construit presque entièrement autour du métier de relation client qu\'elle venait justement de mettre à distance — deux sections du même rapport se contredisaient, l\'une prudente, l\'autre non. Si un métier est écarté ou mis en réserve ailleurs dans ce rapport à cause d\'une condition qu\'elle a posée, ne construis pas les semaines et les mois du plan autour de lui : ancre le plan sur ce qui est cohérent avec ce qu\'elle a dit vouloir, même si c\'est un chemin plus long ou moins immédiat.',
     '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal (GE : max. CHF 750/an)","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
 
   /* On récupère seulement maintenant la sélection lancée plus haut : son temps
