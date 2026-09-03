@@ -3579,9 +3579,17 @@ const CONFIG = {
      ⚠️ Il doit être IDENTIQUE au prix créé dans Stripe. Si les deux divergent,
      la personne voit un montant sur le site et en paie un autre au moment de
      payer : c'est un bug, et c'est aussi un problème d'affichage de prix.
-     Passé de 49 à 79 le 22 août 2026 (décision de Faouzi, après le retour
-     d'Armand qui avait spontanément situé le rapport à 79). */
-  PRIX_RAPPORT: 79.00,
+     Historique : 49 → 79 le 22 août 2026 (Armand avait spontanément situé
+     le rapport à 79). Le 2 septembre, décision de Faouzi de repasser à 59 :
+     les 4 vrais testeurs situaient le prix juste entre 19 et 79 CHF (29, 59,
+     79, 19), 59 est le point médian, et à ce stade — zéro avis public, zéro
+     vente réelle, marque inconnue — un prix de lancement plus bas convertit
+     mieux qu'un prix plus haut sans preuve sociale derrière. Le code n'avait
+     jamais été aligné sur cette décision jusqu'au 3 septembre : corrigé ici.
+     Présenté comme prix DE LANCEMENT, pas définitif : peut remonter une fois
+     les premiers avis publics obtenus, sans donner l'impression de baisser
+     après coup faute d'acheteurs. */
+  PRIX_RAPPORT: 59.00,
 };
 // ────────────────────────────────────────────────────────────
 // PROXY IA — les clés API sont stockées côté serveur (Cloudflare Worker), jamais ici.
