@@ -9096,6 +9096,45 @@ function printRapport() {
 function closeRapportOverlay() {
   document.getElementById('rapport-overlay').style.display = 'none';
   document.body.style.overflow = '';
+  // Juste après un paiement Stripe réussi (voir checkStripeReturn), la
+  // fermeture du rapport déclenche le message de remerciement plutôt que de
+  // laisser la personne repartir sans un mot. Une seule fois : le drapeau est
+  // remis à faux immédiatement, une réouverture ultérieure du même rapport ne
+  // le redéclenche pas.
+  if (_stripeJustSucceeded) {
+    _stripeJustSucceeded = false;
+    try { _afficherRemerciement(); } catch (e) {}
+  }
+}
+
+/**
+ * Message de remerciement affiché une fois, juste après la fermeture du
+ * rapport qui suit un paiement réussi. Personnalisé au prénom, rappelle que
+ * l'avis compte pour Faouzi, puis renvoie vers l'accueil à la fermeture —
+ * pour éviter le sentiment d'avoir payé puis d'être laissé sans un mot.
+ */
+function _afficherRemerciement() {
+  const overlay = document.getElementById('merci-overlay');
+  const body = document.getElementById('merci-body');
+  if (!overlay || !body) return;
+  const prenomBrut = (typeof chatProfile !== 'undefined' && chatProfile && chatProfile.prenom) ? String(chatProfile.prenom).trim() : '';
+  const prenom = prenomBrut ? sanitizeHtml(prenomBrut) : '';
+  const salut = prenom ? ('Merci, ' + prenom + '.') : 'Merci.';
+  body.innerHTML =
+    '<h3>' + salut + '</h3>' +
+    '<p>Ce rapport est votre feuille de route pour les prochains jours. J’espère sincèrement qu’il vous aide à avancer, et que vous atteindrez tous les objectifs que vous vous fixez.</p>' +
+    '<p>Si vous avez un petit moment, votre avis compte énormément pour Faouzi, le fondateur : il y tient vraiment, pour que chaque personne qui passe par ici vive une meilleure expérience que la précédente.</p>' +
+    '<button class="mcta" onclick="window.open(\'retour.html\',\'_blank\')">Donner mon avis (2 min)</button>' +
+    '<p style="margin-top:14px"><a href="#" onclick="_fermerRemerciement();return false;">Non merci, retour à l’accueil</a></p>';
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function _fermerRemerciement() {
+  const overlay = document.getElementById('merci-overlay');
+  if (overlay) overlay.classList.remove('show');
+  document.body.style.overflow = '';
+  gp('landing');
 }
 
 function downloadRapport(){
@@ -10573,6 +10612,14 @@ async function startStripeCheckout() {
 }
 
 /**
+ * Vrai uniquement juste après un retour Stripe réussi (voir checkStripeReturn),
+ * et seulement jusqu'à la première fermeture du rapport : sert à afficher le
+ * message de remerciement une fois, jamais sur une réouverture ultérieure du
+ * même rapport ni sur un ancien paiement encore valide en localStorage (24h).
+ */
+var _stripeJustSucceeded = false;
+
+/**
  * Vérifie le retour Stripe (appelé au chargement de la page si ?payment=success).
  * Valide la session côté Worker (secret Stripe jamais exposé côté client).
  */
@@ -10622,6 +10669,10 @@ async function checkStripeReturn() {
         }
         try { renderMetiersSection((window._reportData && window._reportData.top_metiers) || []); } catch (e) {}
         showToast('🎉', 'Paiement validé. Votre rapport complet est prêt.', 'success', 6000);
+        // Fermer le rapport juste après ce paiement déclenchera le message de
+        // remerciement (voir closeRapportOverlay / _afficherRemerciement) — une
+        // seule fois, pas à chaque réouverture ultérieure du même rapport.
+        _stripeJustSucceeded = true;
         // Ouvre le rapport directement : la personne vient de payer, elle ne doit
         // pas avoir à chercher un bouton.
         setTimeout(function(){ try { downloadRapport(); } catch(e){} }, 900);
@@ -10808,6 +10859,14 @@ async function _transcrireAudio(blob) {
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Message de remerciement, affiché une fois à la fermeture du rapport juste après un paiement Stripe réussi (voir _afficherRemerciement / closeRapportOverlay) -->
+<div class="modal-overlay" id="merci-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="_fermerRemerciement()">✕</button>
+    <div id="merci-body"></div>
   </div>
 </div>
 
