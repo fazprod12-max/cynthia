@@ -3993,16 +3993,38 @@ function detectDetresse(text) {
   if (!text) return false;
   const t = String(text).toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, ''); // sans accents : tolère les fautes
+
+  // ── Exclusions de contexte professionnel ─────────────────────────────────
+  // Mesuré le 4 sept 2026 (demande de Faouzi : signal fort, mais pas de fausse
+  // alerte sur « il en avait marre de travailler ») : deux motifs génériques
+  // déclenchaient à tort sur du désarroi professionnel ORDINAIRE — le cœur de
+  // métier de Cynthia, pas une urgence. Reproduit avant correction :
+  //   « je veux en finir avec ce travail/boulot/cette recherche d'emploi » → true
+  //   « plus aucun espoir de trouver/retrouver un emploi/travail »          → true
+  // Portée volontairement ÉTROITE (l'objet doit suivre IMMÉDIATEMENT le mot
+  // déclencheur) : « j'en ai marre, plus aucun espoir de m'en sortir » reste
+  // détecté, parce qu'on ne peut pas prouver que ce n'est QUE le travail qui
+  // est visé. En cas de doute, on garde l'alerte — un faux positif montre une
+  // ressource par prudence, un faux négatif serait irréparable.
+  const finirTravail = /\ben finir avec (ce |cette |ma |mon |le |la )?(travail|boulot|emploi|job|metier|carriere|chomage|recherche d.emploi)/;
+  const espoirTravail = /\bplus (aucun |d )?espoir (de |pour |dans )?(retrouver |trouver |decrocher )?(un |du |ce |cette )?(emploi|travail|job|metier|poste|carriere)\b/;
+
   const motifs = [
-    /\bme suicider|\bsuicid|\bme tuer\b|\bmettre fin a (mes jours|ma vie)|\ben finir\b/,
+    /\bme suicider|\bsuicid|\bme tuer\b|\bmettre fin a (mes jours|ma vie)/,
+    { r: /\ben finir\b/, exclut: finirTravail },
     /\b(envie de|je veux|j ai envie de|jai envie de) (mourir|disparaitre|plus etre la|ne plus etre la)/,
     /\bplus envie de vivre|\bplus (aucune |d )?raison de vivre|\bla vie (ne )?vaut plus/,
     /\bils? (seraient|serait) mieux sans moi|\bma famille (irait|serait) mieux sans moi/,
     /\bje (ne )?(vaux|sers a) rien\b.*\bplus\b|\bje suis un poids\b/,
-    /\bplus aucune issue|\bplus (aucun |d )?espoir|\bplus rien qui (me )?retient/,
+    /\bplus aucune issue|\bplus rien qui (me )?retient/,
+    { r: /\bplus (aucun |d )?espoir/, exclut: espoirTravail },
     /\bme faire du mal\b|\bme scarifi|\bautomutil/
   ];
-  return motifs.some(function (r) { return r.test(t); });
+  return motifs.some(function (m) {
+    if (m instanceof RegExp) return m.test(t);
+    if (!m.r.test(t)) return false;
+    return !(m.exclut && m.exclut.test(t));
+  });
 }
 
 function detectEmotion(text) {
@@ -5228,6 +5250,14 @@ let _synthMetiers = null; // métiers proposés par Cynthia en synthèse (BUG #7
    couverture du catalogue était une erreur de conception. */
 let _synthPistesBrutes = 0;
 
+/* Drapeau : le message de ressource détresse (143) a déjà été montré une fois,
+   en entier, dans CETTE conversation. Ajouté le 4 sept 2026 avec le message
+   garanti par le code (voir sendChatMsg) : évite qu'une conversation où la
+   détresse revient plusieurs fois n'affiche 5 fois le même paragraphe complet
+   (ce serait mécanique et affaiblirait le signal) — un rappel court suffit
+   ensuite, mais le rappel court est TOUJOURS affiché, jamais supprimé. */
+let _detresseMontree = false;
+
 // ── CHAT ENGINE PRINCIPAL ──────────────────────────────────────────────────────
 
 async function startChatMode() {
@@ -5253,6 +5283,7 @@ async function startChatMode() {
   _fbUsed = new Set();
   _synthMetiers = null;
   _synthPistesBrutes = 0;
+  _detresseMontree = false;
 
   const msgs = document.getElementById('chat-msgs');
   if (msgs) msgs.innerHTML = '';
@@ -5525,6 +5556,31 @@ async function sendChatMsg() {
 
   // ── Affichage immédiat + extraction profil ────────────────────────────────────
   addChatBubble('user', sanitizeHtml(text));
+
+  // ── Détresse : ressource garantie par le CODE, pas seulement par le prompt ────
+  // Constat du 4 sept 2026 (demande explicite de Faouzi, priorité n°1) : le prompt
+  // système contenait déjà un protocole complet (143, distinction fatigue pro vs
+  // détresse réelle) et detectDetresse() existait déjà, mais RIEN de tout ça n'était
+  // garanti — les deux ne servaient qu'à influencer ce que Claude allait écrire.
+  // Si le modèle oublie, tombe en panne, ou est remplacé par le repli local (voir
+  // panne Claude+Groq du 2 sept), rien n'affiche jamais le 143. Ce bloc-ci s'affiche
+  // TOUJOURS, avant même l'appel au modèle, indépendamment de sa réponse — qui
+  // continue normalement juste après, la conversation n'est pas coupée.
+  // Calibré pour ne pas confondre une vraie urgence avec « en avoir marre de
+  // travailler » : voir les exclusions de contexte pro dans detectDetresse() et
+  // tests/detresse.js. En cas de doute, le choix a été de garder l'alerte plutôt
+  // que de risquer un faux négatif — un faux positif ne fait que montrer une
+  // ressource par prudence, ce n'est pas grave.
+  if (detectDetresse(text)) {
+    try { _compter && _compter('detresse'); } catch (e) {}
+    await new Promise(r => setTimeout(r, 350));
+    if (!_detresseMontree) {
+      _detresseMontree = true;
+      addChatBubble('ai', "Ce que vous venez d'écrire me touche, et je veux m'assurer que vous n'êtes pas seul(e) avec ça. Si c'est plus lourd que des mots, La Main Tendue est là jour et nuit, gratuitement et sans donner votre nom : 143, par téléphone, par chat ou sur 143.ch. On peut aussi continuer à parler, si vous en avez envie.");
+    } else {
+      addChatBubble('ai', "Je le redis : le 143 (La Main Tendue) est là jour et nuit, gratuitement. Et je suis toujours là aussi, si vous voulez continuer.");
+    }
+  }
 
   try {
     const newPrenom = extractPrenom(text);
