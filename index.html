@@ -1892,7 +1892,7 @@ document.addEventListener('DOMContentLoaded', function () {
      cartes seulement, 4 colonnes les aurait laissées collées à gauche avec
      un grand vide à droite. */
   .lp-avis-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:820px;margin:0 auto;}
-  .lp-avis-card{background:rgba(255,255,255,.72);backdrop-filter:blur(6px);border:1px solid var(--c-line);border-radius:20px;padding:30px 26px;transition:transform .22s,box-shadow .25s,border-color .25s;}
+  .lp-avis-card{background:rgba(255,255,255,.72);backdrop-filter:blur(6px);border:1px solid var(--c-line);border-radius:20px;padding:30px 26px;transition:transform .22s,box-shadow .25s,border-color .25s;display:flex;flex-direction:column;justify-content:center;}
   .lp-avis-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px -24px rgba(14,42,36,.4);border-color:transparent;}
   .lp-avis-card .lp-avis-mark{font-size:1.6rem;color:var(--c-emerald);line-height:1;margin-bottom:10px;}
   .lp-avis-card p{font-size:1.03rem;line-height:1.55;color:var(--c-ink);font-style:italic;}
@@ -2225,7 +2225,7 @@ textarea.chat-input{
       <div class="lp-rex-grid">
         <div class="lp-rex-item">
           <div class="lp-rex-k">Ce qu'elle a compris de vous</div>
-          <p>« C'est vraiment structurer et transmettre : j'aime préparer les supports, expliquer clairement une procédure, et voir un nouvel éducateur devenir autonome. »</p>
+          <p>« J'aime préparer les supports, expliquer clairement une procédure, et voir un nouvel éducateur devenir autonome. »</p>
         </div>
         <div class="lp-rex-item">
           <div class="lp-rex-k">Une phrase prête pour votre CV</div>
@@ -2234,7 +2234,7 @@ textarea.chat-input{
         <div class="lp-rex-item lp-rex-metier">
           <div class="lp-rex-k">Une piste, avec le vrai chiffrage</div>
           <div class="lp-rex-mtitre">Formateur·rice d'adultes<span>95% d'affinité estimée</span></div>
-          <p>CHF ~6 050 en début de parcours, ~7 550/mois avec l'expérience. Certificat FSEA puis brevet fédéral, 1 à 2 ans en cours d'emploi, financés à 50% par la Confédération et par le chèque de formation cantonal.</p>
+          <p>CHF ~6 050 en début de parcours, ~7 550/mois avec l'expérience. Formation en 1 à 2 ans, en cours d'emploi : certificat FSEA puis brevet fédéral, financée à 50% par la Confédération et par le chèque de formation cantonal.</p>
         </div>
       </div>
     </div>
