@@ -1886,6 +1886,18 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;margin-bottom:16px;}
   .lp-ic.e{background:var(--c-emerald-soft);} .lp-ic.c{background:var(--c-coral-soft);} .lp-ic.g{background:#FFF3D9;}
   .lp-card h3{font-size:1.15rem;margin-bottom:8px;} .lp-card p{font-size:.92rem;color:var(--c-muted);}
+  /* ── Témoignages (5 sept 2026) ── Deux avis réels, autorisés avec prénom
+     par les testeurs eux-mêmes (voir /retours, citation_accord = "Oui, avec
+     mon prénom"). Grille dédiée plutôt que .lp-cards (4 colonnes) : à deux
+     cartes seulement, 4 colonnes les aurait laissées collées à gauche avec
+     un grand vide à droite. */
+  .lp-avis-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:820px;margin:0 auto;}
+  .lp-avis-card{background:rgba(255,255,255,.72);backdrop-filter:blur(6px);border:1px solid var(--c-line);border-radius:20px;padding:30px 26px;transition:transform .22s,box-shadow .25s,border-color .25s;}
+  .lp-avis-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px -24px rgba(14,42,36,.4);border-color:transparent;}
+  .lp-avis-card .lp-avis-mark{font-size:1.6rem;color:var(--c-emerald);line-height:1;margin-bottom:10px;}
+  .lp-avis-card p{font-size:1.03rem;line-height:1.55;color:var(--c-ink);font-style:italic;}
+  .lp-avis-card .lp-avis-who{margin-top:16px;font-style:normal;font-weight:700;color:var(--c-emerald-d);font-size:.92rem;}
+  @media(max-width:600px){.lp-avis-grid{grid-template-columns:1fr;max-width:none;}}
   .lp-steps-sec{background:linear-gradient(150deg,var(--c-ink),#0A211C);color:#fff;border-radius:34px;margin:0 24px;overflow:hidden;position:relative;}
   .lp-steps-sec .lp-sechead h2{color:#fff;} .lp-steps-sec .lp-sechead p{color:#A9C0B7;}
   .lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
@@ -1952,9 +1964,17 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-so span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.82rem;color:var(--c-muted);margin-top:6px;line-height:1.45;}
   @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}}
   @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
-  /* Extrait réel : puces CV + pitch */
-  .lp-cvb{background:var(--c-emerald-soft);border-radius:10px;padding:11px 14px;font-size:.9rem;margin-bottom:8px;display:flex;gap:9px;}
-  .lp-cvb::before{content:"✓";color:var(--c-emerald-d);font-weight:700;flex-shrink:0;}
+  /* ── Extrait réel de rapport (5 septembre 2026) ── voir #lp-rapport, bloc .lp-rex */
+  .lp-rex{background:#fff;border:1px solid var(--c-line);border-radius:22px;padding:30px 28px;margin-bottom:28px;}
+  .lp-rex-tag{display:inline-block;font-family:'Space Grotesk';font-weight:600;font-size:.78rem;letter-spacing:.06em;color:var(--c-emerald-d);background:var(--c-emerald-soft);border-radius:999px;padding:6px 14px;margin-bottom:20px;}
+  .lp-rex-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;}
+  .lp-rex-k{font-family:'Space Grotesk';font-weight:600;font-size:.82rem;color:var(--c-ink);margin-bottom:9px;}
+  .lp-rex-item p{font-size:.93rem;line-height:1.5;color:var(--c-muted);font-style:italic;}
+  .lp-rex-metier{background:var(--c-emerald-soft);border-radius:14px;padding:16px 16px 14px;}
+  .lp-rex-metier p{font-style:normal;}
+  .lp-rex-mtitre{font-family:'Space Grotesk';font-weight:700;color:var(--c-ink);font-size:.95rem;margin-bottom:6px;}
+  .lp-rex-mtitre span{display:block;font-family:'Inter',sans-serif;font-weight:600;color:var(--c-emerald-d);font-size:.78rem;margin-top:2px;}
+  @media(max-width:900px){.lp-rex-grid{grid-template-columns:1fr;}}
   .lp-pitch{background:var(--c-cream2);border-left:3px solid var(--c-coral);border-radius:0 10px 10px 0;padding:13px 16px;font-size:.92rem;font-style:italic;line-height:1.6;}
 
   /* Tableau comparatif honnête (IA généraliste vs Cynthia) */
@@ -1995,8 +2015,8 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-foot{border-top:1px solid var(--c-line);padding:38px 0;color:var(--c-muted);font-size:.9rem;}
   .lp-foot-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
   .lp-foot-links{display:flex;gap:20px;} .lp-foot-links a{color:inherit;text-decoration:none;cursor:pointer;} .lp-foot-links a:hover{color:var(--c-ink);}
-  @media(max-width:900px){.lp-hgrid{grid-template-columns:1fr;gap:40px;}.lp-hero h1{font-size:2.6rem;}.lp-cards,.lp-steps,.lp-rgrid{grid-template-columns:1fr 1fr;}.lp-links a:not(.lp-btn){display:none;}}
-  @media(max-width:600px){.lp-cards,.lp-steps,.lp-rgrid{grid-template-columns:1fr;}.lp-hero h1{font-size:2.1rem;}.lp-sechead h2{font-size:1.8rem;}.lp-band{padding:38px 24px;}}
+  @media(max-width:900px){.lp-hgrid{grid-template-columns:1fr;gap:40px;}.lp-hero h1{font-size:2.6rem;}.lp-cards,.lp-steps{grid-template-columns:1fr 1fr;}.lp-links a:not(.lp-btn){display:none;}}
+  @media(max-width:600px){.lp-cards,.lp-steps{grid-template-columns:1fr;}.lp-hero h1{font-size:2.1rem;}.lp-sechead h2{font-size:1.8rem;}.lp-band{padding:38px 24px;}}
 
 /* ── APERÇU AVANT PAIEMENT (20 août 2026) ─────────────────────────────────
    Remplace la liste de promesses génériques par un extrait du vrai rapport.
@@ -2153,7 +2173,7 @@ textarea.chat-input{
       <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Un vrai entretien</h3><p>20 minutes, plus si vous avez à raconter. C'est elle qui mène, et chaque réponse construit votre profil.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic g">📄</div><h3>Un rapport PDF à garder</h3><p>Votre portrait, vos pistes métier, chaque chiffre avec sa source et sa date de relevé, et les liens pour agir dès demain.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic e">🇨🇭</div><h3>Pensée pour la Suisse</h3><p>Le CFC, le brevet fédéral, l'article 32 : elle connaît les repères d'ici.</p></div>
-      <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Disponible ce soir</h3><p>Ouverte 24h/24, sans rendez-vous, dès que l'envie est là.</p></div>
+      <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Disponible ce soir</h3><p>Dès que l'envie est là, sans devoir prendre rendez-vous.</p></div>
     </div>
     <div class="lp-row cyn-stag" style="margin-top:22px;">
       <div class="lp-pill"><b>Vous arrivez de l'étranger ?</b>Vingt minutes suffisent pour situer votre diplôme sur le marché suisse, un salaire réaliste en francs, et les codes qui comptent en entretien.</div>
@@ -2181,13 +2201,43 @@ textarea.chat-input{
     <!-- ⚠️ RETIRÉ le 3 septembre 2026, à la demande de Faouzi : le mockup du
          rapport (barres Big Five, tags de personnalité, métier fictif, puce
          CV, citation) prenait trop de place pour trop peu d'effet. La moitié
-         du contenu était générique — des pourcentages et des tags qu'affiche
+         du contenu était générique : des pourcentages et des tags qu'affiche
          n'importe quel test de personnalité, sans rien de spécifique à la
          personne. Le sommaire des 9 cases ci-dessus dit déjà la structure
          du rapport ; ce mockup la répétait avec des données fictives, sans
          rien ajouter. Bonus : il affichait le Big Five en pourcentages
          précis, alors que le vrai rapport dit explicitement que ce n'est pas
-         un score validé (correctif du 11 août) — contradiction discrète. -->
+         un score validé (correctif du 11 août) : contradiction discrète.
+
+         ── AJOUTÉ le 5 septembre 2026, à la demande de Faouzi ──
+         Ce que le mockup n'avait pas : de la matière RÉELLEMENT sortie du
+         moteur. Ces trois extraits viennent d'un rapport généré en direct sur
+         le site (les 4 vrais appels Claude, pas une simulation), sur un
+         entretien test mené avec un profil fictif (« Sophie », assistante
+         socio-éducative, 8 ans). Étiqueté comme tel dans la tuile, sans
+         prétendre que c'est une cliente réelle : même règle d'honnêteté que
+         pour le faux lecteur audio retiré le 11 août, appliquée ici avant
+         publication plutôt qu'après un audit. Le chiffrage (CHF, formation,
+         financement) est celui, réel et sourcé, de la fiche « Formateur·rice
+         d'adultes » de la base ; rien n'est inventé pour l'occasion. -->
+    <div class="lp-rex lp-rv">
+      <div class="lp-rex-tag">Un exemple, généré par Cynthia sur un entretien test</div>
+      <div class="lp-rex-grid">
+        <div class="lp-rex-item">
+          <div class="lp-rex-k">Ce qu'elle a compris de vous</div>
+          <p>« C'est vraiment structurer et transmettre : j'aime préparer les supports, expliquer clairement une procédure, et voir un nouvel éducateur devenir autonome. »</p>
+        </div>
+        <div class="lp-rex-item">
+          <div class="lp-rex-k">Une phrase prête pour votre CV</div>
+          <p>« Conception et animation de formations pratiques : création de fiches procédurales, débriefings réflexifs, suivi individualisé des stagiaires, demandées régulièrement par les collègues. »</p>
+        </div>
+        <div class="lp-rex-item lp-rex-metier">
+          <div class="lp-rex-k">Une piste, avec le vrai chiffrage</div>
+          <div class="lp-rex-mtitre">Formateur·rice d'adultes<span>95% d'affinité estimée</span></div>
+          <p>CHF ~6 050 en début de parcours, ~7 550/mois avec l'expérience. Certificat FSEA puis brevet fédéral, 1 à 2 ans en cours d'emploi, financés à 50% par la Confédération et par le chèque de formation cantonal.</p>
+        </div>
+      </div>
+    </div>
     <div class="lp-ract" style="margin-top:8px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
   </div></section>
 
@@ -2242,6 +2292,26 @@ textarea.chat-input{
       <div class="lp-pill us"><b>Ce qu'elle fait le mieux</b>Transformer un flou qui traîne depuis des mois en une direction claire, et un premier pas à faire cette semaine.</div>
     </div>
   </div></div></section>
+
+  <!-- ── TÉMOIGNAGES — 5 septembre 2026. Les deux seuls avis réels obtenus à
+       ce jour, tous deux hors du cercle de Faouzi, tous deux autorisés
+       explicitement avec prénom (formulaire retour.html, champ
+       citation_accord = « Oui, avec mon prénom »). Cités mot pour mot,
+       fautes de frappe corrigées mais rien reformulé ni ajouté. Aucun métier
+       ni aucune situation personnelle affichée : ce n'est pas ce qu'ils ont
+       autorisé (l'option « prénom et métier » existait et n'a pas été
+       choisie). Aucun chiffre de volume dans le texte (« deux avis »…) —
+       même règle que le nombre de métiers depuis le 4 août : un chiffre bas
+       inquiète plus qu'il ne rassure sur une page de vente. Placé après
+       l'honnêteté assumée (#lp-franc) et avant le fondateur : la preuve par
+       des inconnus vient avant la preuve par lui. ── -->
+  <section id="lp-avis" class="lp-sec"><div class="lp-wrap">
+    <div class="lp-sechead lp-rv"><h2>Dans les mots de <span class="lp-accent">ceux qui l'ont testée</span></h2></div>
+    <div class="lp-avis-grid cyn-stag cyn-spot">
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>De faire le test à cœur ouvert, d'être le plus honnête.</p><div class="lp-avis-who">— Armand</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Surprenant, mais oser se confier à une IA permet de mieux se connaître et de révéler les compétences qu'on a tendance à enfouir sous des années d'expérience.</p><div class="lp-avis-who">— Maxime</div></div>
+    </div>
+  </div></section>
 
   <!-- ── QUI EST DERRIÈRE — placé juste avant le dernier appel à l'action, au
        moment précis où la personne hésite. Version courte ; le récit complet
