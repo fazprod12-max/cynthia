@@ -1890,9 +1890,9 @@ document.addEventListener('DOMContentLoaded', function () {
      avis sont autorisés avec prénom par les testeurs eux-mêmes via le
      formulaire retour.html (citation_accord = "Oui, avec mon prénom"). Les
      4 suivants viennent de personnes ayant réellement fait le test mais
-     sauté ce formulaire : leur phrase et leur accord ont été relayés par
-     Faouzi, prénom + métier + âge inclus (voir CLAUDE.md, section du même
-     jour). Grille à 3 colonnes pour 6 cartes (2 rangs pleins). */
+     sauté ce formulaire : leur phrase a été relayée par Faouzi. Prénom seul
+     partout, même niveau de détail pour les 6 (voir CLAUDE.md, section du
+     même jour). Grille à 3 colonnes pour 6 cartes (2 rangs pleins). */
   .lp-avis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1080px;margin:0 auto;}
   @media(max-width:900px){.lp-avis-grid{grid-template-columns:1fr 1fr;max-width:820px;}}
   .lp-avis-card{background:rgba(255,255,255,.72);backdrop-filter:blur(6px);border:1px solid var(--c-line);border-radius:20px;padding:30px 26px;transition:transform .22s,box-shadow .25s,border-color .25s;display:flex;flex-direction:column;justify-content:center;}
@@ -2297,29 +2297,33 @@ textarea.chat-input{
   </div></div></section>
 
   <!-- ── TÉMOIGNAGES — 5 septembre 2026, complété le même jour. 6 avis réels,
-       tous hors du cercle de Faouzi. Armand et Maxime : autorisés
-       explicitement avec prénom via retour.html (citation_accord = « Oui,
-       avec mon prénom »), donc SANS métier (l'option « prénom et métier »
-       existait et n'a pas été choisie). Thomas, Thilai, Lina, Dylan : ont
-       réellement fait le test mais sauté ce formulaire ; leur phrase et leur
-       accord (prénom + métier + âge) ont été relayés directement par Faouzi.
-       Fautes de frappe et accords corrigés (comme pour Armand/Maxime), RIEN
-       reformulé, RIEN ajouté pour « faire vendeur » — demande explicite de
-       Faouzi refusée le même jour : des témoignages retravaillés perdent
-       exactement ce qui les rend crédibles, leur voix brute. Voir CLAUDE.md.
-       Aucun chiffre de volume dans le texte (« six avis »…) — même règle que
-       le nombre de métiers depuis le 4 août. Placé après l'honnêteté assumée
-       (#lp-franc) et avant le fondateur : la preuve par des inconnus vient
-       avant la preuve par lui. ── -->
+       tous hors du cercle de Faouzi, tous affichés PRÉNOM SEUL. Armand et
+       Maxime : autorisés explicitement via retour.html (citation_accord =
+       « Oui, avec mon prénom »). Thomas, Thilai, Lina, Dylan : ont
+       réellement fait le test mais sauté ce formulaire ; leur phrase a été
+       relayée par Faouzi. Une première version affichait aussi métier + âge
+       pour ces 4 (transmis par Faouzi) ; il est revenu dessus le jour même
+       et a choisi de rester au même niveau de détail que Armand/Maxime,
+       prénom seul partout — traitement uniforme, plus prudent sur le peu
+       qu'on affiche d'une personne qui n'a pas rempli le formulaire de
+       consentement dédié. Fautes de frappe et accords corrigés (comme pour
+       Armand/Maxime), RIEN reformulé, RIEN ajouté pour « faire vendeur » —
+       demande explicite de Faouzi refusée le même jour : des témoignages
+       retravaillés perdent exactement ce qui les rend crédibles, leur voix
+       brute. Voir CLAUDE.md. Aucun chiffre de volume dans le texte
+       (« six avis »…) — même règle que le nombre de métiers depuis le
+       4 août. Placé après l'honnêteté assumée (#lp-franc) et avant le
+       fondateur : la preuve par des inconnus vient avant la preuve par
+       lui. ── -->
   <section id="lp-avis" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Dans les mots de <span class="lp-accent">ceux qui l'ont testée</span></h2></div>
     <div class="lp-avis-grid cyn-stag cyn-spot">
       <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>De faire le test à cœur ouvert, d'être le plus honnête.</p><div class="lp-avis-who">— Armand</div></div>
       <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Surprenant, mais oser se confier à une IA permet de mieux se connaître et de révéler les compétences qu'on a tendance à enfouir sous des années d'expérience.</p><div class="lp-avis-who">— Maxime</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Le rapport n'a pas essayé de me faire changer de métier. Il a vu que c'était l'environnement, pas le métier. Personne ne m'avait dit ça.</p><div class="lp-avis-who">— Thomas, 38 ans, infirmier</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Je ressens enfin l'envie de suivre un plan clair, après une discussion profonde.</p><div class="lp-avis-who">— Thilai, 32 ans, coiffeuse</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>J'ai essayé par curiosité professionnelle, et je suis choquée du résultat du rapport.</p><div class="lp-avis-who">— Lina, 22 ans, hôtesse de l'air</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Honnêtement, je suis enfin sûr que la voie que j'ai choisie est bien la bonne. Maintenant j'ai un plan pour viser le sommet.</p><div class="lp-avis-who">— Dylan, 31 ans, serveur</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Le rapport n'a pas essayé de me faire changer de métier. Il a vu que c'était l'environnement, pas le métier. Personne ne m'avait dit ça.</p><div class="lp-avis-who">— Thomas</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Je ressens enfin l'envie de suivre un plan clair, après une discussion profonde.</p><div class="lp-avis-who">— Thilai</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>J'ai essayé par curiosité professionnelle, et je suis choquée du résultat du rapport.</p><div class="lp-avis-who">— Lina</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Honnêtement, je suis enfin sûr que la voie que j'ai choisie est bien la bonne. Maintenant j'ai un plan pour viser le sommet.</p><div class="lp-avis-who">— Dylan</div></div>
     </div>
   </div></section>
 
