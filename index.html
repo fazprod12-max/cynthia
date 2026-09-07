@@ -5430,6 +5430,18 @@ async function startChatMode() {
   _synthMetiers = null;
   _synthPistesBrutes = 0;
   _detresseMontree = false;
+  /* ⚠️ CORRIGÉ (7 sept 2026, test live) : _rapportEnCours n'est remis à null
+     qu'en cas d'ÉCHEC dans _preparerRapportEnFond (voir son .catch), jamais
+     après un succès. Sans ce reset ICI, un 2e entretien démarré dans la même
+     page (bouton réel "← Retour à l'accueil" sur la confirmation, sans
+     recharger) retombait sur le rapport généré en arrière-plan pour la
+     PREMIÈRE personne : doEndChat() remet bien window._reportData à null,
+     mais retombe ensuite sur ce _rapportEnCours resté résolu. Reproduit en
+     direct sur le site (rapport de "Léa" servi à "Nora"). Les deux variables
+     doivent repartir à zéro à chaque nouvel entretien, pas seulement à la
+     fin de l'ancien. */
+  _rapportEnCours = null;
+  window._reportData = null;
 
   const msgs = document.getElementById('chat-msgs');
   if (msgs) msgs.innerHTML = '';
@@ -6748,7 +6760,7 @@ const METIERS_DB = [
   {id:'webmaster',titre:'Webmaster',secteur:'IT & Digital',competences:['technique','organisation','communication','veille technologique','coordination'],passions:['web','digital','technologie','coordonner','créer'],valeurs:['innovation','autonomie','rigueur'],salaire_debut:'CHF ~5 800/mois',salaire_exp:'CHF ~7 700/mois',marche:'Difficile',formation:'Pas de formation réglementée ; certificat HES-SO Valais (~9 mois) ou solide expérience en conception de sites web',financement:'frais de certificat à charge de la personne',salaire_source:'jobs.ch, relevé le 07.09.2026 (débutant CHF 75 200/an, moyenne suisse CHF 85 000/an sur 165 entrées, haut CHF 100 000/an, 13e et primes inclus).',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/webmaster-webmaster'},
   {id:'osteopathe',titre:'Ostéopathe',secteur:'Santé & Social',competences:['analyse','sens tactile','observation','empathie','communication'],passions:['corps','soigner','aider','comprendre','manuel'],valeurs:['aide','bienveillance','autonomie'],salaire_debut:'CHF ~5 400/mois',salaire_exp:'CHF ~9 400/mois',marche:'Stable',formation:'Master en ostéopathie dans une haute école spécialisée (bachelor min. 3 ans + master min. 1,5 an)',financement:'bourses et prêts d’études cantonaux',salaire_source:'jobs.ch, relevé le 07.09.2026 (débutant CHF 70 000/an, moyenne suisse CHF 88 200/an sur seulement 41 entrées, haut CHF 122 500/an, 13e et primes inclus). Échantillon restreint : beaucoup d’ostéopathes exercent en indépendant, moins représentés dans ces données.',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/osteopathe'},
   {id:'naturopathe',titre:'Naturopathe',secteur:'Santé & Social',competences:['écoute','analyse','autonomie','communication','observation'],passions:['santé naturelle','aider','bien-être','écouter','soigner'],valeurs:['nature','autonomie','bienveillance'],salaire_debut:'CHF ~4 700/mois',salaire_exp:'CHF ~7 700/mois',marche:'Stable, en développement',formation:'Formation modulaire en emploi vers le diplôme fédéral (DF) de naturopathe',financement:'frais de formation à charge de la personne, souvent suivie en emploi',salaire_source:'jobs.ch, relevé le 07.09.2026 (débutant CHF 61 500/an, moyenne suisse CHF 69 502/an sur seulement 22 entrées, haut CHF 99 750/an, 13e et primes inclus). Échantillon restreint : la plupart des naturopathes exercent en indépendant, souvent en complément d’une autre activité.',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/naturopathe-df-naturopathe-df'},
-  {id:'psychotherapeute',titre:'Psychothérapeute',secteur:'Santé & Social',competences:['écoute','empathie','analyse','communication','patience'],passions:['psychologie','aider','comprendre','accompagner','soigner'],valeurs:['bienveillance','aide','confidentialité'],salaire_debut:'CHF ~7 300/mois',salaire_exp:'CHF ~9 400/mois',marche:'Stable',formation:'Titre de psychologue spécialiste en psychothérapie (master en psychologie + formation postgrade accréditée), profession réglementée nécessitant une autorisation cantonale',financement:'bourses et prêts d’études cantonaux',salaire_source:'jobs.ch, relevé le 07.09.2026 (débutant CHF 94 500/an, moyenne suisse CHF 106 500/an sur 162 entrées, haut CHF 122 200/an, 13e et primes inclus).',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/psychotherapeute'},
+  {id:'psychotherapeute',titre:'Psychothérapeute',secteur:'Santé & Social',competences:['écoute','empathie','analyse','communication','patience'],passions:['psychologie','aider','comprendre','accompagner','soigner'],valeurs:['bienveillance','aide','confidentialité'],salaire_debut:'CHF ~7 300/mois',salaire_exp:'CHF ~9 400/mois',marche:'Stable',formation:'Master en psychologie + formation postgrade accréditée (titre de psychologue spécialiste en psychothérapie), profession réglementée nécessitant une autorisation cantonale',financement:'bourses et prêts d’études cantonaux',salaire_source:'jobs.ch, relevé le 07.09.2026 (débutant CHF 94 500/an, moyenne suisse CHF 106 500/an sur 162 entrées, haut CHF 122 200/an, 13e et primes inclus).',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/psychotherapeute'},
   {id:'juriste',titre:'Juriste',secteur:'Administration & RH',competences:['analyse','rédaction','rigueur','négociation','synthèse'],passions:['droit','argumenter','analyser','conseiller','contrats'],valeurs:['justice','rigueur','impartialité'],salaire_debut:'CHF ~7 300/mois',salaire_exp:'CHF ~10 800/mois',marche:'Stable',formation:'Master en droit d’une université (bachelor min. 3 ans + master min. 1 an)',financement:'bourses et prêts d’études cantonaux',salaire_source:'jobs.ch, relevé le 07.09.2026 (débutant CHF 94 740/an, moyenne suisse CHF 108 000/an sur 2 106 entrées, haut CHF 140 000/an, 13e et primes inclus).',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/juriste'},
   {id:'interprete-communautaire',titre:'Interprète (brevet fédéral)',secteur:'Communication & Médias',competences:['langues','écoute','impartialité','rapidité','discrétion'],passions:['langues','interculturel','aider','traduire','communiquer'],valeurs:['impartialité','aide','discrétion'],salaire_debut:'CHF ~3 200/mois',salaire_exp:'CHF ~6 600/mois',marche:'Stable',formation:'Brevet fédéral d’interprète communautaire (formation modulaire en emploi, ~2 ans)',financement:'financement possible via la formation professionnelle supérieure (subventions fédérales/cantonales selon le canton)',salaire_source:'jobs.ch, relevé le 07.09.2026, terme large «interprète» tous types confondus (débutant CHF 42 000/an, moyenne suisse CHF 67 760/an sur 46 entrées, haut CHF 85 995/an, 13e et primes inclus). Pas de relevé spécifique à l’interprétariat communautaire (souvent facturé à la mission, revenus irréguliers). À affiner.',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/interprete-bf'},
   {id:'diplomate',titre:'Diplomate',secteur:'Organisations internationales',competences:['analyse','négociation','langues','communication','organisation'],passions:['international','représenter','négocier','voyager','politique'],valeurs:['engagement','ouverture','rigueur'],salaire_debut:'CHF ~3 900/mois',salaire_exp:'CHF ~6 200/mois',marche:'Difficile',formation:'Master en études internationales d’une université ou d’une EPF (bachelor min. 3 ans + master min. 1,5 an)',financement:'bourses et prêts d’études cantonaux',salaire_source:'jobs.ch, relevé le 07.09.2026 (débutant CHF 50 400/an, moyenne suisse CHF 70 000/an sur seulement 39 entrées, haut CHF 80 000/an, 13e et primes inclus). Échantillon restreint et probablement hétérogène (le titre couvre des postes très différents) ; les carrières DFAE recrutent par concours, sur un nombre de places limité. À affiner.',verifie_le:'2026-09-07',orientation:'https://www.orientation.ch/fr/professions/diplomate'},
@@ -8170,7 +8182,25 @@ function _scoreMetiersRelevance(conversationLower, forces, valeurs, synthMetiers
 function _niveauMetier(formation) {
   const f = String(formation || '').toLowerCase();
   const tete = f.split(/[;(]/)[0];                     // avant la 1re passerelle
-  if (/master|universit|\buni\b/.test(tete)) return 6;
+  /* ⚠️ CORRIGÉ (7 sept 2026, test live profil "Léa") : la fiche Chercheur·euse
+     sciences sociales exige un doctorat, mais "doctorat" n'était simplement
+     pas dans la liste de mots reconnus ci-dessous ; elle retombait donc sur le
+     défaut prudent "CFC" (niveau 3) au lieu de 6. Conséquence concrète :
+     `_classerTransferabilite` compare ce niveau à celui de la personne pour
+     repérer un "maintenant" incohérent (règle du 3 septembre), et avec
+     niveau 3 au lieu de 6 ce garde-fou ne pouvait pas se déclencher
+     correctement sur cette fiche. "doctorat"/"phd" ajoutés, un seul mot,
+     zéro effet de bord : vérifié fiche par fiche sur toute la base, seule
+     cette fiche change de niveau avec cet ajout.
+     ⚠️ Une autre fiche avait le même symptôme pour une autre raison
+     (Psychothérapeute : le mot qui donne le niveau, "master en psychologie",
+     n'est que dans la parenthèse APRÈS le titre du poste, que la tête ne
+     couvre pas) — corrigée en reformulant la fiche elle-même (voir
+     METIERS_EXTRA/psychotherapeute), pas ici : une tentative de lire aussi la
+     chaîne complète en repli faisait remonter à tort Webmaster ("HES-SO
+     Valais", nom de l'école, pas niveau de la formation) de 3 à 6. Corriger
+     la donnée plutôt que le code évite ce genre d'effet de bord. */
+  if (/master|universit|\buni\b|doctorat|\bphd\b/.test(tete)) return 6;
   if (/hes|bachelor/.test(tete)) return 6;
   if (/dipl[oô]me f[eé]d[eé]ral|dipl[oô]me es|\bes\b|[ée]cole sup/.test(tete)) return 5;
   if (/brevet/.test(tete)) return 4;
