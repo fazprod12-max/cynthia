@@ -7988,6 +7988,18 @@ function _normaliserTexte(s) {
     .replace(/[^a-z0-9]+/g, ' ')
     .trim() + ' ';
 }
+/* Réduit un titre ou un id à une chaîne compacte comparable (7 sept 2026) :
+   sert UNIQUEMENT de repli quand un id renvoyé par le modèle ne correspond à
+   AUCUN id réel — trouvé sur le profil Yasmine, la fiche « Physiothérapeute »
+   (id réel : "physio") avait été proposée sous "physiotherapeute", un id
+   reconstruit à partir du TITRE plutôt que recopié tel quel. Comparaison
+   stricte (égalité, pas sous-chaîne) pour ne jamais faire matcher au hasard. */
+function _slugTitre(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
+}
 /** Le terme est-il présent comme mot (ou groupe de mots) entier ? Tolère le pluriel. */
 function _contientMot(botteDeFoin, terme) {
   const t = _normaliserTexte(terme).trim();
@@ -8518,7 +8530,16 @@ function _validerChoixMetiers(choix, rejets, niv, sesMots) {
   choix.forEach(c => {
     const id = c && (c.id || c.identifiant);
     if (!id || vus.has(id)) return;
-    const fiche = METIERS_DB.find(m => m.id === id);
+    let fiche = METIERS_DB.find(m => m.id === id);
+    // Repli avant de déclarer manquant : le modèle reconstruit parfois un id
+    // à partir du titre au lieu de recopier l'id exact fourni (ex. le 7 sept
+    // 2026, "physiotherapeute" pour la fiche "physio"). Comparaison stricte
+    // du titre normalisé, pas une sous-chaîne — pour ne jamais faire matcher
+    // au hasard un id qui n'a vraiment aucun rapport.
+    if (!fiche) {
+      const slug = _slugTitre(id);
+      fiche = slug ? METIERS_DB.find(m => _slugTitre(m.titre) === slug) : null;
+    }
     if (!fiche) { _noterMetierManquant(id, 'sélection du rapport'); return; }
     const titreL = fiche.titre.toLowerCase();
     if (termes.some(r => titreL.includes(r))) return;                 // titre refusé
@@ -8801,6 +8822,12 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
         'competences_cles:' + (ex.competences_detaillees || m.competences).join(' / '),
         'tension_marche:' + (ex.tension || '?'),
         'avenir:' + (ex.avenir || '?'),
+        // Ajouté le 7 septembre 2026 : ce champ manquait ici. route_formation
+        // devait donner une durée réelle sans jamais recevoir la vraie durée —
+        // le modèle n'avait que la conversation, où une durée fausse avait pu
+        // être dite en chat (« 3-4 ans » au lieu du bachelor 3 ans + master
+        // 1,5 an d'ostéopathe). Sans la fiche, il n'avait qu'à répéter l'erreur.
+        'formation:' + (m.formation || ''),
         'financement:' + (m.financement || ''),
         'voie_adulte:' + (ex.voie_adulte || ''),
         'ou_recrute:' + (ex.ou_recrute || ''),
@@ -8819,11 +8846,13 @@ MÉTIERS DÉJÀ RETENUS POUR CETTE PERSONNE — choisis dans la base suisse apr�
 lecture de tout son entretien. Tu n'as PAS à en chercher d'autres : tu prends
 dans cette liste, dans l'ordre, et tu rédiges. Le champ pourquoi_retenu rappelle
 ce qui, dans SES mots, a motivé chaque choix.
-(format: id|titre|secteur|competences_cles|tension_marche|avenir|financement|voie_adulte|ou_recrute|profils_types|salaire_debut|salaire_exp|pourquoi_retenu)
+(format: id|titre|secteur|competences_cles|tension_marche|avenir|formation|financement|voie_adulte|ou_recrute|profils_types|salaire_debut|salaire_exp|pourquoi_retenu)
 ${metiersList}`;
 
   const pMetiers = _part(dataBlock,
-    `Choisis EXACTEMENT 5 métiers dans la BASE DE DONNÉES MÉTIERS ci-dessus, TOUS DIFFÉRENTS : 3 de type "principal" (les plus adaptés) puis 2 de type "piste". Pour chacun : pourquoi (cite ses mots), atouts (competences_cles qu\'elle possède DÉJÀ), developper (competences_cles qui manquent + la voie de formation suisse pour les combler), route_formation (formation suisse concrète : intitulé + durée + coût approximatif en CHF + qui finance), premier_pas (action précise cette semaine). Recopie salaire_debut, salaire_exp et tension_marche SANS les modifier.
+    `Choisis EXACTEMENT 5 métiers dans la BASE DE DONNÉES MÉTIERS ci-dessus, TOUS DIFFÉRENTS : 3 de type "principal" (les plus adaptés) puis 2 de type "piste". Pour chacun : pourquoi (cite ses mots), atouts (competences_cles qu\'elle possède DÉJÀ), developper (competences_cles qui manquent + la voie de formation suisse pour les combler), route_formation (formation suisse concrète : intitulé + durée + coût approximatif en CHF + qui finance), premier_pas (action précise cette semaine). Recopie salaire_debut, salaire_exp, tension_marche ET formation SANS les modifier.
+
+⏳ DURÉE DE FORMATION — LE CHAMP formation CI-DESSUS EST LA SEULE VÉRITÉ, JAMAIS LA CONVERSATION. route_formation et horizon_precision doivent reprendre la durée et le niveau du champ formation tels quels ; n\'invente ni ne recalcule jamais ta propre estimation, et ne répète pas non plus une durée qui aurait été dite plus tôt en chat si elle diffère. Erreur réelle du 7 septembre 2026 : en conversation, une durée de "trois à quatre ans" avait été annoncée pour l\'ostéopathie ; la vraie fiche dit "bachelor min. 3 ans + master min. 1,5 an" (4,5 ans minimum) ; le rapport a répété la durée du chat dans route_formation, horizon_precision ET developper au lieu de se corriger avec le champ formation. Si le champ formation est vague ou absent, dis-le plutôt que d\'inventer une fourchette.
 
 ⏱️ HORIZON — LE PLUS IMPORTANT SI LA PERSONNE A UNE DATE BUTOIR. Pour CHAQUE métier, renseigne "horizon" avec EXACTEMENT une de ces trois valeurs :
 • "maintenant" — elle peut postuler cette semaine avec ce qu\'elle a déjà. Aucun titre supplémentaire exigé à l\'embauche.
