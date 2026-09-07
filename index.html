@@ -4234,6 +4234,68 @@ function deepStripDash(v) {
   return v;
 }
 
+/* ══ GARDE-FOU ÂGE — 7 septembre 2026, cas Nadia ═══════════════════════════
+   Cynthia a inventé un âge (37 ans) que la personne n'avait jamais donné, a
+   fabriqué une fausse citation quand on l'a corrigée, et l'âge halluciné a
+   survécu dans window._reportData.profil_personnalite.resume — pas juste dans
+   le chat, dans le rapport PAYÉ. C'est la 3e fois que la règle de prompt sur
+   l'âge (11 août, renforcée le 25 août) ne suffit pas.
+   Il n'existe AUCUN champ « âge » structuré dans le questionnaire : la seule
+   source légitime d'un âge est ce que la personne a écrit elle-même (chat ou
+   CV). Donc : toute mention chiffrée d'âge dans le rapport doit se retrouver
+   telle quelle dans ses propres mots, sinon on la retire avant affichage —
+   comme le 143 du garde-fou détresse (4 sept) : une vérification qui
+   s'exécute, pas une consigne qu'on espère suivie.
+   ⚠️ Portée volontairement limitée : ne détecte que les mentions CHIFFRÉES
+   d'âge (« à 37 ans », « vous avez 37 ans », « âgée de 37 ans »), jamais une
+   phrase vague comme « à cause de votre âge » sans nombre — rien à vérifier
+   dans ce cas, donc rien retiré. Les fourchettes de durée (« 3 à 4 ans »,
+   « 3-4 ans », formation/expérience) sont explicitement écartées AVANT la
+   recherche, pour ne jamais confondre une durée de formation avec un âge. */
+function _agesReellementDits() {
+  var src = (typeof chatHistory !== 'undefined' ? chatHistory : [])
+    .filter(function (m) { return m.role === 'user'; })
+    .map(function (m) { return String(m.content || ''); })
+    .join(' \n ') + ' \n ' + String((typeof window !== 'undefined' && window._cvText) || '');
+  var nums = new Set();
+  var re = /(\d{1,3})\s*ans\b/gi, m;
+  while ((m = re.exec(src))) nums.add(m[1]);
+  return nums;
+}
+function _purgerAgesInventes(valeur, agesConnus) {
+  if (typeof valeur === 'string') {
+    if (!valeur) return valeur;
+    // Masque d'abord les fourchettes de durée : elles ne sont jamais un âge.
+    var masque = valeur.replace(/\d{1,2}\s*[-–à]\s*\d{1,2}\s*ans\b/gi, function (s) { return ' '.repeat(s.length); });
+    var sortie = valeur;
+    [
+      // ⚠️ Pas de \b devant « à »/« â » : en JS, \b se définit sur [A-Za-z0-9_]
+      // uniquement (pas les lettres accentuées), donc « (espace)à » n'est jamais
+      // une frontière de mot et le \b échouait à chaque fois — bug trouvé en
+      // testant ce garde-fou le jour même, il ne matchait JAMAIS « à 37 ans ».
+      /à\s+(\d{1,3})\s*ans\b/gi,
+      /\bvous\s+avez\s+(\d{1,3})\s*ans\b/gi,
+      /âgée?\s+de\s+(\d{1,3})\s*ans\b/gi
+    ].forEach(function (re) {
+      var mm;
+      re.lastIndex = 0;
+      while ((mm = re.exec(masque))) {
+        if (!agesConnus.has(mm[1])) {
+          sortie = sortie.split(mm[0]).join('').replace(/\s{2,}/g, ' ').trim();
+          try { console.warn('[CYNTH] Âge non vérifié retiré du rapport : « ' + mm[0].trim() + ' »'); } catch (e) {}
+        }
+      }
+    });
+    return sortie;
+  }
+  if (Array.isArray(valeur)) return valeur.map(function (v) { return _purgerAgesInventes(v, agesConnus); });
+  if (valeur && typeof valeur === 'object') {
+    for (var k in valeur) { if (Object.prototype.hasOwnProperty.call(valeur, k)) valeur[k] = _purgerAgesInventes(valeur[k], agesConnus); }
+    return valeur;
+  }
+  return valeur;
+}
+
 /* ══ DICTIONNAIRE CYNTH.IA — CORRECTION AUTOMATIQUE ══════════════════════════
    Fourni par Faouzi le 15 août 2026. Le dictionnaire était écrit comme une
    consigne de relecture humaine avant export PDF. Or les rapports sont produits
@@ -5546,7 +5608,7 @@ function _preparerRapportEnFond() {
           if (!k || vus[k]) return false; vus[k] = 1; return true;
         });
       }
-      window._reportData = _corrigerLangueProfond(deepStripDash(data));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_purgerAgesInventes(data, _agesReellementDits())));
       _signalerMontantsDouteux(window._reportData);
       try { _stashReport(); } catch (e) {}
       try { _marquerEntretienTermine(); } catch (e) {}
@@ -6124,7 +6186,7 @@ function doEndChat() {
     .then(data => {
       _compter('rapport', (Date.now() - _tDebutRapport) / 1000);
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
-      window._reportData = _corrigerLangueProfond(deepStripDash(data));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_purgerAgesInventes(data, _agesReellementDits())));
       _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
       // Bouton rapport — comportement selon CONFIG.RAPPORT_GRATUIT (test / production)
@@ -6189,7 +6251,7 @@ function doEndChat() {
       // Le repli est un signal de qualité : s'il monte, c'est que les appels
       // échouent ou dépassent le délai, et la personne reçoit un rapport pauvre.
       _compter('rapport_repli', (Date.now() - _tDebutRapport) / 1000);
-      window._reportData = _corrigerLangueProfond(deepStripDash(buildFallbackReport()));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_purgerAgesInventes(buildFallbackReport(), _agesReellementDits())));
       try { _marquerEntretienTermine(); } catch (e) {}
       try { _afficherApercu(); } catch (e) {}
       _signalerMontantsDouteux(window._reportData);
