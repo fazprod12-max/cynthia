@@ -10104,13 +10104,13 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
 ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetiers}${secPlan}${secRes}${section6}
 <div class="fbk" id="fbk"><h4>Ce rapport vous a-t-il été utile ?</h4><div class="sub">Une seconde pour répondre. C'est anonyme, et ça sert à améliorer Cynthia.</div><div class="ops"><button type="button" data-v="1">Pas vraiment</button><button type="button" data-v="2">Un peu</button><button type="button" data-v="3">Beaucoup</button><button type="button" data-v="4">Ça a tout changé</button></div></div>
 <div class="suiv" id="suiv">
-  <h4>Et dans six mois, vous en serez où ?</h4>
-  <div class="sub">Un plan, c'est facile à écrire et difficile à tenir. Laissez-nous votre email : on vous écrira une seule fois, dans six mois, pour vous demander ce que vous en avez fait. Ça vous obligera un peu, et ça nous dira si Cynthia sert vraiment à quelque chose.</div>
+  <h4>Et dans quelques mois, vous en serez où ?</h4>
+  <div class="sub">Un plan, c'est facile à écrire et difficile à tenir. Laissez-nous votre email : on vous écrira à trois mois, puis à six mois, pour vous demander ce que vous en avez fait. Ça vous obligera un peu, et ça nous dira si Cynthia sert vraiment à quelque chose.</div>
   <div class="row">
     <input type="email" id="suiv-mail" placeholder="votre@email.ch" autocomplete="email">
     <button type="button" id="suiv-ok">Me le rappeler</button>
   </div>
-  <div class="mini">Une seule relance, dans six mois. Aucune newsletter, aucun partage, aucune revente. Vous pourrez vous désinscrire en répondant simplement à cet email.</div>
+  <div class="mini">Deux relances, à trois puis six mois. Aucune newsletter, aucun partage, aucune revente. Vous pourrez vous désinscrire en répondant simplement à cet email.</div>
 </div>
 <script>
 (function(){
@@ -10135,8 +10135,8 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
     }catch(e){}
   });
 
-  /* Suivi à 6 mois. Rien n'est envoyé aujourd'hui : on enregistre l'adresse avec
-     le consentement, et la relance partira le jour où l'envoi sera branché. */
+  /* Suivi à 3 et 6 mois (automatisé le 8 septembre 2026 : tâche planifiée
+     côté Cowork qui lit /relances et envoie via contact@cynthia-orientation.ch). */
   var boxS=document.getElementById('suiv');
   var btnS=document.getElementById('suiv-ok');
   var inpS=document.getElementById('suiv-mail');
@@ -10148,7 +10148,7 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
         setTimeout(function(){ inpS.style.borderColor=''; },1800);
         return;
       }
-      boxS.innerHTML='<div class="done">C\'est noté. On vous écrit dans six mois, pas avant.</div>';
+      boxS.innerHTML='<div class="done">C\'est noté. On vous écrit à trois mois, puis à six mois, pas avant.</div>';
       try{
         fetch('${GROQ_PROXY_URL}/suivi',{
           method:'POST',
