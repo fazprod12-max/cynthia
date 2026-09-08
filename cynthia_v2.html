@@ -10130,7 +10130,7 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
       fetch('${GROQ_PROXY_URL}/feedback',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({note:note,ref:'${esc(refNum)}',ts:Date.now()})
+        body:JSON.stringify({note:note,ref:${JSON.stringify(refNum)},ts:Date.now()})
       }).catch(function(){});
     }catch(e){}
   });
@@ -10153,7 +10153,7 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
         fetch('${GROQ_PROXY_URL}/suivi',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({email:mail,consentement:true,metier:'${esc((data.top_metiers&&data.top_metiers[0]&&data.top_metiers[0].titre)||'')}',ref:'${esc(refNum)}'})
+          body:JSON.stringify({email:mail,consentement:true,metier:${JSON.stringify((data.top_metiers&&data.top_metiers[0]&&data.top_metiers[0].titre)||'')},ref:${JSON.stringify(refNum)}})
         }).catch(function(){});
       }catch(e){}
     };
