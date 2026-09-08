@@ -10120,9 +10120,9 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
     var b=ev.target.closest('button[data-v]');
     if(!b) return;
     var note=Number(b.getAttribute('data-v'))||0;
-    box.innerHTML='<div class="done">Merci, c\'est noté.</div>'
+    box.innerHTML='<div class="done">Merci, c\\'est noté.</div>'
       + '<div class="sub" style="margin-top:14px">Si vous avez cinq minutes, le questionnaire complet '
-      + 'm\'aide beaucoup plus qu\'une note. C\'est là que vous pouvez me dire '
+      + 'm\\'aide beaucoup plus qu\\'une note. C\\'est là que vous pouvez me dire '
       + 'ce qui vous a gêné, et ce que ce rapport vaut selon vous.</div>'
       + '<a class="lienq" href="https://cynthia-orientation.ch/retour.html" target="_blank" rel="noopener">'
       + 'Donner mon avis complet &rarr;</a>';
@@ -10143,12 +10143,12 @@ ${secParcours}${secChangement}${secQui}${secPorte}${secSavoir}${secCV}${secMetie
   if(boxS && btnS && inpS){
     var envoiS=function(){
       var mail=(inpS.value||'').trim();
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)){
+      if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(mail)){
         inpS.style.borderColor='#C6402F'; inpS.focus();
         setTimeout(function(){ inpS.style.borderColor=''; },1800);
         return;
       }
-      boxS.innerHTML='<div class="done">C\'est noté. On vous écrit à trois mois, puis à six mois, pas avant.</div>';
+      boxS.innerHTML='<div class="done">C\\'est noté. On vous écrit à trois mois, puis à six mois, pas avant.</div>';
       try{
         fetch('${GROQ_PROXY_URL}/suivi',{
           method:'POST',
