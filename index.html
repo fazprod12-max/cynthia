@@ -2216,14 +2216,30 @@ textarea.chat-input{
   <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
 
-    <!-- Ordre interne à la section inversé le 14 septembre 2026 (audit design,
-         chantier S5) : l'extrait réel passe AVANT le sommaire, pas après.
-         Raison : montrer d'abord, expliquer la structure ensuite — quelqu'un
-         qui doute encore que ce soit un vrai produit doit voir la preuve
-         concrète avant la table des matières, pas l'inverse. Rien de son
-         propre contenu n'a changé, seul l'ordre bouge.
+    <!-- SOMMAIRE : replié à 3 sections développées + 6 en résumé (14 septembre
+         2026, audit design, décision Faouzi via AskUserQuestion — option
+         recommandée). Avant : 9 tuiles identiques, autant de poids visuel pour
+         "votre plan sur 6 mois" que pour "booster votre CV" — noyait ce qui
+         vend vraiment le rapport (le parcours, les métiers chiffrés, le plan)
+         dans une grille plate. Les 6 autres sections existent toujours dans le
+         VRAI rapport (rien retiré du produit), juste résumées ici en une ligne
+         plutôt qu'en 6 cartes de même taille. Numérotation 01-09 conservée
+         (elle correspond à l'ordre réel du rapport, voir downloadRapport).
 
-         ⚠️ RETIRÉ le 3 septembre 2026, à la demande de Faouzi : le mockup du
+         ⚠️ ORDRE : le sommaire reste AVANT l'extrait réel ci-dessous. Un essai
+         d'inversion (montrer l'extrait avant le sommaire) a été fait le 14
+         septembre 2026 puis annulé le jour même à la demande explicite de
+         Faouzi, qui a jugé le rendu incohérent une fois affiché en vrai —
+         l'ordre d'origine (structure d'abord, preuve concrète ensuite) est
+         rétabli. Ne pas réinverser sans un nouvel accord explicite. -->
+    <div class="lp-somm lp-somm-3 cyn-stag cyn-spot">
+      <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
+      <div class="lp-so"><b>07</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
+      <div class="lp-so"><b>08</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
+    </div>
+    <p class="lp-somm-aussi lp-rv">Et aussi, dans le même dossier : le changement qui vous concerne · qui vous êtes · ce qui vous porte · savoir-faire et savoir-être · de quoi booster votre CV · vos ressources en Suisse.</p>
+
+    <!-- ⚠️ RETIRÉ le 3 septembre 2026, à la demande de Faouzi : le mockup du
          rapport (barres Big Five, tags de personnalité, métier fictif, puce
          CV, citation) prenait trop de place pour trop peu d'effet. La moitié
          du contenu était générique : des pourcentages et des tags qu'affiche
@@ -2263,22 +2279,6 @@ textarea.chat-input{
         </div>
       </div>
     </div>
-
-    <!-- SOMMAIRE : replié à 3 sections développées + 6 en résumé (14 septembre
-         2026, audit design, décision Faouzi via AskUserQuestion — option
-         recommandée). Avant : 9 tuiles identiques, autant de poids visuel pour
-         "votre plan sur 6 mois" que pour "booster votre CV" — noyait ce qui
-         vend vraiment le rapport (le parcours, les métiers chiffrés, le plan)
-         dans une grille plate. Les 6 autres sections existent toujours dans le
-         VRAI rapport (rien retiré du produit), juste résumées ici en une ligne
-         plutôt qu'en 6 cartes de même taille. Numérotation 01-09 conservée
-         (elle correspond à l'ordre réel du rapport, voir downloadRapport). -->
-    <div class="lp-somm lp-somm-3 cyn-stag cyn-spot">
-      <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
-      <div class="lp-so"><b>07</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
-      <div class="lp-so"><b>08</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
-    </div>
-    <p class="lp-somm-aussi lp-rv">Et aussi, dans le même dossier : le changement qui vous concerne · qui vous êtes · ce qui vous porte · savoir-faire et savoir-être · de quoi booster votre CV · vos ressources en Suisse.</p>
 
     <div class="lp-ract" style="margin-top:8px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
   </div></section>
