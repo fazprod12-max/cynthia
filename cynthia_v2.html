@@ -7953,6 +7953,17 @@ function _classerTransferabilite(topMetiers, niveauPersonne) {
       console.warn('[CYNTH] « ' + (m.titre || m.id) + " » annoncé accessible maintenant, mais la fiche exige "
         + (_NIVEAU_LABEL[nivMetier] || nivMetier) + ' et le niveau estimé de la personne est '
         + (_NIVEAU_LABEL[niv] || niv) + " — horizon corrigé en « " + retenu + " ».");
+    } else if (retenu === _HZ_COURT && deduit === _HZ_LONG) {
+      // Symétrique du cas ci-dessus (ajouté le 14 septembre 2026, après vérification
+      // d'un vrai rapport PDF : « Formateur d'adultes » et « Spécialiste RH » annoncés
+      // en badge « 6-12 mois » alors que le corps du rapport et la fiche source parlent
+      // d'années (4 ans pour le premier, 2-3 ans pour le second). L'ancien code ne
+      // vérifiait QUE le cas « maintenant » mal annoncé, jamais celui-ci — trou structurel
+      // qui touchait plusieurs métiers du même rapport, pas un cas isolé.
+      retenu = _HZ_LONG;
+      corrige = true;
+      console.warn('[CYNTH] « ' + (m.titre || m.id) + " » annoncé en 6-12 mois, mais la voie de formation de la "
+        + 'fiche se compte en années — horizon corrigé en « 2 ans ».');
     }
 
     var copie = Object.assign({}, m);
@@ -8775,7 +8786,7 @@ Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pa
     + ' (c) ACCORDS : relis les pluriels et les participes passés avant de rendre ta réponse. "des clients revenaient" et non "revenait". Accorde les adjectifs au bon genre quand tu parles de la personne.'
     + ' (d) ACCENTS : tous les mots en é, è, ê sont accentués. "compétence", "spécialiste", "fidélisation", "clientèle", "employé", "gérant".'
     + ' (e) TON : chaleureux mais professionnel, direct mais bienveillant, jamais moralisateur. Vouvoiement partout.'
-    + ' (f) TYPOGRAPHIE : pas d\'espace avant une virgule ni avant un point. Les noms propres suisses gardent leur orthographe exacte (Genève, Suisse romande, ORP, CFC, HES-SO, brevet fédéral, article 32).'
+    + ' (f) TYPOGRAPHIE : pas d\'espace avant une virgule ni avant un point. Les noms propres suisses gardent leur orthographe exacte (Genève, Suisse romande, ORP, CFC, HES-SO, brevet fédéral, article 32). Chaque parenthèse ouverte doit être refermée UNE seule fois : ne mets jamais deux parenthèses fermantes pour une seule ouverte (erreur réelle constatée : "...cantonal (montant à vérifier auprès de votre canton) en Genève par exemple)." — relis la phrase et compte les ( et ) avant de répondre.'
   /* ── RÈGLES DE VÉRACITÉ ────────────────────────────────────────────────────
      Ajoutées le 11 août 2026 après un rapport de bugs d'un testeur qui a TOUT
      vérifié. Chaque interdiction ci-dessous correspond à une erreur réelle,
@@ -8791,7 +8802,10 @@ Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pa
   + ' (9) ARTICLE 32 ET NOMS DE TITRES — l\'article 32 OFPr ne délivre QUE des CFC et des AFP, et uniquement pour des métiers qui en ont un. N\'écris "CFC de X" ou "AFP de X" QUE si le champ formation de la fiche de X contient le mot CFC ou AFP. Sinon, recopie le champ formation TEL QUEL (par exemple "certificat FSEA puis brevet fédéral"), et ne parle pas d\'article 32 pour ce métier. Erreur réelle du 19 août 2026 : un rapport a promis six fois un "CFC de formatrice d\'adultes via l\'article 32". Ce titre n\'existe pas, la fiche disait la vérité sur la même page, et le plan des deux premières semaines consistait à aller le demander à un ORP. Inventer un titre est pire qu\'une piste imparfaite : la personne le découvre devant un guichet.'
   + ' (11) ARTICLE 32, LA RÈGLE DES ANNÉES — l\'article 32 OFPr exige 5 ans d\'expérience professionnelle AU TOTAL, DONT 2 à 5 ans DANS LE MÉTIER VISÉ au moment de la procédure (le nombre exact figure dans l\'ordonnance de formation du métier). Une longue carrière dans un AUTRE domaine ne remplace jamais les années exigées dans le métier visé. L\'EXPÉRIENCE ACQUISE HORS DE SUISSE n\'est pas automatiquement comptée : c\'est le canton qui décide, au cas par cas, souvent sur preuves. Si le parcours est étranger, écris-le comme une question à poser au canton, jamais comme un droit acquis ni comme un refus. Et n\'annonce AUCUNE durée de préparation : tu ne la connais pas. N\'écris JAMAIS « vos N ans d\'expérience couvrent largement les 5 ans exigés » ni « vous avez l\'expérience requise » sans avoir compté ses années DANS CE MÉTIER-LÀ. Erreur réelle du 19 août 2026 : un rapport a écrit à quelqu\'un qui avait 13 mois d\'hôtellerie et 10 ans de commercial que ses dix ans « couvraient largement » l\'exigence, tout en écrivant trois paragraphes plus loin, correctement, qu\'il lui manquait 2 à 3 ans dans le domaine. Le même document affirmait donc une chose et son contraire. Si ses années dans le métier visé sont insuffisantes, DIS-LE, chiffres à l\'appui, et indique ce qui manque : c\'est une information utile, pas un échec.'
   + ' (10) AIDES CANTONALES — ne chiffre une aide que si le montant figure dans le champ financement d\'une fiche. Le chèque annuel de formation genevois est plafonné à CHF 750 par an ; un rapport a écrit CHF 1 000. Sans montant sourcé, écris "montant à vérifier auprès de votre canton".'
-  + ' (8) CITATION EN EXERGUE — citation_forte est affichée en grand, seule, en tête du portrait. Choisis une phrase de la personne qui est grammaticalement correcte et qui se comprend hors contexte. Si sa formulation la plus marquante comporte une faute ou une tournure bancale, prends-en une autre, ou mets null : mieux vaut pas de citation qu\'une citation qui donne l\'impression que le rapport est mal écrit. Ne corrige JAMAIS ses mots pour les faire entrer — un verbatim retouché n\'est plus un verbatim.';
+  + ' (8) CITATION EN EXERGUE — citation_forte est affichée en grand, seule, en tête du portrait. Choisis une phrase de la personne qui est grammaticalement correcte et qui se comprend hors contexte. Si sa formulation la plus marquante comporte une faute ou une tournure bancale, prends-en une autre, ou mets null : mieux vaut pas de citation qu\'une citation qui donne l\'impression que le rapport est mal écrit. Ne corrige JAMAIS ses mots pour les faire entrer — un verbatim retouché n\'est plus un verbatim.'
+  + ' (12) SIGLES DE CERTIFICATION ET ASSOCIATIONS PROFESSIONNELLES — même règle que (7), étendue : ne développe JAMAIS un sigle de certification ou de formation (FSEA, CFC, AFP...) et n\'invente JAMAIS le nom d\'une association professionnelle. Erreur réelle vérifiée le 14 septembre 2026 : un rapport a écrit "Certificat FSEA (Formation et Soutien à l\'Enseignement des Adultes)" — développé faux, FSEA veut dire Fédération suisse pour la formation continue — et a inventé une "Association des formateur·rices d\'adultes en Suisse romande (AFAR)", qui n\'existe pas (les vraies s\'appellent ARFOR et ARFAD). Si tu ne connais pas avec certitude ce que recouvre un sigle ou le nom exact d\'une association, recopie le sigle SANS le développer et ne cite AUCUNE association que tu n\'as pas lue dans la fiche métier ou dans ce que la personne a dit.'
+  + ' (13) VIAMIA — c\'est un dispositif réservé aux 40 ans et plus. N\'écris "vous êtes éligible" ou toute formule d\'éligibilité affirmée QUE si la personne a explicitement donné un âge de 40 ans ou plus dans la conversation ou le CV. Si son âge n\'est pas connu ou qu\'elle a moins de 40 ans, présente viamia comme une ressource conditionnelle ("si vous avez 40 ans ou plus") ou ne le mentionne pas du tout — ne jamais affirmer une éligibilité que tu ne peux pas vérifier.'
+  + ' (14) COHÉRENCE BADGE/TEXTE — un métier de type "principal" ne doit jamais contenir, dans "pourquoi" ou "developper", une phrase qui le déconseille ou qui dit qu\'il ne correspond pas vraiment à la personne (ex : "ce métier ne capture pas votre vrai moteur"). Si tu doutes à ce point d\'un métier, deux choix seulement : soit tu le mets en type "piste" au lieu de "principal", soit tu retires le doute et expliques franchement pourquoi il reste un bon choix malgré la réserve. Ne mélange jamais un badge qui vend le métier et un texte qui le déconseille : la personne lit les deux dans le même souffle.';
 
   async function _part(context, instruction, schema) {
     // La date réelle, sinon le plan sur 6 mois part d'une année déjà écoulée :
@@ -8880,7 +8894,8 @@ ce qui, dans SES mots, a motivé chaque choix.
 ${metiersList}`;
 
   const pMetiers = _part(dataBlock,
-    `Choisis EXACTEMENT 5 métiers dans la BASE DE DONNÉES MÉTIERS ci-dessus, TOUS DIFFÉRENTS : 3 de type "principal" (les plus adaptés) puis 2 de type "piste". Pour chacun : pourquoi (cite ses mots), atouts (competences_cles qu\'elle possède DÉJÀ), developper (competences_cles qui manquent + la voie de formation suisse pour les combler), route_formation (formation suisse concrète : intitulé + durée + coût approximatif en CHF + qui finance), premier_pas (action précise cette semaine). Recopie salaire_debut, salaire_exp, tension_marche ET formation SANS les modifier.
+    `Choisis EXACTEMENT 5 métiers dans la BASE DE DONNÉES MÉTIERS ci-dessus, TOUS DIFFÉRENTS : 3 de type "principal" (les plus adaptés) puis 2 de type "piste". Pour chacun : pourquoi (cite ses mots), atouts (competences_cles qu\'elle possède DÉJÀ), developper (competences_cles qui manquent + la voie de formation suisse pour les combler), route_formation (formation suisse concrète : intitulé + durée + coût approximatif en CHF + qui finance), premier_pas (UNE action précise, concrète, réalisable). Recopie salaire_debut, salaire_exp, tension_marche ET formation SANS les modifier.
+⚠️ premier_pas est affiché derrière le label fixe "Premier pas cette semaine :" — ne commence donc JAMAIS ce champ par "Cette semaine", "Cette semaine :" ou une formule équivalente (le label le dit déjà) : commence directement par le verbe d\'action. Erreur réelle constatée le 14 septembre 2026 : un rapport affichait "Premier pas cette semaine : Cette semaine : contactez votre ORP...", doublon visible.
 
 ⏳ DURÉE DE FORMATION — LE CHAMP formation CI-DESSUS EST LA SEULE VÉRITÉ, JAMAIS LA CONVERSATION. route_formation et horizon_precision doivent reprendre la durée et le niveau du champ formation tels quels ; n\'invente ni ne recalcule jamais ta propre estimation, et ne répète pas non plus une durée qui aurait été dite plus tôt en chat si elle diffère. Erreur réelle du 7 septembre 2026 : en conversation, une durée de "trois à quatre ans" avait été annoncée pour l\'ostéopathie ; la vraie fiche dit "bachelor min. 3 ans + master min. 1,5 an" (4,5 ans minimum) ; le rapport a répété la durée du chat dans route_formation, horizon_precision ET developper au lieu de se corriger avec le champ formation. Si le champ formation est vague ou absent, dis-le plutôt que d\'inventer une fourchette.
 
@@ -9695,7 +9710,13 @@ function downloadRapport(){
     const mcls = (tension.includes('haute')||/pénurie|porteur/i.test(marche))?'p':(/stable/i.test(marche)?'s':'p');
     const marcheChip = marche?`<span class="chipm ${mcls}">${esc(marche)}</span>`:'';
     const formChip = formation?`<span class="chipm">${esc(formation)}</span>`:'';
-    const first = m.premier_pas?`<div class="firststep"><b>Premier pas cette semaine :</b> ${esc(m.premier_pas)}</div>`:'';
+    // Garde-fou déterministe (14 septembre 2026) : le label fixe dit déjà "cette
+    // semaine", donc si le modèle répète quand même "Cette semaine :" en tête du
+    // champ (constaté sur un vrai rapport : "Premier pas cette semaine : Cette
+    // semaine : contactez..."), on le retire avant affichage plutôt que d'espérer
+    // que la consigne de prompt suffise à chaque fois.
+    const _pp = String(m.premier_pas || '').replace(/^\s*cette\s+semaine\s*[:,]?\s*/i, '');
+    const first = _pp?`<div class="firststep"><b>Premier pas cette semaine :</b> ${esc(_pp)}</div>`:'';
     /* Chaque formation proposée est désormais accompagnée des liens pour aller
        vérifier et s'inscrire. Demande explicite du premier testeur : « que chaque
        formation qu'elle propose ait un lien qui permet soit de s'inscrire, soit
