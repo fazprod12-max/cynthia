@@ -1974,16 +1974,18 @@ document.addEventListener('DOMContentLoaded', function () {
   @media(max-width:760px){.lp-ract .lp-btn{width:100%;max-width:340px;}}
   .lp-band{background:linear-gradient(135deg,var(--c-emerald-soft),var(--c-coral-soft));border-radius:34px;padding:56px 44px;text-align:center;}
   .lp-band h2{font-size:2rem;margin-bottom:16px;} .lp-band>p{color:var(--c-ink);font-size:1.1rem;max-width:62ch;margin:0 auto;opacity:.82;}
-  /* Sommaire du rapport : 3 sections développées + 6 résumées (14 sept 2026) */
+  /* Sommaire du rapport : 9 tuiles, une par section réelle (voir downloadRapport).
+     ⚠️ Repliée à 3+6 le 14 sept. 2026 (audit design) puis reverti aux 9 tuiles
+     le jour même à la demande explicite de Faouzi. .lp-somm-3 et .lp-somm-aussi
+     (règles du repli) retirées avec le HTML qui les utilisait — ne pas les
+     recréer sans un nouvel accord explicite. */
   .lp-somm{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:34px;}
-  .lp-somm-3{grid-template-columns:repeat(3,1fr);}
   .lp-so{background:#fff;border:1px solid var(--c-line);border-radius:14px;padding:16px 16px 15px;font-family:'Space Grotesk';font-weight:600;font-size:.95rem;line-height:1.25;transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s,background .3s;}
   .lp-so:hover{transform:translateY(-4px);box-shadow:0 14px 28px -14px rgba(14,42,36,.25);border-color:var(--c-emerald);background:var(--c-emerald-soft);}
   .lp-so b{display:block;font-family:'Space Grotesk';font-size:.78rem;color:var(--c-emerald-d);letter-spacing:.08em;margin-bottom:8px;}
   .lp-so span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.82rem;color:var(--c-muted);margin-top:6px;line-height:1.45;}
-  @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}.lp-somm-3{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}.lp-somm-3{grid-template-columns:1fr;}}
-  .lp-somm-aussi{text-align:center;color:var(--c-muted);font-size:.88rem;line-height:1.6;max-width:62ch;margin:0 auto 34px;}
+  @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
   /* ── Extrait réel de rapport (5 septembre 2026) ── voir #lp-rapport, bloc .lp-rex */
   .lp-rex{background:#fff;border:1px solid var(--c-line);border-radius:22px;padding:30px 28px;margin-bottom:28px;}
   .lp-rex-tag{display:inline-block;font-family:'Space Grotesk';font-weight:600;font-size:.78rem;letter-spacing:.06em;color:var(--c-emerald-d);background:var(--c-emerald-soft);border-radius:999px;padding:6px 14px;margin-bottom:20px;}
@@ -2216,28 +2218,31 @@ textarea.chat-input{
   <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
 
-    <!-- SOMMAIRE : replié à 3 sections développées + 6 en résumé (14 septembre
-         2026, audit design, décision Faouzi via AskUserQuestion — option
-         recommandée). Avant : 9 tuiles identiques, autant de poids visuel pour
-         "votre plan sur 6 mois" que pour "booster votre CV" — noyait ce qui
-         vend vraiment le rapport (le parcours, les métiers chiffrés, le plan)
-         dans une grille plate. Les 6 autres sections existent toujours dans le
-         VRAI rapport (rien retiré du produit), juste résumées ici en une ligne
-         plutôt qu'en 6 cartes de même taille. Numérotation 01-09 conservée
-         (elle correspond à l'ordre réel du rapport, voir downloadRapport).
-
-         ⚠️ ORDRE : le sommaire reste AVANT l'extrait réel ci-dessous. Un essai
+    <!-- ⚠️ ORDRE : le sommaire reste AVANT l'extrait réel ci-dessous. Un essai
          d'inversion (montrer l'extrait avant le sommaire) a été fait le 14
          septembre 2026 puis annulé le jour même à la demande explicite de
          Faouzi, qui a jugé le rendu incohérent une fois affiché en vrai —
          l'ordre d'origine (structure d'abord, preuve concrète ensuite) est
-         rétabli. Ne pas réinverser sans un nouvel accord explicite. -->
-    <div class="lp-somm lp-somm-3 cyn-stag cyn-spot">
+         rétabli. Ne pas réinverser sans un nouvel accord explicite.
+
+         ⚠️ CONTENU : replié à 3 tuiles + "et aussi" le 14 septembre 2026 (audit
+         design), puis reverti le jour même aux 9 tuiles d'origine, à la
+         demande explicite de Faouzi une fois vu en vrai sur le site (« il
+         manque tout les autres chiffres [...] je veux que ça revienne comme
+         avant »). Les 9 tuiles correspondent aux 9 sections réelles du
+         rapport (voir downloadRapport) : ne pas re-replier sans un nouvel
+         accord explicite. -->
+    <div class="lp-somm cyn-stag cyn-spot">
       <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
+      <div class="lp-so"><b>02</b>Le changement qui vous concerne<span>Métier, environnement ou équilibre : tout quitter n'est pas toujours la réponse</span></div>
+      <div class="lp-so"><b>03</b>Qui vous êtes<span>Votre portrait et votre profil de personnalité chiffré</span></div>
+      <div class="lp-so"><b>04</b>Ce qui vous porte<span>Vos valeurs, vos moteurs, votre environnement idéal</span></div>
+      <div class="lp-so"><b>05</b>Savoir-faire et savoir-être<span>Ce que vous savez faire, et comment vous le faites</span></div>
+      <div class="lp-so"><b>06</b>Booster votre CV<span>Des phrases prêtes à coller et votre pitch de reconversion</span></div>
       <div class="lp-so"><b>07</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
       <div class="lp-so"><b>08</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
+      <div class="lp-so"><b>09</b>Vos ressources en Suisse<span>Qui finance quoi, et où frapper à la porte</span></div>
     </div>
-    <p class="lp-somm-aussi lp-rv">Et aussi, dans le même dossier : le changement qui vous concerne · qui vous êtes · ce qui vous porte · savoir-faire et savoir-être · de quoi booster votre CV · vos ressources en Suisse.</p>
 
     <!-- ⚠️ RETIRÉ le 3 septembre 2026, à la demande de Faouzi : le mockup du
          rapport (barres Big Five, tags de personnalité, métier fictif, puce
