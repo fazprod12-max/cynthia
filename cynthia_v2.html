@@ -1505,6 +1505,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   }
   .lp-btn,.btn,button{min-height:44px;}
 
+  /* Bloqueur mobile #1 (audit design du 14 septembre 2026) : .lp-foot-links
+     n'avait pas de flex-wrap (voir la définition de base) → sur un écran
+     étroit les 6 liens du pied de page débordaient hors du cadre au lieu de
+     passer à la ligne. Mesuré par l'audit : débordement jusqu'à x=561 sur
+     une largeur de 375px. Un flex-wrap ciblé au mobile suffit, rien à casser
+     côté desktop où la ligne unique tient très bien. */
+  .lp-foot-links{flex-wrap:wrap;justify-content:center;row-gap:10px;}
+
   /* ── 3. Le défilement des messages reste dans les messages ────────────── */
   .chat-msgs{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
 
@@ -1715,11 +1723,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!-- ══ BETA BANNER ══ -->
 <div id="beta-banner">
-  <!-- MODIF V3 - CONCURRENT : date expiration bêta explicite -->
+  <!-- Reformulé le 14 septembre 2026 : l'ancienne version annonçait une date de fin
+       de bêta fixe (« jusqu'au 31/12/2026 ») qui n'existe pas — Faouzi a confirmé
+       qu'il n'y a pas de date arrêtée, la bêta dure « le temps qu'on juge que le
+       produit tient la route ». Retiré aussi « 100% GRATUIT » (le prix n'est pas
+       encore décidé pour l'ouverture publique) au profit d'un cadrage « offert aux
+       premiers testeurs », qui reste vrai quelle que soit la durée réelle. -->
   <div class="bb-text">
     <span>🧪</span>
     <span class="bb-pill">BÊTA</span>
-    <span>PHASE DE TEST — Service <strong>100% GRATUIT jusqu'au 31/12/2026</strong> · Rejoignez les premiers testeurs !</span>
+    <span>PHASE DE TEST · <strong>Offert aux premiers testeurs</strong>, le temps d'affiner Cynthia avant l'ouverture.</span>
   </div>
   <button class="bb-close" onclick="closeBetaBanner()" title="Fermer">✕</button>
 </div>
@@ -1809,6 +1822,8 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-typing i{width:7px;height:7px;border-radius:50%;background:var(--c-emerald-d);opacity:.5;animation:lptd 1.2s infinite;}
   .lp-typing i:nth-child(2){animation-delay:.2s;} .lp-typing i:nth-child(3){animation-delay:.4s;}
   @keyframes lptd{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-5px);opacity:1;}}
+  /* Lien "voir la suite" de la démo mobile réduite (14 septembre 2026) */
+  .lp-voirsuite{align-self:flex-start;margin-top:2px;font-family:'Space Grotesk';font-weight:600;font-size:.9rem;color:var(--c-emerald-d);cursor:pointer;text-decoration:underline;opacity:0;transform:translateY(8px);animation:lppop .45s ease forwards;}
   .lp-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
   .lp-chip{background:#fff;border:1.5px solid var(--c-line);border-radius:100px;padding:7px 13px;font-size:.82rem;font-weight:600;color:var(--c-emerald-d);opacity:0;transform:scale(.9);animation:lppop2 .4s ease forwards;}
   .lp-chip.hot{background:var(--c-coral-soft);border-color:transparent;color:#C6402F;}
@@ -1959,14 +1974,16 @@ document.addEventListener('DOMContentLoaded', function () {
   @media(max-width:760px){.lp-ract .lp-btn{width:100%;max-width:340px;}}
   .lp-band{background:linear-gradient(135deg,var(--c-emerald-soft),var(--c-coral-soft));border-radius:34px;padding:56px 44px;text-align:center;}
   .lp-band h2{font-size:2rem;margin-bottom:16px;} .lp-band>p{color:var(--c-ink);font-size:1.1rem;max-width:62ch;margin:0 auto;opacity:.82;}
-  /* Sommaire du rapport : les 9 sections, présentées comme un vrai dossier */
+  /* Sommaire du rapport : 3 sections développées + 6 résumées (14 sept 2026) */
   .lp-somm{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:34px;}
+  .lp-somm-3{grid-template-columns:repeat(3,1fr);}
   .lp-so{background:#fff;border:1px solid var(--c-line);border-radius:14px;padding:16px 16px 15px;font-family:'Space Grotesk';font-weight:600;font-size:.95rem;line-height:1.25;transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s,background .3s;}
   .lp-so:hover{transform:translateY(-4px);box-shadow:0 14px 28px -14px rgba(14,42,36,.25);border-color:var(--c-emerald);background:var(--c-emerald-soft);}
   .lp-so b{display:block;font-family:'Space Grotesk';font-size:.78rem;color:var(--c-emerald-d);letter-spacing:.08em;margin-bottom:8px;}
   .lp-so span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.82rem;color:var(--c-muted);margin-top:6px;line-height:1.45;}
-  @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
+  @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}.lp-somm-3{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}.lp-somm-3{grid-template-columns:1fr;}}
+  .lp-somm-aussi{text-align:center;color:var(--c-muted);font-size:.88rem;line-height:1.6;max-width:62ch;margin:0 auto 34px;}
   /* ── Extrait réel de rapport (5 septembre 2026) ── voir #lp-rapport, bloc .lp-rex */
   .lp-rex{background:#fff;border:1px solid var(--c-line);border-radius:22px;padding:30px 28px;margin-bottom:28px;}
   .lp-rex-tag{display:inline-block;font-family:'Space Grotesk';font-weight:600;font-size:.78rem;letter-spacing:.06em;color:var(--c-emerald-d);background:var(--c-emerald-soft);border-radius:999px;padding:6px 14px;margin-bottom:20px;}
@@ -2126,9 +2143,14 @@ textarea.chat-input{
   <nav class="lp-nav lp-wrap" style="max-width:none;padding-left:max(24px,calc((100% - 1140px)/2 + 24px));padding-right:max(24px,calc((100% - 1140px)/2 + 24px));">
     <div class="lp-logo">Cynth<span class="lp-dot"></span><span class="lp-accent">IA</span></div>
     <div class="lp-links">
-      <a onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">La méthode</a>
-      <a onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Le rapport</a>
-      <a onclick="document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})">Qui est derrière</a>
+      <!-- Accessibilité clavier ajoutée le 14 septembre 2026 (audit design) : ces
+           3 liens n'avaient qu'un onclick, sans href ni role/tabindex/onkeydown —
+           un <a> sans href n'entre pas dans l'ordre de tabulation et n'a aucun
+           rôle interactif pour un lecteur d'écran. Même traitement que les liens
+           du pied de page et les badges du hero, déjà corrects depuis le 1er août. -->
+      <a role="button" tabindex="0" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">La méthode</a>
+      <a role="button" tabindex="0" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Le rapport</a>
+      <a role="button" tabindex="0" onclick="document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})">Qui est derrière</a>
       <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer</button>
     </div>
   </nav>
@@ -2150,7 +2172,13 @@ textarea.chat-input{
         <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer maintenant →</button>
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Découvrir la méthode</button>
       </div>
-      <div class="lp-reassure"><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans engagement</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">↩ Pas satisfait ? <b style="text-decoration:underline">Écrivez-nous</b></span></div>
+      <!-- Repère suisse ajouté le 14 septembre 2026 (audit design) : avant cet
+           ajout, aucun signal suisse (🇨🇭, CFC, article 32...) n'apparaissait
+           au-dessus du pli — le premier apparaissait dans la pastille Cairn
+           « Vous arrivez de l'étranger ? », bien plus bas. Le différenciateur
+           n°1 du produit (ancrage suisse réel, CFC/brevet fédéral/article 32)
+           mérite d'être visible dès le premier écran, pas seulement plus loin. -->
+      <div class="lp-reassure"><span>🇨🇭 Ancrée en Suisse romande</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans engagement</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">↩ Pas satisfait ? <b style="text-decoration:underline">Écrivez-nous</b></span></div>
     </div>
     <div class="lp-chatcard">
       <div class="lp-ctop"><div class="lp-orb"></div><div><div class="lp-who">Cynthia</div><div class="lp-cstat">● en ligne · vous écoute</div></div></div>
@@ -2188,29 +2216,23 @@ textarea.chat-input{
   <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Ce n'est pas une liste de métiers. C'est un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
 
-    <!-- SOMMAIRE : les 9 sections réelles du rapport -->
-    <div class="lp-somm cyn-stag cyn-spot">
-      <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
-      <div class="lp-so"><b>02</b>Le changement qui vous concerne<span>Métier, environnement ou équilibre : tout quitter n'est pas toujours la réponse</span></div>
-      <div class="lp-so"><b>03</b>Qui vous êtes<span>Votre portrait et votre profil de personnalité chiffré</span></div>
-      <div class="lp-so"><b>04</b>Ce qui vous porte<span>Vos valeurs, vos moteurs, votre environnement idéal</span></div>
-      <div class="lp-so"><b>05</b>Savoir-faire et savoir-être<span>Ce que vous savez faire, et comment vous le faites</span></div>
-      <div class="lp-so"><b>06</b>Booster votre CV<span>Des phrases prêtes à coller et votre pitch de reconversion</span></div>
-      <div class="lp-so"><b>07</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
-      <div class="lp-so"><b>08</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
-      <div class="lp-so"><b>09</b>Vos ressources en Suisse<span>Qui finance quoi, et où frapper à la porte</span></div>
-    </div>
+    <!-- Ordre interne à la section inversé le 14 septembre 2026 (audit design,
+         chantier S5) : l'extrait réel passe AVANT le sommaire, pas après.
+         Raison : montrer d'abord, expliquer la structure ensuite — quelqu'un
+         qui doute encore que ce soit un vrai produit doit voir la preuve
+         concrète avant la table des matières, pas l'inverse. Rien de son
+         propre contenu n'a changé, seul l'ordre bouge.
 
-    <!-- ⚠️ RETIRÉ le 3 septembre 2026, à la demande de Faouzi : le mockup du
+         ⚠️ RETIRÉ le 3 septembre 2026, à la demande de Faouzi : le mockup du
          rapport (barres Big Five, tags de personnalité, métier fictif, puce
          CV, citation) prenait trop de place pour trop peu d'effet. La moitié
          du contenu était générique : des pourcentages et des tags qu'affiche
          n'importe quel test de personnalité, sans rien de spécifique à la
-         personne. Le sommaire des 9 cases ci-dessus dit déjà la structure
-         du rapport ; ce mockup la répétait avec des données fictives, sans
-         rien ajouter. Bonus : il affichait le Big Five en pourcentages
-         précis, alors que le vrai rapport dit explicitement que ce n'est pas
-         un score validé (correctif du 11 août) : contradiction discrète.
+         personne. Le sommaire dit déjà la structure du rapport ; ce mockup la
+         répétait avec des données fictives, sans rien ajouter. Bonus : il
+         affichait le Big Five en pourcentages précis, alors que le vrai
+         rapport dit explicitement que ce n'est pas un score validé
+         (correctif du 11 août) : contradiction discrète.
 
          ── AJOUTÉ le 5 septembre 2026, à la demande de Faouzi ──
          Ce que le mockup n'avait pas : de la matière RÉELLEMENT sortie du
@@ -2241,6 +2263,23 @@ textarea.chat-input{
         </div>
       </div>
     </div>
+
+    <!-- SOMMAIRE : replié à 3 sections développées + 6 en résumé (14 septembre
+         2026, audit design, décision Faouzi via AskUserQuestion — option
+         recommandée). Avant : 9 tuiles identiques, autant de poids visuel pour
+         "votre plan sur 6 mois" que pour "booster votre CV" — noyait ce qui
+         vend vraiment le rapport (le parcours, les métiers chiffrés, le plan)
+         dans une grille plate. Les 6 autres sections existent toujours dans le
+         VRAI rapport (rien retiré du produit), juste résumées ici en une ligne
+         plutôt qu'en 6 cartes de même taille. Numérotation 01-09 conservée
+         (elle correspond à l'ordre réel du rapport, voir downloadRapport). -->
+    <div class="lp-somm lp-somm-3 cyn-stag cyn-spot">
+      <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
+      <div class="lp-so"><b>07</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
+      <div class="lp-so"><b>08</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
+    </div>
+    <p class="lp-somm-aussi lp-rv">Et aussi, dans le même dossier : le changement qui vous concerne · qui vous êtes · ce qui vous porte · savoir-faire et savoir-être · de quoi booster votre CV · vos ressources en Suisse.</p>
+
     <div class="lp-ract" style="margin-top:8px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
   </div></section>
 
@@ -2250,11 +2289,22 @@ textarea.chat-input{
       <h2>Le Cairn</h2>
       <p>En montagne, personne ne marche au hasard : des pierres empilées balisent le chemin, posées par ceux qui sont passés avant. Cynthia fait la même chose avec votre parcours. Quatre pierres, et vous savez par où aller.</p>
     </div>
+    <!-- Titres réécrits le 14 septembre 2026 (audit design, décision Faouzi :
+         "oui je suis d'accord" pour garder le Cairn ET le sommaire du rapport,
+         mais régler le doublon). Avant : les 4 titres ("Ce que vous savez déjà
+         faire", "Ce qui vous porte", "Le changement qui vous concerne", "Votre
+         premier pas") reprenaient quasi mot pour mot des tuiles du sommaire du
+         rapport juste au-dessus (#lp-rapport) — la même information annoncée
+         deux fois sur la même page, sous deux formes différentes. Ici, les
+         titres décrivent maintenant ce que CYNTHIA FAIT pendant l'entretien
+         (verbe, elle comme sujet), le sommaire du rapport décrit CE QUI EN
+         SORT (des noms). Les paragraphes, eux, ne changent pas : c'est le
+         contenu réel de chaque étape, pas un doublon. -->
     <div class="lp-steps lp-steps-4 cyn-stag cyn-spot">
-      <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Ce que vous savez déjà faire</h3><p>Vos vraies compétences, y compris celles que vous ne comptez plus. C'est la première pierre, et souvent la plus lourde à voir seul.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Ce qui vous porte</h3><p>Ce qui vous anime, ce qui vous épuise, et le cadre réel de votre vie : salaire, horaires, région, contraintes.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Le changement qui vous concerne</h3><p>Changer de métier, d'environnement ou d'équilibre. Tout quitter n'est pas toujours la réponse, et le savoir change tout.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">4</div><h3>Votre premier pas</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et une action à faire cette semaine.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Elle fait remonter ce que vous savez déjà faire</h3><p>Vos vraies compétences, y compris celles que vous ne comptez plus. C'est la première pierre, et souvent la plus lourde à voir seul.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle écoute ce qui vous porte, et ce qui vous pèse</h3><p>Ce qui vous anime, ce qui vous épuise, et le cadre réel de votre vie : salaire, horaires, région, contraintes.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Elle situe où se loge vraiment le changement</h3><p>Changer de métier, d'environnement ou d'équilibre. Tout quitter n'est pas toujours la réponse, et le savoir change tout.</p></div>
+      <div class="lp-step lp-rv"><div class="lp-n">4</div><h3>Elle relie tout ça à un premier pas</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et une action à faire cette semaine.</p></div>
     </div>
     <p class="lp-cairn-foot lp-rv">Chaque pierre repose sur la précédente. C'est pour ça que Cynthia ne vous propose jamais un métier avant de vous avoir écouté.</p>
   </div></div></section>
@@ -2292,7 +2342,16 @@ textarea.chat-input{
       <div class="lp-pill"><b>Oui, Cynthia est une intelligence artificielle</b>C'est pour ça qu'elle est là ce soir à 23h, sans rendez-vous et sans liste d'attente.</div>
       <div class="lp-pill"><b>Elle vous dira ce que vos proches n'osent pas</b>Votre entourage vous encourage, c'est normal. Cynthia, elle, regarde vos réponses en face. Si une piste ne tient pas, elle le dit maintenant. Pas dans deux ans.</div>
       <div class="lp-pill"><b>Vous n'arriverez plus jamais en disant « je ne sais pas »</b>Chez un conseiller, à l'ORP ou en entretien, vous saurez enfin nommer ce que vous savez faire et vers quoi vous allez. C'est là que ça bascule.</div>
-      <div class="lp-pill us"><b>Ce qu'elle fait le mieux</b>Transformer un flou qui traîne depuis des mois en une direction claire, et un premier pas à faire cette semaine.</div>
+      <!-- 4e carte remplacée le 14 septembre 2026 (audit design, décision Faouzi
+           via AskUserQuestion, option recommandée). "Ce qu'elle fait le mieux"
+           répétait un argument déjà présent ailleurs sur la page (le premier
+           pas, la direction claire) et manquait l'occasion de dire la vraie
+           limite du produit, ici, dans le bloc conçu exactement pour ça — le
+           bloc honnêteté. Cohérent avec la posture déjà actée dans les CGU
+           (Cynth.IA n'est pas un service d'orientation officiel, ne remplace
+           pas un conseiller agréé) et avec la note juridique du 3 septembre
+           sur le titre protégé de conseiller en orientation. -->
+      <div class="lp-pill us"><b>Elle ne remplace pas un conseiller agréé</b>Ni viamia, ni l'ORP, ni un bilan de compétences. Elle vous prépare à ces rendez-vous-là, avec déjà vos mots pour ce que vous savez faire et ce que vous cherchez.</div>
     </div>
   </div></div></section>
 
@@ -2317,13 +2376,22 @@ textarea.chat-input{
        lui. ── -->
   <section id="lp-avis" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Dans les mots de <span class="lp-accent">ceux qui l'ont testée</span></h2></div>
+    <!-- Réordonné le 14 septembre 2026 (audit design, chantier S6, décision
+         Faouzi via AskUserQuestion — option recommandée). Avant : ordre de
+         publication (Armand, Maxime, puis les 4 ajoutés le 5 septembre dans
+         l'ordre où ils ont été transmis) — aucun ordre éditorial. La citation
+         de Thomas est la plus spécifique et la plus vendeuse (elle nomme un
+         mécanisme précis du produit : distinguer le métier de l'environnement,
+         pas juste un ressenti général) ; elle ouvre désormais la grille, là où
+         l'attention est la plus forte. Aucun texte changé, aucun avis retiré :
+         seul l'ordre bouge. -->
     <div class="lp-avis-grid cyn-stag cyn-spot">
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>De faire le test à cœur ouvert, d'être le plus honnête.</p><div class="lp-avis-who">— Armand</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Surprenant, mais oser se confier à une IA permet de mieux se connaître et de révéler les compétences qu'on a tendance à enfouir sous des années d'expérience.</p><div class="lp-avis-who">— Maxime</div></div>
       <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Le rapport n'a pas essayé de me faire changer de métier. Il a vu que c'était l'environnement, pas le métier. Personne ne m'avait dit ça.</p><div class="lp-avis-who">— Thomas</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Surprenant, mais oser se confier à une IA permet de mieux se connaître et de révéler les compétences qu'on a tendance à enfouir sous des années d'expérience.</p><div class="lp-avis-who">— Maxime</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Honnêtement, je suis enfin sûr que la voie que j'ai choisie est bien la bonne. Maintenant j'ai un plan pour viser le sommet.</p><div class="lp-avis-who">— Dylan</div></div>
+      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>De faire le test à cœur ouvert, d'être le plus honnête.</p><div class="lp-avis-who">— Armand</div></div>
       <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Je ressens enfin l'envie de suivre un plan clair, après une discussion profonde.</p><div class="lp-avis-who">— Thilai</div></div>
       <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>J'ai essayé par curiosité professionnelle, et je suis choquée du résultat du rapport.</p><div class="lp-avis-who">— Lina</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Honnêtement, je suis enfin sûr que la voie que j'ai choisie est bien la bonne. Maintenant j'ai un plan pour viser le sommet.</p><div class="lp-avis-who">— Dylan</div></div>
     </div>
   </div></section>
 
@@ -2399,10 +2467,30 @@ textarea.chat-input{
   var stream=document.getElementById('lp-stream');
   if(stream){
     var script=[{t:'ai',x:"Qu'est-ce qui vous donne l'impression qu'il est temps que quelque chose change ?"},{t:'me',x:"Je m'ennuie dans mon poste, mais je ne sais pas vers quoi aller…"},{t:'ai',x:"C'est déjà un signal précieux. Quand vous vous êtes senti·e vraiment utile, vous faisiez quoi ?"},{t:'me',x:"J'aidais un collègue à se former. J'ai adoré ça."},{t:'chips'}];
+    /* Démo réduite sur mobile (14 septembre 2026, audit design) : les 5 étapes
+       (2 allers-retours + puces) prenaient toute la hauteur utile de l'écran
+       avant même d'arriver au bouton "Commencer" — sur un petit écran la
+       personne scrollait la démo au lieu d'agir. On coupe à 2 bulles (une
+       question, une réponse : ça suffit à montrer que c'est une vraie
+       conversation qui écoute) puis on remplace la suite par un lien qui
+       mène directement à un vrai entretien, plutôt que de continuer à
+       regarder une démonstration scriptée. Desktop inchangé : la place ne
+       manque pas, la démo complète reste la meilleure preuve. */
+    var _demoMobile = false;
+    try{ _demoMobile = window.matchMedia('(max-width:760px)').matches; }catch(e){}
+    var scriptAJouer = _demoMobile ? script.slice(0,2) : script;
     var wait=function(ms){return new Promise(function(r){setTimeout(r,ms);});};
     function bub(m){var b=document.createElement('div');if(m.t==='chips'){b.className='lp-chips';b.innerHTML='<span class="lp-chip">Formateur ★</span><span class="lp-chip hot">Coach pro</span><span class="lp-chip">Conseiller RH</span>';}else{b.className='lp-bub '+m.t;b.textContent=m.x;}return b;}
     function typ(){var d=document.createElement('div');d.className='lp-typing';d.innerHTML='<i></i><i></i><i></i>';return d;}
-    (async function(){for(var i=0;i<script.length;i++){var m=script[i];if(m.t==='ai'){var d=typ();stream.appendChild(d);await wait(850);d.remove();}else if(m.t==='me'){await wait(450);}stream.appendChild(bub(m));await wait(m.t==='chips'?400:1150);}})();
+    function voirSuite(){
+      var a=document.createElement('a');
+      a.className='lp-voirsuite';a.setAttribute('role','button');a.setAttribute('tabindex','0');
+      a.textContent='Voir la suite avec Cynthia →';
+      a.onclick=function(){ if(typeof gp==='function') gp('preappel'); };
+      a.onkeydown=function(ev){ if(ev.key==='Enter') a.onclick(); };
+      return a;
+    }
+    (async function(){for(var i=0;i<scriptAJouer.length;i++){var m=scriptAJouer[i];if(m.t==='ai'){var d=typ();stream.appendChild(d);await wait(850);d.remove();}else if(m.t==='me'){await wait(450);}stream.appendChild(bub(m));await wait(m.t==='chips'?400:1150);}if(_demoMobile)stream.appendChild(voirSuite());})();
   }
   /* ═══════════════════════════════════════════════════════════════════
      ANIMATIONS — déclenchées une seule fois, à l'arrivée de l'élément.
@@ -2521,7 +2609,13 @@ textarea.chat-input{
       <div class="pa-guarantees">
         <div class="pg"><span class="pgc">✓</span>100% confidentiel</div>
         <div class="pg"><span class="pgc">✓</span>Gratuit · bêta</div>
-        <div class="pg"><span class="pgc">✓</span>20–45 min</div>
+        <!-- « 20–45 min » (14 septembre 2026, audit design) contredisait sans
+             explication le « 20 minutes » annoncé partout ailleurs sur le site
+             (title, hero, Cairn, CTA final) — quelqu'un qui arrive ici juste
+             après avait l'impression que le temps venait de doubler. Alignée
+             sur la formulation retenue le 5 septembre (« 20 minutes, plus si
+             vous avez à raconter ») : ancre basse, honnête, cohérente partout. -->
+        <div class="pg"><span class="pgc">✓</span>20 min, parfois plus</div>
         <div class="pg"><span class="pgc">✓</span>Rapport immédiat</div>
       </div>
 
@@ -3149,10 +3243,28 @@ function initStartFloat(){
   const btn=document.getElementById('btn-start-float');
   if(!btn) return;
   const hero=document.querySelector('.lp-hero');
-  if(!hero){ btn.classList.add('on'); return; }
-  new IntersectionObserver(es=>{
-    es.forEach(e=>btn.classList.toggle('on', !e.isIntersecting));
-  },{threshold:.15}).observe(hero);
+  const fin=document.querySelector('.lp-final');
+  /* Bloqueur mobile #2 (audit design du 14 septembre 2026) : le bouton restait
+     affiché jusqu'en bas de page et chevauchait le gros bouton "Commencer
+     maintenant →" du bloc final ET les liens du pied de page — mesuré par
+     l'audit (zones qui se recouvrent visuellement). Il n'a plus de raison
+     d'être une fois qu'un bouton équivalent est déjà sous les yeux. On garde
+     un seul IntersectionObserver par élément observé (pas de scroll listener
+     permanent, même principe que l'implémentation d'origine du 5 sept), et on
+     recalcule l'état affiché à chaque changement de l'un ou l'autre. */
+  let heroPassed=!hero, finalVisible=false;
+  function refresh(){ btn.classList.toggle('on', heroPassed && !finalVisible); }
+  if(hero){
+    new IntersectionObserver(es=>{
+      es.forEach(e=>{ heroPassed=!e.isIntersecting; refresh(); });
+    },{threshold:.15}).observe(hero);
+  }
+  if(fin){
+    new IntersectionObserver(es=>{
+      es.forEach(e=>{ finalVisible=e.isIntersecting; refresh(); });
+    },{threshold:.1}).observe(fin);
+  }
+  refresh();
 }
 
 function initReveal(){
