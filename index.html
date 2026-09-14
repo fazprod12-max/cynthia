@@ -10187,17 +10187,37 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
      doivent jamais rester seuls en bas de page (règle 4). Le moteur d'impression
      est bon à cet exercice dès qu'on cesse de lui forcer la main.
 
-     SEULE EXCEPTION CONSERVÉE : la section des métiers. C'est le cœur du
-     livrable, chaque fiche fait une page à elle seule, et l'ouvrir sur une page
-     neuve évite qu'une première fiche commence trois lignes avant la fin. */
+     ⚠️ CORRECTIF DU 14 SEPTEMBRE 2026 — l'exception ci-dessus, gardée depuis le
+     17 août, causait exactement le défaut qu'elle visait à éviter, mais en pire.
+     Preuve : PDF réel envoyé par Faouzi (« pourquoi c'est sorti comme ça »),
+     17 pages pour un contenu qui en occupe normalement 9-10, avec des pages
+     quasi blanches (page 7 : 60% de blanc avant que « Vos métiers » ne
+     démarre de force sur une page neuve ; pages entre chaque fiche : 50-70%
+     de blanc avant que la fiche suivante, elle aussi collée en un seul bloc
+     par break-inside:avoid, ne parte sur une nouvelle page faute de place).
+     Cause : une fiche métier fait ≈ une page A4 à elle seule (jusqu'à
+     2 600 caractères). La traiter comme un bloc UNIQUE et INSÉCABLE
+     (break-inside:avoid sur .metier) veut dire que dès qu'il reste un peu
+     moins qu'une page pleine, le moteur préfère tout renvoyer à la page
+     suivante plutôt que de remplir l'espace restant — et il n'y a quasiment
+     JAMAIS une page pleine de libre entre deux fiches. Combiné au saut de
+     page forcé avant toute la section « Vos métiers », ça gonfle le document
+     et lui donne l'air d'un PDF cassé.
+     Correctif : la fiche métier n'est plus protégée EN BLOC. Elle peut
+     désormais se couper entre ses encadrés (« se former », « ce qui use »,
+     etc.), exactement comme le reste du document coule déjà depuis le 17
+     août. Ce qui reste protégé, plus finement : le titre (h3, règle 4, ne
+     reste jamais seul en bas de page), l'accroche (.why), la réserve
+     (.reserve) et l'article 32 (.art32) — jamais coupés EN PLEIN MILIEU
+     d'une phrase, mais la fiche entière n'a plus à tenir d'un seul tenant. */
   .pad{padding:16mm 18mm}
   .pad + .pad{padding-top:6mm}          /* deux sections qui s'enchaînent respirent, sans trou */
-  #sec-metiers,.sec-metiers{break-before:page;page-break-before:always}
   .divider{display:none}
 
-  /* 3. Ce qui ne doit JAMAIS être coupé en deux. */
-  .metier,.trait,.tl .item,.res>div,.grid2>div,.mgrid>div,.lead-quote,
-  .firststep,.card,.bfnote,.mhead,.mfoot,li{
+  /* 3. Ce qui ne doit JAMAIS être coupé en deux (une fiche métier entière
+        n'en fait PLUS partie depuis le 14 septembre, voir ci-dessus). */
+  .trait,.tl .item,.res>div,.grid2>div,.mgrid>div,.lead-quote,
+  .firststep,.card,.bfnote,.mhead,.mfoot,.why,.reserve,.art32,li{
     break-inside:avoid;page-break-inside:avoid}
 
   /* 4. Un titre ou une amorce ne reste pas orphelin en bas de page. */
@@ -10205,19 +10225,13 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
     break-after:avoid;page-break-after:avoid}
   p,li{orphans:3;widows:3}
 
-  /* 4bis. TITRE DE SECTION SEUL SUR SA PAGE — corrigé le 17 août 2026.
-     Constaté sur un vrai PDF (21 pages) : la page 7 « Vos métiers » ne contenait
-     QUE son titre, avec son sous-titre coupé en plein milieu (« ...du marché en »
-     d'un côté, « CHF. » de l'autre). Page entière quasi blanche au milieu d'un
-     document par ailleurs soigné.
-     Cause : deux règles se contredisaient. La classe .pad force un saut de page avant
-     chaque section, puis la première fiche métier (jusqu'à 2 600 caractères,
-     protégée par break-inside:avoid) ne tenait plus dans l'espace restant et
-     partait à la page suivante, en abandonnant son titre.
-     Correctif : on COLLE la première fiche à son titre (break-before:avoid). Si
-     l'ensemble ne tient pas, le moteur déplace les DEUX, et le titre voyage avec
-     son contenu au lieu de rester seul. Et on empêche le sous-titre d'être coupé
-     en deux, ce qui n'a aucun sens pour une phrase de deux lignes. */
+  /* 4bis. TITRE DE SECTION SEUL SUR SA PAGE. Le sous-titre (2 lignes) ne
+     doit jamais être coupé en deux — ça n'a aucun sens pour une si courte
+     phrase. Et on préfère, quand c'est possible, ouvrir une section avec au
+     moins le début de son premier élément plutôt qu'avec le titre tout
+     seul : léger confort visuel, sans obliger l'élément entier (fiche
+     métier, étape) à tenir d'un bloc (voir le correctif du 14 septembre
+     ci-dessus, règle 3 — ce n'est plus le cas pour .metier). */
   .sec-sub{break-inside:avoid;page-break-inside:avoid}
   .metier:first-of-type,.trait:first-of-type,.tl .item:first-of-type{
     break-before:avoid;page-break-before:avoid}
