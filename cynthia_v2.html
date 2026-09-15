@@ -10238,7 +10238,7 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
      ⚠️ PIÈGE DU 17 AOÛT : jamais d'accent grave dans ce commentaire, le
      gabarit entier est un template literal JS (voir plus bas dans ce même
      fichier de tests, section 8). */
-  .trait,.tl .item,.res>div,.grid2>div,.mgrid>div,.lead-quote,
+  .trait,.tl .item,.lead-quote,
   .firststep,.card,.bfnote,.mhead,.mfoot,.why,.reserve,.art32,.callout,li{
     break-inside:avoid;page-break-inside:avoid}
 
@@ -10264,14 +10264,33 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
         mal la coupure à l'intérieur d'une grille — « break-inside:avoid » y est
         régulièrement ignoré. C'est ce qui coupait encore certaines sections alors
         que les règles étaient bien présentes. En impression on repasse donc en
-        colonnes simples, où la pagination est prévisible et respectée. */
+        colonnes simples, où la pagination est prévisible et respectée.
+
+     ⚠️ CORRECTIF DU 15 SEPTEMBRE 2026 (suite) — .grid2>div, .mgrid>div et .res>div
+     étaient EN PLUS protégés en bloc (break-inside:avoid), ici ET dans la règle 3
+     ci-dessus (redondant). Exactement le même défaut que .metier le 14 septembre :
+     .grid2>div est le conteneur PORTRAIT ENTIER (les 5 barres du Big Five + la note
+     .bfnote), pas un élément atomique — jusqu'à 500-700px de haut à lui seul. Le
+     protéger en bloc force le moteur à renvoyer TOUT le portrait à la page suivante
+     dès qu'il ne tient pas en entier, laissant un grand blanc en page 2 avant que le
+     bloc ne reparte en page 3. Preuve : PDF réel envoyé par Faouzi (Claude 777.pdf,
+     15 septembre), page 2 à ~60% blanche avant que le portrait ne saute en bloc.
+     Correctif : la protection en bloc est retirée de ces trois conteneurs. Ce qui
+     doit vraiment rester d'un seul tenant à l'intérieur (chaque barre .trait, la
+     note .bfnote, chaque <li>) reste protégé par la règle 3, inchangée pour eux. */
   .grid2,.mgrid,.res{display:block!important}
-  .grid2>div,.mgrid>div,.res>div{margin-bottom:9mm;break-inside:avoid;page-break-inside:avoid}
+  .grid2>div,.mgrid>div,.res>div{margin-bottom:9mm}
 
   /* 6. Finitions : rien qui flotte, rien qui déborde, pas d'ombres baveuses. */
   .metier{box-shadow:none;border:1px solid var(--line)}
   a{text-decoration:none;color:inherit}
   .suiv,.fbk{display:none}
+
+  /* 7. Le pied de page ne doit jamais se couper entre sa ligne principale et
+        la mention légale (.disc) — sinon la mention part seule sur une page quasi
+        vide juste après. Repéré le 15 septembre 2026 (PDF Claude 777.pdf, page 7
+        finale quasi blanche), jamais protégé depuis la création du gabarit. */
+  footer{break-inside:avoid;page-break-inside:avoid}
 }
 </style></head><body><div class="doc">
 <div class="cover"><div class="glow"></div><div class="glow2"></div><div class="brandline">Cynth<span class="orb"></span><span class="ia">IA</span></div><div class="label">Rapport d'orientation personnalisé</div><h1>${esc(prenom)}</h1><div class="who">Préparé pour vous, à partir de votre conversation avec Cynthia.</div><div class="meta"><div><b>${esc(date)}</b>Établi le</div><div><b>${esc(refNum)}</b>Référence</div><div><b>Suisse romande</b>Marché de référence</div></div></div>
