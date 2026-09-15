@@ -10216,9 +10216,30 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
   .divider{display:none}
 
   /* 3. Ce qui ne doit JAMAIS être coupé en deux (une fiche métier entière
-        n'en fait PLUS partie depuis le 14 septembre, voir ci-dessus). */
+        n'en fait PLUS partie depuis le 14 septembre, voir ci-dessus).
+
+     ⚠️ CORRECTIF DU 15 SEPTEMBRE 2026 — .callout ajouté à cette liste.
+     C'est le bloc à bordure arrondie utilisé pour « Intelligences
+     dominantes », « Votre style de travail », « Votre moment
+     d'alignement », « Votre environnement idéal », « Votre frein » et
+     « Prêt à coller dans votre CV ou LinkedIn ». Il n'était protégé nulle
+     part : quand il ne tenait pas en entier en bas de page, le moteur
+     ouvrait quand même la bordure (le titre du bloc, ex. « Prêt à coller
+     dans votre CV ou LinkedIn »), puis renvoyait tout son contenu (les
+     puces) à la page suivante — d'où une boîte à bordure arrondie visible
+     et VIDE en bas d'une page, suivie du même contenu qui repart seul en
+     haut de la page suivante, sans bordure. Preuve : PDF réel envoyé par
+     Faouzi le 15 septembre (captures), la boîte CV totalement vide + des
+     blancs conséquents avant plusieurs sauts de page, exactement à ces
+     endroits. Un .callout reste toujours court (quelques lignes, jamais
+     une page entière comme l'était .metier) : le protéger en bloc ne
+     recrée pas le défaut du 17 août (pas de risque de renvoyer une pleine
+     page vide pour lui faire de la place).
+     ⚠️ PIÈGE DU 17 AOÛT : jamais d'accent grave dans ce commentaire, le
+     gabarit entier est un template literal JS (voir plus bas dans ce même
+     fichier de tests, section 8). */
   .trait,.tl .item,.res>div,.grid2>div,.mgrid>div,.lead-quote,
-  .firststep,.card,.bfnote,.mhead,.mfoot,.why,.reserve,.art32,li{
+  .firststep,.card,.bfnote,.mhead,.mfoot,.why,.reserve,.art32,.callout,li{
     break-inside:avoid;page-break-inside:avoid}
 
   /* 4. Un titre ou une amorce ne reste pas orphelin en bas de page. */
