@@ -2211,7 +2211,12 @@ textarea.chat-input{
     <div class="lp-row cyn-stag" style="margin-top:22px;">
       <div class="lp-pill"><b>Vous arrivez de l'étranger ?</b>Vingt minutes suffisent pour situer votre diplôme sur le marché suisse, un salaire réaliste en francs, et les codes qui comptent en entretien.</div>
       <div class="lp-pill"><b>Vous êtes en poste, en quête de sens ?</b>Cynthia comprend ce qui vous anime vraiment, au-delà du prochain poste, et en ressort avec deux ou trois pistes concrètes.</div>
-      <div class="lp-pill"><b>Combien coûte un entretien avec Cynthia ?</b>Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.</div>
+      <!-- Le texte de cette pastille est écrit par le JS à partir de CONFIG
+           (voir _majPastillePrix). Il ne doit PAS être modifié à la main ici :
+           le prix ne vit qu'à un seul endroit, sinon le jour du lancement on
+           bascule le code et on oublie la page. Ce qui suit est le repli
+           affiché si le JS ne tourne pas. -->
+      <div class="lp-pill"><b>Combien coûte un entretien avec Cynthia ?</b><span id="lp-prix-txt">Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.</span></div>
     </div>
   </div></section>
 
@@ -3758,8 +3763,93 @@ const CONFIG = {
      Présenté comme prix DE LANCEMENT, pas définitif : peut remonter une fois
      les premiers avis publics obtenus, sans donner l'impression de baisser
      après coup faute d'acheteurs. */
-  PRIX_RAPPORT: 59.00,
+  /* ── PRIX DE LANCEMENT, DÉCISION DU 15 SEPTEMBRE 2026 ────────────────────
+     Faouzi : 59 CHF pendant les 3 premiers mois, puis 79 CHF. Et on observe
+     ensuite comment ça évolue avant de figer quoi que ce soit — le 79 n'est
+     pas plus définitif que le 59, c'est une hypothèse à confronter aux vraies
+     ventes.
+
+     Le compte à rebours part du LANCEMENT RÉEL, c'est-à-dire du jour où
+     RAPPORT_GRATUIT passe à false (personne ne paie rien avant). Tant que
+     DATE_LANCEMENT vaut null, on est en phase de test : le prix de lancement
+     s'applique et rien ne bascule tout seul.
+
+     ⚠️ UN SEUL GESTE LE JOUR DU LANCEMENT : passer RAPPORT_GRATUIT à false ET
+     écrire la date du jour dans DATE_LANCEMENT (format ISO, ex '2026-10-01').
+     Sans la date, le prix resterait à 59 pour toujours — ce ne serait pas une
+     panne visible, juste de l'argent qui ne rentre pas, donc personne ne s'en
+     apercevrait. `etatPrix()` en console dit à tout moment où on en est. */
+  PRIX_LANCEMENT: 59.00,
+  PRIX_APRES: 79.00,
+  DUREE_LANCEMENT_MOIS: 3,
+  DATE_LANCEMENT: null,
+  get PRIX_RAPPORT() {
+    if (!this.DATE_LANCEMENT) return this.PRIX_LANCEMENT;
+    var d = new Date(this.DATE_LANCEMENT);
+    if (isNaN(d.getTime())) return this.PRIX_LANCEMENT;   // date mal écrite : on ne monte pas le prix par accident
+    var fin = new Date(d.getTime());
+    fin.setMonth(fin.getMonth() + (this.DUREE_LANCEMENT_MOIS || 3));
+    return (Date.now() < fin.getTime()) ? this.PRIX_LANCEMENT : this.PRIX_APRES;
+  },
+  /* Date de fin de l'offre, pour l'afficher honnêtement sur la page. null tant
+     que le lancement n'a pas eu lieu : on n'annonce pas une échéance qu'on ne
+     connaît pas (même règle que le bandeau bêta, corrigé le 14 septembre). */
+  get FIN_LANCEMENT() {
+    if (!this.DATE_LANCEMENT) return null;
+    var d = new Date(this.DATE_LANCEMENT);
+    if (isNaN(d.getTime())) return null;
+    var f = new Date(d.getTime());
+    f.setMonth(f.getMonth() + (this.DUREE_LANCEMENT_MOIS || 3));
+    return f;
+  }
 };
+/* Outil de contrôle, à taper en console : dit quel prix s'applique aujourd'hui,
+   pourquoi, et ce qu'il reste avant la bascule. Sert à vérifier sur pièce au
+   lieu de supposer. */
+/* La pastille prix de la landing est écrite ici, jamais à la main dans le HTML.
+   Raison : le 3 septembre, le code affichait encore 79 CHF alors que Faouzi
+   avait tranché 59 le 2 — parce que le prix était recopié à deux endroits. Le
+   jour du lancement, il n'y a donc qu'un seul geste : RAPPORT_GRATUIT à false
+   et DATE_LANCEMENT renseignée. La page suit toute seule.
+
+   On annonce le passage à 79 CHF pendant l'offre : c'est une échéance vraie,
+   donc on peut la dire. C'est aussi plus honnête que de monter le prix en
+   silence dans trois mois. */
+function _majPastillePrix() {
+  var el = document.getElementById('lp-prix-txt');
+  if (!el || typeof CONFIG === 'undefined') return;
+  if (CONFIG.RAPPORT_GRATUIT) {
+    el.textContent = "Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.";
+    return;
+  }
+  var prix = CONFIG.PRIX_RAPPORT, fin = CONFIG.FIN_LANCEMENT;
+  var enOffre = (prix === CONFIG.PRIX_LANCEMENT) && !!fin;
+  if (enOffre) {
+    var mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    el.textContent = "L'entretien est libre. Le rapport complet est à "
+      + CONFIG.PRIX_LANCEMENT + " CHF, prix de lancement, jusqu'au "
+      + fin.getDate() + ' ' + mois[fin.getMonth()] + ' ' + fin.getFullYear()
+      + '. Ensuite ' + CONFIG.PRIX_APRES + ' CHF. Vous gardez le rapport.';
+  } else {
+    el.textContent = "L'entretien est libre. Le rapport complet est à " + prix + " CHF. Vous gardez le rapport.";
+  }
+}
+try { document.addEventListener('DOMContentLoaded', _majPastillePrix); } catch (e) {}
+
+function etatPrix() {
+  var f = CONFIG.FIN_LANCEMENT;
+  var o = {
+    prix_applique: CONFIG.PRIX_RAPPORT,
+    rapport_gratuit: CONFIG.RAPPORT_GRATUIT,
+    date_lancement: CONFIG.DATE_LANCEMENT || '(pas encore lancé)',
+    prix_lancement: CONFIG.PRIX_LANCEMENT,
+    prix_apres: CONFIG.PRIX_APRES,
+    fin_offre: f ? f.toISOString().slice(0, 10) : '(inconnue tant que non lancé)',
+    jours_restants: f ? Math.max(0, Math.ceil((f - Date.now()) / 86400000)) : null
+  };
+  try { console.table(o); } catch (e) { console.log(o); }
+  return o;
+}
 // ────────────────────────────────────────────────────────────
 // PROXY IA — les clés API sont stockées côté serveur (Cloudflare Worker), jamais ici.
 // Cascade réelle côté Worker (v5.8) : Claude / Anthropic (principal) → Groq (secours)
@@ -4412,6 +4502,214 @@ function _purgerAgesInventes(valeur, agesConnus) {
     return valeur;
   }
   return valeur;
+}
+
+/* ══ VÉRIFICATEUR DE MONTANTS (15 septembre 2026) ═══════════════════════════
+   Mesuré, pas supposé. Rapport réel généré ce soir sur le site en ligne
+   (profil ASSC en EMS à Lausanne visant l'ostéopathie), 18 montants en CHF
+   dans le document. Deux défauts graves :
+
+   1. Le rapport se contredisait lui-même. Dans « ressources », il écrivait
+      correctement « Chèque annuel de formation cantonal (Vaud : montant à
+      vérifier auprès du canton) ». Trois paragraphes plus loin, dans le plan :
+      « soustraire les CHF 750 du chèque cantonal genevois ». La personne
+      habite Vaud. Le document donnait un montant d'un autre canton comme s'il
+      s'appliquait, après avoir dit lui-même qu'il ne le connaissait pas.
+   2. TOUS les coûts de formation étaient inventés : « CHF 500-1 500/semestre »,
+      « CHF 0-500/an », « CHF 8 000-15 000/an ». Aucun n'existe dans la base.
+      Pire : la fiche physio dit « taxes semestrielles modestes » — on avait la
+      donnée, qualitative et sourcée, le modèle l'a remplacée par un chiffre.
+
+   La cause n'était pas un dérapage du modèle : notre propre schéma lui
+   demandait « coût CHF approx ». On a retiré cette demande (voir le schéma de
+   l'appel métiers), et on pose ici la ceinture qui va avec les bretelles.
+
+   PRINCIPE, le même que pour le garde-fou âge : une liste blanche de ce qu'on
+   POSSÈDE, et tout ce qui n'y est pas ne s'affiche pas. Un montant n'a le droit
+   d'apparaître que s'il vient (a) d'une fiche METIERS_DB retenue pour CE
+   rapport, (b) de ce que la personne a écrit elle-même, ou (c) du prix du
+   produit. Sinon il est remplacé par « un montant à vérifier » — décision de
+   Faouzi du 15.09.2026 : remplacer par une formule vérifiable plutôt que
+   retirer sèchement, pour que la phrase reste utile.
+
+   Faux positif assumé, même arbitrage que le garde-fou âge : si le modèle
+   convertit un salaire mensuel sourcé en annuel (5 400 × 13 = 70 200), le
+   résultat n'est pas dans la base, donc il saute. On préfère perdre un calcul
+   juste que laisser passer un chiffre inventé dans un rapport payant. */
+
+// Un nombre suisse : 5 400 · 5'400 · 5’400 · 1 500,50 · 750
+var _MONTANT_NB = "\\d{1,3}(?:[\\s'’\\u00a0\\u202f]\\d{3})+(?:[.,]\\d+)?|\\d+(?:[.,]\\d+)?";
+// L'expression complète à remplacer : « CHF ~8 000-15 000/an », « 5 100 francs »…
+var _MONTANT_RE = new RegExp(
+  "(?:(?:CHF|francs?|fr\\.)\\s*~?\\s*(?:" + _MONTANT_NB + ")(?:\\s*[-–—à]\\s*~?\\s*(?:" + _MONTANT_NB + "))?"
+  + "|(?:" + _MONTANT_NB + ")(?:\\s*[-–—à]\\s*(?:" + _MONTANT_NB + "))?\\s*(?:CHF|francs))"
+  + "(?:\\s*/\\s*(?:mois|an|ans|année|semestre|h|heure))?",
+  "gi");
+
+function _nbNormalise(s) {
+  return String(s).replace(/[\s'’  ]/g, '').replace(/,(\d{1,2})$/, '.$1').replace(/\.00?$/, '');
+}
+// Tous les nombres contenus dans un texte, normalisés (sert à bâtir la liste blanche)
+function _nombresDe(txt) {
+  var out = [];
+  var re = new RegExp(_MONTANT_NB, 'g'), m;
+  while ((m = re.exec(String(txt || '')))) out.push(_nbNormalise(m[0]));
+  return out;
+}
+
+/* La liste blanche est construite POUR CE RAPPORT : seules les fiches des
+   métiers réellement retenus comptent. C'est ce qui règle le cas du chèque
+   genevois — aucune des 5 fiches de ce rapport ne porte « 750 », donc le
+   montant ne peut pas s'inviter dans le plan. Une fiche qui porte vraiment
+   « (GE : max. CHF 750/an) » dans son financement autorise ce montant, et
+   c'est légitime : la mention cantonale voyage avec lui. */
+function _montantsAutorises(data) {
+  var ok = new Set();
+  var ajoute = function (txt) { _nombresDe(txt).forEach(function (n) { ok.add(n); }); };
+
+  // (a) ce que disent les fiches retenues — salaires, financements, formation,
+  //     et la source elle-même (elle contient les chiffres annuels relevés)
+  try {
+    (Array.isArray(data && data.top_metiers) ? data.top_metiers : []).forEach(function (m) {
+      var f = (typeof METIERS_DB !== 'undefined') ? METIERS_DB.find(function (x) { return x.id === (m && m.id); }) : null;
+      if (!f) return;
+      ['salaire_debut', 'salaire_exp', 'salaire_source', 'financement', 'formation'].forEach(function (c) { ajoute(f[c]); });
+      var ex = (typeof METIERS_EXTRA !== 'undefined' && METIERS_EXTRA[m.id]) || {};
+      ['note_marche', 'ce_qui_use', 'voie_adulte'].forEach(function (c) { ajoute(ex[c]); });
+    });
+  } catch (e) {}
+
+  // (b) ce que la personne a écrit elle-même (chat + CV) : son salaire actuel,
+  //     son épargne, ses charges. On ne lui retire pas ses propres chiffres.
+  try {
+    (typeof chatHistory !== 'undefined' ? chatHistory : [])
+      .filter(function (m) { return m.role === 'user'; })
+      .forEach(function (m) { ajoute(m.content); });
+    ajoute((typeof window !== 'undefined' && window._cvText) || '');
+  } catch (e) {}
+
+  // (c) le prix du produit
+  try { if (typeof CONFIG !== 'undefined' && CONFIG.PRIX_RAPPORT) ajoute(String(CONFIG.PRIX_RAPPORT)); } catch (e) {}
+
+  return ok;
+}
+
+function _verifierMontants(valeur, autorises, retires) {
+  if (typeof valeur === 'string') {
+    if (!valeur) return valeur;
+    _MONTANT_RE.lastIndex = 0;
+    return valeur.replace(_MONTANT_RE, function (expr, pos, tout) {
+      var nbs = _nombresDe(expr);
+      if (!nbs.length) return expr;
+      // Une fourchette ne passe que si SES DEUX bornes sont sourcées.
+      var toutConnu = nbs.every(function (n) { return autorises.has(n); });
+      if (toutConnu) return expr;
+      if (retires) retires.push(expr.trim());
+      try { console.warn('[CYNTH] Montant non sourcé retiré du rapport : « ' + expr.trim() + ' »'); } catch (e) {}
+      // « Coût : un montant à vérifier » se répète bêtement. Quand le mot qui
+      // introduit déjà le montant est là, on écrit juste « à vérifier ».
+      var avant = String(tout || '').slice(Math.max(0, pos - 18), pos);
+      return /(co[uû]ts?|tarifs?|frais|taxes?|prix|budget)\s*:?\s*~?\s*$/i.test(avant)
+        ? 'à vérifier' : 'un montant à vérifier';
+    })
+    // L'article qui précédait le montant devient faux une fois le montant
+    // remplacé (« soustraire LES un montant à vérifier »). On l'absorbe.
+    .replace(/\b(?:les|le|la|des|du|de\s+la|d'un|d'une|un|une)\s+un montant à vérifier/gi, 'un montant à vérifier')
+    .replace(/\s{2,}/g, ' ');
+  }
+  if (Array.isArray(valeur)) return valeur.map(function (v) { return _verifierMontants(v, autorises, retires); });
+  if (valeur && typeof valeur === 'object') {
+    for (var k in valeur) { if (Object.prototype.hasOwnProperty.call(valeur, k)) valeur[k] = _verifierMontants(valeur[k], autorises, retires); }
+    return valeur;
+  }
+  return valeur;
+}
+
+/* ── DISPOSITIF D'UN AUTRE CANTON (15 septembre 2026) ──────────────────────
+   Deuxième moitié du même bug. Neutraliser le montant ne suffisait pas : la
+   phrase mesurée ce soir disait encore « soustraire [montant] du chèque
+   cantonal GENEVOIS » à quelqu'un qui habite Lausanne. Le chèque de formation
+   est cantonal : celui de Genève n'ouvre aucun droit dans le canton de Vaud.
+   Nommer le mauvais canton envoie la personne réclamer une aide à laquelle
+   elle n'a pas droit — elle s'en apercevra au guichet, et c'est là qu'on perd
+   sa confiance pour de bon.
+
+   Volontairement étroit, pour ne pas casser des mentions légitimes : on
+   n'agit QUE si (a) on connaît le canton de la personne, (b) l'adjectif
+   cantonal désigne un AUTRE canton, et (c) il qualifie un mot de dispositif
+   (chèque, bourse, subvention, aide, dispositif, canton). Une phrase qui parle
+   de Genève pour une autre raison — un employeur, un trajet, une école — n'est
+   pas touchée. */
+var _CANTONS_ADJ = [
+  { cle: 'geneve',  mots: ['genevois', 'genevoise', 'genevoises'], noms: ['genève', 'geneve'] },
+  { cle: 'vaud',    mots: ['vaudois', 'vaudoise', 'vaudoises'],    noms: ['vaud'] },
+  { cle: 'valais',  mots: ['valaisan', 'valaisanne', 'valaisannes'], noms: ['valais'] },
+  { cle: 'fribourg',mots: ['fribourgeois', 'fribourgeoise'],        noms: ['fribourg'] },
+  { cle: 'neuchatel',mots:['neuchâtelois', 'neuchatelois', 'neuchâteloise'], noms: ['neuchâtel', 'neuchatel'] },
+  { cle: 'jura',    mots: ['jurassien', 'jurassienne'],             noms: ['jura'] },
+  { cle: 'berne',   mots: ['bernois', 'bernoise'],                  noms: ['berne'] }
+];
+var _MOTS_DISPOSITIF = 'chèque|cheque|bourse|bourses|subvention|subventions|aide|aides|dispositif|dispositifs|canton|cantonal|cantonale';
+
+function _cantonDeLaPersonne() {
+  var src = '';
+  try { src += ' ' + String((typeof quizAnswers !== 'undefined' && quizAnswers.ancrage) || ''); } catch (e) {}
+  try {
+    src += ' ' + (typeof chatHistory !== 'undefined' ? chatHistory : [])
+      .filter(function (m) { return m.role === 'user'; })
+      .map(function (m) { return String(m.content || ''); }).join(' ');
+  } catch (e) {}
+  src = src.toLowerCase();
+  var trouve = null;
+  _CANTONS_ADJ.forEach(function (c) {
+    if (trouve) return;
+    if (c.noms.concat(c.mots).some(function (n) { return src.indexOf(n) !== -1; })) trouve = c.cle;
+  });
+  return trouve;
+}
+
+function _corrigerCantonsEtrangers(valeur, monCanton, touches) {
+  if (!monCanton) return valeur;
+  if (typeof valeur === 'string') {
+    var out = valeur;
+    _CANTONS_ADJ.forEach(function (c) {
+      if (c.cle === monCanton) return;
+      c.mots.forEach(function (adj) {
+        // « chèque cantonal genevois » ou « bourse genevoise »
+        var re = new RegExp('((?:' + _MOTS_DISPOSITIF + ')(?:\\s+\\w+){0,2}?)\\s+' + adj + '\\b', 'gi');
+        out = out.replace(re, function (_, avant) {
+          if (touches) touches.push(avant.trim() + ' ' + adj);
+          try { console.warn('[CYNTH] Dispositif d\'un autre canton neutralisé : « ' + avant.trim() + ' ' + adj + ' »'); } catch (e) {}
+          // « chèque cantonal genevois » → « chèque cantonal » (et non
+          // « chèque cantonal de votre canton », qui se répète).
+          return /cantonal(e)?s?$/i.test(avant.trim()) ? avant : avant + ' de votre canton';
+        });
+      });
+    });
+    return out;
+  }
+  if (Array.isArray(valeur)) return valeur.map(function (v) { return _corrigerCantonsEtrangers(v, monCanton, touches); });
+  if (valeur && typeof valeur === 'object') {
+    for (var k in valeur) { if (Object.prototype.hasOwnProperty.call(valeur, k)) valeur[k] = _corrigerCantonsEtrangers(valeur[k], monCanton, touches); }
+    return valeur;
+  }
+  return valeur;
+}
+
+/* Point d'entrée branché sur les 3 chemins qui écrivent window._reportData.
+   La liste blanche se construit AVANT la purge, sur les métiers retenus. */
+function _verifierChiffres(data) {
+  if (!data || typeof data !== 'object') return data;
+  var retires = [], cantons = [];
+  var out = _verifierMontants(data, _montantsAutorises(data), retires);
+  out = _corrigerCantonsEtrangers(out, _cantonDeLaPersonne(), cantons);
+  if (retires.length) {
+    try { console.warn('[CYNTH] ' + retires.length + ' montant(s) non sourcé(s) neutralisé(s) : ' + retires.join(' · ')); } catch (e) {}
+  }
+  if (cantons.length) {
+    try { console.warn('[CYNTH] ' + cantons.length + ' dispositif(s) d\'un autre canton neutralisé(s)'); } catch (e) {}
+  }
+  return out;
 }
 
 /* ══ DICTIONNAIRE CYNTH.IA — CORRECTION AUTOMATIQUE ══════════════════════════
@@ -5738,7 +6036,7 @@ function _preparerRapportEnFond() {
           if (!k || vus[k]) return false; vus[k] = 1; return true;
         });
       }
-      window._reportData = _corrigerLangueProfond(deepStripDash(_purgerAgesInventes(data, _agesReellementDits())));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierChiffres(_purgerAgesInventes(data, _agesReellementDits()))));
       _signalerMontantsDouteux(window._reportData);
       try { _stashReport(); } catch (e) {}
       try { _marquerEntretienTermine(); } catch (e) {}
@@ -6316,7 +6614,7 @@ function doEndChat() {
     .then(data => {
       _compter('rapport', (Date.now() - _tDebutRapport) / 1000);
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
-      window._reportData = _corrigerLangueProfond(deepStripDash(_purgerAgesInventes(data, _agesReellementDits())));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierChiffres(_purgerAgesInventes(data, _agesReellementDits()))));
       _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
       // Bouton rapport — comportement selon CONFIG.RAPPORT_GRATUIT (test / production)
@@ -6381,7 +6679,7 @@ function doEndChat() {
       // Le repli est un signal de qualité : s'il monte, c'est que les appels
       // échouent ou dépassent le délai, et la personne reçoit un rapport pauvre.
       _compter('rapport_repli', (Date.now() - _tDebutRapport) / 1000);
-      window._reportData = _corrigerLangueProfond(deepStripDash(_purgerAgesInventes(buildFallbackReport(), _agesReellementDits())));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierChiffres(_purgerAgesInventes(buildFallbackReport(), _agesReellementDits()))));
       try { _marquerEntretienTermine(); } catch (e) {}
       try { _afficherApercu(); } catch (e) {}
       _signalerMontantsDouteux(window._reportData);
@@ -8923,7 +9221,13 @@ Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pa
   + ' (8) CITATION EN EXERGUE — citation_forte est affichée en grand, seule, en tête du portrait. Choisis une phrase de la personne qui est grammaticalement correcte et qui se comprend hors contexte. Si sa formulation la plus marquante comporte une faute ou une tournure bancale, prends-en une autre, ou mets null : mieux vaut pas de citation qu\'une citation qui donne l\'impression que le rapport est mal écrit. Ne corrige JAMAIS ses mots pour les faire entrer — un verbatim retouché n\'est plus un verbatim.'
   + ' (12) SIGLES DE CERTIFICATION ET ASSOCIATIONS PROFESSIONNELLES — même règle que (7), étendue : ne développe JAMAIS un sigle de certification ou de formation (FSEA, CFC, AFP...) et n\'invente JAMAIS le nom d\'une association professionnelle. Erreur réelle vérifiée le 14 septembre 2026 : un rapport a écrit "Certificat FSEA (Formation et Soutien à l\'Enseignement des Adultes)" — développé faux, FSEA veut dire Fédération suisse pour la formation continue — et a inventé une "Association des formateur·rices d\'adultes en Suisse romande (AFAR)", qui n\'existe pas (les vraies s\'appellent ARFOR et ARFAD). Si tu ne connais pas avec certitude ce que recouvre un sigle ou le nom exact d\'une association, recopie le sigle SANS le développer et ne cite AUCUNE association que tu n\'as pas lue dans la fiche métier ou dans ce que la personne a dit.'
   + ' (13) VIAMIA — c\'est un dispositif réservé aux 40 ans et plus. N\'écris "vous êtes éligible" ou toute formule d\'éligibilité affirmée QUE si la personne a explicitement donné un âge de 40 ans ou plus dans la conversation ou le CV. Si son âge n\'est pas connu ou qu\'elle a moins de 40 ans, présente viamia comme une ressource conditionnelle ("si vous avez 40 ans ou plus") ou ne le mentionne pas du tout — ne jamais affirmer une éligibilité que tu ne peux pas vérifier.'
-  + ' (14) COHÉRENCE BADGE/TEXTE — un métier de type "principal" ne doit jamais contenir, dans "pourquoi" ou "developper", une phrase qui le déconseille ou qui dit qu\'il ne correspond pas vraiment à la personne (ex : "ce métier ne capture pas votre vrai moteur"). Si tu doutes à ce point d\'un métier, deux choix seulement : soit tu le mets en type "piste" au lieu de "principal", soit tu retires le doute et expliques franchement pourquoi il reste un bon choix malgré la réserve. Ne mélange jamais un badge qui vend le métier et un texte qui le déconseille : la personne lit les deux dans le même souffle.';
+  + ' (14) COHÉRENCE BADGE/TEXTE — un métier de type "principal" ne doit jamais contenir, dans "pourquoi" ou "developper", une phrase qui le déconseille ou qui dit qu\'il ne correspond pas vraiment à la personne (ex : "ce métier ne capture pas votre vrai moteur"). Si tu doutes à ce point d\'un métier, deux choix seulement : soit tu le mets en type "piste" au lieu de "principal", soit tu retires le doute et expliques franchement pourquoi il reste un bon choix malgré la réserve. Ne mélange jamais un badge qui vend le métier et un texte qui le déconseille : la personne lit les deux dans le même souffle.'
+  /* (15) et (16) — mesurés le 15 septembre 2026 sur un rapport réel (ASSC en
+     emploi à Lausanne). Deux dispositifs suisses réels, mais proposés à
+     quelqu'un qui n'y a pas droit. Un dispositif bien nommé et mal appliqué
+     fait plus de dégâts qu'un silence : la personne s'en aperçoit au guichet. */
+  + ' (15) ASSURANCE-CHÔMAGE — ne propose l\'assurance-chômage, l\'AC ou l\'ORP comme moyen de financer une formation QUE si la personne est effectivement au chômage, en fin de contrat, licenciée ou inscrite à l\'ORP. Quelqu\'un qui est en emploi et qui choisit de réduire son taux d\'activité n\'ouvre AUCUN droit à l\'AC : le lui suggérer est une fausse piste. Bug constaté le 15.09.2026 : "assurance-chômage si perte de revenu" proposé trois fois à une personne ayant dit explicitement qu\'elle restait en emploi à 50%.'
+  + ' (16) SUBVENTION FÉDÉRALE 50% — la Confédération rembourse 50% des cours PRÉPARATOIRES AUX EXAMENS FÉDÉRAUX (brevet fédéral, diplôme fédéral) et rien d\'autre. Elle ne finance NI un bachelor HES, NI un master, NI un diplôme ES, NI un CFC. Ne cite ce dispositif que si la voie de formation de la fiche mène réellement à un brevet ou un diplôme fédéral.';
 
   async function _part(context, instruction, schema) {
     // La date réelle, sinon le plan sur 6 mois part d'une année déjà écoulée :
@@ -9026,7 +9330,7 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
 ⚠️ ET SI UN MÉTIER EST EN "maintenant", IL DOIT ÊTRE DE TYPE "principal", pas "piste". Constaté le 17 août 2026 : le seul métier immédiatement accessible avait été relégué en piste secondaire, donc affiché en tout petit, alors que c\'était l\'information la plus utile du rapport pour cette personne. Une porte ouverte tout de suite vaut plus qu\'un beau projet à deux ans : elle passe devant.
 
 🇨🇭 ARTICLE 32 — RENDS-LE CONCRET, NE TE CONTENTE PAS DE LE CITER. Si la personne a de l\'expérience mais pas de titre suisse (ou un diplôme étranger non reconnu), renseigne "art32" sur les métiers concernés, avec cette règle EXACTE, sans l\'arrondir : il faut 5 ans d\'expérience professionnelle au total à la date de l\'examen, dont 2 à 4 ans dans le domaine visé selon le métier (souvent 3 ans à 100%) ; le temps partiel compte proportionnellement ; on passe ensuite les examens finaux, avec cours préparatoires ou par validation des acquis. Dis où elle en est PAR RAPPORT à ce compte (ex : « vos 10 ans couvrent largement les 5 ans exigés ; reste à vérifier que X années comptent dans le domaine »), et que c\'est le canton qui tranche. Si elle a déjà un titre suisse dans le domaine, laisse "art32" vide.`,
-    '{"top_metiers":[{"id":"id-exact-de-la-base","type":"principal","titre":"","secteur":"","score":90,"horizon":"maintenant|6-12 mois|2 ans","horizon_precision":"une phrase : ce qui manque, ou pourquoi c\'est deja ouvert","art32":"","pourquoi":"2-3 phrases avec ses mots","atouts":["","",""],"developper":["compétence + voie suisse",""],"route_formation":"formation + durée + coût CHF approx + financement","tension_marche":"copie de la base","salaire_debut":"copie de la base","salaire_exp":"copie de la base","premier_pas":"action concrète cette semaine"}]}');
+    '{"top_metiers":[{"id":"id-exact-de-la-base","type":"principal","titre":"","secteur":"","score":90,"horizon":"maintenant|6-12 mois|2 ans ou plus","horizon_precision":"une phrase : ce qui manque, ou pourquoi c\'est deja ouvert","art32":"","pourquoi":"2-3 phrases avec ses mots","atouts":["","",""],"developper":["compétence + voie suisse",""],"route_formation":"formation + durée (copie du champ formation de la base) + financement (copie du champ financement de la base) — JAMAIS de coût en CHF, nous ne l\'avons pas en base","tension_marche":"copie de la base","salaire_debut":"copie de la base","salaire_exp":"copie de la base","premier_pas":"action concrète cette semaine"}]}');
 
   // (pPlan est lancé plus haut, avec pProfil et pActions, pour couvrir l'attente
   //  de la sélection des métiers.)
@@ -9782,7 +10086,13 @@ function downloadRapport(){
       : _hz.includes('6') || _hz.includes('12')
         ? '<span class="chipm hz-mid">À construire sur 6 à 12 mois</span>'
       : _hz.includes('2 an')
-        ? '<span class="chipm hz-far">Horizon 2 ans</span>'
+        /* « Horizon 2 ans » était FAUX sur les cursus longs : mesuré le
+           15.09.2026 sur un rapport réel, l'ostéopathie sortait avec ce badge
+           alors que le texte de la même carte disait « 4,5 ans minimum ». La
+           cause n'est pas le modèle mais notre énumération, qui s'arrêtait à
+           « 2 ans » : c'était la valeur la plus longue qu'il pouvait choisir.
+           Le libellé dit maintenant ce que la catégorie signifie vraiment. */
+        ? '<span class="chipm hz-far">Horizon long (2 ans ou plus)</span>'
       : '';
     const hzLine = (m.horizon_precision && hzChip)
       ? `<p class="hzline"><b>Concrètement :</b> ${esc(m.horizon_precision)}</p>` : '';
