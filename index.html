@@ -4563,9 +4563,41 @@ function _nombresDe(txt) {
    montant ne peut pas s'inviter dans le plan. Une fiche qui porte vraiment
    « (GE : max. CHF 750/an) » dans son financement autorise ce montant, et
    c'est légitime : la mention cantonale voyage avec lui. */
+/* ── MONTANTS OFFICIELS CONNUS (15 septembre 2026, soir — 2e passe) ────────
+   Trouvé par le test de bout en bout, pas supposé. Profil « Mehdi », GENEVOIS :
+   le modèle a écrit, correctement, « votre chèque annuel de formation genevois
+   (CHF 750 maximum par an) ». Le filtre l'a effacé, parce qu'aucune des 5
+   fiches retenues pour CE rapport ne portait « 750 » dans son champ
+   financement — alors que 4 autres fiches de la base le portent.
+
+   C'était un vrai faux positif : on retirait une information exacte et utile à
+   quelqu'un du canton concerné. Or Genève est le cœur de cible du produit.
+
+   Correction : une courte liste de montants officiels suisses qu'on connaît et
+   qui sont sourcés dans le projet (le 750 genevois a été vérifié et corrigé en
+   dur le 11 août, il annonçait 500 à tort). Ils sont autorisés INDÉPENDAMMENT
+   des fiches retenues, mais seulement quand le canton colle :
+     - canton de la personne = celui du dispositif → autorisé
+     - canton inconnu → autorisé (le modèle le présente alors comme un exemple
+       conditionnel, comportement vérifié le 25 août : « en Genève par exemple,
+       à vérifier auprès de votre canton »)
+     - canton connu et DIFFÉRENT → refusé, c'est exactement le bug d'origine
+       (le 750 genevois servi à une Vaudoise). */
+var _MONTANTS_OFFICIELS = [
+  { nb: '750', cantons: ['geneve'] }   // chèque annuel de formation genevois, max CHF 750/an
+];
+
 function _montantsAutorises(data) {
   var ok = new Set();
   var ajoute = function (txt) { _nombresDe(txt).forEach(function (n) { ok.add(n); }); };
+
+  // (0) les dispositifs officiels dont on connaît le montant, si le canton colle
+  try {
+    var mien = _cantonDeLaPersonne();
+    _MONTANTS_OFFICIELS.forEach(function (d) {
+      if (!mien || d.cantons.indexOf(mien) !== -1) ok.add(d.nb);
+    });
+  } catch (e) {}
 
   // (a) ce que disent les fiches retenues — salaires, financements, formation,
   //     et la source elle-même (elle contient les chiffres annuels relevés)
@@ -9255,7 +9287,7 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
     + ' Dans ressources_utiles.financement, n\'écris que des dispositifs réels et nommés en toutes lettres. N\'invente aucun sigle : si tu ne peux pas écrire un sigle en toutes lettres, ne l\'écris pas du tout (constaté le 17 août 2026 : un rapport mentionnait « CFC banque (BEM) », sigle qu\'aucune source ne confirme).'
     + ' ⚠️ CHAQUE DISPOSITIF UNE SEULE FOIS, et avec son montant EXACT quand on le connaît. Les montants vérifiés, à recopier tels quels sans les reformuler : le chèque annuel de formation genevois est de CHF 750 par an au maximum ; la Confédération prend en charge 50% des frais de cours préparatoires aux examens fédéraux ; viamia est gratuit dès 40 ans. N\'écris « montant à vérifier auprès du canton » que pour un dispositif dont le montant n\'est PAS dans cette liste. Bug constaté le 17 août 2026 : le chèque genevois apparaissait deux fois dans le même rapport, une fois avec son montant exact et une fois en « montant à vérifier », ce qui donne l\'impression qu\'on ne connaît pas notre sujet.'
     + ' ⛔ NE BÂTIS PAS LE PLAN AUTOUR D\'UN MÉTIER QU\'ELLE A DIT VOULOIR QUITTER, OU DONT LE QUOTIDIEN CONTREDIT UNE CONDITION QU\'ELLE A POSÉE (pression de chiffres, horaires irréguliers, déplacements, concurrence interne, etc.) — même s\'il ressemble à ce qu\'elle connaît déjà et que c\'est plus facile à écrire un plan dessus. Ses conditions de travail comptent AUTANT que ses refus de secteur explicites : ne les traite pas comme de simples préférences. Erreur réelle du 3 septembre 2026 (rapport « Nathalie », test OTP New Job) : la personne avait quitté la vente à cause de la pression commerciale ; les pistes principales du rapport étaient des métiers du social, mais le plan sur 6 mois était construit presque entièrement autour du métier de relation client qu\'elle venait justement de mettre à distance — deux sections du même rapport se contredisaient, l\'une prudente, l\'autre non. Si un métier est écarté ou mis en réserve ailleurs dans ce rapport à cause d\'une condition qu\'elle a posée, ne construis pas les semaines et les mois du plan autour de lui : ancre le plan sur ce qui est cohérent avec ce qu\'elle a dit vouloir, même si c\'est un chemin plus long ou moins immédiat.',
-    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal (GE : max. CHF 750/an)","ORP / assurance-chômage","Confédération — 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
+    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal (GE : max. CHF 750/an)","ORP / assurance-chômage","Confédération : 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
 
   /* On récupère seulement maintenant la sélection lancée plus haut : son temps
      d'attente (mesuré à 7,6 s) a été absorbé par les TROIS appels ci-dessus,
@@ -9330,7 +9362,7 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
 ⚠️ ET SI UN MÉTIER EST EN "maintenant", IL DOIT ÊTRE DE TYPE "principal", pas "piste". Constaté le 17 août 2026 : le seul métier immédiatement accessible avait été relégué en piste secondaire, donc affiché en tout petit, alors que c\'était l\'information la plus utile du rapport pour cette personne. Une porte ouverte tout de suite vaut plus qu\'un beau projet à deux ans : elle passe devant.
 
 🇨🇭 ARTICLE 32 — RENDS-LE CONCRET, NE TE CONTENTE PAS DE LE CITER. Si la personne a de l\'expérience mais pas de titre suisse (ou un diplôme étranger non reconnu), renseigne "art32" sur les métiers concernés, avec cette règle EXACTE, sans l\'arrondir : il faut 5 ans d\'expérience professionnelle au total à la date de l\'examen, dont 2 à 4 ans dans le domaine visé selon le métier (souvent 3 ans à 100%) ; le temps partiel compte proportionnellement ; on passe ensuite les examens finaux, avec cours préparatoires ou par validation des acquis. Dis où elle en est PAR RAPPORT à ce compte (ex : « vos 10 ans couvrent largement les 5 ans exigés ; reste à vérifier que X années comptent dans le domaine »), et que c\'est le canton qui tranche. Si elle a déjà un titre suisse dans le domaine, laisse "art32" vide.`,
-    '{"top_metiers":[{"id":"id-exact-de-la-base","type":"principal","titre":"","secteur":"","score":90,"horizon":"maintenant|6-12 mois|2 ans ou plus","horizon_precision":"une phrase : ce qui manque, ou pourquoi c\'est deja ouvert","art32":"","pourquoi":"2-3 phrases avec ses mots","atouts":["","",""],"developper":["compétence + voie suisse",""],"route_formation":"formation + durée (copie du champ formation de la base) + financement (copie du champ financement de la base) — JAMAIS de coût en CHF, nous ne l\'avons pas en base","tension_marche":"copie de la base","salaire_debut":"copie de la base","salaire_exp":"copie de la base","premier_pas":"action concrète cette semaine"}]}');
+    '{"top_metiers":[{"id":"id-exact-de-la-base","type":"principal","titre":"","secteur":"","score":90,"horizon":"maintenant|6-12 mois|2 ans ou plus","horizon_precision":"une phrase : ce qui manque, ou pourquoi c\'est deja ouvert","art32":"","pourquoi":"2-3 phrases avec ses mots","atouts":["","",""],"developper":["compétence + voie suisse",""],"route_formation":"formation + durée (copie du champ formation de la base) + financement (copie du champ financement de la base). JAMAIS de coût en CHF, nous ne l\'avons pas en base","tension_marche":"copie de la base","salaire_debut":"copie de la base","salaire_exp":"copie de la base","premier_pas":"action concrète cette semaine"}]}');
 
   // (pPlan est lancé plus haut, avec pProfil et pActions, pour couvrir l'attente
   //  de la sélection des métiers.)
@@ -9350,7 +9382,7 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
   const _pf = rProfil || {};
   const _ac = rActions || {};
   const _mt = (rMetiers && Array.isArray(rMetiers.top_metiers) && rMetiers.top_metiers.length) ? rMetiers : { top_metiers: _fb.top_metiers };
-  const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal (GE : max. CHF 750/an)','ORP / assurance-chômage','Confédération — 50% des cours pour examens fédéraux'], formations:['orientation.ch — fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
+  const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal (GE : max. CHF 750/an)','ORP / assurance-chômage','Confédération : 50% des cours pour examens fédéraux'], formations:['orientation.ch : fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
 
   /* Dernier filet, APRÈS l'assemblage complet : il faut connaître les métiers
      finalement retenus pour savoir si l'article 32 les concerne. Voir
