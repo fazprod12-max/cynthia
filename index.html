@@ -4908,13 +4908,36 @@ let _synthRelances = 0;        // combien de fois (on ne harcèle pas)
 
 /* Le feu vert doit être EXPLICITE. Dans le doute, on continue.
    Une réponse longue n'est jamais un feu vert : si elle écrit trois lignes,
-   c'est qu'elle avait encore quelque chose à dire. */
+   c'est qu'elle avait encore quelque chose à dire.
+
+   ⚠️ 16.09.2026 — DÉFAUT MESURÉ, pas supposé. Le plafond était à 12 mots, et
+   il refusait de VRAIS feux verts : sur 8 formulations naturelles testées,
+   3 étaient rejetées uniquement parce qu'elles ajoutaient une politesse ou
+   une précision (« Non c'est bon, on peut faire le point sur ce qu'on s'est
+   dit » = 15 mots). Conséquence vue en entretien réel (profil Amadou) : la
+   personne dit clairement d'y aller, Cynthia repose une question, et
+   l'entretien dérive vers le plafond des 30 messages.
+
+   L'intention du plafond reste juste — un développement de trois lignes n'est
+   pas un feu vert. Ce qui était faux, c'est de la mesurer au seul nombre de
+   mots. On garde donc un plafond (25 mots, un vrai développement le dépasse),
+   ET on ajoute ce qui manquait : un feu vert accompagné d'un signal « j'ai
+   encore quelque chose à dire » (une question, un « mais », un doute) n'est
+   PAS un feu vert, quelle que soit sa longueur. Dans le doute, on continue.
+
+   ⚠️ Le motif « encore quelque chose à dire » vit DANS la fonction, exprès :
+   plusieurs tests du projet extraient _feuVertSynthese seule pour l'exécuter,
+   et une constante voisine serait undefined chez eux (piège déjà rencontré
+   sept fois sur ce fichier, la dernière le 15 septembre). */
 function _feuVertSynthese(texte) {
+  const encoreADire = /\?|\bmais\b|par contre|\bsauf\b|\bavant de\b|par ailleurs|\bencore\b|j'?aimerais|je voudrais|je (ne )?sais pas|une (derni[èe]re|autre) (chose|question)/;
   const t = (texte || '').trim().toLowerCase();
   if (!t) return false;
-  if (t.split(/\s+/).length > 12) return false;
-  return /\b(c'?est bon|c'?est tout|j'?ai (tout )?dit|allez[- ]?y|vas[- ]?y|on peut y aller|rien d'?autre|non merci|pr[ée]parez|lancez|g[ée]n[ée]rez|je suis pr[êe]te?|on y va)\b/.test(t)
-      || /^(non|nan|ok|d'?accord|parfait|go|oui allez[- ]?y|oui vas[- ]?y)[\s.!]*$/.test(t);
+  /* Les réponses d'un mot restent jugées au format strict. */
+  if (/^(non|nan|ok|d'?accord|parfait|go|oui allez[- ]?y|oui vas[- ]?y)[\s.!]*$/.test(t)) return true;
+  if (t.split(/\s+/).length > 25) return false;
+  if (encoreADire.test(t)) return false;
+  return /\b(c'?est bon|c'?est tout|j'?ai (tout )?dit|allez[- ]?y|vas[- ]?y|on peut y aller|on peut passer|rien d'?autre|non merci|pr[ée]parez|lancez|g[ée]n[ée]rez|je suis pr[êe]te?|on y va)\b/.test(t);
 }
 let _synthRetryCount = 0; // Nombre de retry synthèse déjà tentés (max 1)
 
@@ -10584,8 +10607,24 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
   .firststep,.card,.bfnote,.mhead,.mfoot,.why,.reserve,.art32,.callout,li{
     break-inside:avoid;page-break-inside:avoid}
 
-  /* 4. Un titre ou une amorce ne reste pas orphelin en bas de page. */
-  h2.sec,h3,h4,.minilabel,.sec-sub,.rank{
+  /* 4. Un titre ou une amorce ne reste pas orphelin en bas de page.
+
+     ⚠️ CORRECTIF DU 16 SEPTEMBRE 2026 — .mhead ajouté ici, et c'est la
+     contrepartie manquante du correctif du 14. Preuve : PDF réel envoyé par
+     Faouzi (amadou.pdf, 15 pages), page 7 — la fiche « Comptable » ouvre son
+     cadre, affiche son titre, son etiquette « Piste principale » et son 95%,
+     puis la page s'arrete : le cadre reste beant et tout le contenu de la
+     fiche repart en page 8. C'est le pire endroit ou couper une fiche, et
+     c'est exactement le defaut que .callout avait la veille, une classe plus
+     haut dans le meme document.
+     Depuis le 14 septembre, .metier n'est plus insecable (a raison : une
+     fiche fait plus d'une page, la coller en bloc creait des pages blanches).
+     Mais .mhead n'avait que break-inside:avoid — il ne se coupait pas
+     lui-meme, rien ne l'empechait de rester SEUL en bas de page. Avec
+     break-after:avoid, le moteur emporte l'en-tete avec le debut de la fiche :
+     la fiche peut toujours couler sur deux pages, elle ne s'ouvre plus sur
+     une page pour ne rien y mettre. */
+  h2.sec,h3,h4,.minilabel,.sec-sub,.rank,.mhead{
     break-after:avoid;page-break-after:avoid}
   p,li{orphans:3;widows:3}
 
