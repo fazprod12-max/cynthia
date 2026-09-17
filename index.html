@@ -1901,21 +1901,6 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;margin-bottom:16px;}
   .lp-ic.e{background:var(--c-emerald-soft);} .lp-ic.c{background:var(--c-coral-soft);} .lp-ic.g{background:#FFF3D9;}
   .lp-card h3{font-size:1.15rem;margin-bottom:8px;} .lp-card p{font-size:.92rem;color:var(--c-muted);}
-  /* ── Témoignages (5 sept 2026, complété le même jour) ── Les 2 premiers
-     avis sont autorisés avec prénom par les testeurs eux-mêmes via le
-     formulaire retour.html (citation_accord = "Oui, avec mon prénom"). Les
-     4 suivants viennent de personnes ayant réellement fait le test mais
-     sauté ce formulaire : leur phrase a été relayée par Faouzi. Prénom seul
-     partout, même niveau de détail pour les 6 (voir CLAUDE.md, section du
-     même jour). Grille à 3 colonnes pour 6 cartes (2 rangs pleins). */
-  .lp-avis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1080px;margin:0 auto;}
-  @media(max-width:900px){.lp-avis-grid{grid-template-columns:1fr 1fr;max-width:820px;}}
-  .lp-avis-card{background:rgba(255,255,255,.72);backdrop-filter:blur(6px);border:1px solid var(--c-line);border-radius:20px;padding:30px 26px;transition:transform .22s,box-shadow .25s,border-color .25s;display:flex;flex-direction:column;justify-content:center;}
-  .lp-avis-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px -24px rgba(14,42,36,.4);border-color:transparent;}
-  .lp-avis-card .lp-avis-mark{font-size:1.6rem;color:var(--c-emerald);line-height:1;margin-bottom:10px;}
-  .lp-avis-card p{font-size:1.03rem;line-height:1.55;color:var(--c-ink);font-style:italic;}
-  .lp-avis-card .lp-avis-who{margin-top:16px;font-style:normal;font-weight:700;color:var(--c-emerald-d);font-size:.92rem;}
-  @media(max-width:600px){.lp-avis-grid{grid-template-columns:1fr;max-width:none;}}
   .lp-steps-sec{background:linear-gradient(150deg,var(--c-ink),#0A211C);color:#fff;border-radius:34px;margin:0 24px;overflow:hidden;position:relative;}
   .lp-steps-sec .lp-sechead h2{color:#fff;} .lp-steps-sec .lp-sechead p{color:#A9C0B7;}
   .lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
@@ -2365,45 +2350,12 @@ textarea.chat-input{
     </div>
   </div></div></section>
 
-  <!-- ── TÉMOIGNAGES — 5 septembre 2026, complété le même jour. 6 avis réels,
-       tous hors du cercle de Faouzi, tous affichés PRÉNOM SEUL. Armand et
-       Maxime : autorisés explicitement via retour.html (citation_accord =
-       « Oui, avec mon prénom »). Thomas, Thilai, Lina, Dylan : ont
-       réellement fait le test mais sauté ce formulaire ; leur phrase a été
-       relayée par Faouzi. Une première version affichait aussi métier + âge
-       pour ces 4 (transmis par Faouzi) ; il est revenu dessus le jour même
-       et a choisi de rester au même niveau de détail que Armand/Maxime,
-       prénom seul partout — traitement uniforme, plus prudent sur le peu
-       qu'on affiche d'une personne qui n'a pas rempli le formulaire de
-       consentement dédié. Fautes de frappe et accords corrigés (comme pour
-       Armand/Maxime), RIEN reformulé, RIEN ajouté pour « faire vendeur » —
-       demande explicite de Faouzi refusée le même jour : des témoignages
-       retravaillés perdent exactement ce qui les rend crédibles, leur voix
-       brute. Voir CLAUDE.md. Aucun chiffre de volume dans le texte
-       (« six avis »…) — même règle que le nombre de métiers depuis le
-       4 août. Placé après l'honnêteté assumée (#lp-franc) et avant le
-       fondateur : la preuve par des inconnus vient avant la preuve par
-       lui. ── -->
-  <section id="lp-avis" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Dans les mots de <span class="lp-accent">ceux qui l'ont testée</span></h2></div>
-    <!-- Réordonné le 14 septembre 2026 (audit design, chantier S6, décision
-         Faouzi via AskUserQuestion — option recommandée). Avant : ordre de
-         publication (Armand, Maxime, puis les 4 ajoutés le 5 septembre dans
-         l'ordre où ils ont été transmis) — aucun ordre éditorial. La citation
-         de Thomas est la plus spécifique et la plus vendeuse (elle nomme un
-         mécanisme précis du produit : distinguer le métier de l'environnement,
-         pas juste un ressenti général) ; elle ouvre désormais la grille, là où
-         l'attention est la plus forte. Aucun texte changé, aucun avis retiré :
-         seul l'ordre bouge. -->
-    <div class="lp-avis-grid cyn-stag cyn-spot">
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Le rapport n'a pas essayé de me faire changer de métier. Il a vu que c'était l'environnement, pas le métier. Personne ne m'avait dit ça.</p><div class="lp-avis-who">— Thomas</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Surprenant, mais oser se confier à une IA permet de mieux se connaître et de révéler les compétences qu'on a tendance à enfouir sous des années d'expérience.</p><div class="lp-avis-who">— Maxime</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Honnêtement, je suis enfin sûr que la voie que j'ai choisie est bien la bonne. Maintenant j'ai un plan pour viser le sommet.</p><div class="lp-avis-who">— Dylan</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>De faire le test à cœur ouvert, d'être le plus honnête.</p><div class="lp-avis-who">— Armand</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>Je ressens enfin l'envie de suivre un plan clair, après une discussion profonde.</p><div class="lp-avis-who">— Thilai</div></div>
-      <div class="lp-avis-card lp-rv"><div class="lp-avis-mark">❝</div><p>J'ai essayé par curiosité professionnelle, et je suis choquée du résultat du rapport.</p><div class="lp-avis-who">— Lina</div></div>
-    </div>
-  </div></section>
+  <!-- ── Le bloc d'avis des testeurs vivait ICI, entre l'honnêteté assumée et
+       le fondateur. Retiré le 17 septembre 2026 à la demande de Faouzi, en
+       attendant de nouveaux avis qu'il a reçus. Retrait TEMPORAIRE et non
+       destructif : le HTML et le CSS sont conservés à l'identique dans
+       avis_landing_retires_20260917.html, avec les règles de publication
+       (pas de reformulation, prénom seul, aucun chiffre de volume). ── -->
 
   <!-- ── QUI EST DERRIÈRE — placé juste avant le dernier appel à l'action, au
        moment précis où la personne hésite. Version courte ; le récit complet
@@ -4587,9 +4539,38 @@ var _MONTANTS_OFFICIELS = [
   { nb: '750', cantons: ['geneve'] }   // chèque annuel de formation genevois, max CHF 750/an
 ];
 
+/* ⚠️ TROU TROUVÉ LE 16 SEPTEMBRE 2026, sur le rapport réel de Sylvie.
+   « 300 francs » est passé alors qu'elle n'avait jamais écrit « 300 » (elle
+   avait dit 4 900 et 4 600 ; le 300 était un calcul fait par Cynthia en chat).
+   Cause : la fiche formateur-adultes porte « certificat FSEA puis brevet
+   fédéral (4 ans + 300h de pratique) ». La liste blanche était un ensemble de
+   NOMBRES SANS UNITÉ — donc 300 HEURES sourcées blanchissaient 300 FRANCS.
+   Le filtre n'était pas cassé, c'est sa liste blanche qui était trop large.
+
+   Correction : côté FICHES, on ne retient que les nombres lus dans un contexte
+   monétaire (un vrai montant, ou un nombre suivi de /mois, /an, /semestre).
+   Mesuré sur les 155 fiches avant de retenir la règle : AUCUNE ne perd un vrai
+   montant, et « 300h » cesse de blanchir « 300 francs ».
+
+   ⚠️ CE N'EST PAS APPLIQUÉ AUX MOTS DE LA PERSONNE, volontairement : elle écrit
+   « je gagne 4900 brut », sans « CHF » ni « francs ». Lui appliquer la même
+   règle effacerait son propre salaire de son rapport — une régression bien
+   pire que le trou qu'on bouche ici. */
+function _nombresMonetairesDe(txt) {
+  var s = String(txt || ''), out = [], m;
+  _MONTANT_RE.lastIndex = 0;
+  while ((m = _MONTANT_RE.exec(s))) _nombresDe(m[0]).forEach(function (n) { out.push(n); });
+  var revenu = new RegExp('(?:' + _MONTANT_NB + ')(?:\\s*[-–—à]\\s*(?:' + _MONTANT_NB + '))?\\s*\\/\\s*(?:mois|an|ann[ée]e|semestre)', 'gi');
+  while ((m = revenu.exec(s))) _nombresDe(m[0]).forEach(function (n) { out.push(n); });
+  return out;
+}
+
 function _montantsAutorises(data) {
   var ok = new Set();
+  /* mots de la personne : extraction large (voir le commentaire ci-dessus) */
   var ajoute = function (txt) { _nombresDe(txt).forEach(function (n) { ok.add(n); }); };
+  /* champs de fiches : contexte monétaire uniquement */
+  var ajouteFiche = function (txt) { _nombresMonetairesDe(txt).forEach(function (n) { ok.add(n); }); };
 
   // (0) les dispositifs officiels dont on connaît le montant, si le canton colle
   try {
@@ -4605,9 +4586,9 @@ function _montantsAutorises(data) {
     (Array.isArray(data && data.top_metiers) ? data.top_metiers : []).forEach(function (m) {
       var f = (typeof METIERS_DB !== 'undefined') ? METIERS_DB.find(function (x) { return x.id === (m && m.id); }) : null;
       if (!f) return;
-      ['salaire_debut', 'salaire_exp', 'salaire_source', 'financement', 'formation'].forEach(function (c) { ajoute(f[c]); });
+      ['salaire_debut', 'salaire_exp', 'salaire_source', 'financement', 'formation'].forEach(function (c) { ajouteFiche(f[c]); });
       var ex = (typeof METIERS_EXTRA !== 'undefined' && METIERS_EXTRA[m.id]) || {};
-      ['note_marche', 'ce_qui_use', 'voie_adulte'].forEach(function (c) { ajoute(ex[c]); });
+      ['note_marche', 'ce_qui_use', 'voie_adulte'].forEach(function (c) { ajouteFiche(ex[c]); });
     });
   } catch (e) {}
 
@@ -4672,14 +4653,29 @@ function _verifierMontants(valeur, autorises, retires) {
    (chèque, bourse, subvention, aide, dispositif, canton). Une phrase qui parle
    de Genève pour une autre raison — un employeur, un trajet, une école — n'est
    pas touchée. */
+/* ⚠️ Le champ `villes` est lu UNIQUEMENT par _cantonDeLaPersonne, JAMAIS par
+   _corrigerCantonsEtrangers. Raison mesurée le 16 septembre 2026 : personne ne
+   dit « j'habite dans le canton de Vaud », on dit « j'habite Lausanne ». Sans
+   les villes, le canton restait inconnu dans la plupart des entretiens réels,
+   et tout ce qui en dépend (montant du chèque cantonal, guichet officiel) était
+   silencieusement désactivé. Les villes ne servent QU'À reconnaître le canton
+   de la personne ; les utiliser côté correcteur ferait neutraliser à tort une
+   phrase parfaitement légitime comme « une entreprise basée à Lausanne ». */
 var _CANTONS_ADJ = [
-  { cle: 'geneve',  mots: ['genevois', 'genevoise', 'genevoises'], noms: ['genève', 'geneve'] },
-  { cle: 'vaud',    mots: ['vaudois', 'vaudoise', 'vaudoises'],    noms: ['vaud'] },
-  { cle: 'valais',  mots: ['valaisan', 'valaisanne', 'valaisannes'], noms: ['valais'] },
-  { cle: 'fribourg',mots: ['fribourgeois', 'fribourgeoise'],        noms: ['fribourg'] },
-  { cle: 'neuchatel',mots:['neuchâtelois', 'neuchatelois', 'neuchâteloise'], noms: ['neuchâtel', 'neuchatel'] },
-  { cle: 'jura',    mots: ['jurassien', 'jurassienne'],             noms: ['jura'] },
-  { cle: 'berne',   mots: ['bernois', 'bernoise'],                  noms: ['berne'] }
+  { cle: 'geneve',  mots: ['genevois', 'genevoise', 'genevoises'], noms: ['genève', 'geneve'],
+    villes: ['carouge', 'meyrin', 'vernier', 'lancy', 'onex', 'plan-les-ouates', 'versoix'] },
+  { cle: 'vaud',    mots: ['vaudois', 'vaudoise', 'vaudoises'],    noms: ['vaud'],
+    villes: ['lausanne', 'yverdon', 'nyon', 'morges', 'vevey', 'montreux', 'renens', 'payerne', 'aigle', 'pully', 'échallens', 'echallens'] },
+  { cle: 'valais',  mots: ['valaisan', 'valaisanne', 'valaisannes'], noms: ['valais'],
+    villes: ['sion', 'sierre', 'martigny', 'monthey', 'brigue', 'saint-maurice'] },
+  { cle: 'fribourg',mots: ['fribourgeois', 'fribourgeoise'],        noms: ['fribourg'],
+    villes: ['bulle', 'romont', 'estavayer', 'châtel-saint-denis', 'chatel-saint-denis'] },
+  { cle: 'neuchatel',mots:['neuchâtelois', 'neuchatelois', 'neuchâteloise'], noms: ['neuchâtel', 'neuchatel'],
+    villes: ['la chaux-de-fonds', 'chaux-de-fonds', 'le locle', 'boudry', 'val-de-travers'] },
+  { cle: 'jura',    mots: ['jurassien', 'jurassienne'],             noms: ['jura'],
+    villes: ['delémont', 'delemont', 'porrentruy', 'saignelégier', 'saignelegier'] },
+  { cle: 'berne',   mots: ['bernois', 'bernoise'],                  noms: ['berne'],
+    villes: ['bienne', 'biel', 'moutier', 'saint-imier', 'tavannes', 'tramelan'] }
 ];
 var _MOTS_DISPOSITIF = 'chèque|cheque|bourse|bourses|subvention|subventions|aide|aides|dispositif|dispositifs|canton|cantonal|cantonale';
 
@@ -4695,9 +4691,206 @@ function _cantonDeLaPersonne() {
   var trouve = null;
   _CANTONS_ADJ.forEach(function (c) {
     if (trouve) return;
-    if (c.noms.concat(c.mots).some(function (n) { return src.indexOf(n) !== -1; })) trouve = c.cle;
+    if (c.noms.concat(c.mots).concat(c.villes || []).some(function (n) { return src.indexOf(n) !== -1; })) trouve = c.cle;
   });
   return trouve;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE BON GUICHET  (16 septembre 2026)
+
+   DÉFAUT MESURÉ DEUX FOIS, SUR DEUX CANTONS ET DEUX PROFILS DIFFÉRENTS.
+   · Amadou (Genève, EN POSTE, commis de cuisine, diplôme sénégalais) : le
+     rapport lui demandait 4 fois de « prendre rendez-vous avec l'ORP de Genève
+     pour faire évaluer son BTS ».
+   · Sylvie (Vaud, EN POSTE, responsable de rayon) : 17 mentions de l'ORP,
+     zéro de l'OCOSP. En chat : « L'ORP, c'est votre point d'entrée maintenant ».
+
+   DEUX ERREURS CUMULÉES, vérifiées aux sources officielles :
+   1. L'ORP est l'office régional de PLACEMENT. Il s'adresse aux personnes
+      inscrites au chômage. Quelqu'un qui travaille n'y a pas accès.
+   2. Ce n'est pas l'ORP qui traite la reconnaissance de diplôme étranger ni
+      l'article 32 : c'est l'office cantonal de formation professionnelle.
+   Quelqu'un qui appelle l'ORP s'entend dire « ce n'est pas nous, et vous
+   n'êtes pas inscrit chez nous » — sur la PREMIÈRE action du plan.
+
+   LA CAUSE RACINE ÉTAIT CHEZ NOUS, comme pour les coûts inventés du 15 :
+   notre propre schéma d'exemple contenait « ORP / assurance-chômage » dans
+   les ressources. On soufflait le mauvais guichet au modèle.
+
+   ⚠️ L'ORP n'est PAS faux en soi : pour une personne au chômage, c'est bien
+   son guichet. La correction est donc conditionnelle, jamais aveugle.
+   ═══════════════════════════════════════════════════════════════════════════ */
+var _GUICHETS_CANTONAUX = [
+  { cle: 'geneve', nom: 'OFPC (Office pour l\'orientation, la formation professionnelle et continue)',
+    aussi: 'Cité des métiers du Grand Genève',
+    source: 'ge.ch/faire-reconnaitre-diplome-etranger et citedesmetiers.ch, vérifié le 16.09.2026' },
+  { cle: 'vaud', nom: 'OCOSP (Office cantonal d\'orientation scolaire et professionnelle)',
+    aussi: 'portail de la certification professionnelle pour adultes du canton (vd.ch/cpa)',
+    source: 'vd.ch/def/dgep/ocosp et vd.ch/cpa, vérifié le 16.09.2026' },
+  { cle: 'valais', nom: 'Office d\'orientation scolaire et professionnelle du Valais romand',
+    aussi: 'portail valaisan de la certification professionnelle pour adultes, à Sion',
+    source: 'vs.ch, portail CPA Sion, vérifié le 16.09.2026' },
+  { cle: 'fribourg', nom: 'SOPFA (Service de l\'orientation professionnelle et de la formation des adultes)',
+    aussi: 'Centre de carrières de Fribourg',
+    source: 'fr.ch, page certification professionnelle pour adultes, vérifié le 16.09.2026' },
+  { cle: 'neuchatel', nom: 'Centre d\'orientation et de carrière du canton de Neuchâtel',
+    aussi: 'Service des formations postobligatoires (page Article 32 et VAE)',
+    source: 'ne.ch/autorites/DEF/SFPO, vérifié le 16.09.2026' },
+  { cle: 'jura', nom: 'COSP (Centre d\'orientation scolaire et professionnelle), à Delémont',
+    aussi: '', source: 'jura.ch, vérifié le 16.09.2026' }
+];
+/* Berne n'est PAS dans la liste : le nom exact de l'office pour la partie
+   francophone n'a pas été vérifié à la source. On préfère le repli générique
+   à un nom inventé — même règle que pour les fiches métier. */
+var _GUICHET_GENERIQUE = 'l\'office cantonal d\'orientation professionnelle de votre canton (annuaire sur orientation.ch)';
+
+function _guichetDeLaPersonne() {
+  var c = _cantonDeLaPersonne();
+  if (!c) return null;
+  var g = null;
+  _GUICHETS_CANTONAUX.forEach(function (x) { if (x.cle === c) g = x; });
+  return g;
+}
+
+/* Est-elle inscrite au chômage ? Si oui, l'ORP EST son guichet et on ne touche
+   à rien. On lit d'abord la réponse STRUCTURÉE du questionnaire (fiable), puis
+   ses propres mots en secours. */
+function _estAuChomage() {
+  try {
+    if (typeof quizAnswers !== 'undefined' && quizAnswers.situation === 'en-recherche') return true;
+  } catch (e) {}
+  try {
+    var mots = (typeof chatHistory !== 'undefined' ? chatHistory : [])
+      .filter(function (m) { return m.role === 'user'; })
+      .map(function (m) { return String(m.content || ''); }).join(' ').toLowerCase();
+    return /\b(ch[oô]mage|ch[oô]meur|ch[oô]meuse|inscrit[e]? [àa] l'?orp|fin de droits|indemnit[ée]s|licenci[ée]|sans emploi|au r[ée]gional de placement)\b/.test(mots);
+  } catch (e) {}
+  return false;
+}
+
+/* Remplace les mentions d'ORP par le bon guichet quand la personne n'est PAS
+   au chômage. Déterministe, comme le 143 et le garde-fou âge : une consigne de
+   prompt a déjà échoué deux fois de suite sur ce point précis. */
+function _corrigerGuichet(valeur, remplacement, touches) {
+  if (typeof valeur === 'string') {
+    if (!valeur || valeur.indexOf('ORP') === -1) return valeur;
+    return valeur.replace(/\bORP\b/g, function () {
+      if (touches) touches.push('ORP');
+      try { console.warn('[CYNTH] Guichet corrigé : ORP remplacé par « ' + remplacement + ' » (la personne n\'est pas inscrite au chômage).'); } catch (e) {}
+      return remplacement;
+    });
+  }
+  if (Array.isArray(valeur)) return valeur.map(function (v) { return _corrigerGuichet(v, remplacement, touches); });
+  if (valeur && typeof valeur === 'object') {
+    for (var k in valeur) { if (Object.prototype.hasOwnProperty.call(valeur, k)) valeur[k] = _corrigerGuichet(valeur[k], remplacement, touches); }
+    return valeur;
+  }
+  return valeur;
+}
+
+/* Le bloc injecté dans les prompts. Il dit au modèle QUEL guichet nommer, et
+   surtout lequel NE PAS nommer. Le filtre déterministe ci-dessus reste le
+   filet ; ce bloc sert à ce que la phrase soit bien écrite dès le départ
+   plutôt que rafistolée après coup. */
+function _blocGuichet() {
+  var chomage = false, g = null;
+  try { chomage = _estAuChomage(); } catch (e) {}
+  try { g = _guichetDeLaPersonne(); } catch (e) {}
+  var nom = g ? (g.nom + (g.aussi ? ', et ' + g.aussi : '')) : _GUICHET_GENERIQUE;
+  var s = ' 🏛️ LE BON GUICHET, ET C\'EST UNE ERREUR QU\'ON A DÉJÀ FAITE DEUX FOIS.'
+    + ' Pour faire reconnaître un diplôme étranger, pour l\'article 32, pour la validation des acquis et pour l\'orientation, le guichet est : ' + nom + '.'
+    + ' Nomme CELUI-LÀ dans le plan et dans les ressources.';
+  if (chomage) {
+    s += ' Cette personne est inscrite au chômage : son conseiller ORP est un interlocuteur légitime EN PLUS, pour le financement d\'une mesure et le suivi de ses recherches. Tu peux donc citer les deux, chacun pour ce qu\'il fait vraiment.';
+  } else {
+    s += ' ⛔ NE CITE PAS L\'ORP pour cette personne. L\'ORP est l\'office régional de PLACEMENT : il ne s\'adresse qu\'aux personnes inscrites au chômage, et celle-ci ne l\'est pas. Elle appellerait pour s\'entendre dire « ce n\'est pas nous, et vous n\'êtes pas inscrite chez nous » — sur la première action de son plan. Erreurs réelles des 15 et 16 septembre 2026 : un rapport demandait à un commis de cuisine EN POSTE de faire évaluer son diplôme étranger à l\'ORP de Genève ; un autre citait l\'ORP 17 fois à une responsable de rayon EN POSTE.';
+  }
+  return s;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DÉTECTION DE LA 3e PERSONNE  (16 septembre 2026)
+
+   Volontairement PRUDENTE : on ne signale que ce qui est sûr. Un faux positif
+   déclencherait une réécriture inutile (coût, latence) ; un faux négatif
+   laisse juste le défaut tel qu'il est aujourd'hui. On penche donc du côté
+   du silence quand c'est ambigu.
+
+   Deux signaux seulement, tous deux vérifiés sur le cas réel de Sylvie :
+   1. le PRÉNOM employé comme sujet (« Sylvie travaille depuis… ») ;
+   2. « elle/il » suivi d'un verbe, dans un texte qui ne dit jamais « vous ».
+   Le second est conditionné à l'absence de « vous » parce qu'« elle » peut
+   légitimement désigner autre chose que la personne (« cette formation, elle
+   dure trois ans »). Si le texte s'adresse déjà à elle quelque part, on ne
+   touche à rien.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function _troisiemePersonne(txt, prenom) {
+  var t = String(txt || '');
+  if (!t.trim()) return false;
+  // 1. Le prénom comme sujet : « Sylvie travaille », « Sylvie a », « Sylvie est »
+  if (prenom && prenom.length > 1) {
+    var p = prenom.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (new RegExp('(^|[^\\wÀ-ÿ])' + p + '\\s+[a-zà-ÿ]', 'i').test(t)) return true;
+  }
+  // 2. « elle/il » sujet, dans un texte qui ne vouvoie nulle part.
+  if (/\b(vous|votre|vos)\b/i.test(t)) return false;
+  var sansImpersonnel = t
+    .replace(/\bil\s+(faut|y\s+a|existe|s'agit|est\s+(important|possible|essentiel|vrai)|vaut\s+mieux|arrive|reste\s+à|suffit)/gi, ' ')
+    .replace(/\bqu'il\b/gi, ' ');
+  return /(^|[^\wÀ-ÿ])(elle|il)\s+[a-zà-ÿ]/i.test(sansImpersonnel);
+}
+
+/* Fait réécrire les champs fautifs, un par un, et ne garde la réécriture que
+   si elle a VRAIMENT réglé le problème. Sinon l'original reste : on ne
+   dégrade jamais un rapport payé pour tenter une amélioration. */
+async function _reecrireEnVous(champs, prenom, appelModele) {
+  for (var i = 0; i < champs.length; i++) {
+    var c = champs[i];
+    var original = c.obj[c.cle];
+    try {
+      var sys = 'Tu réécris un passage de rapport professionnel suisse. Ta SEULE tâche : passer le texte '
+        + 'à la deuxième personne du pluriel, en t\'adressant directement à la personne (« vous »). '
+        + 'Tu ne changes RIEN d\'autre : pas un fait, pas un chiffre, pas une date, pas un nom de métier, '
+        + 'pas la longueur, pas le ton. Tu ne rajoutes aucune information. Tu conjugues correctement '
+        + '(« elle détient » devient « vous détenez », « elle maîtrise » devient « vous maîtrisez »). '
+        + 'Les déterminants suivent : « son/sa/ses » deviennent « votre/vos ». '
+        + 'N\'emploie jamais le prénom de la personne. Jamais de tiret cadratin. '
+        + 'FORMAT ABSOLU : réponds UNIQUEMENT par un objet JSON {"texte":"..."} et rien d\'autre.';
+      var usr = 'Réécris ce passage en t\'adressant à la personne :\n\n' + original
+        + '\n\nRéponds uniquement par {"texte":"..."}.';
+      var r = await appelModele(sys, usr, 1200);
+      var nouveau = r && typeof r.texte === 'string' ? r.texte.trim() : '';
+      if (!nouveau) { console.warn('[CYNTH] Réécriture vide pour « ' + c.chemin +' », original conservé.'); continue; }
+      // ⚠️ LE GARDE QUI COMPTE : on n'accepte que si le défaut a disparu.
+      if (_troisiemePersonne(nouveau, prenom)) {
+        console.warn('[CYNTH] Réécriture de « ' + c.chemin + ' » encore à la 3e personne, original conservé.');
+        continue;
+      }
+      // Et on refuse une réécriture qui aurait perdu la moitié du contenu.
+      if (nouveau.length < original.length * 0.5) {
+        console.warn('[CYNTH] Réécriture de « ' + c.chemin + ' » trop courte, original conservé.');
+        continue;
+      }
+      c.obj[c.cle] = nouveau;
+      try { _compter('vous_repare'); } catch (e) {}
+      console.warn('[CYNTH] « ' + c.chemin + ' » réécrit en « vous ».');
+    } catch (e) {
+      try { console.warn('[CYNTH] Réécriture impossible pour « ' + c.chemin + ' », original conservé.'); } catch (e2) {}
+    }
+  }
+}
+
+function _verifierGuichets(data) {
+  try {
+    if (_estAuChomage()) return data;          // l'ORP est bien son guichet
+    var g = _guichetDeLaPersonne();
+    var remplacement = g ? g.nom.replace(/\s*\(.*/, '') : 'l\'office cantonal d\'orientation';
+    var touches = [];
+    var out = _corrigerGuichet(data, remplacement, touches);
+    if (touches.length) { try { _compter('guichet_corrige'); } catch (e) {} }
+    return out;
+  } catch (e) { return data; }
 }
 
 function _corrigerCantonsEtrangers(valeur, monCanton, touches) {
@@ -6091,7 +6284,7 @@ function _preparerRapportEnFond() {
           if (!k || vus[k]) return false; vus[k] = 1; return true;
         });
       }
-      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierChiffres(_purgerAgesInventes(data, _agesReellementDits()))));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierGuichets(_verifierChiffres(_purgerAgesInventes(data, _agesReellementDits())))));
       _signalerMontantsDouteux(window._reportData);
       try { _stashReport(); } catch (e) {}
       try { _marquerEntretienTermine(); } catch (e) {}
@@ -6669,7 +6862,7 @@ function doEndChat() {
     .then(data => {
       _compter('rapport', (Date.now() - _tDebutRapport) / 1000);
       if (data && Array.isArray(data.top_metiers)) { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
-      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierChiffres(_purgerAgesInventes(data, _agesReellementDits()))));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierGuichets(_verifierChiffres(_purgerAgesInventes(data, _agesReellementDits())))));
       _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
       // Bouton rapport — comportement selon CONFIG.RAPPORT_GRATUIT (test / production)
@@ -6734,7 +6927,7 @@ function doEndChat() {
       // Le repli est un signal de qualité : s'il monte, c'est que les appels
       // échouent ou dépassent le délai, et la personne reçoit un rapport pauvre.
       _compter('rapport_repli', (Date.now() - _tDebutRapport) / 1000);
-      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierChiffres(_purgerAgesInventes(buildFallbackReport(), _agesReellementDits()))));
+      window._reportData = _corrigerLangueProfond(deepStripDash(_verifierGuichets(_verifierChiffres(_purgerAgesInventes(buildFallbackReport(), _agesReellementDits())))));
       try { _marquerEntretienTermine(); } catch (e) {}
       try { _afficherApercu(); } catch (e) {}
       _signalerMontantsDouteux(window._reportData);
@@ -9309,8 +9502,16 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
     + ' 🚫 MAIS SI ELLE N\'A PAS D\'ÉCHÉANCE, N\'EN INVENTE AUCUNE. Bug constaté le 17 août 2026 : la personne avait dit explicitement « j\'ai encore des indemnités pour un moment, c\'est pas la catastrophe demain matin », et le plan ouvrait quand même sur « date butoir critique ». Elle est écoutée dans la conversation, puis le rapport lui remet la pression : c\'est incohérent et c\'est anxiogène pour rien. Règle : n\'écris les mots « critique », « urgent », « avant qu\'il ne soit trop tard » QUE si une date réelle et proche a été donnée. Si elle a du temps, dis-le comme une bonne nouvelle et sers-t\'en : le plan devient alors une progression tranquille où elle peut essayer, se former sérieusement, rencontrer des gens. Ton intensité doit épouser SA situation, pas un modèle unique.'
     + ' Dans ressources_utiles.financement, n\'écris que des dispositifs réels et nommés en toutes lettres. N\'invente aucun sigle : si tu ne peux pas écrire un sigle en toutes lettres, ne l\'écris pas du tout (constaté le 17 août 2026 : un rapport mentionnait « CFC banque (BEM) », sigle qu\'aucune source ne confirme).'
     + ' ⚠️ CHAQUE DISPOSITIF UNE SEULE FOIS, et avec son montant EXACT quand on le connaît. Les montants vérifiés, à recopier tels quels sans les reformuler : le chèque annuel de formation genevois est de CHF 750 par an au maximum ; la Confédération prend en charge 50% des frais de cours préparatoires aux examens fédéraux ; viamia est gratuit dès 40 ans. N\'écris « montant à vérifier auprès du canton » que pour un dispositif dont le montant n\'est PAS dans cette liste. Bug constaté le 17 août 2026 : le chèque genevois apparaissait deux fois dans le même rapport, une fois avec son montant exact et une fois en « montant à vérifier », ce qui donne l\'impression qu\'on ne connaît pas notre sujet.'
-    + ' ⛔ NE BÂTIS PAS LE PLAN AUTOUR D\'UN MÉTIER QU\'ELLE A DIT VOULOIR QUITTER, OU DONT LE QUOTIDIEN CONTREDIT UNE CONDITION QU\'ELLE A POSÉE (pression de chiffres, horaires irréguliers, déplacements, concurrence interne, etc.) — même s\'il ressemble à ce qu\'elle connaît déjà et que c\'est plus facile à écrire un plan dessus. Ses conditions de travail comptent AUTANT que ses refus de secteur explicites : ne les traite pas comme de simples préférences. Erreur réelle du 3 septembre 2026 (rapport « Nathalie », test OTP New Job) : la personne avait quitté la vente à cause de la pression commerciale ; les pistes principales du rapport étaient des métiers du social, mais le plan sur 6 mois était construit presque entièrement autour du métier de relation client qu\'elle venait justement de mettre à distance — deux sections du même rapport se contredisaient, l\'une prudente, l\'autre non. Si un métier est écarté ou mis en réserve ailleurs dans ce rapport à cause d\'une condition qu\'elle a posée, ne construis pas les semaines et les mois du plan autour de lui : ancre le plan sur ce qui est cohérent avec ce qu\'elle a dit vouloir, même si c\'est un chemin plus long ou moins immédiat.',
-    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal (GE : max. CHF 750/an)","ORP / assurance-chômage","Confédération : 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
+    + ' ⛔ NE BÂTIS PAS LE PLAN AUTOUR D\'UN MÉTIER QU\'ELLE A DIT VOULOIR QUITTER, OU DONT LE QUOTIDIEN CONTREDIT UNE CONDITION QU\'ELLE A POSÉE (pression de chiffres, horaires irréguliers, déplacements, concurrence interne, etc.) — même s\'il ressemble à ce qu\'elle connaît déjà et que c\'est plus facile à écrire un plan dessus. Ses conditions de travail comptent AUTANT que ses refus de secteur explicites : ne les traite pas comme de simples préférences. Erreur réelle du 3 septembre 2026 (rapport « Nathalie », test OTP New Job) : la personne avait quitté la vente à cause de la pression commerciale ; les pistes principales du rapport étaient des métiers du social, mais le plan sur 6 mois était construit presque entièrement autour du métier de relation client qu\'elle venait justement de mettre à distance — deux sections du même rapport se contredisaient, l\'une prudente, l\'autre non. Si un métier est écarté ou mis en réserve ailleurs dans ce rapport à cause d\'une condition qu\'elle a posée, ne construis pas les semaines et les mois du plan autour de lui : ancre le plan sur ce qui est cohérent avec ce qu\'elle a dit vouloir, même si c\'est un chemin plus long ou moins immédiat.'
+    + _blocGuichet(),
+    /* ⚠️ « ORP / assurance-chômage » a été RETIRÉ de cet exemple le 16 septembre
+       2026. C'était la cause racine, exactement comme « coût CHF approx » pour
+       les coûts inventés la veille : notre propre schéma soufflait le mauvais
+       guichet, et le modèle le recopiait fidèlement (17 mentions d'ORP dans un
+       rapport pour une personne EN POSTE, qui n'y a pas accès). Le bon guichet
+       est désormais injecté par _blocGuichet() selon le canton ET la situation
+       réelle de la personne. Ne pas le remettre ici. */
+    '{"plan_action_6_mois":{"semaine1":"","semaine2_4":"","mois2":"","mois3":"","mois4_5":"","mois6":""},"ressources_utiles":{"formations":["",""],"financement":["viamia (bilan gratuit 40+)","Chèque annuel de formation cantonal (GE : max. CHF 750/an)","Confédération : 50% des cours pour examens fédéraux"],"reseaux":["",""],"communautes":[""]},"message_fin":"3-4 phrases chaleureuses et personnelles"}');
 
   /* On récupère seulement maintenant la sélection lancée plus haut : son temps
      d'attente (mesuré à 7,6 s) a été absorbé par les TROIS appels ci-dessus,
@@ -9401,11 +9602,61 @@ Sois honnête : si aucun des 5 n\'est en "maintenant", ne mens pas pour rassurer
   // rapport de secours complet. Sinon on assemble, en comblant SECTION PAR SECTION.
   if (!rProfil && !rActions && !rMetiers && !rPlan) throw new Error('all-parts-failed');
 
+  /* ═══════════════════════════════════════════════════════════════════════
+     LE « VOUS », REPRIS EN MAIN  (16 septembre 2026)
+
+     DÉFAUT MESURÉ sur le rapport réel de Sylvie : parcours_recap disait
+     « Sylvie travaille depuis ses 27 ans au même magasin, où ELLE A GRANDI…
+     ELLE DÉTIENT un CFC… ELLE A FORMÉ une quinzaine… ». Le portrait aussi.
+     C'est la PREMIÈRE chose que le lecteur lit, et c'est la régression du
+     27 juillet qui revient.
+
+     fmtRule interdit pourtant déjà explicitement le prénom comme sujet et
+     les pronoms de 3e personne. La règle a lâché quand même — comme celle
+     du guichet et celle de la subvention 50%. Une 4e formulation de la même
+     consigne n'aurait donné qu'une probabilité de plus, pas une garantie.
+
+     ⚠️ POURQUOI PAS UNE REGEX. « Elle détient » → « Vous détenez »,
+     « elle maîtrise » → « vous maîtrisez » : il faut CONJUGUER. Une table de
+     verbes ratera toujours un irrégulier, et « Vous détient » dans un rapport
+     payé est PIRE que « Elle détient ». On fait donc réécrire le modèle, et
+     on ne garde sa version QUE si elle a réellement réglé le problème.
+     Règle absolue : ne jamais dégrader. En cas de doute, on garde l'original.
+     ═══════════════════════════════════════════════════════════════════════ */
+  try {
+    const _prenom = (chatProfile && chatProfile.prenom) ? String(chatProfile.prenom).trim() : '';
+    const _aReparer = [];
+    const _ajouteSiFautif = function (obj, cle, chemin) {
+      if (!obj || typeof obj[cle] !== 'string') return;
+      if (_troisiemePersonne(obj[cle], _prenom)) _aReparer.push({ obj: obj, cle: cle, chemin: chemin });
+    };
+    if (rProfil) {
+      _ajouteSiFautif(rProfil, 'parcours_recap', 'parcours');
+      _ajouteSiFautif(rProfil, 'situation', 'situation');
+      if (rProfil.profil_personnalite) {
+        _ajouteSiFautif(rProfil.profil_personnalite, 'resume', 'portrait');
+        _ajouteSiFautif(rProfil.profil_personnalite, 'style_travail', 'style de travail');
+      }
+      if (rProfil.forces_identifiees) _ajouteSiFautif(rProfil.forces_identifiees, 'moment_alignement', 'moment d\'alignement');
+      if (rProfil.freins) _ajouteSiFautif(rProfil.freins, 'recadrage', 'recadrage du frein');
+    }
+    if (rActions) {
+      _ajouteSiFautif(rActions, 'changement_explication', 'explication du changement');
+      _ajouteSiFautif(rActions, 'environnement_ideal', 'environnement idéal');
+      /* pitch = 1re personne (voulu), citation_forte = verbatim : jamais touchés. */
+    }
+    if (_aReparer.length) {
+      console.warn('[CYNTH] ' + _aReparer.length + ' champ(s) rédigé(s) à la 3e personne, réécriture demandée : '
+        + _aReparer.map(function (x) { return x.chemin; }).join(', '));
+      await _reecrireEnVous(_aReparer, _prenom, _callReportModel);
+    }
+  } catch (e) { try { console.error('[CYNTH] Réparation du « vous » impossible, textes d\'origine conservés.', e); } catch (e2) {} }
+
   const _fb = buildFallbackReport();
   const _pf = rProfil || {};
   const _ac = rActions || {};
   const _mt = (rMetiers && Array.isArray(rMetiers.top_metiers) && rMetiers.top_metiers.length) ? rMetiers : { top_metiers: _fb.top_metiers };
-  const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal (GE : max. CHF 750/an)','ORP / assurance-chômage','Confédération : 50% des cours pour examens fédéraux'], formations:['orientation.ch : fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
+  const _pl = rPlan || { plan_action_6_mois: _fb.plan_action, ressources_utiles: { financement:['viamia (bilan gratuit 40+)','Chèque annuel de formation cantonal (GE : max. CHF 750/an)','Confédération : 50% des cours pour examens fédéraux'], formations:['orientation.ch : fiches métiers et formations'], reseaux:['LinkedIn'] }, message_fin: _fb.message_fin };
 
   /* Dernier filet, APRÈS l'assemblage complet : il faut connaître les métiers
      finalement retenus pour savoir si l'article 32 les concerne. Voir
