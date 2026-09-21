@@ -3705,54 +3705,45 @@ const CONFIG = {
      ⚠️ Il doit être IDENTIQUE au prix créé dans Stripe. Si les deux divergent,
      la personne voit un montant sur le site et en paie un autre au moment de
      payer : c'est un bug, et c'est aussi un problème d'affichage de prix.
-     Historique : 49 → 79 le 22 août 2026 (Armand avait spontanément situé
-     le rapport à 79). Le 2 septembre, décision de Faouzi de repasser à 59 :
-     les 4 vrais testeurs situaient le prix juste entre 19 et 79 CHF (29, 59,
-     79, 19), 59 est le point médian, et à ce stade — zéro avis public, zéro
-     vente réelle, marque inconnue — un prix de lancement plus bas convertit
-     mieux qu'un prix plus haut sans preuve sociale derrière. Le code n'avait
-     jamais été aligné sur cette décision jusqu'au 3 septembre : corrigé ici.
-     Présenté comme prix DE LANCEMENT, pas définitif : peut remonter une fois
-     les premiers avis publics obtenus, sans donner l'impression de baisser
-     après coup faute d'acheteurs. */
-  /* ── PRIX DE LANCEMENT, DÉCISION DU 15 SEPTEMBRE 2026 ────────────────────
-     Faouzi : 59 CHF pendant les 3 premiers mois, puis 79 CHF. Et on observe
-     ensuite comment ça évolue avant de figer quoi que ce soit — le 79 n'est
-     pas plus définitif que le 59, c'est une hypothèse à confronter aux vraies
-     ventes.
+     Historique : 49 → 79 (22 août, retour Armand) → 59 (2 septembre, décision
+     sur la base des 4 vrais testeurs, prix juste médian) → modèle « 59 puis
+     79 après 3 mois » (15 septembre) → REMPLACÉ le 21 septembre 2026 par le
+     modèle ci-dessous, décidé par Faouzi. */
+  /* ── PRIX DE LANCEMENT, DÉCISION DU 21 SEPTEMBRE 2026 ────────────────────
+     Faouzi : afficher 59 CHF comme VALEUR de référence (barré), et vendre à
+     39 CHF en promo d'ouverture jusqu'au 31 décembre 2026 inclus — pour
+     montrer concrètement combien le rapport vaut le coup. À partir de
+     janvier 2027, décision à prendre SELON LES RETOURS reçus d'ici là :
+     soit 59 CHF, soit 69 CHF, soit on laisse à 39 CHF si ça ne convertit pas
+     encore assez. Cette décision de janvier est VOLONTAIREMENT MANUELLE, pas
+     automatique : personne ne sait aujourd'hui laquelle des trois sera la
+     bonne, et une bascule automatique choisirait à l'aveugle. Par sécurité
+     anti-hausse-accidentelle (même principe que le modèle du 15 septembre),
+     PRIX_APRES_PROMO vaut 39 par défaut : si personne n'y touche en janvier,
+     le prix ne monte pas tout seul, il reste au prix d'ouverture.
 
-     Le compte à rebours part du LANCEMENT RÉEL, c'est-à-dire du jour où
-     RAPPORT_GRATUIT passe à false (personne ne paie rien avant). Tant que
-     DATE_LANCEMENT vaut null, on est en phase de test : le prix de lancement
-     s'applique et rien ne bascule tout seul.
-
-     ⚠️ UN SEUL GESTE LE JOUR DU LANCEMENT : passer RAPPORT_GRATUIT à false ET
-     écrire la date du jour dans DATE_LANCEMENT (format ISO, ex '2026-10-01').
-     Sans la date, le prix resterait à 59 pour toujours — ce ne serait pas une
-     panne visible, juste de l'argent qui ne rentre pas, donc personne ne s'en
-     apercevrait. `etatPrix()` en console dit à tout moment où on en est. */
-  PRIX_LANCEMENT: 59.00,
-  PRIX_APRES: 79.00,
-  DUREE_LANCEMENT_MOIS: 3,
-  DATE_LANCEMENT: null,
+     ⚠️ GESTE À FAIRE EN JANVIER 2027, PAS AVANT : une fois les retours de la
+     promo d'ouverture regardés, changer PRIX_APRES_PROMO (39, 59 ou 69) à la
+     main. Rien d'autre ne bouge tout seul. `etatPrix()` en console dit à
+     tout moment quel prix s'applique, pourquoi, et où on en est de la promo. */
+  PRIX_VALEUR: 59.00,
+  PRIX_PROMO: 39.00,
+  FIN_PROMO: '2026-12-31',
+  PRIX_APRES_PROMO: 39.00,
   get PRIX_RAPPORT() {
-    if (!this.DATE_LANCEMENT) return this.PRIX_LANCEMENT;
-    var d = new Date(this.DATE_LANCEMENT);
-    if (isNaN(d.getTime())) return this.PRIX_LANCEMENT;   // date mal écrite : on ne monte pas le prix par accident
-    var fin = new Date(d.getTime());
-    fin.setMonth(fin.getMonth() + (this.DUREE_LANCEMENT_MOIS || 3));
-    return (Date.now() < fin.getTime()) ? this.PRIX_LANCEMENT : this.PRIX_APRES;
+    var f = this.FIN_PROMO_DATE;
+    if (!f) return this.PRIX_PROMO;   // date mal écrite : on ne monte pas le prix par accident
+    var lendemain = new Date(f.getTime());
+    lendemain.setDate(lendemain.getDate() + 1);
+    return (Date.now() < lendemain.getTime()) ? this.PRIX_PROMO : this.PRIX_APRES_PROMO;
   },
-  /* Date de fin de l'offre, pour l'afficher honnêtement sur la page. null tant
-     que le lancement n'a pas eu lieu : on n'annonce pas une échéance qu'on ne
-     connaît pas (même règle que le bandeau bêta, corrigé le 14 septembre). */
-  get FIN_LANCEMENT() {
-    if (!this.DATE_LANCEMENT) return null;
-    var d = new Date(this.DATE_LANCEMENT);
-    if (isNaN(d.getTime())) return null;
-    var f = new Date(d.getTime());
-    f.setMonth(f.getMonth() + (this.DUREE_LANCEMENT_MOIS || 3));
-    return f;
+  /* Date de fin de la promo, pour l'afficher honnêtement sur la page. */
+  get FIN_PROMO_DATE() {
+    var f = new Date(this.FIN_PROMO);
+    return isNaN(f.getTime()) ? null : f;
+  },
+  get EN_PROMO() {
+    return this.PRIX_RAPPORT === this.PRIX_PROMO && !!this.FIN_PROMO_DATE && Date.now() < (this.FIN_PROMO_DATE.getTime() + 86400000);
   }
 };
 /* Outil de contrôle, à taper en console : dit quel prix s'applique aujourd'hui,
@@ -3760,13 +3751,12 @@ const CONFIG = {
    lieu de supposer. */
 /* La pastille prix de la landing est écrite ici, jamais à la main dans le HTML.
    Raison : le 3 septembre, le code affichait encore 79 CHF alors que Faouzi
-   avait tranché 59 le 2 — parce que le prix était recopié à deux endroits. Le
-   jour du lancement, il n'y a donc qu'un seul geste : RAPPORT_GRATUIT à false
-   et DATE_LANCEMENT renseignée. La page suit toute seule.
+   avait tranché 59 le 2 — parce que le prix était recopié à deux endroits.
+   Même principe reconduit le 21 septembre pour le modèle valeur/promo.
 
-   On annonce le passage à 79 CHF pendant l'offre : c'est une échéance vraie,
-   donc on peut la dire. C'est aussi plus honnête que de monter le prix en
-   silence dans trois mois. */
+   innerHTML (pas textContent) ici uniquement : le seul contenu inséré est
+   entièrement écrit par ce code, jamais une donnée saisie par la personne —
+   c'est ce qui permet le <s> barré sur la valeur de référence. */
 function _majPastillePrix() {
   var el = document.getElementById('lp-prix-txt');
   if (!el || typeof CONFIG === 'undefined') return;
@@ -3774,30 +3764,30 @@ function _majPastillePrix() {
     el.textContent = "Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.";
     return;
   }
-  var prix = CONFIG.PRIX_RAPPORT, fin = CONFIG.FIN_LANCEMENT;
-  var enOffre = (prix === CONFIG.PRIX_LANCEMENT) && !!fin;
-  if (enOffre) {
-    var mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-    el.textContent = "L'entretien est libre. Le rapport complet est à "
-      + CONFIG.PRIX_LANCEMENT + " CHF, prix de lancement, jusqu'au "
-      + fin.getDate() + ' ' + mois[fin.getMonth()] + ' ' + fin.getFullYear()
-      + '. Ensuite ' + CONFIG.PRIX_APRES + ' CHF. Vous gardez le rapport.';
+  var mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  if (CONFIG.EN_PROMO) {
+    var f = CONFIG.FIN_PROMO_DATE;
+    el.innerHTML = "L'entretien est libre. Le rapport complet vaut <s>" + CONFIG.PRIX_VALEUR
+      + " CHF</s>&nbsp;: <b>" + CONFIG.PRIX_PROMO + " CHF</b> en prix d'ouverture, jusqu'au "
+      + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear() + '. Vous gardez le rapport.';
   } else {
-    el.textContent = "L'entretien est libre. Le rapport complet est à " + prix + " CHF. Vous gardez le rapport.";
+    el.textContent = "L'entretien est libre. Le rapport complet est à " + CONFIG.PRIX_RAPPORT + " CHF. Vous gardez le rapport.";
   }
 }
 try { document.addEventListener('DOMContentLoaded', _majPastillePrix); } catch (e) {}
 
 function etatPrix() {
-  var f = CONFIG.FIN_LANCEMENT;
+  var f = CONFIG.FIN_PROMO_DATE;
   var o = {
     prix_applique: CONFIG.PRIX_RAPPORT,
     rapport_gratuit: CONFIG.RAPPORT_GRATUIT,
-    date_lancement: CONFIG.DATE_LANCEMENT || '(pas encore lancé)',
-    prix_lancement: CONFIG.PRIX_LANCEMENT,
-    prix_apres: CONFIG.PRIX_APRES,
-    fin_offre: f ? f.toISOString().slice(0, 10) : '(inconnue tant que non lancé)',
-    jours_restants: f ? Math.max(0, Math.ceil((f - Date.now()) / 86400000)) : null
+    en_promo: CONFIG.EN_PROMO,
+    prix_valeur_affiche: CONFIG.PRIX_VALEUR,
+    prix_promo: CONFIG.PRIX_PROMO,
+    fin_promo: f ? f.toISOString().slice(0, 10) : '(date invalide)',
+    jours_restants_promo: f ? Math.max(0, Math.ceil((f.getTime() + 86400000 - Date.now()) / 86400000)) : null,
+    prix_apres_promo_si_rien_change: CONFIG.PRIX_APRES_PROMO,
+    decision_a_prendre: !CONFIG.EN_PROMO ? '(promo terminée — vérifier que PRIX_APRES_PROMO a bien été tranché à la main : 39, 59 ou 69)' : '(pas encore, la promo court)'
   };
   try { console.table(o); } catch (e) { console.log(o); }
   return o;
