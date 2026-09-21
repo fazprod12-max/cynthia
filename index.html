@@ -1876,8 +1876,8 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-hero.lit .lp-orb,.in .lp-orb,.lp-orb.in{transform:none;opacity:1;}
 
   /* 5. CARTES : soulèvement avec un léger rebond */
-  .lp-card,.lp-step,.lp-pill{transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s;}
-  .lp-card:hover,.lp-step:hover{transform:translateY(-5px);box-shadow:0 16px 32px -14px rgba(14,42,36,.26);}
+  .lp-card,.lp-pill{transition:transform .3s cubic-bezier(.34,1.3,.5,1),box-shadow .3s,border-color .3s;}
+  .lp-card:hover{transform:translateY(-5px);box-shadow:0 16px 32px -14px rgba(14,42,36,.26);}
   .lp-btn{transition:transform .22s cubic-bezier(.34,1.4,.5,1),box-shadow .28s;}
   .lp-btn:hover{transform:translateY(-2px);}
   .lp-btn:active{transform:translateY(0) scale(.975);}
@@ -1889,7 +1889,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .lp-hero .lp-eyebrow,.lp-hero .lp-chatcard,.lp-orb,.lp-hero h1 .ln i,
     .lp-so b{
       opacity:1!important;transform:none!important;transition:none!important;filter:none!important;}
-    .lp-card:hover,.lp-step:hover,.lp-btn:hover{transform:none!important;}
+    .lp-card:hover,.lp-btn:hover{transform:none!important;}
     .cyn-spot:hover>*{opacity:1!important;filter:none!important;}
     .lp-aura{transform:none!important;}
   }
@@ -1907,10 +1907,9 @@ document.addEventListener('DOMContentLoaded', function () {
      de Faouzi : pas un « carré blanc avec juste le com », un vrai bloc
      couleur de la landing, navigation au CLIC uniquement (flèches + puces),
      pas d'avis d'une seule phrase. Reprend le langage visuel déjà établi
-     pour les blocs de marque forts (.lp-steps-sec, le Cairn juste en
-     dessous) plutôt que d'inventer une esthétique de plus : dégradé
-     --c-ink → #0A211C, texte clair, accent émeraude — c'est déjà « la
-     couleur du landing ». Seuls les 3 témoignages les plus étoffés (2-3
+     pour les blocs de marque forts plutôt que d'inventer une esthétique de
+     plus : dégradé --c-ink → #0A211C, texte clair, accent émeraude — c'est
+     déjà « la couleur du landing ». Seuls les 3 témoignages les plus étoffés (2-3
      phrases, un vrai mécanisme nommé) sont affichés ; les 3 plus courts
      (Armand, Thilai, Lina) restent authentiques mais ne portaient rien à
      eux seuls dans un grand bloc — gardés intacts, pas perdus, dans
@@ -1940,9 +1939,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   @media(prefers-reduced-motion:reduce){.lp-avis-track{transition:none;}}
 
-  .lp-steps-sec{background:linear-gradient(150deg,var(--c-ink),#0A211C);color:#fff;border-radius:34px;margin:0 24px;overflow:hidden;position:relative;}
-  .lp-steps-sec .lp-sechead h2{color:#fff;} .lp-steps-sec .lp-sechead p{color:#A9C0B7;}
-  .lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
   /* ── Bloc fondateur ──────────────────────────────────────────────────────
      Posé le 24 août 2026 : faouzi.jpg (800x800), recadré en carré centré sur
      le visage. Le script de déploiement copie le fichier automatiquement. */
@@ -1971,20 +1967,12 @@ document.addEventListener('DOMContentLoaded', function () {
     .lp-fond-sign{justify-content:center;}
   }
 
-  /* Le Cairn : 4 étapes au lieu de 3 */
-  .lp-steps-4{grid-template-columns:repeat(4,1fr);gap:18px;}
-  .lp-steps-4 .lp-step{padding:22px 18px;}
-  .lp-steps-4 .lp-step h3{font-size:1.05rem;}
-  .lp-steps-4 .lp-step p{font-size:.9rem;}
+  /* .lp-cairn-tag : gardée — la section "Le Cairn" qui la portait a été
+     retirée le 21 septembre 2026, mais la classe reste utilisée par la
+     pastille "Qui est derrière" du bloc fondateur, plus bas sur la page. */
   .lp-cairn-tag{display:inline-block;font-family:'Space Grotesk';font-weight:600;font-size:.74rem;
     letter-spacing:.14em;text-transform:uppercase;color:var(--c-emerald);
     border:1px solid rgba(31,180,136,.45);border-radius:100px;padding:6px 16px;margin-bottom:16px;}
-  .lp-cairn-foot{text-align:center;max-width:620px;margin:32px auto 0;color:#A9C0B7;font-size:.95rem;font-style:italic;}
-  @media(max-width:1000px){.lp-steps-4{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:600px){.lp-steps-4{grid-template-columns:1fr;}}
-  .lp-step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:24px 22px;}
-  .lp-step .lp-n{font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--c-coral),#FF9166);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
-  .lp-step h3{color:#fff;font-size:1.2rem;margin-bottom:9px;} .lp-step p{color:#A9C0B7;font-size:.95rem;}
   /* ── ANCIEN MOCKUP DE RAPPORT (.lp-report et tout son contenu) RETIRÉ le
      3 septembre 2026, à la demande de Faouzi : trop de place pour trop peu
      d'effet, et à moitié générique (barres Big Five, tags de personnalité).
@@ -2043,8 +2031,8 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-pill{background:rgba(255,255,255,.8);border-radius:15px;padding:15px 20px;font-size:.9rem;text-align:left;max-width:235px;}
   .lp-pill b{font-family:'Space Grotesk';display:block;margin-bottom:3px;}
   /* Police du bloc « Pourquoi CYNTH.IA » agrandie (3 sept 2026, Faouzi la trouvait
-     petite). Scopé à #lp-pourquoi pour ne pas changer .lp-card/.lp-pill ailleurs
-     sur le site (elles servent aussi à #lp-comment et #lp-franc). */
+     petite). Scopé à #lp-pourquoi pour ne pas changer .lp-pill ailleurs sur
+     le site (elle sert aussi à #lp-franc). */
   #lp-pourquoi .lp-sechead p{font-size:1.15rem;}
   #lp-pourquoi .lp-card h3{font-size:1.3rem;}
   #lp-pourquoi .lp-card p{font-size:1.02rem;line-height:1.5;}
@@ -2061,8 +2049,8 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-foot{border-top:1px solid var(--c-line);padding:38px 0;color:var(--c-muted);font-size:.9rem;}
   .lp-foot-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
   .lp-foot-links{display:flex;gap:20px;} .lp-foot-links a{color:inherit;text-decoration:none;cursor:pointer;} .lp-foot-links a:hover{color:var(--c-ink);}
-  @media(max-width:900px){.lp-hgrid{grid-template-columns:1fr;gap:40px;}.lp-hero h1{font-size:2.6rem;}.lp-cards,.lp-steps{grid-template-columns:1fr 1fr;}.lp-links a:not(.lp-btn){display:none;}}
-  @media(max-width:600px){.lp-cards,.lp-steps{grid-template-columns:1fr;}.lp-hero h1{font-size:2.1rem;}.lp-sechead h2{font-size:1.8rem;}.lp-band{padding:38px 24px;}}
+  @media(max-width:900px){.lp-hgrid{grid-template-columns:1fr;gap:40px;}.lp-hero h1{font-size:2.6rem;}.lp-cards{grid-template-columns:1fr 1fr;}.lp-links a:not(.lp-btn){display:none;}}
+  @media(max-width:600px){.lp-cards{grid-template-columns:1fr;}.lp-hero h1{font-size:2.1rem;}.lp-sechead h2{font-size:1.8rem;}.lp-band{padding:38px 24px;}}
 
 /* ── APERÇU AVANT PAIEMENT (20 août 2026) ─────────────────────────────────
    Remplace la liste de promesses génériques par un extrait du vrai rapport.
@@ -2174,7 +2162,6 @@ textarea.chat-input{
            un <a> sans href n'entre pas dans l'ordre de tabulation et n'a aucun
            rôle interactif pour un lecteur d'écran. Même traitement que les liens
            du pied de page et les badges du hero, déjà corrects depuis le 1er août. -->
-      <a role="button" tabindex="0" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">La méthode</a>
       <a role="button" tabindex="0" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Le rapport</a>
       <a role="button" tabindex="0" onclick="document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})">Qui est derrière</a>
       <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer</button>
@@ -2196,12 +2183,18 @@ textarea.chat-input{
       <p class="lp-lead">Ce n'est pas un rendez-vous chez un conseiller. C'est un rendez-vous avec vous-même. Le premier, peut-être. Disponible maintenant. À la fin, un rapport à garder.</p>
       <div class="lp-hcta">
         <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer maintenant →</button>
-        <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">Découvrir la méthode</button>
+        <!-- Redirigé vers #lp-rapport le 21 septembre 2026, en même temps que
+             le retrait du Cairn (le bouton pointait dessus). Reprend au passage
+             une piste notée le 14 septembre (audit design) et jamais faite
+             faute de savoir quel bouton précis elle visait : un CTA secondaire
+             qui montre CE QU'ON OBTIENT plutôt qu'une promesse de méthode
+             abstraite. -->
+        <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Voir le rapport</button>
       </div>
       <!-- Repère suisse ajouté le 14 septembre 2026 (audit design) : avant cet
            ajout, aucun signal suisse (🇨🇭, CFC, article 32...) n'apparaissait
-           au-dessus du pli — le premier apparaissait dans la pastille Cairn
-           « Vous arrivez de l'étranger ? », bien plus bas. Le différenciateur
+           au-dessus du pli — le premier apparaissait dans la pastille
+           « Vous arrivez de l'étranger ? » de #lp-pourquoi, bien plus bas. Le différenciateur
            n°1 du produit (ancrage suisse réel, CFC/brevet fédéral/article 32)
            mérite d'être visible dès le premier écran, pas seulement plus loin. -->
       <div class="lp-reassure"><span>🇨🇭 Ancrée en Suisse romande</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans engagement</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">↩ Pas satisfait ? <b style="text-decoration:underline">Écrivez-nous</b></span></div>
@@ -2227,7 +2220,20 @@ textarea.chat-input{
   <section id="lp-pourquoi" class="lp-sec"><div class="lp-wrap">
     <div class="lp-sechead lp-rv"><h2>Pourquoi <span class="lp-pop">CYNTH.IA</span></h2><p>Un bilan de compétences en Suisse coûte 280 CHF la séance, près de 2&nbsp;000&nbsp;CHF au total. viamia est gratuit, à partir de 40 ans. Cynthia occupe l'espace entre les deux.</p></div>
     <div class="lp-cards cyn-stag cyn-spot">
-      <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Un vrai entretien</h3><p>20 minutes, plus si vous avez à raconter. C'est elle qui mène, et chaque réponse construit votre profil.</p></div>
+      <!-- La promesse de séquencement du bloc « Le Cairn » (retiré ce jour,
+           entièrement) repliée ici le 21 septembre 2026 : c'était la seule
+           idée qui n'était dite nulle part ailleurs sur la page. Reformulée
+           en affirmatif ("elle prend le temps d'écouter avant de proposer")
+           plutôt que la formulation d'origine ("elle ne vous propose jamais
+           un métier avant de vous avoir écouté") : cette section applique la
+           règle de ton du 5 septembre, aucune négation dans #lp-pourquoi,
+           vérifiée comme une garde de test (test_pourquoi_cynthia.js §6),
+           pas comme un vœu pieux — elle a d'ailleurs mordu sur mon premier
+           jet, resté au négatif. Le reste de ce que Le Cairn racontait
+           (vrai entretien, elle mène, situer métier/environnement/équilibre)
+           doublonnait déjà cette carte et le sommaire du rapport juste en
+           dessous — voir la discussion avec Faouzi le jour même. -->
+      <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Un vrai entretien</h3><p>20 minutes, plus si vous avez à raconter. C'est elle qui mène, et chaque réponse construit votre profil. Elle prend le temps de vous écouter avant de proposer la moindre piste.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic g">📄</div><h3>Un rapport PDF à garder</h3><p>Votre portrait, vos pistes métier, chaque chiffre avec sa source et sa date de relevé, et les liens pour agir dès demain.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic e">🇨🇭</div><h3>Pensée pour la Suisse</h3><p>Le CFC, le brevet fédéral, l'article 32 : elle connaît les repères d'ici.</p></div>
       <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Disponible ce soir</h3><p>Dès que l'envie est là, sans devoir prendre rendez-vous.</p></div>
@@ -2338,31 +2344,22 @@ textarea.chat-input{
     <div class="lp-ract" style="margin-top:8px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
   </div></section>
 
-  <section id="lp-comment" class="lp-sec"><div class="lp-steps-sec"><div class="lp-wrap" style="padding:48px 40px;">
-    <div class="lp-sechead lp-rv">
-      <div class="lp-cairn-tag">Notre méthode</div>
-      <h2>Le Cairn</h2>
-      <p>En montagne, personne ne marche au hasard : des pierres empilées balisent le chemin, posées par ceux qui sont passés avant. Cynthia fait la même chose avec votre parcours. Quatre pierres, et vous savez par où aller.</p>
-    </div>
-    <!-- Titres réécrits le 14 septembre 2026 (audit design, décision Faouzi :
-         "oui je suis d'accord" pour garder le Cairn ET le sommaire du rapport,
-         mais régler le doublon). Avant : les 4 titres ("Ce que vous savez déjà
-         faire", "Ce qui vous porte", "Le changement qui vous concerne", "Votre
-         premier pas") reprenaient quasi mot pour mot des tuiles du sommaire du
-         rapport juste au-dessus (#lp-rapport) — la même information annoncée
-         deux fois sur la même page, sous deux formes différentes. Ici, les
-         titres décrivent maintenant ce que CYNTHIA FAIT pendant l'entretien
-         (verbe, elle comme sujet), le sommaire du rapport décrit CE QUI EN
-         SORT (des noms). Les paragraphes, eux, ne changent pas : c'est le
-         contenu réel de chaque étape, pas un doublon. -->
-    <div class="lp-steps lp-steps-4 cyn-stag cyn-spot">
-      <div class="lp-step lp-rv"><div class="lp-n">1</div><h3>Elle fait remonter ce que vous savez déjà faire</h3><p>Vos vraies compétences, y compris celles que vous ne comptez plus. C'est la première pierre, et souvent la plus lourde à voir seul.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">2</div><h3>Elle écoute ce qui vous porte, et ce qui vous pèse</h3><p>Ce qui vous anime, ce qui vous épuise, et le cadre réel de votre vie : salaire, horaires, région, contraintes.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">3</div><h3>Elle situe où se loge vraiment le changement</h3><p>Changer de métier, d'environnement ou d'équilibre. Tout quitter n'est pas toujours la réponse, et le savoir change tout.</p></div>
-      <div class="lp-step lp-rv"><div class="lp-n">4</div><h3>Elle relie tout ça à un premier pas</h3><p>Des métiers suisses qui vous vont, ce qu'ils paient, comment y aller, et une action à faire cette semaine.</p></div>
-    </div>
-    <p class="lp-cairn-foot lp-rv">Chaque pierre repose sur la précédente. C'est pour ça que Cynthia ne vous propose jamais un métier avant de vous avoir écouté.</p>
-  </div></div></section>
+  <!-- ⚠️ « Le Cairn » (section #lp-comment, 4 étapes) RETIRÉE ENTIÈREMENT le
+       21 septembre 2026, à la demande explicite de Faouzi, après avoir vérifié
+       ensemble le doublon réel : les 4 étapes redisaient, avec d'autres mots,
+       ce que disent déjà la carte « Un vrai entretien » (#lp-pourquoi) et la
+       tuile 02 du sommaire du rapport juste au-dessus (« Le changement qui
+       vous concerne — métier, environnement ou équilibre : tout quitter n'est
+       pas toujours la réponse » apparaissait presque mot pour mot aux deux
+       endroits). La seule idée propre au Cairn — la promesse de séquencement,
+       « elle ne vous propose jamais un métier avant de vous avoir écouté » —
+       est repliée dans la carte « Un vrai entretien » juste au-dessus. Le nom
+       « Le Cairn » lui-même n'est pas perdu : gardé en réserve pour un usage
+       futur (presse, communauté), pas sur cette page. Pas un fichier de
+       restauration dédié comme pour les témoignages : ce n'était que notre
+       propre copie marketing, pas des mots de vraies personnes qu'on ne
+       pourrait pas réécrire — la sauvegarde datée du fichier entier suffit
+       (cynthia_v2.html.bak_cairn_20260921_203616). -->
 
   <!-- ⚠️ RETIRÉ le 5 septembre 2026 : le tableau « Je pourrais demander à une IA
        gratuite » (#lp-vs) et la version de #lp-pourquoi qui comparait à
@@ -2483,7 +2480,6 @@ textarea.chat-input{
   <footer class="lp-foot"><div class="lp-wrap lp-foot-row">
     <div class="lp-logo" style="font-size:1.2rem;">Cynth<span class="lp-dot"></span><span class="lp-accent">IA</span></div>
     <div class="lp-foot-links">
-      <a role="button" tabindex="0" onclick="document.getElementById('lp-comment').scrollIntoView({behavior:'smooth'})">La méthode</a>
       <a href="histoire.html">Notre histoire</a>
       <!-- Ces deux liens étaient morts (aucun onclick) : la politique de confidentialité
            existait dans le code mais n'était accessible NULLE PART sur le site, alors
