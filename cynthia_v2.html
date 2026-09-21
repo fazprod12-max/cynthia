@@ -8966,7 +8966,7 @@ function _catalogueComplet() {
  * Demande au modèle de choisir les métiers dans TOUT le catalogue.
  * @returns {Promise<Array>} fiches METIERS_DB retenues, ou [] si l'appel échoue.
  */
-async function _selectionnerMetiers({ motsUtilisateur, cvTexte, rejets, synthMetiers, appel }) {
+async function _selectionnerMetiers({ motsUtilisateur, cvTexte, rejets, synthMetiers, quizContexte, quizTalents, appel }) {
   const blocRejet = (rejets && rejets.termes && rejets.termes.length)
     ? `\n\nELLE A DIT NE PLUS VOULOIR : ${rejets.termes.join(', ')}${(rejets.secteurs || []).length ? ` (secteur : ${rejets.secteurs.join(', ')})` : ''}. Aucun métier de ce domaine, quelle que soit sa pertinence sur le papier. Ses compétences acquises là-bas restent valables ailleurs : sers-t'en pour justifier d'AUTRES métiers.`
     : '';
@@ -8974,6 +8974,18 @@ async function _selectionnerMetiers({ motsUtilisateur, cvTexte, rejets, synthMet
     ? `\n\nPENDANT L'ENTRETIEN, TU LUI AS DÉJÀ PROPOSÉ : ${synthMetiers.map(s => s.titre).join(', ')}. Si elle n'a pas dit non ET si elles passent le test de preuve ci-dessus, garde-les : c'est la conclusion à laquelle vous êtes arrivés ensemble.`
     : '';
   const blocCv = cvTexte ? `\n\nSON CV (faits réels : postes, durées, formations) :\n${String(cvTexte).slice(0, 5000)}` : '';
+  /* ── Questionnaire de préparation (21 septembre 2026) ─────────────────────
+     Contexte affiché pour comprendre la personne (situation, état d'esprit,
+     motivations, ancrage, freins), mais PAS ajouté à `sesMots` plus bas : ce
+     sont des étiquettes de catégorie (« Sens », « Défi »...), pas des faits
+     précis — les accepter comme preuve recréerait le défaut du 17 août
+     (« un trait de caractère n'est pas une preuve »), juste avec les mots du
+     questionnaire au lieu de ceux du chat. Seule la réponse « talents
+     naturels », qui est du texte libre écrit par la personne, est assez
+     spécifique pour servir de preuve : elle seule rejoint sesMots. */
+  const blocQuiz = quizContexte
+    ? `\n\nCE QU'ELLE A RENSEIGNÉ AVANT L'ENTRETIEN (questionnaire de préparation — sert à comprendre sa situation, PAS une preuve à citer, sauf sa réponse « talents naturels » qui est vérifiée comme le reste) :\n${quizContexte}`
+    : '';
 
   const sys = `Tu es conseillère en orientation en Suisse romande. On te donne le catalogue COMPLET des métiers de la base et ce qu'une personne a raconté. Tu choisis les métiers qui lui correspondent VRAIMENT.
 
@@ -9058,7 +9070,7 @@ FORMAT : uniquement un objet JSON, premier caractère {, dernier }.`;
 ${_catalogueComplet()}
 
 CE QU'ELLE A DIT (ses messages, mot pour mot) :
-${motsUtilisateur}${blocCv}${blocRejet}${blocSynth}
+${motsUtilisateur}${blocCv}${blocQuiz}${blocRejet}${blocSynth}
 
 Réponds uniquement ainsi :
 {"niveau_personne": 4, "accepte_de_redescendre": false, "choix":[{"id":"identifiant-exact-du-catalogue","preuve":"citation EXACTE de ses mots, recopiée depuis ses messages ou son CV","raison":"ce que cette citation prouve pour ce métier"}]}
@@ -9080,7 +9092,7 @@ preuve = un extrait RECOPIÉ de ses messages ou de son CV, pas une reformulation
   return _validerChoixMetiers(choix, rejets, {
     niveau: Number(brut && brut.niveau_personne) || 0,
     accepteDeRedescendre: !!(brut && brut.accepte_de_redescendre)
-  }, String(motsUtilisateur || '') + ' ' + String(cvTexte || ''));
+  }, String(motsUtilisateur || '') + ' ' + String(cvTexte || '') + ' ' + String(quizTalents || ''));
 }
 
 /**
@@ -9348,6 +9360,22 @@ async function generateOrientationReport() {
   const _cvForReport = _cvText
     ? `\n\nCV DE LA PERSONNE (texte réel extrait de son CV — ses postes, années d'expérience, formations et compétences comptent comme DITS par la personne ; croise-les avec la conversation) :\n${_cvText.slice(0, 6000)}\n`
     : '';
+
+  /* ── QUESTIONNAIRE DE PRÉPARATION → RAPPORT (21 septembre 2026) ───────────
+     Trou trouvé en vérifiant une remarque d'un testeur : _buildQuizContext()
+     n'alimentait QUE le systemPrompt du CHAT (callCynthAI, voir plus bas dans
+     ce fichier). Ni convBlock, ni dataBlock, ni _selectionnerMetiers ne
+     lisaient quizAnswers. Conséquence réelle : si Cynthia ne faisait pas
+     redire à voix haute une info du questionnaire (motivations, talents,
+     frein) pendant l'entretien, cette info restait invisible au moment
+     d'écrire le rapport et de choisir les métiers, alors que la personne
+     l'avait bien donnée. Corrigé en une seule source, injectée aux DEUX
+     endroits (convBlock ET dataBlock) pour ne pas reproduire l'erreur du
+     17 août (une correction posée sur un seul des chemins d'appel). */
+  const _qCtx = (function () { try { return _buildQuizContext(); } catch (e) { return ''; } })();
+  const _qCtxForReport = _qCtx
+    ? `\n\nQUESTIONNAIRE REMPLI PAR LA PERSONNE AVANT L'ENTRETIEN (donné par elle-même ; à croiser avec la conversation, ne pas le lui réciter tel quel) :\n${_qCtx}\n`
+    : '';
   // Ceinture ET bretelles : les métiers refusés sont déjà retirés de la liste,
   // mais on le dit AUSSI au modèle. S'il a compris un refus que le code n'a pas
   // su repérer, il doit le respecter de lui-même.
@@ -9371,6 +9399,8 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
     cvTexte: _cvText || '',
     rejets: _rejets,
     synthMetiers: _synthMetiers,
+    quizContexte: _qCtx,
+    quizTalents: (typeof quizAnswers !== 'undefined' && quizAnswers.talents) || '',
     appel: (s, u) => _callReportModel(s, u, 1200)
   }).catch(function () { return []; });
 
@@ -9465,7 +9495,7 @@ Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pa
      Vérifié en test live (profil Nadia, rêve « chercheuse ») : zéro mention
      dans tout le rapport. Mon test de ce matin vérifiait que le bloc était
      CONSTRUIT, pas qu'il arrivait au bon endroit. */
-  const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}${_blocRejets}${_blocReve}`;
+  const convBlock = `CONVERSATION INTÉGRALE :\n${conversationText}${_cvForReport}${_qCtxForReport}${_blocRejets}${_blocReve}`;
   const fmtRule = 'Tu t\'adresses DIRECTEMENT à la personne en "vous" dans TOUS les champs texte : écris "Vous avez 10 ans d\'expérience", "Vous êtes quelqu\'un qui...". INTERDIT : utiliser son prénom comme sujet, ou "il/elle/son/sa/ses/lui" pour la désigner — emploie "vous/votre/vos". (Seules exceptions : le champ "pitch" est à la 1re personne "je", et "citation_forte" est un verbatim exact.) JAMAIS de tiret cadratin (— ou –). N\'invente rien : appuie-toi uniquement sur la conversation et le CV. CHRONOLOGIE (erreur constatée en test réel) : ne rattache JAMAIS un souvenir, une anecdote, une personne ou une compétence à un employeur, un poste ou une période où la personne ne l\'a pas explicitement situé. Chaque expérience appartient à UN moment précis de son parcours : si elle raconte une anecdote sans dire clairement où, rattache-la à son poste ACTUEL, ou reste vague ("dans votre travail"), mais n\'invente pas le lieu. Se tromper de période sur sa propre vie détruit la confiance aussi sûrement qu\'un fait inventé.'
     + ' LANGUE ET TYPOGRAPHIE (dictionnaire Cynth.IA, 15 août 2026). Ce rapport se lit comme un document professionnel suisse, pas comme une sortie de machine :'
     + ' (a) SUISSE ROMANDE, jamais français de France : écris "assurance-chômage" et non "la Sécu" ou "le chômage" seul, "salaire minimum" et non "SMIC", "formation continue" et non "VAE". Aucun sigle français.'
@@ -9585,7 +9615,7 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
     .join('\n');
 
   const dataBlock = `CONVERSATION INTÉGRALE :
-${conversationText}${_cvForReport}${_blocRejets}${_blocReve}
+${conversationText}${_cvForReport}${_qCtxForReport}${_blocRejets}${_blocReve}
 
 MÉTIERS DÉJÀ RETENUS POUR CETTE PERSONNE — choisis dans la base suisse après
 lecture de tout son entretien. Tu n'as PAS à en chercher d'autres : tu prends
