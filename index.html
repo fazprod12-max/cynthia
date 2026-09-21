@@ -2196,12 +2196,33 @@ textarea.chat-input{
     <div class="lp-row cyn-stag" style="margin-top:22px;">
       <div class="lp-pill"><b>Vous arrivez de l'étranger ?</b>Vingt minutes suffisent pour situer votre diplôme sur le marché suisse, un salaire réaliste en francs, et les codes qui comptent en entretien.</div>
       <div class="lp-pill"><b>Vous êtes en poste, en quête de sens ?</b>Cynthia comprend ce qui vous anime vraiment, au-delà du prochain poste, et en ressort avec deux ou trois pistes concrètes.</div>
-      <!-- Le texte de cette pastille est écrit par le JS à partir de CONFIG
-           (voir _majPastillePrix). Il ne doit PAS être modifié à la main ici :
-           le prix ne vit qu'à un seul endroit, sinon le jour du lancement on
-           bascule le code et on oublie la page. Ce qui suit est le repli
-           affiché si le JS ne tourne pas. -->
-      <div class="lp-pill"><b>Combien coûte un entretien avec Cynthia ?</b><span id="lp-prix-txt">Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.</span></div>
+    </div>
+
+    <!-- ── Bloc prix dédié (21 septembre 2026, demande de Faouzi) ──────────
+         Remplace l'ancienne pastille FAQ « Combien coûte ». Objectif de
+         Faouzi : mettre le prix en avant AVEC ce que la personne obtient
+         grâce à lui, pas juste un chiffre isolé. Reprend le CSS .lp-price
+         qui existait déjà, préparé mais jamais branché.
+         Le tag, le montant et le sous-titre sont écrits par le JS à partir
+         de CONFIG (voir _majBlocPrix) — jamais à la main ici : le prix ne
+         vit qu'à un seul endroit, sinon le jour du lancement on bascule le
+         code et on oublie la page. Ce qui suit est le repli affiché si le
+         JS ne tourne pas (cas RAPPORT_GRATUIT actuel). -->
+    <div class="lp-price-wrap" style="margin-top:34px;">
+      <div class="lp-price lp-rv">
+        <span class="lp-ptag" id="lp-price-tag" style="display:none;"></span>
+        <h3>Le rapport complet</h3>
+        <div class="lp-amount" id="lp-price-amount">Offert</div>
+        <p class="lp-psub" id="lp-price-sub">Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.</p>
+        <ul>
+          <li><i>✓</i><span>Un profil construit sur ce que vous avez vraiment dit.</span></li>
+          <li><i>✓</i><span>Cinq pistes de métiers suisses, chiffrées en CHF, sourcées et datées.</span></li>
+          <li><i>✓</i><span>Un plan sur six mois calé sur votre échéance réelle.</span></li>
+          <li><i>✓</i><span>Le bon interlocuteur suisse pour agir : CFC, article 32, le guichet cantonal qui vous concerne.</span></li>
+          <li><i>✓</i><span>Un dossier PDF à garder, à montrer ou à relire.</span></li>
+        </ul>
+        <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer maintenant →</button>
+      </div>
     </div>
   </div></section>
 
@@ -3749,32 +3770,44 @@ const CONFIG = {
 /* Outil de contrôle, à taper en console : dit quel prix s'applique aujourd'hui,
    pourquoi, et ce qu'il reste avant la bascule. Sert à vérifier sur pièce au
    lieu de supposer. */
-/* La pastille prix de la landing est écrite ici, jamais à la main dans le HTML.
-   Raison : le 3 septembre, le code affichait encore 79 CHF alors que Faouzi
-   avait tranché 59 le 2 — parce que le prix était recopié à deux endroits.
-   Même principe reconduit le 21 septembre pour le modèle valeur/promo.
+/* Le bloc prix dédié de la landing (#lp-price) est écrit ici, jamais à la
+   main dans le HTML. Raison : le 3 septembre, le code affichait encore
+   79 CHF alors que Faouzi avait tranché 59 le 2 — parce que le prix était
+   recopié à deux endroits. Même principe reconduit le 21 septembre pour le
+   modèle valeur/promo, puis pour ce bloc le jour où il a remplacé la simple
+   pastille FAQ (demande de Faouzi : mettre le prix en avant avec ce que la
+   personne obtient grâce à lui).
 
-   innerHTML (pas textContent) ici uniquement : le seul contenu inséré est
-   entièrement écrit par ce code, jamais une donnée saisie par la personne —
-   c'est ce qui permet le <s> barré sur la valeur de référence. */
-function _majPastillePrix() {
-  var el = document.getElementById('lp-prix-txt');
-  if (!el || typeof CONFIG === 'undefined') return;
+   innerHTML (pas textContent) sur le montant uniquement : le seul contenu
+   inséré est entièrement écrit par ce code, jamais une donnée saisie par la
+   personne — c'est ce qui permet le <s> barré sur la valeur de référence. */
+function _majBlocPrix() {
+  var elTag = document.getElementById('lp-price-tag');
+  var elAmount = document.getElementById('lp-price-amount');
+  var elSub = document.getElementById('lp-price-sub');
+  if (!elTag || !elAmount || !elSub || typeof CONFIG === 'undefined') return;
+
   if (CONFIG.RAPPORT_GRATUIT) {
-    el.textContent = "Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.";
+    elTag.style.display = 'none'; elTag.textContent = '';
+    elAmount.textContent = 'Offert';
+    elSub.textContent = "Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.";
     return;
   }
+
   var mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   if (CONFIG.EN_PROMO) {
     var f = CONFIG.FIN_PROMO_DATE;
-    el.innerHTML = "L'entretien est libre. Le rapport complet vaut <s>" + CONFIG.PRIX_VALEUR
-      + " CHF</s>&nbsp;: <b>" + CONFIG.PRIX_PROMO + " CHF</b> en prix d'ouverture, jusqu'au "
-      + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear() + '. Vous gardez le rapport.';
+    elTag.style.display = ''; elTag.textContent = "PRIX D'OUVERTURE";
+    elAmount.innerHTML = '<s>' + CONFIG.PRIX_VALEUR + ' CHF</s> ' + CONFIG.PRIX_PROMO + '<small> CHF</small>';
+    elSub.textContent = "Prix d'ouverture jusqu'au " + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear()
+      + ". Entretien inclus, vous gardez le rapport.";
   } else {
-    el.textContent = "L'entretien est libre. Le rapport complet est à " + CONFIG.PRIX_RAPPORT + " CHF. Vous gardez le rapport.";
+    elTag.style.display = 'none'; elTag.textContent = '';
+    elAmount.textContent = CONFIG.PRIX_RAPPORT + ' CHF';
+    elSub.textContent = 'Entretien inclus. Vous gardez le rapport.';
   }
 }
-try { document.addEventListener('DOMContentLoaded', _majPastillePrix); } catch (e) {}
+try { document.addEventListener('DOMContentLoaded', _majBlocPrix); } catch (e) {}
 
 function etatPrix() {
   var f = CONFIG.FIN_PROMO_DATE;
