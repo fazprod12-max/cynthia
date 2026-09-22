@@ -12092,9 +12092,27 @@ async function _demarrerMicro() {
   }
 }
 
+/* Retour testeur du 22 septembre 2026 (CYN daté ce jour, bug_oui:Oui) : « j'ai
+   cliqué sur le micro, puis cliqué sur envoyer la transcription, mais elle a
+   envoyé un texte qui ne correspondait pas, "Fin d'entretien" ou quelque
+   chose comme ça. » Notre code ne contient aucun texte codé en dur de ce
+   genre — Whisper renvoie fidèlement ce que Groq lui répond. L'explication la
+   plus cohérente, documentée pour les modèles Whisper : sur un audio quasi
+   silencieux ou très court, le modèle peut « halluciner » une phrase plausible
+   plutôt que de dire qu'il n'a rien entendu, et le prompt de contexte qu'on lui
+   donne (« entretien d'orientation ») peut orienter cette hallucination — d'où
+   une phrase du type « fin d'entretien ». Non reproduit ici (pas de micro ni
+   d'accès à l'API Groq audio dans ce bac à sable) : c'est l'hypothèse la plus
+   cohérente avec le code, pas une cause confirmée. Deux garde-fous ajoutés en
+   conséquence, qui protègent aussi contre toute AUTRE cause de transcription
+   ratée, pas seulement celle-ci. */
 async function _transcrireAudio(blob) {
   try {
-    if (!blob || blob.size < 1000) {
+    // 1000 octets correspondait à une fraction de seconde d'opus, donc un
+    // audio quasi vide passait quand même à la transcription. 4000 octets
+    // (≈1,5-2 s à un débit vocal courant) laisse largement passer une vraie
+    // réponse courte tout en filtrant un clic micro suivi d'un silence.
+    if (!blob || blob.size < 4000) {
       showToast('🎤', 'Enregistrement trop court, réessayez', 'warning', 3000);
       return;
     }
@@ -12104,7 +12122,18 @@ async function _transcrireAudio(blob) {
     if (!resp.ok) throw new Error('worker ' + resp.status);
     const data = await resp.json();
     const texte = (data && data.texte || '').trim();
-    if (texte) { _injectText(texte); showToast('✅', 'Relisez, corrigez, puis envoyez', 'success', 3000); }
+    if (texte) {
+      _injectText(texte);
+      // Un texte très court après un enregistrement gardé (donc pas rejeté au
+      // seuil ci-dessus) reste le profil typique d'une hallucination Whisper
+      // sur audio pauvre : avertissement plus insistant, sans bloquer l'envoi
+      // (la personne garde toujours la main, elle relit et décide).
+      if (texte.length < 20) {
+        showToast('⚠️', 'Texte court : vérifiez bien avant d\'envoyer', 'warning', 4500);
+      } else {
+        showToast('✅', 'Relisez, corrigez, puis envoyez', 'success', 3000);
+      }
+    }
     else showToast('🎤', 'Aucune parole détectée, réessayez', 'warning', 3000);
   } catch (err) {
     console.error('Transcription :', err);
