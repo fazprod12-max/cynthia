@@ -2768,26 +2768,14 @@ textarea.chat-input{
     }
   }catch(e){}
 
-  // Les chiffres comptent quand on arrive dessus (l'écart de prix se ressent)
-  try{
-    var cio=new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if(!e.isIntersecting) return;
-        var el=e.target, cible=parseInt(el.getAttribute('data-cyn-count'),10)||0;
-        cio.unobserve(el);
-        if(_calme){ el.textContent=cible.toLocaleString('fr-CH'); return; }
-        var t0=null, duree=1100;
-        function pas(ts){
-          if(!t0) t0=ts;
-          var p=Math.min((ts-t0)/duree,1), e2=1-Math.pow(1-p,3);
-          el.textContent=Math.round(cible*e2).toLocaleString('fr-CH');
-          if(p<1) requestAnimationFrame(pas);
-        }
-        requestAnimationFrame(pas);
-      });
-    },{threshold:.5});
-    document.querySelectorAll('[data-cyn-count]').forEach(function(el){ if(!_calme) el.textContent='0'; cio.observe(el); });
-  }catch(e){}
+  // ⚠️ Ancien bloc « les chiffres comptent » (compteur animé sur [data-cyn-count])
+  // retiré le 23 septembre 2026 : code mort depuis que le bloc prix a été
+  // réécrit en JS pur (_majBlocPrix, 21 septembre) — plus aucun élément du
+  // HTML ne porte cet attribut, la boucle document.querySelectorAll ne
+  // trouvait plus jamais rien à animer. Repéré lors d'un audit complet de la
+  // landing, retiré en entier (pas juste débranché) : une fonction que plus
+  // rien n'appelle finit tôt ou tard par tomber sur quelqu'un (leçon du
+  // 5 août 2026, section rapport de ce fichier).
 })();
 </script>
 
