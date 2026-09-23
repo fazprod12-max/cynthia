@@ -2421,34 +2421,67 @@ textarea.chat-input{
          2 images ajoutées dans la colonne de gauche (sous le frein) :
          rapport_extrait_moteurs.png (section « Vos moteurs de motivation »,
          page 5) et rapport_extrait_plan.png (« Mois 6 » du plan semaine par
-         semaine, page 13 — dernier jalon du plan, celui qui se rapproche le
-         plus de ce que Faouzi demandait en évoquant un horizon lointain).
-         Mêmes garanties que les autres : aucune mention de prénom, référence,
-         canton ni permis dans ces deux zones (vérifié à l'œil avant
-         recadrage, bornes calculées par script sur la couleur des puces et
-         des pastilles, pas à l'estimation). Compressées par la même
-         quantification de palette (48 couleurs) : 15,9 Ko et 17,6 Ko. -->
+         semaine, page 13, dernier jalon du plan). Mêmes garanties que les
+         autres : aucune mention de prénom, référence, canton ni permis dans
+         ces deux zones (vérifié à l'œil avant recadrage, bornes calculées
+         par script sur la couleur des puces et des pastilles, pas à
+         l'estimation). Compressées par la même quantification de palette
+         (48 couleurs) : 15,9 Ko et 16,5 Ko.
+
+         ── CORRIGÉ le même jour, 3 retours de Faouzi sur le rendu réel iPhone ──
+         (1) 2 tirets cadratins (« — ») s'étaient glissés dans les légendes et
+         le alt visibles (règle du projet : jamais de tiret cadratin, « fait
+         IA »). Retirés partout dans ce bloc, pas seulement les 2 signalés.
+         (2) « la découpe, on voit que c'est pas propre » : le recadrage de
+         rapport_extrait_plan.png incluait, collée au bord gauche, la frise
+         verticale du plan (le trait qui relie les jalons sur la page source)
+         hors contexte, un trait qui ne mène nulle part, repéré à l'œil sur la
+         capture envoyée par Faouzi ET confirmé par script (colonnes de pixels
+         x=20-42, couleur crème ~(250,246,240), continue sur toute la hauteur
+         du recadrage : ni la pastille verte ni la frise n'ont de sens seules).
+         Méthode de recadrage revue pour toute future capture de ce PDF :
+         x0 déplacé après le texte du titre (jamais après le début de la
+         pastille/frise), largeur retombant EXACTEMENT sur celle des autres
+         images de la même colonne (1045px, même DPI de rendu 150) pour que
+         le texte garde la même échelle une fois affiché à la même largeur CSS.
+         (3) « le retour tu met le mois 1 » : demande de remplacer le contenu
+         « Mois 6 » (dernier jalon, trop lointain) par un jalon proche du
+         début du plan. Aucun bloc n'est littéralement appelé « Mois 1 » sur
+         la page source (jalons réels : Cette semaine / Semaines 2 à 4 /
+         Mois 2 / Mois 3 / Mois 4 à 5 / Mois 6) — question posée à Faouzi,
+         resté en attente. Choix fait entre-temps, à sa demande explicite de
+         juste avancer : PAS « Cette semaine » (mentionne le permis G et le
+         statut frontalier·ère de la personne — plus sensible que les autres
+         extraits déjà anonymisés, et aucun point de coupure propre n'existe
+         dans son paragraphe avant cette phrase, ce qui aurait recréé le même
+         défaut de découpe qu'on vient de corriger) → retenu « Semaines 2 à
+         4 » : 2e jalon réel du plan, encore très proche dans le temps
+         (explorer le terrain, visiter des structures, parler à des
+         professionnels), paragraphe autonome et complet, sans canton/permis/
+         référence. Cohérent avec l'objectif dit par Faouzi : une personne qui
+         lit ce plan concret doit se dire « moi aussi je veux savoir » ce que
+         serait SON premier mois, pas juste le dernier jalon dans 6 mois. -->
     <div class="lp-rex lp-rv">
-      <div class="lp-rex-tag">Un vrai rapport généré par Cynthia — prénom retiré pour préserver son anonymat</div>
+      <div class="lp-rex-tag">Un vrai rapport généré par Cynthia, prénom retiré pour préserver son anonymat</div>
       <div class="lp-rex-imgs">
         <div class="lp-rex-col">
           <div class="lp-rex-imgcard">
             <img src="rapport_extrait_frein.png" alt="Extrait réel du rapport Cynth.IA : l'encadré « Votre frein, et ce qu'il révèle vraiment », qui recadre une insécurité (l'âge, le manque de confiance) en ressource réelle, à partir des propres mots de la personne." loading="lazy">
-            <p>Un frein qu'elle nomme et retourne — pas une liste de qualités génériques.</p>
+            <p>Un frein qu'elle nomme et retourne, pas une liste de qualités génériques.</p>
           </div>
           <div class="lp-rex-imgcard">
-            <img src="rapport_extrait_moteurs.png" alt="Extrait réel du rapport Cynth.IA : « Vos moteurs de motivation » — accompagner et aider les gens à évoluer, l'authenticité et l'entraide, voir le potentiel chez les autres — tiré directement de ses propres mots en entretien." loading="lazy">
+            <img src="rapport_extrait_moteurs.png" alt="Extrait réel du rapport Cynth.IA : « Vos moteurs de motivation », tiré directement de ses propres mots en entretien : accompagner et aider les gens à évoluer, l'authenticité et l'entraide, voir le potentiel chez les autres." loading="lazy">
             <p>Ses propres mots, reliés à ce qui la fait vraiment avancer.</p>
           </div>
           <div class="lp-rex-imgcard">
-            <img src="rapport_extrait_plan.png" alt="Extrait réel du rapport Cynth.IA : « Mois 6 » du plan semaine par semaine — finaliser l'entrée en formation ou en apprentissage, vérifier les droits cantonaux à la formation continue." loading="lazy">
-            <p>Un plan daté, jusqu'au dernier jalon — pas juste un premier pas.</p>
+            <img src="rapport_extrait_plan.png" alt="Extrait réel du rapport Cynth.IA : « Semaines 2 à 4 » du plan semaine par semaine, pour explorer le terrain, visiter des structures et parler avec des professionnels du métier visé." loading="lazy">
+            <p>Un plan concret dès le premier mois, pas juste une idée dans six mois.</p>
           </div>
         </div>
         <div class="lp-rex-col">
           <div class="lp-rex-imgcard">
             <img src="rapport_extrait_metier.png" alt="Extrait réel du rapport Cynth.IA : fiche métier Éducateur·trice de l'enfance (dipl. ES), 95% d'affinité estimée, CHF ~4 250/mois en début de parcours jusqu'à CHF ~5 000/mois avec l'expérience, formation ES en éducation de l'enfance, financement employeur/bourses cantonales/ORP, premier pas concret de la semaine." loading="lazy">
-            <p>Une fiche métier complète — score, CHF sourcés et datés, formation, financement, premier pas de la semaine.</p>
+            <p>Une fiche métier complète : score, CHF sourcés et datés, formation, financement, premier pas de la semaine.</p>
           </div>
         </div>
       </div>
