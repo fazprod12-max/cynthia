@@ -1998,17 +1998,14 @@ document.addEventListener('DOMContentLoaded', function () {
   .lp-so span{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:.82rem;color:var(--c-muted);margin-top:6px;line-height:1.45;}
   @media(max-width:900px){.lp-somm{grid-template-columns:repeat(2,1fr);}}
   @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
-  /* ── Extrait réel de rapport (5 septembre 2026) ── voir #lp-rapport, bloc .lp-rex */
+  /* ── Extrait réel de rapport (5 septembre 2026, passé à de vraies captures
+       d'écran le 23 septembre 2026) ── voir #lp-rapport, bloc .lp-rex */
   .lp-rex{background:#fff;border:1px solid var(--c-line);border-radius:22px;padding:30px 28px;margin-bottom:28px;}
   .lp-rex-tag{display:inline-block;font-family:'Space Grotesk';font-weight:600;font-size:.78rem;letter-spacing:.06em;color:var(--c-emerald-d);background:var(--c-emerald-soft);border-radius:999px;padding:6px 14px;margin-bottom:20px;}
-  .lp-rex-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;}
-  .lp-rex-k{font-family:'Space Grotesk';font-weight:600;font-size:.82rem;color:var(--c-ink);margin-bottom:9px;}
-  .lp-rex-item p{font-size:.93rem;line-height:1.5;color:var(--c-muted);font-style:italic;}
-  .lp-rex-metier{background:var(--c-emerald-soft);border-radius:14px;padding:16px 16px 14px;}
-  .lp-rex-metier p{font-style:normal;}
-  .lp-rex-mtitre{font-family:'Space Grotesk';font-weight:700;color:var(--c-ink);font-size:.95rem;margin-bottom:6px;}
-  .lp-rex-mtitre span{display:block;font-family:'Inter',sans-serif;font-weight:600;color:var(--c-emerald-d);font-size:.78rem;margin-top:2px;}
-  @media(max-width:900px){.lp-rex-grid{grid-template-columns:1fr;}}
+  .lp-rex-imgs{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;}
+  .lp-rex-imgcard img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--c-line);box-shadow:0 10px 28px rgba(15,42,36,.10);}
+  .lp-rex-imgcard p{font-size:.86rem;line-height:1.45;color:var(--c-muted);margin-top:12px;text-align:center;}
+  @media(max-width:820px){.lp-rex-imgs{grid-template-columns:1fr;}}
   .lp-pitch{background:var(--c-cream2);border-left:3px solid var(--c-coral);border-radius:0 10px 10px 0;padding:13px 16px;font-size:.92rem;font-style:italic;line-height:1.6;}
 
   /* Tableau comparatif honnête (IA généraliste vs Cynthia) */
@@ -2218,7 +2215,19 @@ textarea.chat-input{
        Ton imposé : aucune négation, aucun tiret cadratin. Tenu par des gardes dans
        tests/test_pourquoi_cynthia.js. ── -->
   <section id="lp-pourquoi" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Pourquoi <span class="lp-pop">CYNTH.IA</span></h2><p>Un bilan de compétences en Suisse coûte 280 CHF la séance, près de 2&nbsp;000&nbsp;CHF au total. viamia est gratuit, à partir de 40 ans. Cynthia occupe l'espace entre les deux.</p></div>
+    <!-- ⚠️ Chapeau remplacé le 23 septembre 2026, à la demande de Faouzi :
+         « à la place de mettre le bilan de compétences, on met en valeur ce
+         qui différencie des autres IA », pour répondre directement à
+         l'objection « pourquoi pas juste ChatGPT » sans jamais nommer de
+         concurrent (règle du 5 septembre). L'ancienne phrase (280 CHF,
+         viamia 40+) portait la SEULE occurrence restante de l'argument prix
+         sur la page de vente (les 2 autres avaient déjà été retirées le
+         3 septembre, voir plus bas) : elle disparaît avec ce changement,
+         volontairement, l'argument prix vit désormais dans le récit du
+         fondateur uniquement. Respecte les gardes de ton de cette section
+         (aucune négation, aucun tiret cadratin, aucun mot dénigrant, aucun
+         concurrent nommé) — vérifiées comme des tests, pas des vœux pieux. -->
+    <div class="lp-sechead lp-rv"><h2>Pourquoi <span class="lp-pop">CYNTH.IA</span></h2><p>D'autres IA peuvent vous parler d'orientation. Cynthia va plus loin&nbsp;: chaque piste vient d'une fiche métier suisse vérifiée, chaque chiffre porte sa source et sa date de relevé. Vous repartez avec un dossier vérifiable, prêt à montrer à un conseiller ORP.</p></div>
     <div class="lp-cards cyn-stag cyn-spot">
       <!-- La promesse de séquencement du bloc « Le Cairn » (retiré ce jour,
            entièrement) repliée ici le 21 septembre 2026 : c'était la seule
@@ -2335,23 +2344,38 @@ textarea.chat-input{
          validé qu'on garde seulement les 3 premières phrases (le constat
          « pas de date butoir » + le premier pas concret « Cité des métiers
          du Grand Genève »), qui tiennent seules et ne contiennent aucun des
-         deux détails. Libellé changé en conséquence (ce n'est plus une puce
-         CV). -->
+         deux détails.
+
+         ── REMPLACÉ une 3e fois le même jour, par de VRAIES CAPTURES ──
+         Faouzi : les blocs de texte « sortent un truc pas professionnel »,
+         il veut de vraies images du rapport pour que la personne voie
+         précisément ce qu'elle obtient avant de payer 39 CHF. Deux pages du
+         même PDF (CYN-CXVZEA), rendues en image (pdftoppm) puis recadrées
+         (PIL) : (1) la page « Qui vous êtes » (portrait + les 5 barres de
+         personnalité, réserve honnête incluse), (2) la fiche métier
+         complète « Éducateur·trice de l'enfance » assemblée à partir des
+         pages 7 et 8 du PDF (le bas de la carte déborde sur la page
+         suivante dans le PDF source ; recollé en une seule image pour ne
+         pas couper la carte en plein milieu). AUCUN flou nécessaire : ces
+         deux pages, vérifiées à l'œil avant recadrage, ne contiennent ni
+         prénom, ni référence, ni canton, ni permis G/frontalier — ces
+         mentions ne vivent que sur la couverture (page 1, jamais utilisée)
+         et dans la section « Cette semaine » (page 12, jamais utilisée).
+         Fichiers : rapport_extrait_personnalite.png, rapport_extrait_metier.png
+         (racine de refonte_deepseek, copiés par push_nouvelle_interface.command).
+         Compressés par quantification de palette (48 couleurs, PIL) : le
+         document est presque entièrement à plat, aucune perte visible sur
+         le texte, 700 Ko → 160 Ko et 316 Ko → 79 Ko. -->
     <div class="lp-rex lp-rv">
       <div class="lp-rex-tag">Un vrai rapport généré par Cynthia — prénom retiré pour préserver son anonymat</div>
-      <div class="lp-rex-grid">
-        <div class="lp-rex-item">
-          <div class="lp-rex-k">Ce qu'elle a compris de vous</div>
-          <p>« Vous n'êtes pas au début de votre carrière : vous êtes quelqu'un qui a appris, qui s'est adapté, qui a des vraies compétences relationnelles. L'âge n'est pas un frein, c'est une ressource. Le manque de confiance, c'est une sensation, pas une réalité. »</p>
+      <div class="lp-rex-imgs">
+        <div class="lp-rex-imgcard">
+          <img src="rapport_extrait_personnalite.png" alt="Extrait réel du rapport Cynth.IA : portrait et cinq dimensions de personnalité (ouverture, rigueur, extraversion, amabilité, stabilité émotionnelle), chacune avec sa définition en langage courant, et la précision que ce ne sont pas des scores validés." loading="lazy">
+          <p>Section « Qui vous êtes » — portrait et profil de personnalité, avec la réserve sur ce que ces chiffres veulent (et ne veulent pas) dire.</p>
         </div>
-        <div class="lp-rex-item">
-          <div class="lp-rex-k">Un premier pas concret, pas un vœu pieux</div>
-          <p>« Vous n'avez pas de date butoir immédiate : c'est une bonne nouvelle et c'est un atout. Vous avez du temps pour explorer sans précipitation. Première étape : prendre rendez-vous à la Cité des métiers du Grand Genève (gratuit, sans inscription préalable). »</p>
-        </div>
-        <div class="lp-rex-item lp-rex-metier">
-          <div class="lp-rex-k">Une piste, avec le vrai chiffrage</div>
-          <div class="lp-rex-mtitre">Éducateur·trice de l'enfance (dipl. ES)<span>95% d'affinité estimée</span></div>
-          <p>CHF ~4 250 en début de parcours, ~5 000/mois avec l'expérience. Formation ES en éducation de l'enfance, 3 ans à temps plein ou en emploi selon le canton, financée par l'employeur, les bourses cantonales ou l'OFPC.</p>
+        <div class="lp-rex-imgcard">
+          <img src="rapport_extrait_metier.png" alt="Extrait réel du rapport Cynth.IA : fiche métier Éducateur·trice de l'enfance (dipl. ES), 95% d'affinité estimée, CHF ~4 250/mois en début de parcours jusqu'à CHF ~5 000/mois avec l'expérience, formation ES en éducation de l'enfance, financement employeur/bourses cantonales/ORP, premier pas concret de la semaine." loading="lazy">
+          <p>Une fiche métier complète — score, CHF sourcés et datés, formation, financement, premier pas de la semaine.</p>
         </div>
       </div>
     </div>
