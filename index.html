@@ -2000,20 +2000,33 @@ document.addEventListener('DOMContentLoaded', function () {
   @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
   /* ── Extrait réel de rapport (5 septembre 2026, passé à de vraies captures
        d'écran le 23 septembre 2026) ── voir #lp-rapport, bloc .lp-rex.
-       ⚠️ 23 sept., même jour, DEUX allers-retours sur la mise en page :
+       ⚠️ 23 sept., même jour, plusieurs allers-retours sur la mise en page :
        (a) grille 2 colonnes d'origine → un grand vide sous la colonne courte
        (l'encadré frein, 415px, à côté de la fiche métier, 1951px) — capture
        envoyée par Faouzi. (b) corrigé en empilant tout verticalement
        (flex-column) → Faouzi a jugé ce rendu « pas bon du tout » et a
        explicitement demandé de revenir à la grille 2 colonnes, et de combler
        le vide en AJOUTANT d'autres vrais extraits dans la colonne courte
-       plutôt qu'en changeant la structure. Retenu : grille 2 colonnes
-       restaurée ; la colonne de gauche (.lp-rex-col) empile maintenant 3
-       extraits réels (frein, moteurs de motivation, Mois 6 du plan) au lieu
-       d'un seul, pour se rapprocher de la hauteur de la fiche métier à
-       droite — sans jamais viser une égalité pixel-parfaite, qui dépendrait
-       toujours du contenu futur. */
-  .lp-rex{background:#fff;border:1px solid var(--c-line);border-radius:22px;padding:30px 28px;margin-bottom:28px;}
+       plutôt qu'en changeant la structure. La colonne de gauche (.lp-rex-col)
+       empile 3 extraits réels (frein, moteurs de motivation, Semaines 2 à 4
+       du plan) au lieu d'un seul, pour se rapprocher de la hauteur de la
+       fiche métier à droite.
+       (c) 9e passage, même jour : même avec 3 images, l'écart restait grand
+       sur les écrans plus larges que mobile (capture envoyée par Faouzi,
+       rectangle blanc bien visible sous la colonne de gauche, jusqu'au bas
+       de la fiche métier). Confirmé par calcul : la fiche métier fait à elle
+       seule presque autant que les 3 autres cumulées, aucun contenu
+       raisonnable ne comblerait ça de façon fiable, et ça recommencerait à
+       chaque futur changement de taille d'un extrait — exactement ce que
+       Faouzi pressentait dès la toute première capture. Recommandation posée
+       et validée par Faouzi (AskUserQuestion) : retirer le CADRE PARTAGÉ qui
+       enfermait les 2 colonnes ensemble (fond blanc + bordure + padding sur
+       .lp-rex). Chaque image garde SA propre carte (.lp-rex-imgcard,
+       inchangée) ; le vide devient de l'espace de page normal, invisible,
+       au lieu d'un rectangle blanc qui saute aux yeux. Cette fois la
+       correction est structurelle, donc robuste à un contenu qui change
+       encore demain — pas une histoire de dosage à refaire à chaque fois. */
+  .lp-rex{margin-bottom:28px;}
   .lp-rex-tag{display:inline-block;font-family:'Space Grotesk';font-weight:600;font-size:.78rem;letter-spacing:.06em;color:var(--c-emerald-d);background:var(--c-emerald-soft);border-radius:999px;padding:6px 14px;margin-bottom:20px;}
   .lp-rex-imgs{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;}
   .lp-rex-col{display:flex;flex-direction:column;gap:16px;}
