@@ -2000,23 +2000,26 @@ document.addEventListener('DOMContentLoaded', function () {
   @media(max-width:520px){.lp-somm{grid-template-columns:1fr;}}
   /* ── Extrait réel de rapport (5 septembre 2026, passé à de vraies captures
        d'écran le 23 septembre 2026) ── voir #lp-rapport, bloc .lp-rex.
-       ⚠️ 23 sept., plus tard le même jour : la grille 2 colonnes (voir
-       l'historique juste en dessous) supposait deux images de hauteur
-       comparable. Une fois l'image 1 remplacée par l'encadré « frein »
-       (court, 415px) à côté de la fiche métier complète (longue, 1951px),
-       Faouzi a repéré un grand vide sous la colonne courte — visible en
-       direct sur le site, pas en théorie. Ajouter d'autres extraits n'aurait
-       fait que déplacer le problème (deux hauteurs resteront toujours
-       différentes, quel que soit le contenu). Corrigé en empilant les 2
-       images verticalement, à toutes les tailles d'écran : plus de colonnes
-       à égaliser, donc plus de vide possible, quelle que soit la hauteur de
-       chaque image future. La grille 2 colonnes + son point de rupture
-       mobile (@media 820px) sont retirés. */
+       ⚠️ 23 sept., même jour, DEUX allers-retours sur la mise en page :
+       (a) grille 2 colonnes d'origine → un grand vide sous la colonne courte
+       (l'encadré frein, 415px, à côté de la fiche métier, 1951px) — capture
+       envoyée par Faouzi. (b) corrigé en empilant tout verticalement
+       (flex-column) → Faouzi a jugé ce rendu « pas bon du tout » et a
+       explicitement demandé de revenir à la grille 2 colonnes, et de combler
+       le vide en AJOUTANT d'autres vrais extraits dans la colonne courte
+       plutôt qu'en changeant la structure. Retenu : grille 2 colonnes
+       restaurée ; la colonne de gauche (.lp-rex-col) empile maintenant 3
+       extraits réels (frein, moteurs de motivation, Mois 6 du plan) au lieu
+       d'un seul, pour se rapprocher de la hauteur de la fiche métier à
+       droite — sans jamais viser une égalité pixel-parfaite, qui dépendrait
+       toujours du contenu futur. */
   .lp-rex{background:#fff;border:1px solid var(--c-line);border-radius:22px;padding:30px 28px;margin-bottom:28px;}
   .lp-rex-tag{display:inline-block;font-family:'Space Grotesk';font-weight:600;font-size:.78rem;letter-spacing:.06em;color:var(--c-emerald-d);background:var(--c-emerald-soft);border-radius:999px;padding:6px 14px;margin-bottom:20px;}
-  .lp-rex-imgs{display:flex;flex-direction:column;gap:30px;}
+  .lp-rex-imgs{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;}
+  .lp-rex-col{display:flex;flex-direction:column;gap:22px;}
   .lp-rex-imgcard img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--c-line);box-shadow:0 10px 28px rgba(15,42,36,.10);}
   .lp-rex-imgcard p{font-size:.86rem;line-height:1.45;color:var(--c-muted);margin-top:12px;text-align:center;}
+  @media(max-width:820px){.lp-rex-imgs{grid-template-columns:1fr;}}
   .lp-pitch{background:var(--c-cream2);border-left:3px solid var(--c-coral);border-radius:0 10px 10px 0;padding:13px 16px;font-size:.92rem;font-style:italic;line-height:1.6;}
 
   /* Tableau comparatif honnête (IA généraliste vs Cynthia) */
@@ -2403,21 +2406,50 @@ textarea.chat-input{
          nouveau fichier commence exactement à la bordure émeraude du haut de
          la carte « Piste principale » et se termine exactement à la bordure
          du bas, après l'encadré « Ce qui use ». Même contenu, coupe propre.
-         Fichiers (v2, actuels) : rapport_extrait_frein.png (415×1071 crop
-         page 5), rapport_extrait_metier.png (redécoupé pages 7-8, écrase
-         l'ancien fichier du même nom). rapport_extrait_personnalite.png
-         reste sur disque mais n'est plus référencé nulle part — signalé à
-         Faouzi, pas supprimé sans son accord (fichier du dossier de travail). -->
+         Fichiers (v2) : rapport_extrait_frein.png (415×1071 crop page 5),
+         rapport_extrait_metier.png (redécoupé pages 7-8, écrase l'ancien
+         fichier du même nom). rapport_extrait_personnalite.png (v1, devenu
+         orphelin) a été supprimé du disque le même jour, avec l'accord
+         explicite de Faouzi (« apres sa tu peut suprrimer »).
+
+         ── 5e changement le même jour : retour à la grille 2 colonnes,
+         colonne courte complétée plutôt que la structure changée ──
+         Après la bascule en empilement vertical (voir plus haut), Faouzi a
+         vu le rendu réel et jugé que ce n'était « pas bon du tout » : demande
+         explicite de revenir à la grille 2 colonnes ET de combler le vide en
+         ajoutant d'autres extraits réels, pas en aplatissant la mise en page.
+         2 images ajoutées dans la colonne de gauche (sous le frein) :
+         rapport_extrait_moteurs.png (section « Vos moteurs de motivation »,
+         page 5) et rapport_extrait_plan.png (« Mois 6 » du plan semaine par
+         semaine, page 13 — dernier jalon du plan, celui qui se rapproche le
+         plus de ce que Faouzi demandait en évoquant un horizon lointain).
+         Mêmes garanties que les autres : aucune mention de prénom, référence,
+         canton ni permis dans ces deux zones (vérifié à l'œil avant
+         recadrage, bornes calculées par script sur la couleur des puces et
+         des pastilles, pas à l'estimation). Compressées par la même
+         quantification de palette (48 couleurs) : 15,9 Ko et 17,6 Ko. -->
     <div class="lp-rex lp-rv">
       <div class="lp-rex-tag">Un vrai rapport généré par Cynthia — prénom retiré pour préserver son anonymat</div>
       <div class="lp-rex-imgs">
-        <div class="lp-rex-imgcard">
-          <img src="rapport_extrait_frein.png" alt="Extrait réel du rapport Cynth.IA : l'encadré « Votre frein, et ce qu'il révèle vraiment », qui recadre une insécurité (l'âge, le manque de confiance) en ressource réelle, à partir des propres mots de la personne." loading="lazy">
-          <p>Un frein qu'elle nomme et retourne — pas une liste de qualités génériques.</p>
+        <div class="lp-rex-col">
+          <div class="lp-rex-imgcard">
+            <img src="rapport_extrait_frein.png" alt="Extrait réel du rapport Cynth.IA : l'encadré « Votre frein, et ce qu'il révèle vraiment », qui recadre une insécurité (l'âge, le manque de confiance) en ressource réelle, à partir des propres mots de la personne." loading="lazy">
+            <p>Un frein qu'elle nomme et retourne — pas une liste de qualités génériques.</p>
+          </div>
+          <div class="lp-rex-imgcard">
+            <img src="rapport_extrait_moteurs.png" alt="Extrait réel du rapport Cynth.IA : « Vos moteurs de motivation » — accompagner et aider les gens à évoluer, l'authenticité et l'entraide, voir le potentiel chez les autres — tiré directement de ses propres mots en entretien." loading="lazy">
+            <p>Ses propres mots, reliés à ce qui la fait vraiment avancer.</p>
+          </div>
+          <div class="lp-rex-imgcard">
+            <img src="rapport_extrait_plan.png" alt="Extrait réel du rapport Cynth.IA : « Mois 6 » du plan semaine par semaine — finaliser l'entrée en formation ou en apprentissage, vérifier les droits cantonaux à la formation continue." loading="lazy">
+            <p>Un plan daté, jusqu'au dernier jalon — pas juste un premier pas.</p>
+          </div>
         </div>
-        <div class="lp-rex-imgcard">
-          <img src="rapport_extrait_metier.png" alt="Extrait réel du rapport Cynth.IA : fiche métier Éducateur·trice de l'enfance (dipl. ES), 95% d'affinité estimée, CHF ~4 250/mois en début de parcours jusqu'à CHF ~5 000/mois avec l'expérience, formation ES en éducation de l'enfance, financement employeur/bourses cantonales/ORP, premier pas concret de la semaine." loading="lazy">
-          <p>Une fiche métier complète — score, CHF sourcés et datés, formation, financement, premier pas de la semaine.</p>
+        <div class="lp-rex-col">
+          <div class="lp-rex-imgcard">
+            <img src="rapport_extrait_metier.png" alt="Extrait réel du rapport Cynth.IA : fiche métier Éducateur·trice de l'enfance (dipl. ES), 95% d'affinité estimée, CHF ~4 250/mois en début de parcours jusqu'à CHF ~5 000/mois avec l'expérience, formation ES en éducation de l'enfance, financement employeur/bourses cantonales/ORP, premier pas concret de la semaine." loading="lazy">
+            <p>Une fiche métier complète — score, CHF sourcés et datés, formation, financement, premier pas de la semaine.</p>
+          </div>
         </div>
       </div>
     </div>
