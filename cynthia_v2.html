@@ -2361,17 +2361,48 @@ textarea.chat-input{
          prénom, ni référence, ni canton, ni permis G/frontalier — ces
          mentions ne vivent que sur la couverture (page 1, jamais utilisée)
          et dans la section « Cette semaine » (page 12, jamais utilisée).
-         Fichiers : rapport_extrait_personnalite.png, rapport_extrait_metier.png
+         Fichiers (v1) : rapport_extrait_personnalite.png, rapport_extrait_metier.png
          (racine de refonte_deepseek, copiés par push_nouvelle_interface.command).
          Compressés par quantification de palette (48 couleurs, PIL) : le
          document est presque entièrement à plat, aucune perte visible sur
-         le texte, 700 Ko → 160 Ko et 316 Ko → 79 Ko. -->
+         le texte, 700 Ko → 160 Ko et 316 Ko → 79 Ko.
+
+         ── REMPLACÉ une 4e fois le même jour, retour de Faouzi après avoir vu
+         le rendu réel sur mobile ──
+         Deux retours distincts sur ce qu'il a vu de ses propres yeux :
+         (1) l'image Big Five (62%, 58%…) pouvait se lire comme une note basse
+         et « dénigrer » la personne dès le premier coup d'œil, alors que ce
+         sont de simples repères, pas un classement — retirée, remplacée par
+         l'encadré « VOTRE FREIN, ET CE QU'IL RÉVÈLE VRAIMENT » (page 5 du même
+         PDF réel) : aucun chiffre, un recadrage émotionnellement fort qui
+         retourne une insécurité perçue en ressource (« L'âge n'est pas un
+         frein, c'est une ressource. Le manque de confiance, c'est une
+         sensation, pas une réalité. »). Choix laissé à mon appréciation par
+         Faouzi (« tu trouves le moyen le plus impactant ») : ce passage a été
+         préféré à d'autres candidats réels du même rapport (pitch de
+         reconversion, puces CV) parce qu'il ne montre aucun score, qu'il est
+         visuellement distinct (liseré corail, rompt avec le vert dominant) et
+         qu'il démontre directement ce que fait Cynthia de mieux : confronter
+         honnêtement puis recadrer, pas juste lister des compétences.
+         (2) la fiche métier montrait un fragment parasite en haut de l'image
+         (« on voit que c'est coupé ») : le recadrage précédent partait
+         quelques pixels trop haut et laissait passer un éclat du coin
+         inférieur de l'encadré vert au-dessus (« Sur 5 pistes… »). Redécoupé
+         au pixel près (bordure détectée par script, pas à l'œil) : le
+         nouveau fichier commence exactement à la bordure émeraude du haut de
+         la carte « Piste principale » et se termine exactement à la bordure
+         du bas, après l'encadré « Ce qui use ». Même contenu, coupe propre.
+         Fichiers (v2, actuels) : rapport_extrait_frein.png (415×1071 crop
+         page 5), rapport_extrait_metier.png (redécoupé pages 7-8, écrase
+         l'ancien fichier du même nom). rapport_extrait_personnalite.png
+         reste sur disque mais n'est plus référencé nulle part — signalé à
+         Faouzi, pas supprimé sans son accord (fichier du dossier de travail). -->
     <div class="lp-rex lp-rv">
       <div class="lp-rex-tag">Un vrai rapport généré par Cynthia — prénom retiré pour préserver son anonymat</div>
       <div class="lp-rex-imgs">
         <div class="lp-rex-imgcard">
-          <img src="rapport_extrait_personnalite.png" alt="Extrait réel du rapport Cynth.IA : portrait et cinq dimensions de personnalité (ouverture, rigueur, extraversion, amabilité, stabilité émotionnelle), chacune avec sa définition en langage courant, et la précision que ce ne sont pas des scores validés." loading="lazy">
-          <p>Section « Qui vous êtes » — portrait et profil de personnalité, avec la réserve sur ce que ces chiffres veulent (et ne veulent pas) dire.</p>
+          <img src="rapport_extrait_frein.png" alt="Extrait réel du rapport Cynth.IA : l'encadré « Votre frein, et ce qu'il révèle vraiment », qui recadre une insécurité (l'âge, le manque de confiance) en ressource réelle, à partir des propres mots de la personne." loading="lazy">
+          <p>Un frein qu'elle nomme et retourne — pas une liste de qualités génériques.</p>
         </div>
         <div class="lp-rex-imgcard">
           <img src="rapport_extrait_metier.png" alt="Extrait réel du rapport Cynth.IA : fiche métier Éducateur·trice de l'enfance (dipl. ES), 95% d'affinité estimée, CHF ~4 250/mois en début de parcours jusqu'à CHF ~5 000/mois avec l'expérience, formation ES en éducation de l'enfance, financement employeur/bourses cantonales/ORP, premier pas concret de la semaine." loading="lazy">
