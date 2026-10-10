@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Trois mois après — Cynth.IA</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230E2A24'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=fallback" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAF6F0; --cream2:#F1E9DC;
+  --ink:#0E2A24; --muted:#5C6B64;
+  --emerald:#1FB488; --emerald-d:#12876A; --emerald-soft:#E7F4EE;
+  --line:#E8E1D6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--cream);color:var(--ink);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding:0 0 80px;
+}
+
+.top{
+  background:linear-gradient(150deg,#0E2A24,#134034);
+  color:var(--cream);padding:46px 28px 52px;position:relative;overflow:hidden;
+}
+.top::after{
+  content:"";position:absolute;inset:auto -20% -55% 40%;
+  height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(31,180,136,.30),transparent 68%);
+}
+.top .in{max-width:640px;margin:0 auto;position:relative;z-index:1}
+.brand{
+  font-family:'Space Grotesk';font-weight:700;font-size:1.06rem;
+  display:flex;align-items:center;gap:2px;margin-bottom:26px;letter-spacing:-.01em;
+}
+.brand .star{
+  width:11px;height:11px;margin:0 1px;display:inline-block;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4 Q34 30 60 32 Q34 34 32 60 Q30 34 4 32 Q30 30 32 4 Z' fill='%233EE0AE'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.brand .ia{color:#3EE0AE}
+.top h1{
+  font-family:'Space Grotesk';font-weight:600;
+  font-size:clamp(1.5rem,4.4vw,2.1rem);line-height:1.22;
+  letter-spacing:-.02em;margin-bottom:14px;
+}
+.top p{font-size:1rem;opacity:.9;max-width:56ch}
+
+main{max-width:640px;margin:0 auto;padding:0 28px}
+.sec{
+  background:#fff;border:1px solid var(--line);border-radius:20px;
+  padding:32px 30px;margin-top:26px;
+}
+.sec .lab{display:block;font-weight:600;font-size:1.05rem;margin-bottom:6px}
+.sec .sub{font-size:.87rem;color:var(--muted);margin-bottom:18px}
+
+
+.scale .row{display:flex;gap:5px;flex-wrap:wrap}
+.scale button{
+  font:inherit;cursor:pointer;flex:1;min-width:30px;
+  padding:11px 0;font-weight:600;font-size:.9rem;
+  background:var(--cream);border:1px solid var(--line);border-radius:9px;
+  color:var(--ink);transition:transform .16s cubic-bezier(.34,1.3,.5,1),background .16s,border-color .16s,color .16s;
+}
+.scale button:hover{transform:translateY(-2px);border-color:var(--emerald)}
+.scale button[aria-pressed="true"]{
+  background:var(--emerald);border-color:var(--emerald);color:#fff;
+}
+.scale .ends{
+  display:flex;justify-content:space-between;
+  font-size:.76rem;color:var(--muted);margin-top:9px;
+}
+
+.end{margin-top:26px;text-align:center}
+.end .note{font-size:.82rem;color:var(--muted);margin-top:14px;max-width:48ch;margin-inline:auto}
+
+.merci{display:none;text-align:center;padding:0}
+.merci.on{display:block}
+.merci .ic{
+  width:60px;height:60px;margin:0 auto 20px;border-radius:50%;
+  background:var(--emerald-soft);color:var(--emerald-d);
+  display:flex;align-items:center;justify-content:center;font-size:1.7rem;
+}
+.merci h2{font-family:'Space Grotesk';font-weight:600;font-size:1.3rem;margin-bottom:10px}
+.merci p{color:var(--muted);max-width:44ch;margin:0 auto}
+
+.err{
+  display:none;margin-top:16px;background:#FFE9E4;
+  border:1px solid #F5C4BC;border-radius:12px;padding:12px 16px;font-size:.87rem;
+}
+.err.on{display:block}
+
+@media (max-width:560px){
+  .sec{padding:24px 20px;border-radius:16px}
+  main{padding:0 16px}
+  .top{padding:34px 20px 42px}
+  .scale button{min-width:0;padding:11px 0;font-size:.84rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <div class="brand">Cynth<span class="star"></span><span class="ia">IA</span></div>
+    <h1>Trois mois ont passé. Où en êtes-vous&nbsp;?</h1>
+    <p>Une seule question, ça prend dix secondes. Votre réponse est totalement anonyme : elle ne sera jamais reliée à votre rapport, à votre email ni à quoi que ce soit d'autre.</p>
+  </div>
+</header>
+
+<main>
+  <div class="sec" id="bloc-question">
+    <span class="lab">Sur 10, à quel point voyez-vous clair aujourd'hui sur la direction professionnelle à prendre&nbsp;?</span>
+    <div class="sub">Répondez avec ce que vous ressentez maintenant, pas avec ce que vous espériez il y a trois mois.</div>
+    <div class="scale">
+      <div class="row" id="clarte-row">
+        <button type="button" data-v="0">0</button>
+        <button type="button" data-v="1">1</button>
+        <button type="button" data-v="2">2</button>
+        <button type="button" data-v="3">3</button>
+        <button type="button" data-v="4">4</button>
+        <button type="button" data-v="5">5</button>
+        <button type="button" data-v="6">6</button>
+        <button type="button" data-v="7">7</button>
+        <button type="button" data-v="8">8</button>
+        <button type="button" data-v="9">9</button>
+        <button type="button" data-v="10">10</button>
+      </div>
+      <div class="ends"><span>0 · Pas clair du tout</span><span>Très clair · 10</span></div>
+    </div>
+    <div class="end">
+      <p class="note">Un clic suffit, votre réponse part tout de suite. Rien d'autre n'est demandé sur cette page.</p>
+      <div class="err" id="erreur">L'envoi n'a pas fonctionné. Réessayez dans un instant.</div>
+    </div>
+  </div>
+
+  <div class="sec merci" id="merci">
+    <div class="ic">✓</div>
+    <h2>Merci.</h2>
+    <p>C'est noté, anonymement. Ça nous aide à savoir si Cynthia sert vraiment à quelque chose, au-delà du jour où vous l'avez utilisée.</p>
+  </div>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  var WORKER = 'https://cynth-ia-proxy.fazprod12.workers.dev';
+  
+  
+  
+  
+  
+  
+  var CLE_LOCALE = 'cynthia_clarte_3mois_fait';
+
+  var row    = document.getElementById('clarte-row');
+  var blocQ  = document.getElementById('bloc-question');
+  var merci  = document.getElementById('merci');
+  var erreur = document.getElementById('erreur');
+
+  function dejaRepondu(){
+    try { return localStorage.getItem(CLE_LOCALE) === '1'; } catch (e) { return false; }
+  }
+  function marquerRepondu(){
+    try { localStorage.setItem(CLE_LOCALE, '1'); } catch (e) {}
+  }
+
+  if (dejaRepondu()) {
+    blocQ.style.display = 'none';
+    merci.classList.add('on');
+    return;
+  }
+
+  if (!row) return;
+
+  row.addEventListener('click', async function (ev) {
+    var b = ev.target.closest('button[data-v]');
+    if (!b || b.disabled) return;
+
+    row.querySelectorAll('button').forEach(function (x) { x.disabled = true; });
+    b.setAttribute('aria-pressed', 'true');
+    erreur.classList.remove('on');
+
+    var valeur = Number(b.getAttribute('data-v'));
+
+    try {
+      var r = await fetch(WORKER + '/clarte', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        
+        
+        body: JSON.stringify({ moment: '3mois', valeur: valeur })
+      });
+      if (!r.ok) throw new Error('statut ' + r.status);
+
+      marquerRepondu();
+      blocQ.style.display = 'none';
+      merci.classList.add('on');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      row.querySelectorAll('button').forEach(function (x) { x.disabled = false; });
+      b.removeAttribute('aria-pressed');
+      erreur.classList.add('on');
+    }
+  });
+})();
+</script>
+</body>
+</html>

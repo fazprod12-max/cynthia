@@ -3,22 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- ⚠️ PHASE DE TEST PRIVEE — a retirer le jour de l'ouverture publique.
-     Cette page n'a pas de porte d'acces (contrairement au produit) : elle ne coute
-     rien a servir et elle est faite pour etre envoyee a un journaliste ou partagee
-     sur LinkedIn. Le noindex suffit tant qu'on n'est pas ouvert. -->
+
 <meta name="robots" content="noindex, nofollow">
 <title>Qui est derrière Cynth.IA — Faouzie Samhoud, Genève</title>
 <meta name="description" content="Pourquoi un entrepreneur installé à Genève a construit le conseiller en orientation qu'il cherchait. L'histoire derrière Cynth.IA.">
-<!-- Aligné sur le H1 le 15 août 2026 : c'est cette phrase qui accroche le lecteur
-     quand la page est partagée sur LinkedIn ou WhatsApp. ⚠️ Les réseaux gardent
-     leur premier aperçu très longtemps : après déploiement, forcer le
-     rafraîchissement via le Post Inspector LinkedIn / Sharing Debugger Facebook. -->
+
 <meta property="og:title" content="Personne ne choisit vraiment son métier">
 <meta property="og:description" content="En Suisse, avant 40 ans, l'orientation professionnelle n'est accessible à presque personne. L'histoire derrière Cynth.IA.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://cynthia-orientation.ch/histoire.html">
-<!-- Adresse absolue obligatoire : les reseaux sociaux ne resolvent pas le relatif. -->
+
 <meta property="og:image" content="https://cynthia-orientation.ch/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -38,10 +32,7 @@
   --coral:#FF6F5E; --coral-soft:#FFE9E4;
   --line:#E8E1D6;
 
-  /* ── LE PORTRAIT ────────────────────────────────────────────────────────
-     Posé le 24 août 2026 : faouzi.jpg (800x800), recadré en carré centré sur
-     le visage à partir d'une photo qu'il a validée. Le script de déploiement
-     copie le fichier automatiquement. */
+  
   --portrait: url('faouzi.jpg');
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -53,7 +44,7 @@ body{
 }
 .wrap{max-width:660px;margin:0 auto;padding:0 24px}
 
-/* ── EN-TETE ────────────────────────────────────────────────────────────── */
+
 .top{
   background:linear-gradient(150deg,#0E2A24,#134034);
   color:var(--cream);padding:34px 0 78px;position:relative;overflow:hidden;
@@ -92,7 +83,7 @@ body{
 }
 .top .lead{font-size:1.06rem;color:#C3D5CD;max-width:52ch}
 
-/* ── CORPS ──────────────────────────────────────────────────────────────── */
+
 main{padding:66px 0 40px}
 section{margin-bottom:56px}
 h2{
@@ -105,7 +96,7 @@ p:last-child{margin-bottom:0}
 strong{font-weight:600;color:var(--ink)}
 .em{color:var(--emerald-d);font-weight:600}
 
-/* Phrase mise en avant, sans guillemets decoratifs */
+
 .pull{
   font-family:'Space Grotesk';font-weight:500;
   font-size:clamp(1.18rem,3.2vw,1.42rem);line-height:1.4;letter-spacing:-.015em;
@@ -113,7 +104,7 @@ strong{font-weight:600;color:var(--ink)}
   padding:4px 0 4px 22px;margin:30px 0;border-radius:0;
 }
 
-/* Encadre factuel — sert aussi de bloc citable pour la presse */
+
 .fact{
   background:#fff;border:1px solid var(--line);border-radius:16px;
   padding:24px 26px;margin:28px 0;
@@ -131,14 +122,14 @@ strong{font-weight:600;color:var(--ink)}
 }
 .fact .src{margin-top:16px;font-size:.8rem;color:var(--muted);line-height:1.5}
 
-/* Liste « ce que je voulais savoir » */
+
 .want{display:flex;flex-wrap:wrap;gap:9px;margin:24px 0 4px}
 .want span{
   background:var(--cream2);border-radius:100px;padding:9px 17px;
   font-size:.92rem;font-weight:500;color:#2C4139;
 }
 
-/* Ce que je promets / ne promets pas */
+
 .promise{display:flex;flex-direction:column;gap:11px;margin-top:24px}
 .pr{
   background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px 20px;
@@ -154,7 +145,7 @@ strong{font-weight:600;color:var(--ink)}
 .pr b{display:block;font-weight:600;font-size:.98rem;margin-bottom:3px}
 .pr span.t{font-size:.94rem;color:var(--muted);line-height:1.55}
 
-/* ── SIGNATURE ──────────────────────────────────────────────────────────── */
+
 .sign{
   background:#fff;border:1px solid var(--line);border-radius:20px;
   padding:30px 28px;display:flex;gap:22px;align-items:center;margin-top:8px;
@@ -167,7 +158,7 @@ strong{font-weight:600;color:var(--ink)}
   font-family:'Space Grotesk';font-weight:600;font-size:1.5rem;color:#3EE0AE;
   letter-spacing:.02em;
 }
-/* Le monogramme disparait des qu'une vraie photo est posee. */
+
 .avatar.has-photo{color:transparent}
 .sign .who b{
   display:block;font-family:'Space Grotesk';font-weight:600;
@@ -175,7 +166,7 @@ strong{font-weight:600;color:var(--ink)}
 }
 .sign .who span{display:block;font-size:.94rem;color:var(--muted);line-height:1.5}
 
-/* ── PIED ───────────────────────────────────────────────────────────────── */
+
 .cta{
   background:linear-gradient(150deg,#0E2A24,#134034);color:var(--cream);
   padding:58px 0;margin-top:62px;text-align:center;
@@ -197,7 +188,7 @@ strong{font-weight:600;color:var(--ink)}
 .presse a:hover{text-decoration:underline}
 .foot{padding:26px 0 40px;text-align:center;font-size:.84rem;color:var(--muted)}
 
-/* ── ANIMATION : une seule fois, a l'arrivee, puis c'est calme ──────────── */
+
 .rv{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
 .rv.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){
@@ -223,11 +214,7 @@ strong{font-weight:600;color:var(--ink)}
       <a class="backlink" href="index.html">Retour au site</a>
     </div>
     <div class="eyebrow">Qui est derrière Cynth.IA</div>
-    <!-- Titre changé le 15 août 2026. L'ancien (« J'ai construit le conseiller que
-         je cherchais ») racontait ce que le fondateur a FAIT ; celui-ci énonce ce
-         qu'il a VU, et le lecteur s'y reconnaît dès la première ligne. La phrase
-         « j'ai construit le conseiller que je cherchais » n'est pas perdue : elle
-         devient la conclusion du récit, à sa vraie place. -->
+    
     <h1>Personne ne choisit vraiment son métier.</h1>
     <p class="lead">Je m'appelle Faouzie. On fait ce qu'un proche a fait avant nous, on suit quelqu'un qu'on admire, ou on prend le poste qui paie les factures ce mois-ci. Puis dix ans passent. Je me suis retrouvé exactement là, et c'est de cette place que j'ai construit Cynth.IA.</p>
   </div>
@@ -243,8 +230,7 @@ strong{font-weight:600;color:var(--ink)}
   </section>
 
   <section class="rv">
-    <!-- Ce titre était identique au H1 depuis que la thèse est passée en tête de
-         page (15 août 2026). Renommé pour poursuivre le récit au lieu de le répéter. -->
+    
     <h2>On est choisi par les circonstances</h2>
     <p>Plus j'y réfléchissais, plus je voyais la même chose partout autour de moi. Ce n'est pas une histoire d'ambition ou de courage : c'est une histoire de temps. Personne ne nous en donne pour poser la question.</p>
     <p>On fait ce qu'un proche a fait avant nous. On suit la voie d'une personne qu'on admire. On prend le poste qui se présente parce qu'il faut payer les factures ce mois-ci, et ce mois-ci devient dix ans. Ce ne sont pas de mauvaises décisions : ce sont des décisions prises sans avoir jamais eu le temps de se demander ce qu'on voulait vraiment.</p>
@@ -273,7 +259,8 @@ strong{font-weight:600;color:var(--ink)}
     <div class="fact">
       <h3>Ce que j'ai trouvé en cherchant</h3>
       <ul>
-        <li><strong>Le bilan de compétences privé.</strong> Environ 280 francs la séance, à peu près 2 000 francs au total, dix-huit heures réparties sur deux à trois mois, sur rendez-vous.</li>
+        
+        <li><strong>Le bilan de compétences privé.</strong> Environ 280 francs la séance, entre 1 500 et 2 000 francs au total, dix-huit heures réparties sur deux à trois mois, sur rendez-vous.</li>
         <li><strong>viamia, le dispositif public cantonal.</strong> Gratuit, sérieux, très bien fait. Mais il commence à <strong>40 ans</strong>, et il exclut les personnes au chômage, à l'AI ou à l'aide sociale.</li>
         <li><strong>Entre les deux : rien.</strong> Ni pour celui qui a 28 ans et se réveille un dimanche soir. Ni pour celle qui vient de perdre son emploi. Ni pour la personne arrivée l'an dernier et qui ne sait pas par où commencer.</li>
       </ul>
@@ -286,23 +273,11 @@ strong{font-weight:600;color:var(--ink)}
     <h2>Alors je l'ai construite</h2>
     <p>Je n'ai pas cherché à faire une entreprise. J'ai construit le conseiller que je cherchais, pour me répondre à moi-même. J'ai commencé par apprendre le terrain suisse pour de vrai : les métiers un par un, avec les vraies compétences qu'ils demandent, les vrais salaires en francs, les vraies formations, et l'état réel du marché. Pas des généralités trouvées quelque part, des sources officielles. Et la base continue de s'étoffer, secteur après secteur.</p>
     <p>Puis je lui ai donné ce qui lui manquait : une façon d'écouter. J'ai mis dedans toutes les choses que j'aurais aimé qu'on découvre de moi. Ce qui fait ma force. Ce qui fait ma faiblesse. Ce que je ne voyais plus parce que je le faisais tous les jours. Je lui ai appris à creuser au lieu de flatter, parce que ce dont j'avais besoin, ce n'était pas d'être rassuré. C'était d'être vu.</p>
-    <!-- Réécrit le 15 août 2026. L'ancienne fin (« elle vous montre ce que ça
-         vaut ») était plate et ne disait pas l'essentiel : ce qui bloque les gens
-         n'est pas le manque d'idées, c'est d'en avoir mille et de ne pas savoir
-         laquelle est la leur. L'image de la boussole était sous nos yeux depuis
-         le début : le symbole de Cynth.IA EST une rose des vents. -->
+    
     <p>C'est ça, l'âme de Cynthia. Elle ne vous demande pas ce que vous voulez faire : c'est cette question-là qui vous noie, parce qu'elle ouvre mille possibilités sans jamais en fermer une seule. Elle vous fait raconter ce que vous avez déjà fait, et elle en tire une direction.</p>
     <div class="pull">Une boussole ne montre pas tous les chemins. Elle montre le nord.</div>
     <p>Le reste, c'est vous qui marchez. Mais vous saurez enfin dans quel sens, et pourquoi c'est celui-là. Ce n'est pas un hasard si le symbole de Cynth.IA est une rose des vents.</p>
-    <!-- ⚠️ SECTION « Ce qu'elle m'a répondu » RETIRÉE le 22 août 2026, décision
-         de Faouzi. Elle racontait qu'il avait passé Cynthia sur lui-même et que
-         sa première force était d'aider les gens, puis qu'il la mettait à
-         disposition « comme preuve que l'outil dit vrai ».
-         Deux raisons de la retirer : le récit reposait sur une découverte qui
-         n'en était pas une (le texte l'admettait lui-même), et se citer en
-         exemple affaiblit le propos au lieu de le soutenir. L'accroche de la
-         landing ne s'appuyait plus dessus depuis le 15 août : rien ne casse.
-         Seul le paragraphe qui portait la thèse est conservé, ci-dessous. -->
+    
     <p>Un bilan qui vaut quelque chose ne vous apprend pas qui vous êtes. Il vous donne les mots pour le dire, et de quoi le prouver. Entre les deux, il y a toute la distance qui sépare un doute qu'on rumine le dimanche soir d'une phrase qu'on ose dire en entretien.</p>
   </section>
 
@@ -313,23 +288,7 @@ strong{font-weight:600;color:var(--ink)}
       <div class="pr no"><span class="mk">—</span><span><b>Je ne vous promets pas votre vocation</b><span class="t">Personne ne peut faire ça, et ceux qui le promettent vous vendent quelque chose. Ce que vous aurez, c'est une direction claire et un premier pas concret.</span></span></div>
       <div class="pr no"><span class="mk">—</span><span><b>Je ne remplace pas un conseiller humain</b><span class="t">Si viamia vous est ouvert, allez-y, c'est gratuit et c'est bien. Cynthia est là pour ceux à qui la porte est fermée, et pour arriver préparé chez ceux à qui elle est ouverte.</span></span></div>
       <div class="pr yes"><span class="mk">✓</span><span><b>Je vous promets qu'on ne vous flattera pas</b><span class="t">Votre entourage vous encourage, c'est son rôle. Cynthia regarde vos réponses en face. Si une piste ne tient pas, elle vous le dit maintenant, pas dans deux ans.</span></span></div>
-      <!-- ⚠️ Réécrit le 22 août 2026. L'ancienne version disait « Je vous promets
-           du suisse, et du vérifiable […] Aucun chiffre inventé. » Faouzi l'a
-           trouvée « scameur », et il a raison : plus on jure qu'on ne ment pas,
-           plus on donne envie de vérifier. Une promesse se croit ou pas ; une
-           source datée se contrôle. On montre donc le mécanisme au lieu de le
-           jurer, et on relie la précision au symbole de la marque : une boussole
-           déréglée ne sert à rien.
-           ⚠️ Ajout du 24 août : « quand une source est fragile, la fiche le dit ».
-           C'est l'argument le plus fort et personne ne l'écrit — mais il n'est
-           écrit ici QUE parce qu'il est vrai : 33 fiches sur 138 portent une
-           réserve explicite dans leur champ salaire_source (« à affiner »,
-           « les sources se contredisent », « proxy », « à confirmer »).
-           Si un jour ces réserves disparaissent de la base, cette phrase
-           devient un mensonge : un test la surveille dans test_histoire.js.
-           ⚠️ Aucun nombre de fiches sur cette page : un chiffre qui rassure le
-           fondateur inquiète le client (« seulement 138 ? et le mien ? »).
-           Les volumes vont à la presse, jamais à la page de vente. -->
+      
       <div class="pr yes"><span class="mk">✓</span><span><b>Des sources vérifiées, et tenues à jour</b><span class="t">Des francs, des CFC, des brevets fédéraux, l'article 32, les financements cantonaux. Chaque salaire porte sa source et la date de son relevé, et quand une source est fragile, la fiche le dit au lieu de faire semblant. Une boussole ne vaut que par sa précision : celle-ci, on la revérifie.</span></span></div>
       <div class="pr yes"><span class="mk">✓</span><span><b>Je vous promets que vos mots restent les vôtres</b><span class="t">Votre CV est lu dans votre navigateur et n'est jamais envoyé nulle part. Rien n'est stocké sur nos serveurs, et rien ne sert à entraîner quoi que ce soit.</span></span></div>
     </div>
@@ -364,13 +323,13 @@ strong{font-weight:600;color:var(--ink)}
 
 <script>
 (function(){
-  // Le monogramme s'efface tout seul si une vraie photo a ete posee.
+  
   try{
     var av=document.getElementById('av');
     if(av&&getComputedStyle(av).backgroundImage!=='none')av.classList.add('has-photo');
   }catch(e){}
 
-  // Revelation au defilement : une fois, puis plus rien ne bouge.
+  
   var els=document.querySelectorAll('.rv');
   var calme=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(calme||!('IntersectionObserver' in window)){

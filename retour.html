@@ -26,7 +26,7 @@ body{
   padding:0 0 80px;
 }
 
-/* ── EN-TÊTE ── */
+
 .top{
   background:linear-gradient(150deg,#0E2A24,#134034);
   color:var(--cream);padding:46px 28px 52px;position:relative;overflow:hidden;
@@ -58,7 +58,7 @@ body{
   padding:7px 15px;border-radius:100px;
 }
 
-/* ── STRUCTURE ── */
+
 main{max-width:720px;margin:0 auto;padding:0 28px}
 .sec{
   background:#fff;border:1px solid var(--line);border-radius:20px;
@@ -82,7 +82,7 @@ main{max-width:720px;margin:0 auto;padding:0 28px}
 .q .sub{font-size:.85rem;color:var(--muted);margin-bottom:12px}
 .q .req{color:var(--coral);font-weight:700}
 
-/* ── ÉCHELLE 1 À 10 ── */
+
 .scale{margin-top:10px}
 .scale .row{display:flex;gap:5px;flex-wrap:wrap}
 .scale button{
@@ -100,7 +100,7 @@ main{max-width:720px;margin:0 auto;padding:0 28px}
   font-size:.76rem;color:var(--muted);margin-top:7px;
 }
 
-/* ── CHOIX ── */
+
 .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .opts button{
   font:inherit;cursor:pointer;
@@ -114,7 +114,7 @@ main{max-width:720px;margin:0 auto;padding:0 28px}
 }
 .opts.warm button[aria-pressed="true"]{background:var(--coral);border-color:var(--coral)}
 
-/* ── TEXTE ── */
+
 textarea,input[type=text],input[type=email]{
   font:inherit;width:100%;margin-top:10px;
   background:var(--cream);border:1px solid var(--line);border-radius:12px;
@@ -124,7 +124,7 @@ textarea{min-height:88px;line-height:1.55}
 textarea:focus,input:focus{outline:none;border-color:var(--emerald);background:#fff}
 textarea::placeholder,input::placeholder{color:#9AA8A1}
 
-/* ── ENVOI ── */
+
 .end{margin-top:30px;text-align:center}
 .send{
   font:inherit;cursor:pointer;font-family:'Space Grotesk';
@@ -144,7 +144,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 .err.on{display:block}
 .err b{display:block;margin-bottom:4px}
 
-/* ── MERCI ── */
+
 .merci{display:none;text-align:center;padding:70px 28px}
 .merci.on{display:block}
 .merci .ic{
@@ -188,7 +188,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 
 <main id="form">
 
-  <!-- 1 ─────────────────────────────────────────────── -->
+  
   <section class="sec">
     <div class="hd"><span class="num">01</span><h2>Vous, en trois clics</h2></div>
     <p class="hint">Pour comprendre à qui Cynthia parle bien, et à qui elle parle mal.</p>
@@ -228,7 +228,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     </div>
   </section>
 
-  <!-- 2 ─────────────────────────────────────────────── -->
+  
   <section class="sec">
     <div class="hd"><span class="num">02</span><h2>La conversation avec Cynthia</h2></div>
     <p class="hint">Le moment où vous discutiez avec elle, avant le rapport.</p>
@@ -261,7 +261,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 
   </section>
 
-  <!-- 3 ─────────────────────────────────────────────── -->
+  
   <section class="sec">
     <div class="hd"><span class="num">03</span><h2>Le rapport</h2></div>
     <p class="hint">Le document que vous avez reçu à la fin.</p>
@@ -294,17 +294,12 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 
 </section>
 
-  <!-- 4 ─────────────────────────────────────────────── -->
+  
   <section class="sec">
     <div class="hd"><span class="num">04</span><h2>Ce que ça vaut</h2></div>
     <p class="hint">Ne soyez pas gentil avec moi, ça ne m'aiderait pas. C'est la section qui décide du prix, et je n'ai personne d'autre pour me le dire.</p>
 
-    <!-- Question d'entrée ajoutée le 18 août 2026. Le questionnaire était écrit
-         pour des testeurs qui n'avaient rien payé. À partir du lancement, deux
-         publics le remplissent : ceux qui ont payé, et les parcours offerts.
-         Demander « auriez-vous payé ? » à quelqu'un qui vient de payer est
-         absurde, et fausse la lecture des réponses. On sépare donc les deux
-         dès le départ. -->
+    
     <div class="q">
       <span class="lab">Comment avez-vous obtenu ce rapport ? <span class="req">*</span></span>
       <div class="opts" data-champ="acquisition">
@@ -362,12 +357,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 
 </section>
 
-  <!-- 4bis ─── Est-ce que ça compte pour vous ? ─────────────────────────
-       Ces deux questions ne parlent PAS d'argent : elles mesurent l'attachement.
-       Elles étaient noyées au milieu des grilles de prix, où « recommanderiez-vous »
-       coupait le bloc en deux et séparait « combien » de « pourquoi ». Regroupées
-       ici, elles retrouvent leur sens et ce sont les deux réponses les plus utiles
-       du questionnaire. -->
+  
   <section class="sec">
     <div class="hd"><span class="num">05</span><h2>Est-ce que ça compte</h2></div>
     <p class="hint">Deux questions, et ce sont peut-être les plus importantes de toutes.</p>
@@ -383,7 +373,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 
   </section>
 
-  <!-- 5 ─────────────────────────────────────────────── -->
+  
   <section class="sec">
     <div class="hd"><span class="num">06</span><h2>Le mot de la fin</h2></div>
 
@@ -454,7 +444,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
   var CLE_LOCALE = 'cynthia_retour_brouillon';
   var reponses = {};
 
-  /* ── Construction des échelles 1 à 10 ───────────────────────── */
+  
   document.querySelectorAll('[data-scale]').forEach(function(bloc){
     var champ = bloc.getAttribute('data-scale');
     var html = '<span class="lab">' + bloc.getAttribute('data-lab') + '</span>';
@@ -470,7 +460,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     bloc.innerHTML = html;
   });
 
-  /* ── Sélection (échelles et choix) ──────────────────────────── */
+  
   document.addEventListener('click', function(ev){
     var b = ev.target.closest('.scale .row button, .opts button');
     if (!b) return;
@@ -481,7 +471,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     var deja = b.getAttribute('aria-pressed') === 'true';
     groupe.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
 
-    if (deja) {                       // deuxième clic : on désélectionne
+    if (deja) {                       
       delete reponses[champ];
     } else {
       b.setAttribute('aria-pressed','true');
@@ -492,7 +482,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     sauver();
   });
 
-  /* ── Champs texte ───────────────────────────────────────────── */
+  
   document.querySelectorAll('textarea[data-champ], input[data-champ]').forEach(function(el){
     el.addEventListener('input', function(){
       var v = el.value.trim();
@@ -502,7 +492,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     });
   });
 
-  /* ── Brouillon local : rien ne se perd si la page se ferme ──── */
+  
   var minuteur = null, badge = document.getElementById('sauv');
   function sauverTardif(){ clearTimeout(minuteur); minuteur = setTimeout(sauver, 900); }
   function sauver(){
@@ -511,7 +501,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       badge.classList.add('on');
       clearTimeout(badge._t);
       badge._t = setTimeout(function(){ badge.classList.remove('on'); }, 1400);
-    } catch (e) { /* navigation privée : tant pis */ }
+    } catch (e) {  }
   }
 
   function restaurer(){
@@ -536,11 +526,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
   }
   restaurer();
 
-  /* ── La section prix s'adresse à deux publics ────────────────────
-     Ajouté le 18 août 2026. Jusqu'ici tous les répondants avaient reçu le
-     rapport gratuitement. À partir du lancement, une partie l'aura payé :
-     leur demander « auriez-vous payé ? » n'a aucun sens et rend leurs
-     réponses inexploitables. On reformule la question dès qu'ils l'indiquent. */
+  
   var labPaierait = document.getElementById('lab-paierait');
   var TEXTE_PAYE  = 'Avec le recul, est-ce que ça les valait ? ';
   var TEXTE_OFFERT = 'Auriez-vous payé pour ce rapport ? ';
@@ -551,12 +537,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     labPaierait.innerHTML = (paye ? TEXTE_PAYE : TEXTE_OFFERT) + '<span class="req">*</span>';
   });
 
-  /* ── Les questions conditionnelles ───────────────────────────────
-     Elles n'apparaissent que pour ceux qu'elles concernent. Le questionnaire
-     paraît alors nettement plus court à celui qui n'a rencontré aucun bug et
-     ne souhaite pas être cité, sans qu'on perde une seule réponse chez les
-     autres. Si le JavaScript ne tourne pas, on les affiche : mieux vaut une
-     question de trop qu'une donnée jamais collectée. */
+  
   (function conditionnelles () {
     var champBug = document.getElementById('bug');
     var blocCit  = document.getElementById('q-citation');
@@ -574,7 +555,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     });
   })();
 
-  /* ── Envoi ──────────────────────────────────────────────────── */
+  
   var bouton = document.getElementById('envoyer');
   var zoneErr = document.getElementById('erreur');
   var txtErr  = document.getElementById('erreur-txt');
