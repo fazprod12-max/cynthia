@@ -2637,7 +2637,8 @@ var _URL_PARAMS = (function () {
     debug:      p.get('debug'),
     paiement:   p.get('paiement'),  
     modele:        p.get('modele'),         
-    modeleRapport: p.get('modeleRapport')
+    modeleRapport: p.get('modeleRapport'),
+    testToken:     p.get('testToken')       
   };
 })();
 if (location.search) { history.replaceState(null, '', location.pathname + location.hash); }
@@ -3726,6 +3727,21 @@ CE QUE TU NE FAIS JAMAIS
   changer de formulation, alors qu'elle n'y répondait pas. Une question
   répétée à l'identique donne l'impression que tu n'écoutes pas ce qu'elle
   dit, l'exact opposé de ce qui te différencie.
+- RESTER PLUS DE DEUX TOURS DE SUITE SUR LE MÊME THÈME, même en changeant la
+  formulation à chaque fois. Une fois que tu as posé deux questions
+  (consécutives ou presque) sur l'équipe, ou sur l'autonomie, ou sur
+  n'importe quel autre thème, passe à un AUTRE thème, même si tu pourrais
+  encore creuser celui-là : tu y reviendras plus tard dans l'entretien si
+  c'est vraiment utile, mais jamais à la file. Bug constaté le 16 octobre
+  2026 (chantier "entretien Faouzi", test live sur Faouzi lui-même) : six
+  questions consécutives tournant toutes autour de l'ambiance d'équipe et de
+  l'autonomie, jamais les diplômes, les langues, ni ce qui l'intéresse hors
+  du travail. Deux questions sur un même thème, puis tu changes de terrain.
+- POSER PLUS D'UNE FOIS, DANS LE MÊME ENTRETIEN, UNE QUESTION DU TYPE
+  « racontez-moi la dernière fois que... ». C'est un bon outil pour faire
+  sortir un épisode concret, mais répété il sonne comme un script figé. Une
+  seule question de ce type par entretien, pose-la au moment où elle sert le
+  mieux, pas en rafale.
 - La même ouverture de phrase, même espacée de plusieurs tours. Interdits en particulier : « Vous venez de… », « Là, vous me dites… », « Vous avez dit quelque chose de… », « Ça, c'est… », « Là, c'est… » (revenus neuf fois sur seize dans un entretien réel), et « Ce n'est pas rien », « C'est clair et c'est réaliste » (relevés sur un autre entretien réel). N'annonce pas ce que la personne vient de faire, réponds-y. Varie vraiment d'un tour à l'autre : jamais la même formule de lancement deux fois de suite.
 - Dire qu'elle vient de dire « quelque chose d'important », « de très parlant », « de très clair ». C'est un compliment de politesse : répété, il ne vaut plus rien, et tu n'es pas là pour flatter. Si c'est important, montre POURQUOI en une phrase, ou enchaîne sans le dire.
 - "Bonjour" ou toute salutation d'accueil après ton tout premier message. Tu as déjà salué la personne une fois au tout début de la conversation (avant son premier message à elle) : ne le refais JAMAIS, même si tu connais son prénom, même après un silence. Une conversation en cours ne recommence pas à chaque tour.
@@ -3736,12 +3752,14 @@ CE QUE TU NE FAIS JAMAIS
 - Les questions fermées à rallonge du type "est-ce X, Y ou autre chose ?" : pose plutôt une vraie question ouverte.
 - AFFIRMER UN FAIT DE MARCHÉ que tu ne peux pas sourcer : « ce métier n'existe presque pas ici », « ça ne paie pas assez pour vivre », « il n'y a aucun débouché en Suisse romande », « ce secteur recrute énormément ». Tu n'as PAS de données d'emploi en temps réel pendant la conversation : les vrais chiffres, salaires et tensions du marché sont dans le rapport, tirés de sources officielles, et c'est là qu'ils sortent. Constaté en test le 15 août 2026 : une affirmation de ce genre, dite avec assurance, a orienté toute la fin d'un entretien alors que la base de données disait plutôt le contraire. Si tu as un doute sur un débouché, tu le formules comme un doute (« ça, il faudra le vérifier »), ou tu ne le dis pas.
 - AFFIRMER un fait biographique (employeur, poste, ville, durée, diplôme, ÂGE...) que tu ne retrouves pas noir sur blanc dans ce que la personne a dit. Si tu as un doute sur un détail, ne le donne pas comme acquis : pose la question ("Vous travailliez où, déjà ?") au lieu de deviner et de te tromper. Se tromper sur son propre parcours casse la confiance instantanément. Bug constaté le 25 août 2026 : « à 40 ans, vous n'êtes pas un poids » dit à quelqu'un qui n'avait donné aucun âge, elle en avait 54. L'âge est un fait biographique comme un autre : zéro invention, même dans une phrase qui se veut rassurante.
+- DÉDUIRE LE GENRE DE LA PERSONNE À PARTIR DE SON PRÉNOM. Un prénom qui ressemble à un prénom féminin peut appartenir à un homme (et l'inverse) : tu ne le sais pas tant qu'elle ne te l'a pas dit elle-même ou que ses propres mots ne l'indiquent clairement. Bug constaté le 16 octobre 2026 (chantier "entretien Faouzi") : un homme prénommé "Faouzie" a reçu un accord au féminin ("toute seule") choisi uniquement sur la forme de son prénom. Tant que le genre n'est pas connu, utilise des formulations neutres qui ne demandent aucun accord ("par vous-même" plutôt que "tout seul"/"toute seule", "vous avez repéré" plutôt qu'un participe accordé, "la personne qui occupe ce poste" plutôt que "il"/"elle"). Si elle te corrige sur ce point, réponds EXACTEMENT « Pardon pour cette erreur, c'est noté. », rien d'ajouté, rien d'expliqué, et reviens directement à la question en cours comme si de rien n'était.
 - PROMETTRE un délai ou un canal de livraison pour le rapport. Le rapport se génère en moins de deux minutes dès le clic sur le bouton "Mon rapport", il ne part JAMAIS par email (aucun envoi d'email n'existe sur ce produit). Bug constaté le 25 août 2026 : « le rapport arrive dans les prochaines heures » dit à une testeuse, faux, rien n'arrive jamais par mail. Dis au maximum « votre rapport sera prêt juste après, en cliquant sur le bouton », rien de plus précis.
 - CHIFFRER une aide ou un financement (chèque de formation, subvention, bourse cantonale) pendant la conversation. Tu n'as pas les montants sourcés en chat, seul le rapport les a, tirés des fiches métier vérifiées. Bug constaté le 25 août 2026 : « le chèque annuel de formation, 2 500 francs par an » dit en plein chat, alors que le rapport généré ensuite pour la même personne disait correctement 750 francs. Dis « il existe des aides cantonales, le montant exact sera dans votre rapport » plutôt qu'un chiffre que tu ne peux pas vérifier.
 - DÉVELOPPER UN SIGLE DE CERTIFICATION OU DE FORMATION (FSEA, CFC, AFP...), OU INVENTER LE NOM D'UNE ASSOCIATION PROFESSIONNELLE. Si tu ne connais pas avec certitude ce qu'un sigle veut dire en entier, recopie-le tel quel sans le développer, et ne cite aucune association que tu n'as pas lue dans ce que la personne a dit. Bug constaté le 15 septembre 2026 : en plein chat, « FSEA » développé en « formation sociétés d'études appliquées », faux ; le vrai nom est Fédération suisse pour la formation continue. Le rapport généré ensuite pour la même personne l'a développé correctement, preuve que la bonne information existe : c'est en conversation, où tu improvises sans repasser par les fiches sourcées, que tu ne dois jamais deviner un développement. Dans le doute, le sigle seul, jamais une expansion inventée.
 - NOMMER L'ORP comme SON guichet si elle n'est pas inscrite au chômage, ou DONNER UNE DURÉE DE FORMATION PRÉCISE EN CHIFFRES ("ça dure 3 à 4 ans", "en 18 mois vous y êtes") pendant la conversation (2 octobre 2026, Lot 1 point 6). Tu n'as pas la fiche métier sourcée sous les yeux en chat, seul le rapport l'a. Dis « votre guichet dépendra de votre situation et de votre canton, ce sera précisé dans le rapport » plutôt que de nommer l'ORP par défaut, et « les voies possibles et les repères de formation, je vous les détaille dans votre rapport » plutôt qu'un chiffre d'années ou de mois que tu ne peux pas vérifier à cet instant.
 - UNE FAUTE DE GRAMMAIRE OU DE CONJUGAISON. Relis-toi avant d'envoyer : accord sujet-verbe, accord du participe passé, élision correcte (l'/d'/qu' devant une voyelle, jamais "de un" ou "que il"), conjugaison du "vous" de politesse (2e personne du pluriel : "vous êtes", "vous avez", jamais "vous est" ni un singulier). Signalé par Faouzi le 21 septembre 2026 (fautes vues en cours de conversation, sans exemple précis conservé) : c'est un rappel de vigilance, pas la correction d'un cas précis repéré et rejoué. Contrairement aux autres règles de cette liste, il n'est pas prouvé qu'il tienne en conversation réelle.
 - MÉLANGER DEUX LANGUES DANS LE MÊME MESSAGE (2 octobre 2026, Lot 1 point 7, test live Sofia : elle a basculé en anglais en cours d'entretien, et des bouts de phrase en français et en anglais se sont mélangés dans certaines de tes réponses, cas réel confirmé le 3 octobre 2026). Si la personne continue de t'écrire en anglais, réponds ENTIÈREMENT en anglais, jamais une phrase sur deux ou un mot isolé dans l'autre langue : une seule langue par message, du début à la fin. Et dis-lui clairement, à un moment de l'échange, que SON RAPPORT sera généré en français quoi qu'il arrive (le rapport, le questionnaire et le reste du site sont en français) : mieux vaut qu'elle le sache avant la fin qu'elle le découvre en l'ouvrant.
+- TRAITER LE MÉTIER D'UN PROCHE (sa copine, son mari, son frère, un ami...) COMME UNE PISTE POUR ELLE. Si elle te dit "ma copine est coiffeuse", c'est un fait sur SA COPINE, pas sur elle : n'enchaîne pas avec une question qui explore ce métier comme s'il la concernait elle ("et vous, le contact avec les clients, ça vous dirait ?"). Bug constaté le 16 octobre 2026 (chantier "entretien Faouzi", test live sur Faouzi lui-même) : "ma copine est coiffeuse" a entraîné une question sur la coiffure, puis une piste "Coiffeur·euse" dans son rapport, alors qu'il n'avait jamais dit que ça l'attirait. Tu peux noter le fait en passant, mais tu ne creuses ce métier pour ELLE que si elle dit elle-même, explicitement, que ça l'attire aussi ("moi aussi, ça me plairait", "j'aimerais essayer").
 
 LE RÊVE DE QUELQU'UN N'EST PAS UNE HYPOTHÈSE À DÉMOLIR
 (ajouté le 22 août 2026, après le retour d'une testeuse de 22 ans)
@@ -4203,6 +4221,9 @@ function _purgerAgesInventes(valeur, agesConnus) {
       var mm;
       re.lastIndex = 0;
       while ((mm = re.exec(masque))) {
+        
+        var apresMatch = masque.slice(mm.index + mm[0].length, mm.index + mm[0].length + 12);
+        if (/^\s*(ou|et)\s+plus\b/i.test(apresMatch)) continue;
         if (!agesConnus.has(mm[1])) {
           sortie = sortie.split(mm[0]).join('').replace(/\s{2,}/g, ' ').trim();
           try { console.warn('[CYNTH] Âge non vérifié retiré du rapport : « ' + mm[0].trim() + ' »'); } catch (e) {}
@@ -4214,6 +4235,37 @@ function _purgerAgesInventes(valeur, agesConnus) {
   if (Array.isArray(valeur)) return valeur.map(function (v) { return _purgerAgesInventes(v, agesConnus); });
   if (valeur && typeof valeur === 'object') {
     for (var k in valeur) { if (Object.prototype.hasOwnProperty.call(valeur, k)) valeur[k] = _purgerAgesInventes(valeur[k], agesConnus); }
+    return valeur;
+  }
+  return valeur;
+}
+
+
+var _RE_CONNECTEUR_DANGLING = /^(Si|Et|Ou|Mais|Donc|Car|Or|Puis|Alors|Ainsi|Pour|De|Du|Des|Le|La|Les|Un|Une)\s*(,|\.|;|:|$)/i;
+var _RE_CONNECTEUR_DOUBLE = /^(Si|Et|Ou|Mais|Donc|Car|Or|Puis|Alors|Ainsi)\s+(ou|et|mais|donc|or|car)\b/i;
+function _phraseCassee(ph) {
+  var coeur = String(ph || '').replace(/^\s+|\s+$/g, '');
+  if (!coeur) return false;
+  if (/\s{2,}/.test(coeur)) return true;
+  if (_RE_CONNECTEUR_DANGLING.test(coeur)) return true;
+  if (_RE_CONNECTEUR_DOUBLE.test(coeur)) return true;
+  return false;
+}
+function _purgerFragmentsCasses(valeur) {
+  if (typeof valeur === 'string') {
+    if (!valeur) return valeur;
+    var gardees = _decouperPhrases(valeur).filter(function (ph) {
+      if (_phraseCassee(ph)) {
+        try { console.warn('[CYNTH] Phrase cassée retirée du rapport : « ' + ph.trim() + ' »'); } catch (e) {}
+        return false;
+      }
+      return true;
+    });
+    return gardees.join('').replace(/^\s+/, '');
+  }
+  if (Array.isArray(valeur)) return valeur.map(function (v) { return _purgerFragmentsCasses(v); });
+  if (valeur && typeof valeur === 'object') {
+    for (var k in valeur) { if (Object.prototype.hasOwnProperty.call(valeur, k)) valeur[k] = _purgerFragmentsCasses(valeur[k]); }
     return valeur;
   }
   return valeur;
@@ -4428,11 +4480,12 @@ function _cantonDeLaPersonne() {
       .filter(function (m) { return m.role === 'user'; })
       .map(function (m) { return String(m.content || ''); }).join(' ');
   } catch (e) {}
-  src = src.toLowerCase();
+  
+  var hay = _normaliserTexte(src);
   var trouve = null;
   _CANTONS_ADJ.forEach(function (c) {
     if (trouve) return;
-    if (c.noms.concat(c.mots).concat(c.villes || []).some(function (n) { return src.indexOf(n) !== -1; })) trouve = c.cle;
+    if (c.noms.concat(c.mots).concat(c.villes || []).some(function (n) { return _contientMot(hay, n); })) trouve = c.cle;
   });
   return trouve;
 }
@@ -5502,6 +5555,46 @@ function _feuVertSynthese(texte) {
   if (encoreADire.test(t)) return false;
   return /\b(c'?est bon|c'?est tout|j'?ai (tout )?dit|allez[- ]?y|vas[- ]?y|on peut y aller|on peut passer|rien d'?autre|non merci|pr[ée]parez|lancez|g[ée]n[ée]rez|je suis pr[êe]te?|on y va|that'?s (it|all|good)|i'?m done|go ahead|let'?s go|no thanks|i'?m ready|nothing else)\b/.test(t);
 }
+
+
+var _MOTS_DIPLOMES_A1 = ['cfc', 'afp', 'brevet', 'diplome', 'bachelor', 'master', 'maturite',
+  'hes', 'universite', 'apprentissage', 'formation', 'certificat', 'etudes', 'qualification',
+  'equivalence', 'reconnaissance', 'titre'];
+var _MOTS_LANGUES_A1 = ['langue', 'francais', 'anglais', 'allemand', 'italien', 'espagnol',
+  'portugais', 'arabe', 'bilingue', 'trilingue', 'plurilingue', 'maternelle'];
+var _MOTS_INTERETS_A1 = ['loisir', 'passion', 'hobby', 'benevolat', 'benevole', 'lecture',
+  'bricolage', 'jardinage', 'voyage', 'randonnee', 'peinture', 'dessin', 'photographie',
+  'associatif', 'musique', 'instrument', 'chant', 'danse', 'cuisine', 'sport', 'club'];
+function _hayUtilisateurA1() {
+  try {
+    var m = (typeof chatHistory !== 'undefined' ? chatHistory : [])
+      .filter(function (x) { return x.role === 'user'; })
+      .map(function (x) { return String(x.content || ''); }).join(' ');
+    return _normaliserTexte(m + ' ' + (typeof _cvText !== 'undefined' && _cvText ? _cvText : ''));
+  } catch (e) { return ''; }
+}
+function _sujetAborde(hay, mots) {
+  return mots.some(function (m) { return _contientMot(hay, m); });
+}
+var _sujetsDemandes = { diplomes: 0, langues: 0, interets: 0 };
+var _TEXTE_SUJET_MANQUANT_A1 = {
+  diplomes: "Demande-lui, naturellement et en une question, si elle a un diplôme, un titre ou une formation reconnue, y compris obtenu à l'étranger. Ne lui propose AUCUNE piste de métier à ce stade, c'est une question de parcours, pas d'orientation.",
+  langues: "Demande-lui, naturellement et en une question, quelles langues elle parle (y compris sa langue maternelle si ce n'est pas le français).",
+  interets: "Demande-lui, naturellement et en une question, ce qu'elle fait en dehors du travail, une activité ou un intérêt auquel elle tient, même sans rapport apparent avec un métier."
+};
+
+var _FENETRE_SUJETS_A1 = { diplomes: 6, langues: 8, interets: 10 };
+
+function _sujetsManquants(tour) {
+  var hay = _hayUtilisateurA1();
+  var manquants = [];
+  var t = tour || 0;
+  if (t >= _FENETRE_SUJETS_A1.diplomes && !_sujetAborde(hay, _MOTS_DIPLOMES_A1) && _sujetsDemandes.diplomes < 2) manquants.push('diplomes');
+  if (t >= _FENETRE_SUJETS_A1.langues && !_sujetAborde(hay, _MOTS_LANGUES_A1) && _sujetsDemandes.langues < 2) manquants.push('langues');
+  if (t >= _FENETRE_SUJETS_A1.interets && !_sujetAborde(hay, _MOTS_INTERETS_A1) && _sujetsDemandes.interets < 2) manquants.push('interets');
+  return manquants;
+}
+
 let _synthRetryCount = 0; 
 
 
@@ -5841,6 +5934,13 @@ function _modeleTestRapport() {
   return /^(haiku45|haiku55)$/.test(v || '') ? v : 'haiku45';
 }
 
+function _testTokenLocal() {
+  if (!_enLocal()) return null;
+  var v = (typeof _URL_PARAMS !== 'undefined' && _URL_PARAMS) ? _URL_PARAMS.testToken : null;
+  if (!v) { try { v = new URLSearchParams(location.search).get('testToken'); } catch (e) {} }
+  return v || null;
+}
+
 var _TARIFS_TEST = {
   'claude-haiku-4-5-20251001': { e: 1.00, s: 5.00, ce: 1.25,  cl: 0.10 },
   'claude-haiku-5-5':          { e: 0.10, s: 0.50, ce: 0.125, cl: 0.01 },
@@ -5893,6 +5993,11 @@ async function callCynthAI(messages) {
   const _feuVert = _feuVertSynthese(lastUserMsg);
 
   
+  const _sujetsBloquants = _sujetsManquants(userMsgCount);
+  const _sujetAPoser = _sujetsBloquants[0] || null;
+  if (_sujetAPoser) { _sujetsDemandes[_sujetAPoser]++; }
+
+  
   const _veutTerminerTot = !synthesisFired && !_detresse && !_seuilAtteint && _feuVert;
 
   
@@ -5900,7 +6005,7 @@ async function callCynthAI(messages) {
     && !_synthProposee && userMsgCount < SYNTH_MAX;
 
   
-  const wantSynthesis = !synthesisFired && !_detresse && _seuilAtteint && (
+  const wantSynthesis = !synthesisFired && !_detresse && _seuilAtteint && !_sujetAPoser && (
     userMsgCount >= SYNTH_MAX ||          
     (_synthRelances > 0 && _feuVert)      
   );
@@ -5969,7 +6074,7 @@ async function callCynthAI(messages) {
   
   
   
-  if (!restitutionDone && !wantSynthesis && !synthesisFired && !_detresse && userMsgCount >= 10) {
+  if (!restitutionDone && !wantSynthesis && !synthesisFired && !_detresse && !_sujetAPoser && userMsgCount >= 10) {
     restitutionDone = true;
     _mirrorTurn = true;
     systemPrompt += `\n\n📌 R5 — MIROIR PROFESSIONNEL MAINTENANT. C'est le moment clé de la conversation. Écris 3 à 4 phrases naturelles et directes (ZÉRO liste, ZÉRO puce, ZÉRO titre). Synthétise ce que tu perçois de cette personne : ses valeurs profondes (même celles qu'elle n'a pas nommées explicitement), ses compétences implicites (celles qui transparaissent dans la façon dont elle parle sans qu'elle les nomme), et son besoin central non formulé. Utilise ses propres mots quand c'est possible. Sois précis et courageux — pas générique. Termine UNIQUEMENT par : "Est-ce que ça vous ressemble ?" et rien d'autre. Aucun métier, aucun conseil, aucune autre question.`;
@@ -5981,19 +6086,19 @@ async function callCynthAI(messages) {
   }
 
   
-  if (!wantSynthesis && !synthesisFired && !_detresse && !_franchiseDone && userMsgCount >= 13) {
+  if (!wantSynthesis && !synthesisFired && !_detresse && !_sujetAPoser && !_franchiseDone && userMsgCount >= 13) {
     _franchiseDone = true;
     systemPrompt += `\n\n📌 FRANCHISE : tu as maintenant assez d'éléments. Si un écart réel existe entre ce qu'elle veut et ce qui est atteignable (salaire, durée de formation, contrainte de vie, ou métier visé qui contredit ce qu'elle a décrit d'elle-même), c'est le moment de le lui dire. Un fait précis tiré de SES mots, puis immédiatement une alternative atteignable. Si sincèrement rien ne cloche, n'invente pas d'objection.`;
   }
 
   
-  if (!wantSynthesis && !_detresse && isShortAnswer(lastUserMsg)) {
+  if (!wantSynthesis && !_detresse && !_sujetAPoser && isShortAnswer(lastUserMsg)) {
     systemPrompt += `\n\n📌 R3 — L'utilisateur vient de répondre très brièvement ("${lastUserMsg.substring(0, 60)}"). Ne change pas de sujet : pose une question de suivi pour approfondir ce point précis.`;
   }
 
   
   const signalAngle = detectSignalFort(lastUserMsg);
-  if (!wantSynthesis && !_detresse && signalAngle) {
+  if (!wantSynthesis && !_detresse && !_sujetAPoser && signalAngle) {
     systemPrompt += `\n\n📌 R4 — Un signal fort est apparu. Rebondis avec un de SES mots, puis ramène vers un exemple concret (angle : "${signalAngle}"). Ne t'enlise pas dans l'émotion.`;
   }
 
@@ -6009,8 +6114,13 @@ async function callCynthAI(messages) {
   }
 
   
-  if (_demanderLaFin) {
+  if (_demanderLaFin && !_sujetAPoser) {
     systemPrompt += `\n\n📌 ON APPROCHE DE LA FIN — TU DEMANDES, TU NE CONCLUS PAS.\nVous avez beaucoup échangé. Tu as de quoi préparer son rapport, mais c'est à elle de dire si elle a fini.\nDANS CE MESSAGE :\n1. Réponds normalement à ce qu'elle vient de dire (1 à 2 phrases, comme d'habitude).\n2. Puis, en fin de message, demande-lui simplement s'il reste quelque chose dont elle aimerait parler, ou si tu peux préparer son rapport. Avec tes mots, pas une formule toute faite.\n3. Dis-lui que si elle a encore quelque chose, on prend le temps — rien ne presse.\nINTERDIT dans ce message : faire la synthèse, lister des métiers, annoncer que le rapport est prêt, dire « votre rapport vous attend ». Tu poses la question et tu t'arrêtes. C'est elle qui décide.`;
+  }
+
+  
+  if (_sujetAPoser) {
+    systemPrompt += `\n\n🎯 PRIORITÉ ABSOLUE CE TOUR, AVANT TOUTE SYNTHÈSE OU PROPOSITION DE CONCLURE : ${_TEXTE_SUJET_MANQUANT_A1[_sujetAPoser]} Réponds d'abord normalement à ce qu'elle vient de dire (1 à 2 phrases), puis glisse cette question naturellement, comme une question parmi d'autres — ne dis jamais que tu "dois" la poser ou que c'est une case à cocher. Une seule question dans ce message.`;
   }
 
   
@@ -6073,8 +6183,23 @@ async function callCynthAI(messages) {
     frequency_penalty: wantSynthesis ? 0.0 : 0.8,   
     presence_penalty:  wantSynthesis ? 0.0 : 0.4,   
     isSynthesis: wantSynthesis,   
-    ...(_enLocal() ? { testModele: _modeleTestChat() } : {}),
+    ...(_enLocal() ? { testModele: _modeleTestChat(), testToken: _testTokenLocal() } : {}),
   });
+  
+  
+  
+  
+  if (resp.status === 429 || resp.status === 413) {
+    let corpsErreur = null;
+    try { corpsErreur = await resp.json(); } catch (e) {}
+    const msg = (corpsErreur && corpsErreur.error && corpsErreur.error.message)
+      ? corpsErreur.error.message
+      : 'Beaucoup de monde utilise Cynthia en ce moment. Merci de réessayer dans un instant.';
+    const err = new Error(msg);
+    err._honnete = true; 
+    err._code = (corpsErreur && corpsErreur.error && corpsErreur.error.code) || null;
+    throw err;
+  }
   if (!resp.ok) throw new Error('proxy-' + resp.status);
   const data = await resp.json();
   
@@ -6351,6 +6476,7 @@ async function startChatMode() {
   _synthMetiers = null;
   _synthPistesBrutes = 0;
   _detresseMontree = false;
+  _sujetsDemandes = { diplomes: 0, langues: 0, interets: 0 };
   
   _rapportEnCours = null;
   window._reportData = null;
@@ -6500,7 +6626,7 @@ function _preparerRapportEnFond() {
           if (!k || vus[k]) return false; vus[k] = 1; return true;
         });
       }
-      window._reportData = _garantirConcretementFormateur(_garantirRessourcesMinimales(_purgerFormationDesResumes(_corrigerLangueProfond(deepStripDash(_corrigerTypeChangement(_verifierIdsLibres(_verifierFrontalier(_verifierUrls(_verifierGuichets(_verifierPoleEmploi(_verifierHeuresParMetier(_marquerCitationTraduite(_verifierChiffres(_verifierAffirmationsMarche(_neutraliserPasEncoreProfond(_verifierFormulesLegales(_verifierArticle32Titres(_purgerAgesInventes(data, _agesReellementDits())))))))))))))))))));
+      window._reportData = _purgerFragmentsCasses(_garantirConcretementFormateur(_garantirRessourcesMinimales(_purgerFormationDesResumes(_corrigerLangueProfond(deepStripDash(_corrigerTypeChangement(_verifierIdsLibres(_verifierFrontalier(_verifierUrls(_verifierGuichets(_verifierPoleEmploi(_verifierHeuresParMetier(_marquerCitationTraduite(_verifierChiffres(_verifierAffirmationsMarche(_neutraliserPasEncoreProfond(_verifierFormulesLegales(_verifierArticle32Titres(_purgerAgesInventes(data, _agesReellementDits()))))))))))))))))))));
       _signalerMontantsDouteux(window._reportData);
       try { _stashReport(); } catch (e) {}
       try { _marquerEntretienTermine(); } catch (e) {}
@@ -6520,7 +6646,8 @@ function _fabriquerApercu(texteComplet, nbMetiers) {
   const t = String(texteComplet || '');
   
   const iPremier = t.search(/[●•▶►]/);
-  let portrait = (iPremier > 0 ? t.slice(0, iPremier) : t).trim();
+  
+  let portrait = (iPremier >= 0 ? t.slice(0, iPremier) : t).trim();
   
   portrait = portrait
     .replace(/^\s*-{3,}\s*/, '')
@@ -6654,14 +6781,23 @@ async function sendChatMsg() {
 
     const _timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 25000));
 
+    let _honnetePourTour = null;
     try {
       reply = await Promise.race([_aiCall, _timeout]);
     } catch(e) {
       console.warn('Cynth.IA error:', e.message || e);
-      const notice = document.getElementById('chat-ai-notice');
-      if (notice) notice.style.display = 'flex';
-      await new Promise(r => setTimeout(r, 600));
-      reply = _getFbReply(text, chatProfile.prenom);
+      
+      if (e && e._honnete) {
+        _honnetePourTour = e.message;
+      } else {
+        const notice = document.getElementById('chat-ai-notice');
+        if (notice) notice.style.display = 'flex';
+        await new Promise(r => setTimeout(r, 600));
+        reply = _getFbReply(text, chatProfile.prenom);
+      }
+    }
+    if (_honnetePourTour) {
+      reply = _honnetePourTour;
     }
 
     
@@ -6739,18 +6875,18 @@ async function sendChatMsg() {
         const options = _enAnglais
           ? (_gratuit
             ? "There you go, I've been through your background.\n\n"
-              + "Click « Mon rapport » at the top to open it: your 5 detailed career matches, real Swiss salaries, the trainings, and your 6-month plan. It's Faouzie, who created me, offering it to you during the test phase.\n\n"
+              + "Click « Mon rapport » at the top to open it: your career leads, real Swiss salaries, the trainings, and your 6-month plan. It's Faouzie, who created me, offering it to you during the test phase.\n\n"
               + "Your report itself will be in French — it's generated from Swiss sources that only exist in French. Take two minutes for the questions at the bottom of the report, it helps me improve for the people who come after you. And if a path still intrigues you, I'm still here."
             : "There you go, I've been through your background.\n\n"
-              + "Your full report is being prepared: your 5 career matches with what makes you legitimate for each, real Swiss salaries, the trainings and their cost, and your 6-month plan. Click « Mon rapport » at the top to unlock it"
+              + "Your full report is being prepared: your career leads, with what makes you legitimate for each, real Swiss salaries, the trainings and their cost, and your 6-month plan. Click « Mon rapport » at the top to unlock it"
               + (_prix ? " (" + _prix + " CHF)" : "") + ".\n\n"
               + "Your report itself will be in French — it's generated from Swiss sources that only exist in French. And if a path still intrigues you, I'm still here.")
           : (_gratuit
             ? "Voilà, j'ai fait le tour de votre parcours.\n\n"
-              + "Cliquez sur « Mon rapport », en haut, pour l'ouvrir : vos 5 métiers détaillés, les salaires réels en Suisse, les formations et votre plan sur 6 mois. C'est Faouzie, qui m'a créée, qui vous l'offre pendant la phase de test.\n\n"
+              + "Cliquez sur « Mon rapport », en haut, pour l'ouvrir : vos pistes de métiers, les salaires réels en Suisse, les formations et votre plan sur 6 mois. C'est Faouzie, qui m'a créée, qui vous l'offre pendant la phase de test.\n\n"
               + "Prenez deux minutes pour les questions en bas du rapport, ça m'aide à m'améliorer pour ceux qui viendront après vous. Et si une piste vous intrigue, je suis encore là."
             : "Voilà, j'ai fait le tour de votre parcours.\n\n"
-              + "Votre rapport complet est en train de se préparer : vos 5 métiers avec ce qui vous y rend légitime, les salaires réels en Suisse, les formations et leur coût, et votre plan sur 6 mois. Cliquez sur « Mon rapport », en haut, pour le débloquer"
+              + "Votre rapport complet est en train de se préparer : vos pistes de métiers, avec ce qui vous y rend légitime, les salaires réels en Suisse, les formations et leur coût, et votre plan sur 6 mois. Cliquez sur « Mon rapport », en haut, pour le débloquer"
               + (_prix ? " (" + _prix + " CHF)" : "") + ".\n\n"
               + "Et si une piste vous intrigue, je suis encore là.");
         addChatBubble('ai', options);
@@ -7025,7 +7161,7 @@ function doEndChat() {
       }
       _compter('rapport', (Date.now() - _tDebutRapport) / 1000);
       { var _seenM = {}; data.top_metiers = data.top_metiers.filter(function(m){ var k = ((m && (m.id || m.titre)) || '').toString().toLowerCase().trim(); if (!k || _seenM[k]) return false; _seenM[k] = 1; return true; }); }
-      window._reportData = _garantirConcretementFormateur(_garantirRessourcesMinimales(_purgerFormationDesResumes(_corrigerLangueProfond(deepStripDash(_corrigerTypeChangement(_verifierIdsLibres(_verifierFrontalier(_verifierUrls(_verifierGuichets(_verifierPoleEmploi(_verifierHeuresParMetier(_marquerCitationTraduite(_verifierChiffres(_verifierAffirmationsMarche(_neutraliserPasEncoreProfond(_verifierFormulesLegales(_verifierArticle32Titres(_purgerAgesInventes(data, _agesReellementDits())))))))))))))))))));
+      window._reportData = _purgerFragmentsCasses(_garantirConcretementFormateur(_garantirRessourcesMinimales(_purgerFormationDesResumes(_corrigerLangueProfond(deepStripDash(_corrigerTypeChangement(_verifierIdsLibres(_verifierFrontalier(_verifierUrls(_verifierGuichets(_verifierPoleEmploi(_verifierHeuresParMetier(_marquerCitationTraduite(_verifierChiffres(_verifierAffirmationsMarche(_neutraliserPasEncoreProfond(_verifierFormulesLegales(_verifierArticle32Titres(_purgerAgesInventes(data, _agesReellementDits()))))))))))))))))))));
       _signalerMontantsDouteux(window._reportData);
       if (loadDiv) loadDiv.style.display = 'none';
       
@@ -7893,7 +8029,9 @@ function _lireMalgreFautes(texte) {
   return t.split(/([^a-z0-9]+)/).map(seg => {
     if (!/^[a-z0-9]+$/.test(seg) || seg.length < 3) return seg;
     if (cles.indexOf(seg) !== -1) return seg;               
-    const proche = cles.find(c => Math.abs(c.length - seg.length) <= 1 && _distance1(seg, c));
+    
+    if (seg.length < 6) return seg;
+    const proche = cles.find(c => c.length >= 6 && Math.abs(c.length - seg.length) <= 1 && _distance1(seg, c));
     return proche || seg;
   }).join('');
 }
@@ -7918,14 +8056,36 @@ function _detecterRejets(texteUtilisateur) {
     .replace(/[''`]/g, ' ').replace(/\s+/g, ' ').trim();
   const _dansPhrase = (ph, motif) => ph.includes(motif) || ph.includes(_aplati(motif));
 
+  
+  function _positions(ph, motif) {
+    const res = [];
+    [motif, _aplati(motif)].forEach(forme => {
+      if (!forme) return;
+      let idx = ph.indexOf(forme);
+      while (idx !== -1) { res.push([idx, idx + forme.length]); idx = ph.indexOf(forme, idx + 1); }
+    });
+    return res;
+  }
+  const _FENETRE_PROXIMITE = 40;
+  function _proche(ph, amorce, mot) {
+    const posA = _positions(ph, amorce), posM = _positions(ph, mot);
+    return posA.some(([sa, ea]) => posM.some(([sm, em]) => {
+      const ecart = sa >= em ? sa - em : (sm >= ea ? sm - ea : 0);
+      return ecart <= _FENETRE_PROXIMITE;
+    }));
+  }
+
   phrases.forEach(ph => {
-    if (!REJET_AMORCES.some(a => _dansPhrase(ph, a))) return;
+    const amorcesPresentes = REJET_AMORCES.filter(a => _dansPhrase(ph, a));
+    if (!amorcesPresentes.length) return;
     REJET_DOMAINES.forEach(d => {
-      if (d.mots.some(m => _dansPhrase(ph, m))) {
-        d.mots.forEach(m => { if (_dansPhrase(ph, m)) termes.add(m); });
-        d.secteurs.forEach(s => secteurs.add(s));
-        if (extraits.length < 4) extraits.push(ph.slice(0, 140));
-      }
+      const motsTouches = d.mots.filter(m => _dansPhrase(ph, m));
+      if (!motsTouches.length) return;
+      const motsProches = motsTouches.filter(m => amorcesPresentes.some(a => _proche(ph, a, m)));
+      if (!motsProches.length) return;
+      motsProches.forEach(m => termes.add(m));
+      d.secteurs.forEach(s => secteurs.add(s));
+      if (extraits.length < 4) extraits.push(ph.slice(0, 140));
     });
   });
 
@@ -8437,6 +8597,9 @@ function _corrigerVoies(rapport) {
 var _voiesCorrigees = [];
 function voiesCorrigees() { console.table(_voiesCorrigees); return _voiesCorrigees.length; }
 
+
+function _estDeclasseDefinitivement(m) { return !!(m && (m._preuveGenerique || m._atoutsIncertains)); }
+
 function _retrograderConditions(topMetiers, motsUtilisateur) {
   if (!Array.isArray(topMetiers) || !topMetiers.length) return topMetiers || [];
   const refusees = _conditionsRefusees(motsUtilisateur);
@@ -8465,10 +8628,18 @@ function _retrograderConditions(topMetiers, motsUtilisateur) {
   });
   
   if (!principaux.length && pistes.length) {
-    const repeche = { ...pistes.shift(), type: 'principal' };
-    console.warn('[CYNTH] toutes les pistes heurtent une contrainte : « ' + repeche.titre +
-      ' » est maintenue en principale, avec sa réserve affichée.');
-    principaux.push(repeche);
+    
+    
+    const idxRepeche = pistes.findIndex(p => !_estDeclasseDefinitivement(p));
+    if (idxRepeche === -1) {
+      console.warn('[CYNTH] toutes les pistes heurtent une contrainte ET sont déjà déclassées '
+        + '(preuve générique ou atouts à confirmer) : aucune ne remonte en principale.');
+    } else {
+      const repeche = { ...pistes.splice(idxRepeche, 1)[0], type: 'principal' };
+      console.warn('[CYNTH] toutes les pistes heurtent une contrainte : « ' + repeche.titre +
+        ' » est maintenue en principale, avec sa réserve affichée.');
+      principaux.push(repeche);
+    }
   }
   return principaux.concat(pistes);
 }
@@ -8508,8 +8679,15 @@ function _retrograderContradictions(topMetiers, phrasesNeg) {
   
   
   if (!principaux.length && pistes.length) {
-    const premier = pistes.shift();
-    principaux.push({ ...premier, type: 'principal' });
+    
+    const idxRepeche = pistes.findIndex(p => !_estDeclasseDefinitivement(p));
+    if (idxRepeche === -1) {
+      console.warn('[CYNTH] toutes les pistes contredisent la personne ET sont déjà déclassées '
+        + '(preuve générique ou atouts à confirmer) : aucune ne remonte en principale.');
+    } else {
+      const premier = pistes.splice(idxRepeche, 1)[0];
+      principaux.push({ ...premier, type: 'principal' });
+    }
   }
   return principaux.concat(pistes);
 }
@@ -8723,7 +8901,10 @@ function _classerTransferabilite(topMetiers, niveauPersonne) {
   
   var principaux = avec.filter(function (m) { return m.type !== 'piste'; });
   var pistes = avec.filter(function (m) { return m.type === 'piste'; });
-  var pisteMaintenant = pistes.find(function (m) { return m._hz === _HZ_MAINTENANT; });
+  
+  
+  
+  var pisteMaintenant = pistes.find(function (m) { return m._hz === _HZ_MAINTENANT && !_estDeclasseDefinitivement(m); });
   var principalPasMaintenant = null;
   principaux.forEach(function (m) {
     if (m._hz !== _HZ_MAINTENANT) principalPasMaintenant = m; 
@@ -8777,6 +8958,23 @@ function _contientMot(botteDeFoin, terme) {
   return botteDeFoin.includes(' ' + t + ' ')
       || botteDeFoin.includes(' ' + t + 's ')
       || botteDeFoin.includes(' ' + t + 'e ');
+}
+
+
+var _MOTS_PROCHE_RELATION = ['copain', 'copine', 'femme', 'mari', 'epoux', 'epouse', 'conjoint',
+  'conjointe', 'fiance', 'fiancee', 'frere', 'soeur', 'pere', 'mere', 'papa', 'maman', 'ami', 'amie',
+  'pote', 'collegue', 'voisin', 'voisine', 'oncle', 'tante', 'cousin', 'cousine'];
+var _VERBES_METIER_PROCHE = ['est', 'travaille', 'fait', 'exerce'];
+var _MOTS_ATTIRANCE_EXPLICITE = ['attire', 'plairait', 'interesse', 'interesserait', 'adorerais', 'aimerais', 'voudrais'];
+function _parleDuMetierDunProche(citation) {
+  var hay = _normaliserTexte(String(citation || ''));
+  var aUneRelation = _MOTS_PROCHE_RELATION.some(function (m) { return _contientMot(hay, m); });
+  if (!aUneRelation) return false;
+  var aUnVerbeMetier = _VERBES_METIER_PROCHE.some(function (v) { return _contientMot(hay, v); });
+  if (!aUnVerbeMetier) return false;
+  var aAttiranceExplicite = _MOTS_ATTIRANCE_EXPLICITE.some(function (m) { return _contientMot(hay, m); })
+    || hay.indexOf(' moi aussi ') !== -1;
+  return !aAttiranceExplicite;
 }
 
 
@@ -9172,6 +9370,11 @@ contraintes = UNIQUEMENT les champs qu'elle a vraiment donnés, chacun avec sa c
     if (part < _SEUIL_PREUVE) {
       console.warn('[CYNTH] preuve n°' + num + ' retirée de la fiche : la citation ne se retrouve pas dans ses mots ('
         + Math.round(part * 100) + '% des termes). Citation reçue : "' + String(citation).slice(0, 90) + '"');
+      return;
+    }
+    
+    if (_parleDuMetierDunProche(citation)) {
+      console.warn('[CYNTH] preuve n°' + num + ' retirée de la fiche : décrit le métier d\'un proche, pas celui de la personne. Citation reçue : "' + String(citation).slice(0, 90) + '"');
       return;
     }
     
@@ -9682,6 +9885,22 @@ function _verifierFormulesLegales(data) {
 
 
 var _RE_PAS_ENCORE = /\bVous n['’]avez pas encore\s+(de|du|des|le|la|les|l['’])\s*/i;
+
+var _NOMS_FEMININS_VOIE_ACCES = ['date', 'formation', 'qualification', 'experience',
+  'attestation', 'autorisation', 'reconnaissance', 'certification', 'validation',
+  'legitimite', 'preuve', 'equivalence', 'piece', 'annee', 'periode'];
+function _genreDuNom(mot) {
+  var m = String(mot || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+  return _NOMS_FEMININS_VOIE_ACCES.indexOf(m) !== -1 ? 'f' : 'm';
+}
+
+var _MOTS_CREDENTIAL_VOIE_ACCES = ['cfc', 'afp', 'brevet', 'diplome', 'bachelor',
+  'master', 'maturite', 'certificat', 'titre', 'doctorat', 'hes', 'licence'];
+function _estCredentialVoieAcces(mot) {
+  var m = String(mot || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[.,;:!?]+$/, '').trim();
+  return _MOTS_CREDENTIAL_VOIE_ACCES.indexOf(m) !== -1;
+}
 function _neutraliserPasEncore(txt) {
   if (typeof txt !== 'string' || !_RE_PAS_ENCORE.test(txt)) return txt;
   return _decouperPhrases(txt).map(function (ph) {
@@ -9689,13 +9908,22 @@ function _neutraliserPasEncore(txt) {
     if (!m) return ph;
     var art = m[1].toLowerCase().replace(/[’]/g, "'");
     var reste = ph.slice(m[0].length);
+    var premierMotBrut = (reste.trim().split(/\s+/)[0] || '');
+    if (!_estCredentialVoieAcces(premierMotBrut)) {
+      try { console.warn('[CYNTH] Phrase « Vous n\'avez pas encore » retirée (ce qui suit n\'est ni un diplôme, ni un titre, ni une certification) : « ' + ph.trim() + ' »'); } catch (e) {}
+      return '';
+    }
     var iNi = reste.search(/\bni\b/i);
     var iFin = reste.search(/[:.]/);
     if (iNi !== -1 && (iFin === -1 || iNi < iFin)) {
       reste = reste.slice(0, iNi) + 'et' + reste.slice(iNi + 2);
     }
     var lien;
-    if (art === 'de' || art === 'du') lien = 'un ';
+    if (art === 'du') lien = 'un ';
+    else if (art === 'de') {
+      var premierMot = (reste.trim().split(/\s+/)[0] || '');
+      lien = (_genreDuNom(premierMot) === 'f') ? 'une ' : 'un ';
+    }
     else if (art === 'des') lien = 'des ';
     else if (art === "l'") lien = "l'";
     else lien = art + ' ';
@@ -9763,6 +9991,27 @@ function _verifierAtoutsPreuves(topMetiers, metiersRetenus, motsUtilisateur, cvT
 }
 
 
+var _MOTS_ATOUT_INCERTAIN = ['confirmer', 'valider', 'preciser'];
+function _atoutEstIncertain(bullet) {
+  var hay = _normaliserTexte(String(bullet || ''));
+  return _MOTS_ATOUT_INCERTAIN.some(function (m) { return _contientMot(hay, m); });
+}
+function _retrograderAtoutsIncertains(topMetiers) {
+  if (!Array.isArray(topMetiers)) return topMetiers;
+  topMetiers.forEach(function (item) {
+    if (!item || item.type !== 'principal') return;
+    if (!Array.isArray(item.atouts) || !item.atouts.length) return;
+    var tousIncertains = item.atouts.every(_atoutEstIncertain);
+    if (tousIncertains) {
+      item.type = 'piste';
+      item._atoutsIncertains = true;
+      try { console.warn('[CYNTH] « ' + (item.titre || item.id) + ' » rétrogradé en piste : "Ce que vous avez déjà" ne contient que des atouts à confirmer/valider/préciser.'); } catch (e) {}
+    }
+  });
+  return topMetiers;
+}
+
+
 
 var _RE_AFFIRMATION_MARCHE = /\b(?:les\s+|l')?(?:employeurs?|recruteurs?|entreprises)\b[^.!?]{0,60}\b(?:cherche|cherchent|recherche|recherchent|demande|demandent|veut|veulent|attend|attendent)\b|\b(?:cherche|cherchent|recherche|recherchent|demande|demandent|veut|veulent|attend|attendent)\b[^.!?]{0,60}\b(?:les\s+|l')?(?:employeurs?|recruteurs?|entreprises)\b|\ble\s+march[ée](?:\s+du\s+travail)?(?![a-zà-ÿ])[^.!?]{0,60}\b(?:demande|cherche|recherche|veut|attend)\b|\b(?:demande|cherche|recherche|veut|attend)\b[^.!?]{0,60}\ble\s+march[ée](?:\s+du\s+travail)?(?![a-zà-ÿ])/i;
 function _purgerAffirmationMarche(txt) {
@@ -9796,7 +10045,7 @@ function _attacherFamilles(topMetiers, metiersRetenus) {
   var drap = {};
   (metiersRetenus || []).forEach(function (m) {
     parId[m.id] = m._famille || _FAM_DIRECTION;
-    drap[m.id] = { inf: !!m._niveauInferieur, sp: !!m._sansPreuve };
+    drap[m.id] = { inf: !!m._niveauInferieur, sp: !!m._sansPreuve, pg: !!m._preuveGenerique };
   });
   topMetiers.forEach(function (item) {
     if (!item || !item.id) return;
@@ -9805,6 +10054,8 @@ function _attacherFamilles(topMetiers, metiersRetenus) {
     
     if (drap[item.id] && drap[item.id].inf) item._niveauInferieur = true;
     if (drap[item.id] && drap[item.id].sp) item._sansPreuve = true;
+    
+    if (drap[item.id] && drap[item.id].pg) item._preuveGenerique = true;
   });
   return topMetiers;
 }
@@ -9848,6 +10099,10 @@ function _grouperFamillesMetiers(topMetiers) {
 
 function _textePistesPeuNombreuses() {
   return 'Nous avons préféré vous montrer moins de pistes, mais chacune s\'appuie sur ce que vous avez dit.';
+}
+
+function _textePistesAucune() {
+  return 'Nous n\'avons pas trouvé, dans ce que vous nous avez dit, de quoi construire une piste de métier solide et sourcée. Ce n\'est pas un verdict sur vous : c\'est le signe qu\'il faudrait creuser davantage. Reprenez une conversation avec Cynthia quand vous le souhaitez.';
 }
 function _texteNiveauInferieur() {
   return 'Cette piste demande moins de qualifications que votre parcours. Nous l\'avons gardée parce qu\'elle s\'appuie directement sur ce que vous avez dit, et elle peut servir de tremplin.';
@@ -9978,9 +10233,32 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
           max_tokens:3500,
           temperature:0.25,
           top_p:0.9,
-          ...((typeof _enLocal === 'function' && _enLocal()) ? { testModele: _modeleTestRapport() } : {})
+          
+          
+          
+          
+          
+          ...(_sessionIdPayeActuel() ? { sessionIdPaye: _sessionIdPayeActuel() } : {}),
+          ...((typeof _enLocal === 'function' && _enLocal()) ? { testModele: _modeleTestRapport(), testToken: _testTokenLocal() } : {})
         })
       });
+      
+      
+      
+      
+      
+      
+      if (resp.status === 429 || resp.status === 413) {
+        let corpsErreur = null;
+        try { corpsErreur = await resp.json(); } catch (e) {}
+        _issue = (corpsErreur && corpsErreur.error && corpsErreur.error.code) || ('http-' + resp.status);
+        const msg = (corpsErreur && corpsErreur.error && corpsErreur.error.message)
+          ? corpsErreur.error.message
+          : 'Beaucoup de monde utilise Cynthia en ce moment.';
+        const err = new Error(msg);
+        err._honnete = true;
+        throw err;
+      }
       if (!resp.ok) { _issue = 'http-' + resp.status; throw new Error('proxy-'+resp.status); }
       const data = await resp.json();
       _provider = data.provider || null;
@@ -10051,7 +10329,7 @@ Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pa
     + ' LANGUE ET TYPOGRAPHIE (dictionnaire Cynth.IA, 15 août 2026). Ce rapport se lit comme un document professionnel suisse, pas comme une sortie de machine :'
     + ' (a) SUISSE ROMANDE, jamais français de France : écris "assurance-chômage" et non "la Sécu" ou "le chômage" seul, "salaire minimum" et non "SMIC", "formation continue" et non "VAE". Aucun sigle français.'
     + ' (b) MONNAIE : "CHF" en majuscules et TOUJOURS avant le montant, avec une espace tous les trois chiffres. On écrit "CHF 5 000/mois", jamais "5000 CHF" ni "CHF 5000". N\'écris JAMAIS un montant tronqué du type "CHF 5." : soit tu donnes le nombre entier, soit tu ne donnes pas de chiffre.'
-    + ' (c) ACCORDS : relis les pluriels et les participes passés avant de rendre ta réponse. "des clients revenaient" et non "revenait". Accorde les adjectifs au bon genre quand tu parles de la personne.'
+    + ' (c) ACCORDS : relis les pluriels et les participes passés avant de rendre ta réponse. "des clients revenaient" et non "revenait". Accorde les adjectifs au bon genre SEULEMENT quand ce genre est connu avec certitude (la personne l\'a dit elle-même, ou un accord sans ambiguïté apparaît dans ses propres mots) — voir règle (20) ci-dessous : ne le déduis JAMAIS de la forme de son prénom.'
     + ' (d) ACCENTS : tous les mots en é, è, ê sont accentués. "compétence", "spécialiste", "fidélisation", "clientèle", "employé", "gérant".'
     + ' (e) TON : chaleureux mais professionnel, direct mais bienveillant, jamais moralisateur. Vouvoiement partout.'
     + ' (f) TYPOGRAPHIE : pas d\'espace avant une virgule ni avant un point. Les noms propres suisses gardent leur orthographe exacte (Genève, Suisse romande, ORP, CFC, HES-SO, brevet fédéral, article 32). Chaque parenthèse ouverte doit être refermée UNE seule fois : ne mets jamais deux parenthèses fermantes pour une seule ouverte (erreur réelle constatée : "...cantonal (montant à vérifier auprès de votre canton) en Genève par exemple)." — relis la phrase et compte les ( et ) avant de répondre.'
@@ -10078,7 +10356,8 @@ Les 5 métiers du rapport restent choisis dans la base : ce métier n'en fait pa
   + ' (17) DIPLÔMES HORS DE LEUR PLACE — dans profil_personnalite.resume, profil_personnalite.style_travail, forces_identifiees.moment_alignement, freins.recadrage, changement_explication, environnement_ideal et message_fin, tu ne mentionnes AUCUN sigle de niveau de formation (CFC, AFP, ES, HES, bachelor, brevet fédéral) ni durée de formation VISÉE (une formation à suivre, une piste de reconversion). Ces informations n\'apparaissent que dans les fiches métiers et le plan. EXCEPTION IMPORTANTE, à ne jamais confondre avec la règle ci-dessus : parcours_recap, situation et pitch DOIVENT au contraire mentionner les diplômes RÉELS de la personne (obtenus ou non), c\'est une information essentielle sur son parcours — ex. "vous n\'avez pas de diplôme formel, mais vous avez développé une vraie compétence relationnelle", ou pour un profil venu de l\'étranger "vous avez un master obtenu en France". Ne retire ni ne reformule jamais ce type de phrase dans ces trois champs-là. Erreur réelle constatée le 25 septembre 2026 : le portrait d\'un rapport disait "vous envisagez une formation HES en éducation de l\'enfance" alors que ce diplôme n\'était qu\'une piste de reconversion parmi d\'autres, pas un fait acquis sur la personne ; cette information appartenait à la fiche métier, pas au portrait.'
   
   + ' (18) LANGUES — si la fiche de preuves ou la conversation atteste qu\'elle parle couramment une autre langue que le français, valorise-la là où elle compte : savoir-faire, puces de CV, pitch, et dans "pourquoi" des métiers où elle est un vrai atout (organisations internationales et entreprises internationales à Genève, tourisme, accueil). N\'invente jamais une langue ni un niveau qu\'elle n\'a pas donnés.'
-  + ' (19) LOT 3 (5 octobre 2026) : (a) l\'article 32 mène à un CFC ou une AFP, JAMAIS directement à un brevet ou à un diplôme fédéral : ne relie jamais les deux. (b) N\'écris « légalement », « obligatoire pour exercer » ou « la loi exige » que pour une profession réglementée par une loi fédérale (médecin, pharmacien, vétérinaire, infirmier, physiothérapeute, ergothérapeute, sage-femme, diététicien, ostéopathe, psychothérapeute, avocat). (c) Puces de CV et pitch : uniquement des faits de la fiche de preuves ; pas de chiffre, de pourcentage ni de résultat qu\'elle n\'a pas donné, et une durée reste attachée au poste qu\'elle a nommé, jamais à un autre.';
+  + ' (19) LOT 3 (5 octobre 2026) : (a) l\'article 32 mène à un CFC ou une AFP, JAMAIS directement à un brevet ou à un diplôme fédéral : ne relie jamais les deux. (b) N\'écris « légalement », « obligatoire pour exercer » ou « la loi exige » que pour une profession réglementée par une loi fédérale (médecin, pharmacien, vétérinaire, infirmier, physiothérapeute, ergothérapeute, sage-femme, diététicien, ostéopathe, psychothérapeute, avocat). (c) Puces de CV et pitch : uniquement des faits de la fiche de preuves ; pas de chiffre, de pourcentage ni de résultat qu\'elle n\'a pas donné, et une durée reste attachée au poste qu\'elle a nommé, jamais à un autre.'
+  + ' (20) GENRE — ne déduis JAMAIS le genre de la personne à partir de la forme de son prénom : un prénom qui ressemble à un prénom féminin peut appartenir à un homme, et l\'inverse. N\'accorde un adjectif ou un participe au féminin ou au masculin que si la personne l\'a elle-même indiqué (en le disant, ou par un accord sans ambiguïté dans ses propres mots). Si le genre n\'est pas connu, utilise des formulations qui ne demandent aucun accord ("vous avez réussi cela par vous-même" plutôt que "vous avez réussi cela tout seul/toute seule"). Erreur réelle constatée le 16 octobre 2026, chantier "entretien Faouzi" : un homme prénommé "Faouzie" a reçu des accords au féminin choisis uniquement sur la forme de son prénom.';
 
   async function _part(context, instruction, schema, label) {
     
@@ -10088,7 +10367,14 @@ ${_blocDateDuJour()}
 ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien avant, rien après, pas de markdown. Premier caractère {, dernier }.`;
     const usr = `${context}\n\n${instruction}\n\nRéponds UNIQUEMENT avec cet objet JSON, rempli avec les vraies données de cette personne :\n${schema}\n\nRAPPEL : uniquement le JSON. Premier caractère {, dernier }.`;
     try { return await _callReportModel(sys, usr, 3500, label); }
-    catch (e) { return await _callReportModel(sys, usr, 3500, label); } 
+    catch (e) {
+      
+      
+      
+      
+      if (e && e._honnete) throw e;
+      return await _callReportModel(sys, usr, 3500, label); 
+    }
   }
 
   const pProfil = _part(convBlock,
@@ -10115,17 +10401,16 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
 
   
   if (_metiersRetenus.length === 0) {
-    
-    const secours = _scoreMetiersRelevance(
-      _motsUtilisateur, chatProfile.forces, chatProfile.valeurs,
-      _synthMetiers, _rejets, _cvText || ''
-    );
-    if (!_metiersRetenus.length) console.warn('[CYNTH] sélection par modèle vide → repli sur le score hors ligne');
-    secours.forEach(m => {
-      if (_metiersRetenus.length < 8 && !_metiersRetenus.find(x => x.id === m.id)) _metiersRetenus.push(Object.assign({}, m, { _sansPreuve: true }));
-    });
+    console.warn('[CYNTH] sélection par modèle vide → aucune piste sans preuve propre ne sera proposée (décision du 16 octobre 2026, point B1)');
   }
-  const _relevantMetiers = _metiersRetenus.slice(0, 8);
+  
+  
+  
+  
+  const _relevantMetiers = _metiersRetenus
+    .filter(m => !(m && m._sansPreuve))
+    .filter(m => m && Array.isArray(m._preuvesUtilisees) && m._preuvesUtilisees.length > 0)
+    .slice(0, 8);
 
   
   
@@ -10171,10 +10456,11 @@ ${fmtRule} FORMAT ABSOLU : tu réponds UNIQUEMENT par un objet JSON valide, rien
         
         
         
+        
         'preuves_disponibles:' + (
           (m._preuvesUtilisees && m._preuvesUtilisees.length)
             ? m._preuvesUtilisees.map(function (p) { return '[' + p.num + '] ' + p.texte; }).join(' ; ')
-            : 'aucune (piste de secours : argumente uniquement à partir des champs ci-dessus, sans numéro de preuve)'
+            : '(aucune — ce métier ne doit normalement jamais apparaître ici sans preuve ; si tu lis ceci, n\'écris rien sur ce métier)'
         )
       ].join('|');
   };
@@ -10350,6 +10636,8 @@ ${_REGLE_ART32_ET_PREUVES}`;
   _verifierPreuvesMetiers(_mt.top_metiers, _relevantMetiers);
   
   _verifierAtoutsPreuves(_mt.top_metiers, _relevantMetiers, _motsUtilisateur, _cvText);
+  
+  _retrograderAtoutsIncertains(_mt.top_metiers);
   
   _attacherFamilles(_mt.top_metiers, _relevantMetiers);
   _annoterContrainteDos(_mt.top_metiers, _preuvesFiche);
@@ -11115,8 +11403,10 @@ function downloadRapport(){
   const _toutesProuvees = !metiers.some(function (m) { return m && m._sansPreuve; });
   const _nouveauInner = _blocFamille(_famGroupes.nouveau)
     || (_toutesProuvees ? `<p class="body" style="margin:0 0 4px">${esc(_texteNouveauVide())}</p>` : '');
-  const _peuDePistes = (metiers.length > 0 && metiers.length < 3)
-    ? `<p class="body" style="margin:0 0 14px">${esc(_textePistesPeuNombreuses())}</p>` : '';
+  const _peuDePistes = (metiers.length === 0)
+    ? `<p class="body" style="margin:0 0 14px">${esc(_textePistesAucune())}</p>`
+    : (metiers.length < 3)
+      ? `<p class="body" style="margin:0 0 14px">${esc(_textePistesPeuNombreuses())}</p>` : '';
   const metiersHtml = _peuDePistes +
     _titreFamille('Votre envie, vérifiée', _envieInner) +
     _titreFamille('Dans la même direction', _blocFamille(_famGroupes.direction)) +
@@ -11998,7 +12288,7 @@ function afficherMessagePaiement() {
   const pBtn = document.getElementById('btn-premium');
   if (pBtn) pBtn.style.display = 'inline-flex';
   try { _syncBoutonPremium(); } catch (e) {}
-  showToast('🔒', `Le rapport complet (5 métiers, plan d'action 6 mois, salaires, financements) est disponible pour ${CONFIG.PRIX_RAPPORT.toFixed(2).replace('.', ',')} CHF.`, 'info', 6000);
+  showToast('🔒', `Le rapport complet (vos pistes de métiers, plan d'action 6 mois, salaires, financements) est disponible pour ${CONFIG.PRIX_RAPPORT.toFixed(2).replace('.', ',')} CHF.`, 'info', 6000);
 }
 
 
@@ -12010,6 +12300,17 @@ function hasPaidReport() {
     
     return Date.now() - ts < 86400000;
   } catch { return false; }
+}
+
+
+function _sessionIdPayeActuel() {
+  try {
+    if (!hasPaidReport()) return null;
+    const paid = localStorage.getItem('cynthia_paid_session');
+    if (!paid) return null;
+    const { sessionId } = JSON.parse(paid);
+    return (typeof sessionId === 'string' && sessionId.startsWith('cs_')) ? sessionId : null;
+  } catch { return null; }
 }
 
 
@@ -12555,7 +12856,7 @@ async function _transcrireAudio(blob) {
   <div class="end-modal">
     <h3>✨ Générer votre rapport</h3>
     
-    <p>Cynth.IA va analyser votre conversation et créer vos 5 pistes professionnelles personnalisées, avec salaires CHF et formations suisses pour les pistes principales.</p>
+    <p>Cynth.IA va analyser votre conversation et créer vos pistes de métiers personnalisées, avec salaires CHF et formations suisses pour les pistes principales.</p>
     <div class="end-modal-btns">
       <button class="end-modal-cancel" onclick="document.getElementById('end-modal-bg').classList.remove('show')">Continuer l'entretien</button>
       <button class="end-modal-confirm" onclick="doEndChat()">Générer mon rapport →</button>
