@@ -5287,11 +5287,12 @@ function _relacherFiltresDomaine(finale, candidates, metiersRetenus, contraintes
   return f;
 }
 function _finaliserEntonnoir(finale, candidates, metiersRetenus, contraintes) {
-  var f = _relacherFiltresDomaine(finale, candidates, metiersRetenus, contraintes);
+  
+  var f = _relacherFiltresDomaine(finale, _exclureAncienMetierV3(candidates), metiersRetenus, contraintes);
   f = _exigerFicheOfficielle(f);
   f = _marquerAPreparer(f);
   f = _composerPistesB12(f);
-  return f;
+  return _exclureAncienMetierV3(f);
 }
 
 
@@ -5559,6 +5560,31 @@ function _employeursSection1(parcours) {
   String(parcours || '').replace(/\bau\s+([A-ZÀ-Ý][\w&'’\- ]{2,40}?)(?=\s*\()/g, function (_, e) { out.push(e.trim()); return _; });
   return out;
 }
+
+function _sansRepetitionLigneCv(t) {
+  if (typeof t !== 'string' || !t) return t;
+  var w = t.split(/\s+/), change = true, garde = 0;
+  var net = function (x) { return _normaliserTexte(x).replace(/[^a-z0-9]/g, ''); };
+  while (change && garde++ < 20) {
+    change = false;
+    for (var n = 5; n >= 3 && !change; n--) {
+      var vus = {};
+      for (var i = 0; i + n <= w.length; i++) {
+        var g = w.slice(i, i + n);
+        if (g.filter(function (x) { return net(x).length >= 4; }).length < 2) continue;
+        var k = g.map(net).join(' ');
+        if (vus[k] !== undefined && vus[k] + n <= i) {
+          var fin = (w[i + n - 1].match(/[,.;:!?]+$/) || [''])[0];
+          w.splice(i, n);
+          if (fin && i > 0) w[i - 1] = w[i - 1].replace(/[,.;:!?]*$/, '') + fin;
+          change = true; break;
+        }
+        if (vus[k] === undefined) vus[k] = i;
+      }
+    }
+  }
+  return w.join(' ');
+}
 function _corrigerLigneCv(b, emplSec1, postes) {
   var t = String(b || '');
   
@@ -5793,6 +5819,40 @@ function _retirerPistesAbsentes(data) {
   return data;
 }
 
+function _retirerMetiersHorsPistes(data) {
+  try {
+    var retenues = (data.top_metiers || []).map(function (m) { return m && m.id; });
+    var siens = ' ' + _messagesPersonneNormV3().join(' ') + ' ' + (typeof _cvText !== 'undefined' && _cvText ? _normaliserTexte(_cvText) : '') + ' ';
+    var groupes = [];
+    METIERS_DB.forEach(function (m) {
+      if (retenues.indexOf(m.id) !== -1) return;
+      var brut = String(m.titre || '').replace(/\([^)]*\)/g, ' ').split('/')[0];
+      var formes = [brut.replace(/·[a-zà-ÿ]+/gi, ''), brut.replace(/([a-zà-ÿ]+)·([a-zà-ÿ]+)/gi, function (x, b, sx) { return _feminiserV3(b, sx); })]
+        .map(function (f) { return _normaliserTexte(f).trim(); })
+        .filter(function (f) { return f.split(/\s+/).length >= 2 || f.length >= 9; });
+      if (formes.length && !formes.some(function (f) { return _contientMot(siens, f); })) groupes.push(formes);
+    });
+    
+    var formesRetenues = [];
+    retenues.forEach(function (id) { var f = METIERS_DB.find(function (x) { return x.id === id; }); if (f) formesRetenues.push(_normaliserTexte(String(f.titre).replace(/\([^)]*\)/g, ' ').replace(/·[a-zà-ÿ]+/gi, '')).trim()); });
+    var nettoie = function (t) {
+      if (typeof t !== 'string' || !t) return t;
+      var precedenteRetiree = false;
+      return _decouperPhrases(t).filter(function (p) {
+        if (precedenteRetiree && _RE_PHRASE_SUITE.test(p)) return false;
+        var n = ' ' + _normaliserTexte(p) + ' ';
+        var cite = groupes.some(function (g) { return g.some(function (f) { return _contientMot(n, f) && !formesRetenues.some(function (r) { return r.indexOf(f) !== -1 && _contientMot(n, r); }); }); });
+        if (cite) { try { console.warn('[CYNTH] Plan : phrase qui nomme un métier absent des pistes retirée : « ' + p.slice(0, 80) + ' »'); } catch (e) {} }
+        precedenteRetiree = cite;
+        return !cite;
+      }).join(' ').trim();
+    };
+    if (data.plan_action_6_mois) Object.keys(data.plan_action_6_mois).forEach(function (k) { data.plan_action_6_mois[k] = nettoie(data.plan_action_6_mois[k]); });
+    data.message_fin = nettoie(data.message_fin);
+  } catch (e) {}
+  return data;
+}
+
 var _RE_NOTE_SUR5 = /\b[1-5]\s*(?:sur\s*5|\/\s*5)(?![0-9])/i;
 function _corrigerRapport24oct(data) {
   try {
@@ -5845,7 +5905,7 @@ function _corrigerRapport24oct(data) {
     
     var postes = []; try { postes = _postesDuCvV3(typeof _cvText !== 'undefined' ? _cvText : ''); } catch (e) {}
     var empl = _employeursSection1(data.parcours_recap);
-    if (Array.isArray(data.cv_bullets)) data.cv_bullets = data.cv_bullets.map(function (b) { return _corrigerLigneCv(b, empl, postes); });
+    if (Array.isArray(data.cv_bullets)) data.cv_bullets = data.cv_bullets.map(function (b) { return _sansRepetitionLigneCv(_corrigerLigneCv(b, empl, postes)); });
     
     if (data.plan_action_6_mois) data.plan_action_6_mois = _corrigerPlanB(data.plan_action_6_mois, data.top_metiers);
     
@@ -5859,6 +5919,7 @@ function _corrigerRapport24oct(data) {
     
     
     _retirerPistesAbsentes(data);
+    _retirerMetiersHorsPistes(data);
     
     _parcoursProfondB(data, _hygieneTexte);
     if (typeof data.message_fin === 'string') data.message_fin = _citationReelleB(data.message_fin);
@@ -6988,6 +7049,7 @@ function _texteTraceRapport() {
   if (!t.declasses.length) l.push('  (aucune)');
   t.declasses.forEach(function (e) { l.push('  - ' + e.titre + ' : ' + e.filtre + (e.detail ? ' (' + e.detail + ')' : '')); });
   if (t.relachees && t.relachees.length) l.push('Réadmises en « À explorer » (filtre de domaine relâché, moins de 3 pistes) : ' + t.relachees.map(function (r) { return r.titre + ' (' + r.filtre + ')'; }).join(' ; '));
+  if (t.repliSelection) l.push('Sélection du rapport : ' + t.repliSelection);
   l.push('Retenues : ' + (t.retenues.length ? t.retenues.map(function (r) { return r.titre + ' (' + r.type + ')'; }).join(' ; ') : 'aucune'));
   return l.join('\n');
 }
@@ -7203,7 +7265,8 @@ var _MOTS_INTERETS_V3 = _MOTS_INTERETS_A1.concat(['nature', 'technologie', 'tech
 var _MOTS_FORMATION_V3 = _MOTS_FORMATION_A1.concat(['formation', 'formations', 'cours du soir', 'me former', 'apprendre un metier']);
 
 
-var _RE_EPISODE_V3 = /\s(un jour|ce jour|il y a eu|un client|une cliente|un pere|une mere|une dame|un monsieur|un couple|un collegue|une collegue|un enfant|un gamin|un patient|une patiente|la semaine d apres|le lendemain|est revenue?|sont revenus|m a dit|m ont dit|m ont amene|m a remercie|m ont remercie)\s/;
+
+var _RE_EPISODE_V3 = /\s(un jour|ce jour|le jour ou|la derniere fois|un ami|une amie|un voisin|une voisine|il y a eu|un client|une cliente|un pere|une mere|une dame|un monsieur|un couple|un collegue|une collegue|un enfant|un gamin|un patient|une patiente|la semaine d apres|le lendemain|est revenue?|sont revenus|m a dit|m ont dit|m ont amene|m a remercie|m ont remercie)\s/;
 var _RE_ACTION_V3 = /\s(j ai|je lui ai|je leur ai|je l ai|je les ai|on a|je suis alle|je suis allee|je me suis)\s/;
 
 var _RE_MOMENT_V3 = /\s(l an dernier|l annee derniere|le mois dernier|la semaine derniere|le premier jour|un matin|un soir|un jeune|une jeune|une fois (un|une|il|elle|on))\s/;   
@@ -7616,6 +7679,15 @@ var _QUESTION_EPISODE_V3 = 'Racontez-moi un moment précis où c\u2019était le 
 var _QUESTION_COMMENT_V3 = 'Comment avez-vous procédé, étape par étape ?';
 
 
+
+var _RE_PAS_NON_ACTION_V3 = /\s(apres|avant|attendre|attends|attend) (votre|le|ce|mon|du) rapport\s|\sce que vous (allez|alle[sz]?|aller) (me )?(trouver|proposer|dire|donner|envoyer)\s|\s(lire|relire|voir|regarder) (votre|le|mon) rapport\s|\sje (ne )?sais pas\s|\sj sais pas\s|\ssais pas\s|\saucune idee\s|\spas d idee\s|\sje verrai\s|\son verra\s|\srien\s|\sattendre\s/;
+var _RE_PAS_VERBE_V3 = /\s(demand|appel|contact|ecri|envoy|pren|regard|cherch|recherch|rencontr|inscri|prepar|visit|telephon|postul|parl|consult|redig|renseign|lir|lis|mett|not|fai|vais|aller|alle|pass|essay|pos|list|mettr|pratiqu|rejoindr|particip|commenc|termin|achet|ouvr|cre|apprend|suiv)\w*/;
+function _premierPasActionV3(t) {
+  var n = ' ' + _normaliserTexte(String(t || '')).trim() + ' ';
+  if (n.trim().split(/\s+/).length < 2) return false;
+  return !_RE_PAS_NON_ACTION_V3.test(n) && _RE_PAS_VERBE_V3.test(n);
+}
+var _QUESTION_PREMIER_PAS_PRECISER_V3 = 'Le rapport vous donnera des pistes, mais le premier pas peut venir de vous, même tout petit : appeler quelqu\u2019un, poser une question, lire une fiche métier. Lequel pourriez-vous faire cette semaine ?';
 function _premierPasPropreV3(t) {
   var brut = String(t || '').trim();
   var garde = _phrasesV3(brut).filter(function (p) { return !/\?\s*$/.test(p) && !_veutTerminerV3(p); });
@@ -7827,6 +7899,27 @@ async function _appelSelectionMiroirV3(sysP, usrP) {
   } finally { clearTimeout(tm); }
 }
 
+
+function _premierPasDansEtapeV3(pas, etape) {
+  var rp = Object.keys(_racinesV3(pas || '')), re = _racinesV3(etape || '');
+  if (!rp.length) return true;
+  return rp.filter(function (k) { return re[k]; }).length >= Math.max(2, Math.ceil(rp.length / 2));
+}
+
+var _DELAI_SELECTION_RAPPORT_MS = 75000;
+function _selectionAvecRepliMiroirV3(promesse, delaiMs) {
+  var echeance = new Promise(function (ok) { setTimeout(function () { ok(null); }, delaiMs || _DELAI_SELECTION_RAPPORT_MS); });
+  return Promise.race([Promise.resolve(promesse).catch(function () { return []; }), echeance]).then(function (r) {
+    if (Array.isArray(r) && r.length) return r;
+    var b = null; try { b = _etatV3 && _etatV3.miroirSelectionBrute; } catch (e) {}
+    if (Array.isArray(b) && b.length) {
+      try { console.warn('[CYNTH] Sélection du rapport ' + (r === null ? 'trop lente' : 'vide ou en panne') + ' : reprise de la sélection du miroir (' + b.length + ' métiers).'); } catch (e) {}
+      try { if (typeof _traceR === 'function') _traceR().repliSelection = 'sélection du miroir reprise (' + (r === null ? 'trop lente' : 'vide ou en panne') + ')'; } catch (e) {}
+      return b;
+    }
+    return Array.isArray(r) ? r : [];
+  });
+}
 function _lancerSelectionMiroirV3() {
   if (_etatV3.miroirPromesse || typeof _selectionnerMetiers !== 'function') return;
   var etat = _etatV3;
@@ -7838,7 +7931,11 @@ function _lancerSelectionMiroirV3() {
     return Promise.resolve().then(function () {
       return _selectionnerMetiers({ motsUtilisateur: mots, cvTexte: _cvText || '', rejets: rejets, synthMetiers: [], quizContexte: ctx,
         quizTalents: (typeof quizAnswers !== 'undefined' && quizAnswers.talents) || '', appel: _appelSelectionMiroirV3 });
-    }).then(function (r) { var f = _famillesMiroirV3(r); if (!f) throw new Error('miroir-vide'); return f; });
+    }).then(function (r) {
+      
+      if (Array.isArray(r) && r.length) etat.miroirSelectionBrute = r;
+      var f = _famillesMiroirV3(r); if (!f) throw new Error('miroir-vide'); return f;
+    });
   };
   etat.miroirPromesse = essai().catch(function () { return essai(); })
     .then(function (f) { etat.miroirChoix = f; }).catch(function () { etat.miroirChoix = null; })
@@ -7863,7 +7960,10 @@ var _ORDINAUX_MIROIR_V3 = { premiere: 0, deuxieme: 1, seconde: 1, troisieme: 2 }
 var _RE_AUCUNE_MIROIR_V3 = /\s(aucune des (deux|trois)|ni l une ni l autre|aucune ne me|aucune ne m)\s/;
 var _RE_REFUS_PHRASE_MIROIR_V3 = /\s(ne |n )?(\w+ )?(veux|voudrais|souhaite|aime|attire|plait|interesse|correspond|tente|parle)(\s\w+)? (pas|plus|jamais)\s|\spas pour moi\s|\spas moi\s|\splus jamais\s/;
 
-var _RE_FAUX_NEG_MIROIR_V3 = /\s(je )?(n )?ai pas peur\s|\spas de (souci|soucis|probleme)\s|\spas mal\s/g;
+
+var _RE_FAUX_NEG_MIROIR_V3 = /\s(je )?(n )?ai pas peur\s|\spas de (souci|soucis|probleme)\s|\spas mal\s|\spourquoi pas\s/g;
+
+var _RE_SUPERLATIF_MIROIR_V3 = /\s(le|la|les|de) plus(?= )|\sde plus en plus(?= )/g;
 
 function _lireReactionMiroirV3(texte, n) {
   var aime = {}, rejete = {};
@@ -7887,12 +7987,17 @@ function _lireReactionMiroirV3(texte, n) {
       var hesite = _RE_HESITE_MIROIR_V3.test(fen);
       
       var neg = fen.replace(/\s(je )?sais pas\s/g, ' ').replace(_RE_FAUX_NEG_MIROIR_V3, ' ').trim().split(/\s+/).some(function (w) { return _RE_NEG_MIROIR_V3.test(w); });
-      if (!neg && lettres.length === 1) neg = _RE_REFUS_PHRASE_MIROIR_V3.test(' ' + tok.join(' ') + ' ');
+      if (!neg && lettres.length === 1) neg = _RE_REFUS_PHRASE_MIROIR_V3.test((' ' + tok.join(' ') + ' ').replace(_RE_SUPERLATIF_MIROIR_V3, ' superlatif'));
       if (neg) rejete[l.idx] = 1; else if (!hesite) aime[l.idx] = 1;
     });
   });
   var a = Object.keys(aime).map(Number), r = Object.keys(rejete).map(Number);
   return { aime: a.filter(function (x) { return r.indexOf(x) === -1; }).sort(), rejete: r.filter(function (x) { return a.indexOf(x) === -1; }).sort() };
+}
+
+function _nbPistesApresMiroirV3(liste) {
+  var rej = []; try { rej = _choixMiroirIdsV3().rejete; } catch (e) {}
+  return (liste || []).filter(function (m) { return m && rej.indexOf(m.id) === -1; }).length;
 }
 function _choixMiroirIdsV3() {
   var vide = { aime: [], rejete: [], reaction: '' };
@@ -7965,7 +8070,7 @@ function _reveleV3() {
     }
     if (typeof e.noteChemin === 'number') r.note = e.noteChemin;
     if (e.pointTexte) r.pourMonter = e.pointTexte;
-    if (e.premierPas) r.premierPas = e.premierPas;
+    if (e.premierPas && _premierPasActionV3(e.premierPas)) r.premierPas = e.premierPas;   
     return Object.keys(r).length ? r : null;
   } catch (er) { return null; }
 }
@@ -7986,7 +8091,9 @@ function _changementCiteSesMots(expl) {
 
 var _ANCIENS_METIERS_V3 = [
   { motifs: ['magasin', 'vendeur', 'vendeuse', 'caisse', 'en rayon'], ids: ['assistant-commerce-detail', 'gestionnaire-commerce-detail'] },
-  { motifs: ['centre d appels', 'service client', 'service clients', 'relation client', 'call center', 'hotline'], ids: ['agent-relation-client'] },
+  
+  { motifs: ['centre d appels', 'service client', 'service clients', 'relation client', 'call center', 'hotline', 'teleconseiller', 'teleconseillere', 'teleconseil'],
+    re: /\s(conseill|charge|agent|operat|gestionnair)\w* (de |en |a la |au )?(clientele|client|clients|relation client|service client)\s/, ids: ['agent-relation-client'] },
   { motifs: ['cariste', 'magasinier', 'entrepot'], ids: ['logisticien'] },
   { motifs: ['macon'], ids: ['macon'] },
   { motifs: ['serveur', 'serveuse', 'chef de rang'], ids: ['employe-hotellerie', 'specialiste-restauration'] },
@@ -8004,7 +8111,7 @@ function _anciensMetiersV3() {
   if (_RE_CONTINUER_V3.test(hay.replace(/\s+/g, ' '))) return [];
   var out = [];
   _ANCIENS_METIERS_V3.forEach(function (g) {
-    if (g.motifs.some(function (m) { return _contientMot(hay, m); })) g.ids.forEach(function (id) { if (out.indexOf(id) === -1 && choisis.indexOf(id) === -1) out.push(id); });
+    if (g.motifs.some(function (m) { return _contientMot(hay, m); }) || (g.re && g.re.test(hay.replace(/\s+/g, ' ')))) g.ids.forEach(function (id) { if (out.indexOf(id) === -1 && choisis.indexOf(id) === -1) out.push(id); });
   });
   return out;
 }
@@ -8256,7 +8363,13 @@ function _decisionV3(tour, dernier) {
   var _rep = String(dernier || '').trim().slice(0, 240);
   if (_etatV3.echelleTour && tour === _etatV3.echelleTour + 1 && _etatV3.noteCheminTexte === undefined) { _etatV3.noteChemin = _lireNoteV3(dernier); _etatV3.noteCheminTexte = _rep; }
   if (_etatV3.pointTour && tour === _etatV3.pointTour + 1 && !_etatV3.pointTexte) _etatV3.pointTexte = _rep;
-  if (_etatV3.premierPasTour && tour === _etatV3.premierPasTour + 1 && !_etatV3.premierPas) _etatV3.premierPas = _premierPasPropreV3(_rep);
+  if (_etatV3.premierPasTour && tour === _etatV3.premierPasTour + 1 && !_etatV3.premierPas && !_etatV3.premierPasFini) {
+    var _pp = _premierPasPropreV3(_rep);
+    if (_premierPasActionV3(_pp)) { _etatV3.premierPas = _pp; _etatV3.premierPasFini = true; }
+    
+    else if (!_etatV3.premierPasRepris) { _etatV3.premierPasRepris = 1; _etatV3.premierPasTour = tour; d.blocs = ['premier_pas']; d.premierPasPreciser = true; return d; }
+    else _etatV3.premierPasFini = true;
+  }
   
   if (_demandeMarcheV3(dernier)) { d.blocs = ['reponse_marche']; d.demandeMarche = true; return d; }
   var directe = _demandeDirecteV3(dernier);
@@ -8306,7 +8419,8 @@ function _decisionV3(tour, dernier) {
     _etatV3.pointTour = tour - 1; _etatV3.pointTexte = _rep;
   }
   if (_ouvert && _etatV3.pointTour && !_etatV3.premierPasTour && tour > _etatV3.pointTour + 1 && _premierPasConformeV3(_derCyn)) {
-    _etatV3.premierPasTour = tour - 1; _etatV3.premierPas = _premierPasPropreV3(_rep);
+    _etatV3.premierPasTour = tour - 1;
+    if (_premierPasActionV3(_premierPasPropreV3(_rep))) { _etatV3.premierPas = _premierPasPropreV3(_rep); _etatV3.premierPasFini = true; }
   }
   
   var _miroirImpossible = !_etatV3.miroirTour && !_etatV3.miroirChoix && (!_etatV3.miroirPromesse || _etatV3.miroirFini) && _etatV3.filRougeFini;
@@ -8540,6 +8654,7 @@ async function _callCynthAIv3(messages) {
     if (r14 && _ch.conforme(r14)) { reply = r14; _traceTourCourant.regen.push('chemin : ' + d.chemin); }
     else { reply = _remplacerQuestionV3(reply, _ch.question()); _traceTourCourant.filtres.push('chemin : question écrite par le code (' + d.chemin + ')'); }
   }
+  if (d.premierPasPreciser) { reply = _QUESTION_PREMIER_PAS_PRECISER_V3; _traceTourCourant.filtres.push('premier pas : relance écrite par le code (pas une action)'); }
   if (d.metiersAuRapport) { reply = _REPONSE_METIERS_RAPPORT_V3; _traceTourCourant.filtres.push('métiers : réponse écrite par le code (rapport)'); }
   
   if (d.demandeMarche) {
@@ -8553,7 +8668,7 @@ async function _callCynthAIv3(messages) {
   if (_sansNegEch !== reply) { reply = _sansNegEch; _traceTourCourant.filtres.push('phrase qui niait son échéance retirée'); }
   reply = _minusculeApresDeuxPointsV3(reply);
   var estPortrait = d.blocs.some(function (b) { return /^portrait_/.test(b); });
-  var exemptA4 = wantSynthesis || estPortrait || d.sujet || d.demandeDirecte || d.comment || d.filRouge || d.miroir || d.chemin || d.demandeMarche
+  var exemptA4 = wantSynthesis || estPortrait || d.sujet || d.demandeDirecte || d.comment || d.filRouge || d.miroir || d.chemin || d.premierPasPreciser || d.demandeMarche
     || d.blocs.some(function (b) { return ['point_etape', 'demander_fin', 'detresse', 'post_synthese', 'veut_terminer'].indexOf(b) !== -1; });
   if (!exemptA4) {
     
@@ -13061,11 +13176,16 @@ function _validerChoixMetiers(choix, rejets, niv, preuvesValidees) {
   
   
   
-  if (retenus.length < 3 && declasses.length) {
+  
+  let _rejM = [];
+  try { if (typeof _choixMiroirIdsV3 === 'function') _rejM = _choixMiroirIdsV3().rejete || []; } catch (e) {}
+  for (let i = declasses.length - 1; i >= 0; i--) if (declasses[i] && _rejM.indexOf(declasses[i].id) !== -1) declasses.splice(i, 1);
+  const _nbApresMiroir = () => retenus.filter(m => m && _rejM.indexOf(m.id) === -1).length;
+  if (_nbApresMiroir() < 3 && declasses.length) {
     declasses.sort((a, b) => _niveauMetier(b.formation) - _niveauMetier(a.formation));
     console.warn('[CYNTH] moins de 3 pistes au niveau attendu, repêchage de ' +
       Math.min(3 - retenus.length, declasses.length) + ' piste(s) prouvée(s) de niveau inférieur');
-    while (retenus.length < 3 && declasses.length) { const d = declasses.shift(); d._niveauInferieur = true; retenus.push(d); }
+    while (_nbApresMiroir() < 3 && declasses.length) { const d = declasses.shift(); d._niveauInferieur = true; retenus.push(d); }
   }
   if (sansPreuve.length) {
     console.warn('[CYNTH] ' + sansPreuve.length + ' piste(s) sans preuve propre NON reprise(s) : '
@@ -13891,7 +14011,7 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
     : '';
 
   
-  const _pSelection = _selectionnerMetiers({
+  const _pSelection = _selectionAvecRepliMiroirV3(_selectionnerMetiers({
     motsUtilisateur: _motsUtilisateur,
     cvTexte: _cvText || '',
     rejets: _rejets,
@@ -13899,7 +14019,7 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
     quizContexte: _qCtx,
     quizTalents: (typeof quizAnswers !== 'undefined' && quizAnswers.talents) || '',
     appel: (s, u) => _callReportModel(s, u, 1200, 'selection')
-  }).catch(function () { return []; });
+  }).catch(function () { return []; }));
 
   
 
@@ -13914,7 +14034,8 @@ INTERDICTION ABSOLUE : ne propose AUCUN métier de ce domaine, ni en "principal"
     const _t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
     let _provider = null, _issue = 'ok';
     const _abort = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    const _timer = setTimeout(() => { try { _abort && _abort.abort(); } catch (e) {} }, _APPEL_TIMEOUT_MS);
+    
+    const _timer = setTimeout(() => { try { _abort && _abort.abort(); } catch (e) {} }, label === 'selection' ? 60000 : _APPEL_TIMEOUT_MS);
     try {
       const resp = await fetch(GROQ_PROXY_URL, {
         method:'POST',
@@ -15099,7 +15220,8 @@ function downloadRapport(){
     
     
     const _pp = String(m.premier_pas || '').replace(/^\s*cette\s+semaine\s*[:,]?\s*/i, '');
-    const first = _pp?`<div class="firststep pas"><b>Premier pas cette semaine :</b> ${esc(_pp)}</div>`:'';
+    
+    const first = _pp?`<div class="firststep pas"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B4402F" stroke-width="2" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg><div><div class="pas-l">Premier pas cette semaine</div><div class="pas-t">${esc(_pp)}</div></div></div>`:'';
     
     const liensForm = `<div style="margin-top:8px;font-size:.86rem">
       <a href="${orientUrl}" target="_blank" rel="noopener" style="color:var(--emerald-d);font-weight:600;text-decoration:underline">${orientLabel}</a>
@@ -15123,8 +15245,8 @@ function downloadRapport(){
     
     
     const useM = ex.ce_qui_use
-      ? `<div class="firststep" style="background:#FBEEEC;margin-top:10px"><b style="color:#A6402F">Ce qui use, dans ce métier :</b> ${esc(ex.ce_qui_use)}</div>`
-      : `<div class="firststep" style="background:#FBEEEC;margin-top:10px"><b style="color:#A6402F">Ce qui use, dans ce métier :</b> D'après nos sources, nous n'avons pas encore de description officielle vérifiée du quotidien de ce métier précis. Le plus fiable : <a href="${_orientationRechercheUrl(m.titre)}" target="_blank" rel="noopener" style="color:#A6402F;font-weight:600;text-decoration:underline">chercher ce métier sur orientation.ch ↗</a>, ou contacter directement une entreprise du secteur (voir « où ça recrute » ci-dessus) ou l'ORP.</div>`;
+      ? `<div class="use"><b>Ce qui use, dans ce métier :</b> ${esc(ex.ce_qui_use)}</div>`
+      : `<div class="use"><b>Ce qui use, dans ce métier :</b> D'après nos sources, nous n'avons pas encore de description officielle vérifiée du quotidien de ce métier précis. Le plus fiable : <a href="${_orientationRechercheUrl(m.titre)}" target="_blank" rel="noopener" style="color:#A6402F;font-weight:600;text-decoration:underline">chercher ce métier sur orientation.ch ↗</a>, ou contacter directement une entreprise du secteur (voir « où ça recrute » ci-dessus) ou l'ORP.</div>`;
 
     
     
@@ -15135,18 +15257,19 @@ function downloadRapport(){
     const _princ = isPrinc(m);
     
     const _rang = _princ ? 'Idéal' : 'À explorer';
-    const _raisonRang = m._choixMiroir ? '<span class="rank-raison">La journée que vous avez choisie</span>' : '';
+    const _raisonRang = m._choixMiroir ? '<span class="pill choisie">La journée que vous avez choisie</span>' : '';
     
     const _taches = arrOf(ex.competences_detaillees).slice(0, 4);
     const journee = _taches.length ? `<div class="journee-type"><div class="minilabel">Votre journée type</div><p>${esc(_majuscule(_taches.join(', ')))}.</p></div>` : '';
     const _verif = (_fiche && _fiche.verifie_le) ? ', fiche du ' + String(_fiche.verifie_le).split('-').reverse().join('.') : '';
     const _ouRecrute = String(ex.ou_recrute || '').split('·')[0].split(',').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 3).join(', ');
     const marqs = `<div class="marqs">`
-      + `<div class="marq"><div class="marq-l">Salaire de départ</div><div class="marq-v">${sd ? esc(_salaireSansTiret(sd).replace(/\s*\/\s*mois\s*$/i, '')) : 'Pas de chiffre assez précis'}</div><div class="marq-s">${sd ? 'par mois' + esc(_verif) : 'voir la source ci-dessous'}${se ? `<br>Avec de l'expérience : ${esc(_salaireSansTiret(se))}` : ''}</div></div>`
-      + `<div class="marq"><div class="marq-l">Formation</div><div class="marq-v">${formation ? esc(formation) : 'À vérifier'}</div><div class="marq-s">${db.financement ? 'Financement : ' + esc(_financementPourElle(db.financement)) : ''}</div></div>`
-      + `<div class="marq"><div class="marq-l">Marché</div><div class="marq-v">${marche ? esc(marche) : 'Non renseigné'}</div><div class="marq-s">${esc(_ouRecrute)}</div></div>`
+      + `<div class="marq"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1FB488" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg><div class="marq-l">Salaire de départ</div><div class="marq-v">${sd ? esc(_salaireSansTiret(sd).replace(/\s*\/\s*mois\s*$/i, '')) : 'Pas de chiffre assez précis'}</div><div class="marq-s">${sd ? 'par mois' + esc(_verif) : 'voir la source ci-dessous'}${se ? `<br>Avec de l'expérience : ${esc(_salaireSansTiret(se))}` : ''}</div></div>`
+      + `<div class="marq"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1FB488" stroke-width="1.8" aria-hidden="true"><path d="M3 8l9-4 9 4-9 4-9-4z"></path><path d="M7 10v5c3 2 7 2 10 0v-5"></path></svg><div class="marq-l">Formation</div><div class="marq-v">${formation ? esc(formation) : 'À vérifier'}</div><div class="marq-s">${db.financement ? 'Financement : ' + esc(_financementPourElle(db.financement)) : ''}</div></div>`
+      + `<div class="marq"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1FB488" stroke-width="1.8" aria-hidden="true"><path d="M4 18l5-6 4 3 7-9"></path><path d="M15 6h5v5"></path></svg><div class="marq-l">Marché</div><div class="marq-v">${marche ? esc(marche) : 'Non renseigné'}</div><div class="marq-s">${esc(_ouRecrute)}</div></div>`
       + `</div>`;
-    return `<div class="metier ${_princ ? 'principal' : 'piste'}"><div class="rank">${_rang}</div><div class="mhead"><div>${_raisonRang}<h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div></div><div class="minilabel">Pourquoi vous</div><p class="why">${why}</p>${reserve}${notesLot3}${resteAV}${journee}${marqs}${grid}<div class="mfoot">${hzChip}${jobChip}</div>${hzLine}${srcSal}${art32}${route}${noteM}${useM}${first}</div>`;
+    
+    return `<div class="metier ${_princ ? 'principal' : 'piste'}"><div class="mtete">Partie 2 · Vos métiers · @@MF@@ sur @@MN@@</div><div class="mpills"><span class="pill ${_princ ? 'ideal' : 'explo'}">${_rang}</span>${_raisonRang}</div><div class="mhead"><div><h3>${esc(m.titre)}</h3><div class="msec">${esc(m.secteur||'')}</div></div></div><div class="why-card"><div class="minilabel">Pourquoi vous</div><p class="why">${why}</p></div>${reserve}${notesLot3}${resteAV}${journee}${marqs}${grid}<div class="mfoot">${hzChip}${jobChip}</div>${hzLine}${srcSal}${art32}${route}${noteM}${useM}${first}</div>`;
   };
   
   const _famGroupes = _grouperFamillesMetiers(metiers);
@@ -15210,9 +15333,9 @@ function downloadRapport(){
   const _ppPlan = (_rv && _rv.premierPas) ? String(_rv.premierPas) : '';
   const _ppRac = _ppPlan ? Object.keys(_racinesV3(_ppPlan)) : [];
   const _s1Rac = _racinesV3(_s1Brut);
-  const _s1AvecPas = (_ppPlan && _ppRac.filter(function (k) { return _s1Rac[k]; }).length < Math.min(2, _ppRac.length))
+  const _s1AvecPas = (_ppPlan && !_premierPasDansEtapeV3(_ppPlan, _s1Brut))
     ? 'Votre premier pas, choisi par vous : «\u00A0' + _ppPlan.replace(/[.\s]+$/, '') + '\u00A0». ' + _s1Brut : _s1Brut;
-  const planItems = [['Cette semaine',_s1AvecPas],['Semaines 2 à 4',planSrc.semaine2_4],['Mois 1',planSrc.mois1],['Mois 2',planSrc.mois2],['Mois 3',planSrc.mois3],['Mois 4 à 5',planSrc.mois4_5],['Mois 6',planSrc.mois6]].filter(function(x){return x[1];}).map(function(x){return `<div class="item"><div class="when">${esc(/^Mois/.test(x[0]) ? (_moisDeLEtape(x[1]) || x[0]) : x[0])}</div><div class="what">${esc(x[1])}</div></div>`;}).join('');
+  const planItems = [['Cette semaine',_s1AvecPas],['Semaines 2 à 4',planSrc.semaine2_4],['Mois 1',planSrc.mois1],['Mois 2',planSrc.mois2],['Mois 3',planSrc.mois3],['Mois 4 à 5',planSrc.mois4_5],['Mois 6',planSrc.mois6]].filter(function(x){return x[1];}).map(function(x, i){return `<div class="item${i === 0 && x[0] === 'Cette semaine' ? ' now' : ''}"><div class="when">${esc(/^Mois/.test(x[0]) ? (_moisDeLEtape(x[1]) || x[0]) : x[0])}</div><div class="what">${esc(x[1])}</div></div>`;}).join('');
   
   const _clarteAvant = (typeof quizAnswers !== 'undefined' && quizAnswers && quizAnswers.clarteAvant != null) ? quizAnswers.clarteAvant : data._clarteAvant;
   const engagement = (_rv && _rv.premierPas) ? `<div class="engagement"><div class="minilabel">Mon engagement</div><p class="eng-cit">«\u00A0${esc(_rv.premierPas)}\u00A0»</p><div class="eng-lignes"><div class="eng-l"><span>Je le fais le</span><span class="eng-blanc"></span></div>${_clarteAvant != null && _clarteAvant !== '' ? `<div class="eng-l"><span>Clarté avant l'entretien</span><b>${esc(String(_clarteAvant))} / 10</b></div>` : ''}<div class="eng-l"><span>Clarté aujourd'hui</span><b>__ / 10</b></div></div></div>` : '';
@@ -15312,16 +15435,18 @@ p.body{font-size:1rem;margin-bottom:14px}
 .ap-pas .minilabel{color:#B4402F}
 .ap-pas p{font-size:.98rem;line-height:1.5}
 .rank-raison{display:block;font-size:.78rem;font-weight:600;color:var(--emerald-d);margin-bottom:4px}
-.journee-type{background:var(--emerald-soft);border-radius:14px;padding:14px 16px;margin:0 0 16px}
+.journee-type{margin:0 0 18px}
 .journee-type .minilabel{margin-bottom:6px}
 .journee-type p{font-size:.92rem;line-height:1.5}
-.marqs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 18px}
-.marq{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--cream)}
-.marq-l{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.marq-v{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;line-height:1.3;margin:4px 0 2px;color:var(--ink)}
-.marq-s{font-size:.78rem;color:var(--muted);line-height:1.4}
-.firststep.pas{background:var(--coral);color:#fff;margin-top:16px}
-.firststep.pas b{color:#fff}
+.marqs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px}
+.marq{background:#0E2A24;color:#FAF6F0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.marq-l{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#9FC9B9;font-weight:600}
+.marq-v{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.15rem;line-height:1.25;color:#FAF6F0}
+.marq-s{font-size:.74rem;color:#9FC9B9;line-height:1.4}
+.firststep.pas{background:#FFE9E4;color:var(--ink);margin-top:16px;display:flex;gap:14px;align-items:flex-start;padding:18px 22px}
+.firststep.pas svg{flex-shrink:0;margin-top:2px}
+.pas-l{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:#B4402F;font-weight:600;margin-bottom:4px}
+.pas-t{font-size:.96rem;line-height:1.5}
 .comparatif{margin-top:28px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
 .cmp-titre{font-size:1.2rem;padding:18px 20px 12px}
 .cmp-tete,.cmp-ligne{display:grid;grid-template-columns:1.5fr .8fr 1.1fr 1.4fr .7fr;gap:10px;padding:12px 20px;font-size:.86rem;align-items:center}
@@ -15367,12 +15492,22 @@ p.body{font-size:1rem;margin-bottom:14px}
 }
 .callout{border:1px solid var(--line);border-radius:16px;padding:22px 24px;background:#fff;margin-bottom:14px}
 .callout .minilabel{margin-bottom:8px}
-.metier{border:1px solid var(--line);border-radius:18px;background:#fff;padding:26px;margin-bottom:18px;position:relative;overflow:hidden}
-.metier.principal{border-color:var(--emerald)}
-.metier .rank{position:absolute;top:0;right:0;background:var(--emerald);color:#fff;font-family:'Space Grotesk';font-weight:600;font-size:.74rem;padding:6px 14px;border-bottom-left-radius:12px}
-.metier.piste .rank{background:var(--gold)}
+.metier{border:1px solid var(--line);border-radius:18px;background:var(--cream);padding:26px 28px;margin-bottom:22px;position:relative;overflow:hidden}
+.metier.principal{border-color:var(--line)}
+/* 30.10 : style de la maquette validée (page FicheMetier) */
+.mtete{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#12876A;font-weight:600;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:16px}
+.mpills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.pill{font-size:.72rem;font-weight:600;border-radius:999px;padding:4px 12px;line-height:1.4}
+.pill.ideal{background:#12876A;color:#FFFFFF}
+.pill.explo{border:1px solid #12876A;color:#12876A;padding:3px 11px}
+.pill.choisie{background:#E7F4EE;color:#12876A}
+.why-card{background:#FFFFFF;border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:0 0 18px}
+.why-card .minilabel{margin-bottom:8px}
+.why-card .why{margin-bottom:0}
+.use{border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:.88rem;line-height:1.5;color:var(--muted)}
+.use b{color:var(--ink)}
 .mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px}
-.metier h3{font-size:1.28rem}
+.metier h3{font-size:2.1rem;line-height:1.1;font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--ink)}
 .msec{color:var(--muted);font-size:.86rem;margin-bottom:16px}
 .score{text-align:center;flex-shrink:0;margin-top:22px}
 .score .n{font-family:'Space Grotesk';font-weight:700;font-size:1.7rem;color:var(--emerald-d);line-height:1}
@@ -15393,7 +15528,7 @@ p.body{font-size:1rem;margin-bottom:14px}
 /* La réserve : visible sans être alarmante. Corail, la couleur d'accent de la
    marque, déjà utilisée pour « à développer » — c'est une nuance, pas une
    alerte rouge. */
-.reserve{border-left:3px solid var(--coral);background:#FFF6F3;border-radius:0 10px 10px 0;
+.reserve{background:#FFF6F3;border:1px solid #F6D9D1;border-radius:12px;
   padding:12px 16px;margin:0 0 16px;font-size:.9rem;line-height:1.55}
 .reserve b{color:#A8452F}
 .chipm{font-size:.8rem;font-weight:600;padding:6px 12px;border-radius:100px;background:var(--cream2)}
@@ -15422,6 +15557,9 @@ p.body{font-size:1rem;margin-bottom:14px}
 .tl .item::before{content:"";position:absolute;left:-35px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--emerald);border:3px solid var(--cream)}
 .tl .when{font-family:'Space Grotesk';font-weight:600;color:var(--emerald-d);font-size:.9rem;margin-bottom:2px}
 .tl .what{font-size:.96rem}
+.tl .item.now::before{background:#FF6F5E}
+.tl .item.now .when{color:#B4402F;text-transform:uppercase;letter-spacing:.06em;font-size:.8rem}
+.tl .item.now .what{background:#FFE9E4;border-radius:10px;padding:12px 14px}
 .res{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .res .minilabel{margin-bottom:10px}
 .res ul{list-style:none;display:grid;gap:7px;font-size:.9rem}
@@ -15633,6 +15771,7 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
   .trait,.tl .item,.lead-quote,
   .firststep,.card,.bfnote,.mhead,.mfoot,.why,.reserve,.art32,.callout,li{
     break-inside:avoid;page-break-inside:avoid}
+  .marqs,.why-card,.use{break-inside:avoid;page-break-inside:avoid}
 
   /* 4. Un titre ou une amorce ne reste pas orphelin en bas de page.
 
@@ -15651,7 +15790,7 @@ a[href^="tel:"],a[x-apple-data-detectors]{color:inherit!important;text-decoratio
      break-after:avoid, le moteur emporte l'en-tete avec le debut de la fiche :
      la fiche peut toujours couler sur deux pages, elle ne s'ouvre plus sur
      une page pour ne rien y mettre. */
-  h2.sec,h3,h4,.minilabel,.sec-sub,.rank,.mhead{
+  h2.sec,h3,h4,.minilabel,.sec-sub,.mtete,.mpills,.rank,.mhead{
     break-after:avoid;page-break-after:avoid}
   p,li{orphans:3;widows:3}
 
@@ -15857,8 +15996,10 @@ ${secApercu}${_partie(1, 'Ce que Cynthia a appris de vous', 'Qui vous êtes, ce 
   const frame = document.getElementById('rapport-frame');
   document.body.style.overflow = 'hidden';
   overlay.style.display = 'block';
-  let _nsec = 0;
-  frame.srcdoc = html.replace(/@@SN@@/g, function () { return String(++_nsec); });
+  let _nsec = 0, _nmf = 0;
+  const _nFiches = (html.match(/@@MF@@/g) || []).length;
+  frame.srcdoc = html.replace(/@@SN@@/g, function () { return String(++_nsec); })
+    .replace(/@@MF@@/g, function () { return String(++_nmf); }).replace(/@@MN@@/g, String(_nFiches));
   showToast('📄','Rapport prêt ! Cliquez "Enregistrer en PDF" pour le sauvegarder.','success',6000);
 }
 
