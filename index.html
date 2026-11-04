@@ -96,7 +96,9 @@ button{font-family:inherit;}
 .att-actions button{height:48px;border-radius:12px;font:600 15px 'Inter',sans-serif;cursor:pointer}
 .att-passer{flex:1;border:1px solid var(--c-line);background:transparent;color:var(--c-muted);font-weight:500!important}
 .att-envoyer{flex:2;border:none;background:var(--c-ink);color:var(--c-cream)}
-.att-pret{background:var(--c-ink);color:var(--c-cream);border-radius:16px;padding:18px;margin:0 0 14px;text-align:left}
+.att-pret{position:fixed;left:16px;right:16px;bottom:16px;max-width:430px;margin:0 auto;z-index:50;box-shadow:0 10px 30px rgba(14,42,36,.35);background:var(--c-ink);color:var(--c-cream);border-radius:16px;padding:18px;text-align:left}
+
+#page-confirm .confirm-page{padding-bottom:190px}
 .att-pret b{font-family:'Space Grotesk',sans-serif;font-size:20px;display:block;margin-bottom:6px}
 .att-pret p{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:rgba(250,246,240,.85)}
 .att-pret button{width:100%;height:48px;border-radius:12px;border:none;background:var(--c-emerald);color:var(--c-ink);font:700 15px 'Inter',sans-serif;cursor:pointer}
@@ -2701,7 +2703,7 @@ textarea.chat-input{
           <q id="att-pas-texte"></q>
           <p style="margin:0;font-size:13px;color:var(--c-muted)">Vous l'avez dit pendant l'entretien. Quand voulez-vous le faire ?</p>
           <div class="att-ligne">
-            <input type="date" id="att-date" class="att-in" aria-label="Date du premier pas" style="flex:1">
+            <input type="date" id="att-date" class="att-in" aria-label="Date du premier pas" style="flex:1" onchange="_attNoter()">
             <button type="button" id="att-noter" onclick="_attNoter()">Noter</button>
           </div>
           <p id="att-note-ok" style="margin:8px 0 0;font-size:12px;color:var(--c-muted)">La date apparaîtra dans « Mon engagement », à la fin du rapport.</p>
@@ -4434,12 +4436,41 @@ function _phraseCassee(ph) {
   if (_RE_CONNECTEUR_DOUBLE.test(coeur)) return true;
   return false;
 }
+
+var _RE_CITATION_ATTRIBUEE = /(vous (l['’] ?)?avez (dit|écrit|ecrit|raconté|raconte)|vous (le |l['’] ?)?dites|selon vos (propres )?mots|dans vos (propres )?mots|vos mots|comme vous le dites)[^«»]{0,30}«\s*([^»]+?)\s*»/gi;
+
+function _retirerCitationsNonDites(ph) {
+  var msgs = ''; try { msgs = chatHistory.filter(function (m) { return m.role === 'user'; }).map(function (m) { return m.content; }).join(' \n '); } catch (e) {}
+  if (!msgs.trim()) return ph;   
+  var n = ' ' + _normaliserTexte(msgs).replace(/\s+/g, ' ') + ' ', change = false;
+  var out = String(ph || '').replace(_RE_CITATION_ATTRIBUEE, function (tout) {
+    var c = tout.replace(/^[^«]*«\s*/, '').replace(/\s*»$/, '').replace(/[…]|\.\.\./g, ' ').trim();
+    var ok = c.split(/\s+/).length >= 3 ? _citationDiteRapport(c) : n.indexOf(' ' + _normaliserTexte(c).trim() + ' ') !== -1;
+    if (ok) return tout;
+    change = true; return '';
+  });
+  if (!change) return ph;
+  out = out.replace(/^\s*[.:;,]\s*/, '').replace(/\s{2,}/g, ' ');
+  try { console.warn('[CYNTH] Citation attribuée à la personne mais absente de ses messages, retirée : « ' + String(ph).trim() + ' »'); } catch (e) {}
+  return out.trim().split(/\s+/).filter(Boolean).length >= 3 ? (/^\s/.test(ph) ? ' ' : '') + out.trim() + (/\s$/.test(ph) ? ' ' : '') : '';
+}
+
+function _phraseAvecAnglais(ph) {
+  var t = String(ph || '').replace(/«[^»]*»/g, ' ').replace(/https?:\/\/\S+/g, ' ').toLowerCase();
+  if (!/(^|\s)(le|la|les|des|vous|est|et|une|un|du)(\s|$)/.test(t)) return false;
+  return /(^|[\s,;(])(where|which|whose|the|and|with|that|these|those|into|about|their|there)(?=[\s,;.)!?]|$)/.test(t);
+}
 function _purgerFragmentsCasses(valeur) {
   if (typeof valeur === 'string') {
     if (!valeur) return valeur;
-    var gardees = _decouperPhrases(valeur).filter(function (ph) {
+    var gardees = _decouperPhrases(valeur).map(_retirerCitationsNonDites).filter(function (ph) {
+      if (!ph) return false;
       if (_phraseCassee(ph)) {
         try { console.warn('[CYNTH] Phrase cassée retirée du rapport : « ' + ph.trim() + ' »'); } catch (e) {}
+        return false;
+      }
+      if (_phraseAvecAnglais(ph)) {
+        try { console.warn('[CYNTH] Mot anglais dans une phrase française, phrase retirée : « ' + ph.trim() + ' »'); } catch (e) {}
         return false;
       }
       return true;
@@ -6485,7 +6516,7 @@ function _feuVertSynthese(texte) {
 
   
   
-  const _CONCLURE_EXPLICITE = /r[ée]capitul|voir (mon|le) rapport|fait le tour|on (peut|peux) (conclure|passer (au|à) (au )?rapport)|g[ée]n[ée]rez?[- ]?(le |mon )?rapport|lancez?[- ]?(le |mon )?rapport|je n'?ai plus (rien|de questions?|grand[- ]chose) à (dire|ajouter)|c'?est tout pour (moi|aujourd'hui)|je crois que (j'|c')(ai|est) (tout )?dit|je pense qu'on a fait le tour|that'?s it for me|i think (that'?s|i'?m) (it|done)|can we (see|get) (the|my) report|i'?ve (said|covered) (everything|all)|nothing (more|else) to add|let'?s (wrap up|see the report|generate the report)|i think we'?ve covered everything/i;
+  const _CONCLURE_EXPLICITE = /r[ée]capitul|voir (mon|le) rapport|fait le tour(?!\s+(?:de|du|des|d['’]))|on (peut|peux) (conclure|passer (au|à) (au )?rapport)|g[ée]n[ée]rez?[- ]?(le |mon )?rapport|lancez?[- ]?(le |mon )?rapport|je n'?ai plus (rien|de questions?|grand[- ]chose) à (dire|ajouter)|c'?est tout pour (moi|aujourd'hui)|je crois que (j'|c')(ai|est) (tout )?dit|je pense qu'on a fait le tour|that'?s it for me|i think (that'?s|i'?m) (it|done)|can we (see|get) (the|my) report|i'?ve (said|covered) (everything|all)|nothing (more|else) to add|let'?s (wrap up|see the report|generate the report)|i think we'?ve covered everything/i;
   const _NEGATION_CONCLURE = /\bn(?:e|')\s*\w*\s*pas\b|\bpas encore\b|\bpas tout de suite\b|\bpas maintenant\b|\bpas fini\b|\bpas termin[ée]\b|\bpas pr[êe]te?\b|\bnot yet\b|\bnot (quite )?finished\b|\bnot ready\b|\bnot now\b/i;
   const _phrasesConclure = t0.split(/(?<=[.!?])\s+/).filter(Boolean);
   if (_phrasesConclure.some(function (p) { return _CONCLURE_EXPLICITE.test(p) && !_NEGATION_CONCLURE.test(p); })) return true;
@@ -7823,10 +7854,14 @@ function _veutTerminerV3(texte) {
   var t = String(texte || '').trim();
   
   var n = ' ' + _normaliserTexte(t).trim() + ' ';
-  if (/\s(je veux|je voudrais|j aimerais|on peut|on pourrait) (finir|terminer|arreter|en rester la)\s|\son a (fini|termine)\s|\sc est fini\s|\son arrete\s|\sca suffit\s|\sj ai fini\s/.test(n)
+  
+  var _court = n.trim().split(/\s+/).length <= 12;
+  var _m = n.match(/\s(je veux|je voudrais|j aimerais|on peut|on pourrait) (finir|terminer|arreter|en rester la)\s|\son a (fini|termine)\s|\sc est fini\s|\son arrete\s|\sca suffit\s|\sj ai fini\s/);
+  var _enFin = _m && n.slice(_m.index + _m[0].length).trim().split(/\s+/).filter(Boolean).length <= 4;
+  if (_m && (_court || _enFin)
     && !/\s(pas|ne) (encore )?(finir|fini|terminer|arreter)\s|\spas encore\s/.test(n)) return true;
   if (!_feuVertSynthese(t)) return false;
-  if (/r[ée]capitul|voir (mon|le) rapport|fait le tour|on (peut|peux) (conclure|passer|y aller)|g[ée]n[ée]rez|lancez|plus rien [àa] (dire|ajouter)|allez[- ]?y|vas[- ]?y/i.test(t)) return true;
+  if (/r[ée]capitul|voir (mon|le) rapport|fait le tour(?!\s+(?:de|du|des|d['’]))|on (peut|peux) (conclure|passer|y aller)|g[ée]n[ée]rez|lancez|plus rien [àa] (dire|ajouter)|allez[- ]?y|vas[- ]?y/i.test(t)) return true;
   var reste = t.replace(/[\s.,!]*(c['’]?est tout|c['’]?est bon|voil[aà])[\s.!]*$/i, '').trim();
   return !(reste !== t && reste.split(/\s+/).length >= 8);
 }
@@ -8075,7 +8110,9 @@ var _RE_HESITE_MIROIR_V3 = /\s(peut etre|ca depend|sais pas|je sais pas|bof|pour
 var _ORDINAUX_MIROIR_V3 = { premiere: 0, deuxieme: 1, seconde: 1, troisieme: 2 };
 
 var _RE_AUCUNE_MIROIR_V3 = /\s(aucune des (deux|trois)|ni l une ni l autre|aucune ne me|aucune ne m)\s/;
-var _RE_REFUS_PHRASE_MIROIR_V3 = /\s(ne |n )?(\w+ )?(veux|voudrais|souhaite|aime|attire|plait|interesse|correspond|tente|parle)(\s\w+)? (pas|plus|jamais)\s|\spas pour moi\s|\spas moi\s|\splus jamais\s/;
+var _RE_REFUS_PHRASE_MIROIR_V3 = /\s(ne |n )?(\w+ )?(veux|voudrais|souhaite|aime|attire|plait|interesse|correspond|tente|parle)(\s\w+)? (pas|plus|jamais)\s|\spas pour moi\s|\spas moi\s|\splus jamais\s|\sque ca reste\s|\s(reste|rester) (un |une |mon |ma )?(loisir|hobby|passion)\s/;
+
+var _RE_POS_MIROIR_V3 = /\s(parle|parlent|plait|plaisent|plairait|aime|adore|attire|attirent|interesse|interessent|tente|tentent|correspond|prefere|choisis|choisirais|choisi|oui|top|super|genial|bien|envie|motive|ressemble|kiffe|cool)\s/;
 
 
 var _RE_FAUX_NEG_MIROIR_V3 = /\s(je )?(n )?ai pas peur\s|\spas de (souci|soucis|probleme)\s|\spas mal\s|\spourquoi pas\s/g;
@@ -8083,7 +8120,7 @@ var _RE_FAUX_NEG_MIROIR_V3 = /\s(je )?(n )?ai pas peur\s|\spas de (souci|soucis|
 var _RE_SUPERLATIF_MIROIR_V3 = /\s(le|la|les|de) plus(?= )|\sde plus en plus(?= )/g;
 
 function _lireReactionMiroirV3(texte, n) {
-  var aime = {}, rejete = {};
+  var aime = {}, rejete = {}, vues = [];
   if (_RE_AUCUNE_MIROIR_V3.test(' ' + _normaliserTexte(texte || '').trim() + ' ')) { for (var k = 0; k < (n || 3); k++) rejete[k] = 1; }
   String(texte || '').split(/[.!?;\n]+|\s+mais\s+/i).forEach(function (phrase) {
     var brut = phrase.replace(/[,:()«»"]/g, ' ').split(/\s+/).filter(Boolean);
@@ -8101,12 +8138,24 @@ function _lireReactionMiroirV3(texte, n) {
       var avant = tok.slice(Math.max(prec + 1, l.i - 2), l.i);
       var apres = tok.slice(l.i + 1, Math.min(suiv < tok.length ? suiv - 2 : suiv, l.i + 7));
       var fen = ' ' + avant.concat(apres).join(' ') + ' ';
-      var hesite = _RE_HESITE_MIROIR_V3.test(fen);
+      l.hesite = _RE_HESITE_MIROIR_V3.test(fen);
+      l.neg = fen.replace(/\s(je )?sais pas\s/g, ' ').replace(_RE_FAUX_NEG_MIROIR_V3, ' ').trim().split(/\s+/).some(function (w) { return _RE_NEG_MIROIR_V3.test(w); });
+      if (!l.neg && lettres.length === 1) l.neg = _RE_REFUS_PHRASE_MIROIR_V3.test((' ' + tok.join(' ') + ' ').replace(_RE_SUPERLATIF_MIROIR_V3, ' superlatif'));
+      l.pos = !l.neg && _RE_POS_MIROIR_V3.test(fen);
       
-      var neg = fen.replace(/\s(je )?sais pas\s/g, ' ').replace(_RE_FAUX_NEG_MIROIR_V3, ' ').trim().split(/\s+/).some(function (w) { return _RE_NEG_MIROIR_V3.test(w); });
-      if (!neg && lettres.length === 1) neg = _RE_REFUS_PHRASE_MIROIR_V3.test((' ' + tok.join(' ') + ' ').replace(_RE_SUPERLATIF_MIROIR_V3, ' superlatif'));
-      if (neg) rejete[l.idx] = 1; else if (!hesite) aime[l.idx] = 1;
+      if (k) { var entre = tok.slice(lettres[k - 1].i + 1, l.i).filter(function (w) { return w !== 'la' && w !== 'journee'; }); l.et = entre.length === 1 && entre[0] === 'et'; }
     });
+    for (var a = 0; a < 2; a++) lettres.forEach(function (l, k) {
+      if (!l.et || l.neg || lettres[k - 1].neg) return;
+      if (lettres[k - 1].pos) l.pos = true; if (l.pos) lettres[k - 1].pos = true;
+    });
+    vues = vues.concat(lettres);
+  });
+  
+  var preference = vues.some(function (l) { return l.pos; });
+  vues.forEach(function (l) {
+    if (l.neg) rejete[l.idx] = 1;
+    else if (!l.hesite && (l.pos || !preference)) aime[l.idx] = 1;
   });
   var a = Object.keys(aime).map(Number), r = Object.keys(rejete).map(Number);
   return { aime: a.filter(function (x) { return r.indexOf(x) === -1; }).sort(), rejete: r.filter(function (x) { return a.indexOf(x) === -1; }).sort() };
@@ -8169,7 +8218,12 @@ function _appliquerChoixMiroirFinalV3(liste) {
     if (secRejet.indexOf(m.secteur || secteur(m.id)) === -1) return m;
     return Object.assign({}, m, { type: 'piste', _aExplorer: true, _noteMiroir: 'Pendant l\u2019entretien, vous avez écarté une journée proche de ce métier : à regarder seulement si un autre aspect vous attire.' });
   });
-  return tete.concat(reste);
+  
+  var nbP = 0;
+  return tete.concat(reste).map(function (m) {
+    if (m && m.type === 'principal' && ++nbP > 3) return Object.assign({}, m, { type: 'piste', _aExplorer: true });
+    return m;
+  });
 }
 
 function _reveleV3() {
@@ -10515,8 +10569,8 @@ function _attPret() {
   var env = _attEl('att-envoyer'); if (env) env.textContent = 'Envoyer, puis ouvrir mon rapport';
   var sous = _attEl('att-merci-sous'); if (sous) sous.hidden = true;
   var txt = _attEl('att-pret-texte'); if (txt) txt.hidden = _att.fini;
+  
   var sub = _attEl('conf-sub'); if (sub && /Je prépare votre rapport/.test(sub.textContent)) sub.textContent = sub.textContent.replace(/Je prépare votre rapport\. Cela prend environ une minute\./, 'Votre rapport est prêt.');
-  _attMontrer('att-etapes', false);
   _attMontrer('att-pret', true);
   var liste = document.querySelector('#page-confirm .conf-report'); if (liste) liste.hidden = false;
 }
@@ -12192,7 +12246,8 @@ const CONDITIONS_REFUSEES = [
       'samedi', 'dimanche', 'jours feries'],
     secteurs: null,
     
-    motifsFiche: /\bnuit|nuits\b|week-?end|samedi|dimanche|jours? ferie|horaires? irregulier|horaire coupe|tres tot le matin/,
+    
+    motifsFiche: /\bnuit|nuits\b|week-?end|samedi|dimanche|jours? ferie|horaires?( de travail)?( sont)? irregulier|horaire coupe|tres tot le matin/,
     
     declasse: false,
     reserve: 'la fiche officielle mentionne des nuits, des week-ends ou des horaires irréguliers'
@@ -13018,7 +13073,7 @@ function _phrasesDebutVariantes(t, max) {
   return out.trim();
 }
 function _orgCourtVariantes(o) { return String(o || '').split(',')[0].trim(); }
-function _htmlVariantesMetier(id, esc, complet) {
+function _htmlVariantesMetier(id, esc, complet, conds) {
   var v = (typeof VARIANTES_METIERS !== 'undefined') && VARIANTES_METIERS[id];
   if (!v || !(v.env || (v.fc || []).length || (v.pv || []).length || (v.s2 || []).length)) return '';
   var lien = function (t, u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(t) + ' ↗</a>'; };
@@ -13028,7 +13083,14 @@ function _htmlVariantesMetier(id, esc, complet) {
   
   var parOrg = {}; (v.s2 || []).forEach(function (x) { var o = _orgCourtVariantes(x.org); (parOrg[o] = parOrg[o] || []).push(x); });
   Object.keys(parOrg).forEach(function (o) { h += '<p>Selon l\'' + esc(o) + ' :</p>' + parOrg[o].map(function (x) { return '<p class="vcit">«\u00A0' + esc(x.cit[0]) + '\u00A0»</p>'; }).join(''); });
-  var fc = (v.fc || []).slice(0, complet ? 6 : 3), pv = (v.pv || []).slice(0, complet ? 8 : 4);
+  
+  var _heurte = function (x) {
+    if (!conds || !conds.length) return false;
+    var sl = function (u) { return String(u || '').replace(/\/$/, '').split('/').pop(); };
+    var f = METIERS_DB.find(function (m) { return m.id === x[2] || (m.orientation && sl(m.orientation) === sl(x[1])); });
+    return !!f && conds.some(function (c) { try { return _ficheHeurteCondition(f, c); } catch (e) { return false; } });
+  };
+  var fc = (v.fc || []).slice(0, complet ? 6 : 3), pv = (v.pv || []).filter(function (x) { return !_heurte(x); }).slice(0, complet ? 8 : 4);
   if (fc.length) h += '<div class="minilabel">Pour aller plus loin</div><p>' + fc.map(function (x) { return lien(x[0], x[1]); }).join(' · ') + '</p>';
   if (pv.length) h += '<div class="minilabel">Métiers voisins</div><p>' + pv.map(function (x) { return lien(x[0], x[1]); }).join(' · ') + '</p>';
   h += '<p class="vsrc">Source : <a href="' + esc(v.src) + '" target="_blank" rel="noopener">orientation.ch</a>, relevé le ' + esc(date(v.le))
@@ -13098,9 +13160,10 @@ function _htmlMetierAutrementV3(esc) {
   var conds = []; try { conds = _conditionsRefusees(chatHistory.filter(function (m) { return m.role === 'user'; }).map(function (m) { return m.content; }).join(' \n ')); } catch (e) {}
   if (!pj && !conds.length) return '';
   var fiche = METIERS_DB.find(function (f) { return f.id === id; }) || { titre: id };
-  return '<p class="body">Vous avez exercé comme ' + esc(fiche.titre) + '.' + (pj ? ' Vous avez dit ne plus vouloir retrouver : «\u00A0' + esc(pj) + '\u00A0».' : '')
+  
+  return '<p class="body">Votre métier est proche de la fiche officielle « ' + esc(fiche.titre) + ' ».' + (pj ? ' Vous avez dit ne plus vouloir retrouver : «\u00A0' + esc(pj) + '\u00A0».' : '')
     + ' Votre savoir-faire peut s\'exercer dans un autre cadre. Voici ce qu\'en disent les sources officielles.</p>'
-    + _htmlVariantesMetier(id, esc, true)
+    + _htmlVariantesMetier(id, esc, true, conds)
     + '<p class="body"><b>À vérifier : les horaires et les conditions selon le lieu et l\'employeur.</b></p>';
 }
 
@@ -13615,6 +13678,12 @@ function _validerChoixMetiers(choix, rejets, niv, preuvesValidees) {
     if (!fiche) {
       const slug = _slugTitre(id);
       fiche = slug ? METIERS_DB.find(m => _slugTitre(m.titre) === slug) : null;
+      
+      if (!fiche && slug) {
+        const masc = t => _slugTitre(String(t || '').replace(/\s*\([^)]*\)/g, '').split('/')[0].replace(/·[a-zà-ÿ]+/gi, ''));
+        const cands = METIERS_DB.filter(m => masc(m.titre) === slug);
+        if (cands.length === 1) fiche = cands[0];
+      }
     }
     if (!fiche) { _noterMetierManquant(id, 'sélection du rapport'); if (typeof _tracerEcart === 'function') _tracerEcart(id, id, 'absent de la base'); return; }
     const titreL = fiche.titre.toLowerCase();
