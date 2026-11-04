@@ -72,6 +72,41 @@ button{font-family:inherit;}
 @keyframes mesh{to{background-position:30% 20%,70% 80%,75% 25%;}}
 @keyframes spinLoader{to{transform:rotate(360deg);}}
 
+.att-carte{background:#fff;border:1px solid var(--c-line);border-radius:14px;padding:14px 16px;margin:0 0 14px;text-align:left}
+.att-barre{height:6px;border-radius:3px;background:var(--c-emerald-soft);overflow:hidden;margin-bottom:10px}
+.att-barre>div{height:6px;background:var(--c-emerald);border-radius:3px;width:0;transition:width .4s}
+.att-etape{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--c-ink);margin:6px 0}
+.att-etape .att-pt{width:14px;height:14px;margin:2px;border-radius:50%;border:2px solid var(--c-line);flex:none;box-sizing:border-box}
+.att-etape[data-etat="encours"]{font-weight:600}
+.att-etape[data-etat="encours"] .att-pt{border-color:var(--c-emerald-soft);border-top-color:var(--c-emerald);animation:spinLoader .8s linear infinite}
+.att-etape[data-etat="attente"]{color:var(--c-muted)}
+.att-etape[data-etat="fait"] .att-pt{border:none;background:no-repeat center/18px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2312876A' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");width:18px;height:18px;margin:0}
+.att-titre{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;margin:0 0 2px;color:var(--c-ink)}
+.att-aide{font-size:12.5px;color:var(--c-muted);margin:0 0 12px}
+.att-q{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}
+.att-q>label,.att-q>.att-lab{font-size:14px;font-weight:500;color:var(--c-ink)}
+.att-notes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.att-choix{display:flex;gap:6px;flex-wrap:wrap}
+.att-b{min-height:44px;border-radius:10px;border:1px solid var(--c-line);background:var(--c-cream);font:600 15px 'Inter',sans-serif;color:var(--c-ink);cursor:pointer}
+.att-choix .att-b{border-radius:22px;padding:0 16px;font-weight:500;font-size:14px}
+.att-b[aria-pressed="true"]{border:2px solid var(--c-ink);background:var(--c-emerald-soft)}
+.att-bornes{display:flex;justify-content:space-between;font-size:11.5px;color:var(--c-muted)}
+.att-in{height:44px;box-sizing:border-box;border-radius:10px;border:1px solid var(--c-line);background:#fff;padding:0 12px;font:400 14px 'Inter',sans-serif;color:var(--c-ink);width:100%}
+.att-actions{display:flex;gap:10px}
+.att-actions button{height:48px;border-radius:12px;font:600 15px 'Inter',sans-serif;cursor:pointer}
+.att-passer{flex:1;border:1px solid var(--c-line);background:transparent;color:var(--c-muted);font-weight:500!important}
+.att-envoyer{flex:2;border:none;background:var(--c-ink);color:var(--c-cream)}
+.att-pret{background:var(--c-ink);color:var(--c-cream);border-radius:16px;padding:18px;margin:0 0 14px;text-align:left}
+.att-pret b{font-family:'Space Grotesk',sans-serif;font-size:20px;display:block;margin-bottom:6px}
+.att-pret p{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:rgba(250,246,240,.85)}
+.att-pret button{width:100%;height:48px;border-radius:12px;border:none;background:var(--c-emerald);color:var(--c-ink);font:700 15px 'Inter',sans-serif;cursor:pointer}
+.att-merci h3{font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 4px;color:var(--c-ink)}
+.att-pas{background:var(--c-coral-soft);border-radius:16px;padding:18px;margin:14px 0 0;text-align:left}
+.att-pas .att-pas-l{font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:#8A2E22;margin-bottom:8px}
+.att-pas q{display:block;font-family:'Space Grotesk',sans-serif;font-size:18px;line-height:1.35;font-weight:600;color:var(--c-ink);margin:0 0 8px;quotes:"« " " »"}
+.att-pas .att-ligne{display:flex;gap:8px;margin-top:8px}
+.att-pas .att-ligne button{height:44px;padding:0 14px;border-radius:10px;border:none;background:var(--c-ink);color:var(--c-cream);font:600 14px 'Inter',sans-serif;cursor:pointer}
+
 
 .demo-bar{
   
@@ -2613,16 +2648,72 @@ textarea.chat-input{
       <div class="conf-orb">✅</div>
       <h2>Entretien terminé !</h2>
       <p class="conf-sub" id="conf-sub">Bravo. Vous venez de faire ce que peu osent : prendre le temps de vraiment réfléchir à votre avenir. Votre rapport est en cours de génération.</p>
+      
+      <div id="att-pret" class="att-pret" hidden>
+        <b>Votre rapport est prêt</b>
+        <p id="att-pret-texte">Vos réponses déjà données sont gardées. Vous pouvez finir ou ouvrir votre rapport tout de suite.</p>
+        <button type="button" id="att-ouvrir" onclick="_attOuvrir()">Ouvrir mon rapport</button>
+      </div>
+      <div id="att-etapes" class="att-carte" hidden>
+        <div class="att-barre"><div id="att-barre-v"></div></div>
+        <div class="att-etape" data-etape="1" data-etat="attente"><span class="att-pt" aria-hidden="true"></span><span>Je relis vos récits, mot pour mot</span></div>
+        <div class="att-etape" data-etape="2" data-etat="attente"><span class="att-pt" aria-hidden="true"></span><span>Je garde les métiers qui s'appuient sur ce que vous avez dit</span></div>
+        <div class="att-etape" data-etape="3" data-etat="attente"><span class="att-pt" aria-hidden="true"></span><span>Je vérifie chaque salaire à sa source</span></div>
+        <div class="att-etape" data-etape="4" data-etat="attente"><span class="att-pt" aria-hidden="true"></span><span>J'écris votre plan sur 6 mois</span></div>
+      </div>
+      <div id="att-avis" class="att-carte" hidden>
+        <div class="att-titre">En attendant, votre avis sur l'échange</div>
+        <p class="att-aide">Facultatif, trois questions. Ça m'aide à mieux écouter les prochaines personnes.</p>
+        <div class="att-q">
+          <span class="att-lab" id="att-lab-note">Vous êtes-vous senti·e écouté·e ?</span>
+          <div class="att-notes" role="group" aria-labelledby="att-lab-note">
+            <button type="button" class="att-b" data-note="1" aria-pressed="false" onclick="_attChoisir(this)">1</button>
+            <button type="button" class="att-b" data-note="2" aria-pressed="false" onclick="_attChoisir(this)">2</button>
+            <button type="button" class="att-b" data-note="3" aria-pressed="false" onclick="_attChoisir(this)">3</button>
+            <button type="button" class="att-b" data-note="4" aria-pressed="false" onclick="_attChoisir(this)">4</button>
+            <button type="button" class="att-b" data-note="5" aria-pressed="false" onclick="_attChoisir(this)">5</button>
+          </div>
+          <div class="att-bornes"><span>Pas du tout</span><span>Tout à fait</span></div>
+        </div>
+        <div class="att-q">
+          <span class="att-lab" id="att-lab-ref">Une question vous a-t-elle fait réfléchir ?</span>
+          <div class="att-choix" role="group" aria-labelledby="att-lab-ref">
+            <button type="button" class="att-b" data-reflechi="oui" aria-pressed="false" onclick="_attChoisir(this)">Oui</button>
+            <button type="button" class="att-b" data-reflechi="non" aria-pressed="false" onclick="_attChoisir(this)">Non</button>
+            <button type="button" class="att-b" data-reflechi="ne sait pas" aria-pressed="false" onclick="_attChoisir(this)">Je ne sais pas</button>
+          </div>
+          <input type="text" id="att-laquelle" class="att-in" maxlength="200" aria-label="Laquelle ?" placeholder="Laquelle ? (facultatif)">
+        </div>
+        <div class="att-q">
+          <label for="att-mot">En un mot, cet échange ?</label>
+          <input type="text" id="att-mot" class="att-in" maxlength="60" placeholder="Par exemple : rassurant">
+        </div>
+        <div class="att-actions">
+          <button type="button" id="att-passer" class="att-passer" onclick="_attPasser()">Passer</button>
+          <button type="button" id="att-envoyer" class="att-envoyer" onclick="_attEnvoyer()">Envoyer mes réponses</button>
+        </div>
+      </div>
+      <div id="att-merci" class="att-merci" hidden>
+        <h3 id="att-merci-titre">Merci pour vos réponses.</h3>
+        <p class="conf-sub" id="att-merci-sous" style="margin-bottom:0">Votre rapport arrive dans quelques secondes.</p>
+        <div id="att-pas" class="att-pas" hidden>
+          <div class="att-pas-l">Votre premier pas, choisi par vous</div>
+          <q id="att-pas-texte"></q>
+          <p style="margin:0;font-size:13px;color:var(--c-muted)">Vous l'avez dit pendant l'entretien. Quand voulez-vous le faire ?</p>
+          <div class="att-ligne">
+            <input type="date" id="att-date" class="att-in" aria-label="Date du premier pas" style="flex:1">
+            <button type="button" id="att-noter" onclick="_attNoter()">Noter</button>
+          </div>
+          <p id="att-note-ok" style="margin:8px 0 0;font-size:12px;color:var(--c-muted)">La date apparaîtra dans « Mon engagement », à la fin du rapport.</p>
+        </div>
+      </div>
       <div class="conf-report">
         <h4>📄 Votre rapport contient</h4>
-        <div class="ri"><span class="rc">✓</span><p>Le récapitulatif de votre parcours et votre portrait, avec vos tendances appuyées sur vos propres mots</p></div>
-        <div class="ri"><span class="rc">✓</span><p>Le changement qui vous concerne (métier, environnement ou équilibre), quand l'entretien le montre clairement</p></div>
-        <div class="ri"><span class="rc">✓</span><p>Vos moteurs, votre environnement de travail idéal, vos savoir-faire et savoir-être</p></div>
-        <div class="ri"><span class="rc">✓</span><p>Des phrases prêtes à coller dans votre CV</p></div>
         
-        <div class="ri"><span class="rc">✓</span><p>Jusqu'à cinq pistes métier, avec la raison de chaque choix ; les pistes principales sont chiffrées en CHF</p></div>
-        <div class="ri"><span class="rc">✓</span><p>Pour chaque piste : la voie de formation, sa durée quand elle est connue, et qui peut la financer</p></div>
-        <div class="ri"><span class="rc">✓</span><p>Plan d'action sur 6 mois, étape par étape, et vos ressources en Suisse</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Ce que Cynthia a appris de vous : votre parcours, ce que la conversation a révélé et vos savoir-faire, avec vos propres mots</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Jusqu'à cinq métiers, avec pour chacun la raison du choix, une journée type, la formation et qui peut la financer, et le salaire quand une source le donne</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Votre feuille de route sur 6 mois, étape par étape, et des lignes prêtes pour votre CV</p></div>
+        <div class="ri"><span class="rc">✓</span><p>Vos ressources en Suisse : les guichets et les aides qui vous concernent</p></div>
       </div>
       <div id="conf-loading" style="display:none;text-align:center;padding:20px 0;">
         <div style="display:inline-flex;align-items:center;gap:12px;background:var(--c-emerald-soft);border:1px solid transparent;border-radius:12px;padding:14px 24px;">
@@ -10233,8 +10324,8 @@ function _apercuRapport(data) {
     h += '</div>';
   }
 
-  h += '<div class="apercu-suite">Et aussi : votre plan sur six mois, vos puces de CV '
-    + 'prêtes à coller, votre pitch, et les ressources suisses qui vous concernent.</div>';
+  h += '<div class="apercu-suite">Et aussi : votre feuille de route sur six mois, des lignes de CV '
+    + 'prêtes à coller, et les ressources suisses qui vous concernent.</div>';
   h += '</div>';
   return h;
 }
@@ -10322,6 +10413,7 @@ function _progDemarrer() {
     const r = Math.min(1, (Date.now() - t0) / _DUREE_ATTENDUE_MS);
     const pct = 92 * (1 - Math.pow(1 - r, 2.2));   
     _progSet(pct, _libelleReel(r));
+    try { _attMajEtapes(); } catch (e) {}
   }, 180);
 }
 
@@ -10338,8 +10430,97 @@ function _progTerminer(libelle) {
     b.disabled = false;
     b.style.pointerEvents = 'auto';
     b.style.opacity = '1';
+    try { _attPret(); } catch (e) {}
   }, 420);   
 }
+
+
+var _att = { actif: false, pret: false, fini: false, note: null, reflechi: null };
+function _attEl(id) { return document.getElementById(id); }
+function _attMontrer(id, oui) { var e = _attEl(id); if (e) e.hidden = !oui; }
+function _attenteDemarrer() {
+  _att = { actif: true, pret: false, fini: false, note: null, reflechi: null };
+  var prenom = ''; try { prenom = ((document.getElementById('inp-name') || {}).value || '').trim().split(/\s+/)[0]; } catch (e) {}
+  var h2 = document.querySelector('#page-confirm .conf-card h2');
+  var sub = _attEl('conf-sub');
+  if (sub) sub.textContent = (prenom ? 'Merci, ' + prenom + '. ' : 'Merci. ') + 'Je prépare votre rapport. Cela prend environ une minute.';
+  if (h2) h2.textContent = 'Entretien terminé';
+  var liste = document.querySelector('#page-confirm .conf-report'); if (liste) liste.hidden = true;
+  document.querySelectorAll('#att-avis .att-b').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+  ['att-laquelle', 'att-mot', 'att-date'].forEach(function (id) { var e = _attEl(id); if (e) e.value = ''; });
+  var env = _attEl('att-envoyer'); if (env) env.textContent = 'Envoyer mes réponses';
+  _attMontrer('att-pret', false); _attMontrer('att-merci', false);
+  _attMontrer('att-etapes', true); _attMontrer('att-avis', true);
+  _attMajEtapes();
+}
+function _attMajEtapes() {
+  var faits = []; try { faits = (window._cynthTimings || []).map(function (t) { return t && t.label; }); } catch (e) {}
+  var a = function (l) { return faits.indexOf(l) !== -1; };
+  var fait = [a('profil') || a('selection'), a('choix-metiers'),
+    faits.some(function (l) { return typeof l === 'string' && l.indexOf('metier-') === 0; }), a('plan')];
+  if (_att.pret) fait = [true, true, true, true];
+  var premier = fait.indexOf(false);
+  document.querySelectorAll('#att-etapes [data-etape]').forEach(function (e, i) {
+    e.setAttribute('data-etat', fait[i] ? 'fait' : (i === premier ? 'encours' : 'attente'));
+  });
+  var v = _attEl('att-barre-v'); if (v) v.style.width = Math.round(100 * fait.filter(Boolean).length / 4) + '%';
+}
+function _attChoisir(b) {
+  var champ = b.hasAttribute('data-note') ? 'data-note' : 'data-reflechi';
+  b.parentNode.querySelectorAll('[' + champ + ']').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+  if (champ === 'data-note') _att.note = Number(b.getAttribute('data-note')); else _att.reflechi = b.getAttribute('data-reflechi');
+}
+function _attPremierPas() {
+  var pp = ''; try { pp = (_etatV3 && _etatV3.premierPas && _premierPasActionV3(_etatV3.premierPas)) ? _etatV3.premierPas : ''; } catch (e) {}
+  var t = _attEl('att-pas-texte'); if (t) t.textContent = pp ? pp.charAt(0).toUpperCase() + pp.slice(1) : '';
+  _attMontrer('att-pas', !!pp);
+}
+function _attFermerAvis(merci) {
+  _att.fini = true;
+  _attMontrer('att-avis', false);
+  var titre = _attEl('att-merci-titre'); if (titre) titre.textContent = merci ? 'Merci pour vos réponses.' : 'Votre rapport arrive.';
+  var sous = _attEl('att-merci-sous'); if (sous) sous.hidden = _att.pret || !merci;
+  _attPremierPas();
+  _attMontrer('att-merci', true);
+}
+function _attEnvoyer() {
+  var r = {};
+  if (_att.note) r.entretien_ecoute = _att.note;
+  if (_att.reflechi) r.entretien_reflechi = _att.reflechi;
+  var l = ((_attEl('att-laquelle') || {}).value || '').trim(); if (l) r.entretien_laquelle = l.slice(0, 200);
+  var m = ((_attEl('att-mot') || {}).value || '').trim(); if (m) r.entretien_mot = m.slice(0, 60);
+  if (Object.keys(r).length) {
+    try {
+      fetch(GROQ_PROXY_URL + '/retour', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+        body: JSON.stringify({ reponses: r, meta: { ecran: 'attente-rapport', langue: 'fr' } }) }).catch(function () {});
+    } catch (e) {}
+  }
+  _attFermerAvis(true);
+  if (_att.pret) _attOuvrir();
+}
+function _attPasser() { _attFermerAvis(false); }
+function _attNoter() {
+  var d = ((_attEl('att-date') || {}).value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+  try { quizAnswers.engagementDate = d; } catch (e) {}
+  var ok = _attEl('att-note-ok'); if (ok) ok.textContent = 'Noté : le ' + d.split('-').reverse().join('.') + '. Vous le retrouverez dans « Mon engagement ».';
+}
+function _attPret() {
+  if (!_att.actif) return;
+  _att.pret = true;
+  _attMajEtapes();
+  var b = _progBouton();
+  var o = _attEl('att-ouvrir');
+  if (o && b) o.textContent = (b.textContent || '').trim() || 'Ouvrir mon rapport';
+  var env = _attEl('att-envoyer'); if (env) env.textContent = 'Envoyer, puis ouvrir mon rapport';
+  var sous = _attEl('att-merci-sous'); if (sous) sous.hidden = true;
+  var txt = _attEl('att-pret-texte'); if (txt) txt.hidden = _att.fini;
+  var sub = _attEl('conf-sub'); if (sub && /Je prépare votre rapport/.test(sub.textContent)) sub.textContent = sub.textContent.replace(/Je prépare votre rapport\. Cela prend environ une minute\./, 'Votre rapport est prêt.');
+  _attMontrer('att-etapes', false);
+  _attMontrer('att-pret', true);
+  var liste = document.querySelector('#page-confirm .conf-report'); if (liste) liste.hidden = false;
+}
+function _attOuvrir() { var b = _progBouton(); if (b) b.click(); }
 
 function _progArreter() {
   if (_progTimer) { clearInterval(_progTimer); _progTimer = null; }
@@ -10368,6 +10549,7 @@ function doEndChat() {
   try { _progDemarrer(); } catch (e) {
     if (btn) { btn.disabled = true; btn.style.opacity = '.5'; btn.style.pointerEvents = 'none'; btn.innerHTML = '⏳ Génération en cours…'; }
   }
+  try { if (_modeV3()) _attenteDemarrer(); } catch (e) {}
   if (loadDiv) loadDiv.style.display = 'none';
 
   const _tDebutRapport = Date.now();
@@ -15687,7 +15869,9 @@ function downloadRapport(){
   const planItems = [['Cette semaine',_s1AvecPas],['Semaines 2 à 4',planSrc.semaine2_4],['Mois 1',planSrc.mois1],['Mois 2',planSrc.mois2],['Mois 3',planSrc.mois3],['Mois 4 à 5',planSrc.mois4_5],['Mois 6',planSrc.mois6]].filter(function(x){return x[1];}).map(function(x, i){return `<div class="item${i === 0 && x[0] === 'Cette semaine' ? ' now' : ''}"><div class="when">${esc(/^Mois/.test(x[0]) ? (_moisDeLEtape(x[1]) || x[0]) : x[0])}</div><div class="what">${esc(x[1])}</div></div>`;}).join('');
   
   const _clarteAvant = (typeof quizAnswers !== 'undefined' && quizAnswers && quizAnswers.clarteAvant != null) ? quizAnswers.clarteAvant : data._clarteAvant;
-  const engagement = (_rv && _rv.premierPas) ? `<div class="engagement"><div class="minilabel">Mon engagement</div><p class="eng-cit">«\u00A0${esc(_rv.premierPas)}\u00A0»</p><div class="eng-lignes"><div class="eng-l"><span>Je le fais le</span><span class="eng-blanc"></span></div>${_clarteAvant != null && _clarteAvant !== '' ? `<div class="eng-l"><span>Clarté avant l'entretien</span><b>${esc(String(_clarteAvant))} / 10</b></div>` : ''}<div class="eng-l"><span>Clarté aujourd'hui</span><b>__ / 10</b></div></div></div>` : '';
+  
+  const _dateEngagement = (function () { try { var d = String((quizAnswers && quizAnswers.engagementDate) || ''); return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d.split('-').reverse().join('.') : ''; } catch (e) { return ''; } })();
+  const engagement = (_rv && _rv.premierPas) ? `<div class="engagement"><div class="minilabel">Mon engagement</div><p class="eng-cit">«\u00A0${esc(_rv.premierPas)}\u00A0»</p><div class="eng-lignes"><div class="eng-l"><span>Je le fais le</span>${_dateEngagement ? `<b>${esc(_dateEngagement)}</b>` : '<span class="eng-blanc"></span>'}</div>${_clarteAvant != null && _clarteAvant !== '' ? `<div class="eng-l"><span>Clarté avant l'entretien</span><b>${esc(String(_clarteAvant))} / 10</b></div>` : ''}<div class="eng-l"><span>Clarté aujourd'hui</span><b>__ / 10</b></div></div></div>` : '';
   const secPlan = secWrap('Votre plan, semaine par semaine', 'Pas des vœux pieux. Des étapes concrètes, avec des délais réels.', (planItems || engagement) ? `${planItems ? `<div class="tl">${planItems}</div>` : ''}${engagement}` : '');
 
   
