@@ -16951,10 +16951,14 @@ function _sessionIdPayeActuel() {
 
 const _REPORT_STASH_KEY = 'cynthia_report_stash';
 
+
+const _REPORT_CTX_KEY = 'cynthia_report_ctx';
+
 function _stashReport() {
   try {
     if (window._reportData) {
       sessionStorage.setItem(_REPORT_STASH_KEY, JSON.stringify(window._reportData));
+      sessionStorage.setItem(_REPORT_CTX_KEY, JSON.stringify({ quizAnswers: quizAnswers, chatHistory: chatHistory }));
     }
   } catch (e) { console.warn('stash report:', e.message); }
 }
@@ -16965,6 +16969,11 @@ function _restoreReport() {
     const raw = sessionStorage.getItem(_REPORT_STASH_KEY);
     if (!raw) return false;
     window._reportData = JSON.parse(raw);
+    try {
+      const ctx = JSON.parse(sessionStorage.getItem(_REPORT_CTX_KEY) || 'null');
+      if (ctx && ctx.quizAnswers) quizAnswers = Object.assign({}, quizAnswers, ctx.quizAnswers);
+      if (ctx && Array.isArray(ctx.chatHistory) && !(Array.isArray(chatHistory) && chatHistory.length)) chatHistory = ctx.chatHistory;
+    } catch (e) {}
     return !!window._reportData;
   } catch (e) { return false; }
 }
