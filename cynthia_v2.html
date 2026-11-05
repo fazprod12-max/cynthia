@@ -1542,122 +1542,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 <body class="beta-open">
 
 
-<script>
-(function () {
-  
-  
-  window._cynHash = function (s) {
-    var x = 5381; s = String(s).trim().toUpperCase();
-    for (var i = 0; i < s.length; i++) { x = ((x << 5) + x + s.charCodeAt(i)) >>> 0; }
-    return x.toString(36);
-  };
-  window.CYN_ACCES_HASH = '9w4o1o';
-  
-  try {
-    if (localStorage.getItem('cynthia_acces') === window.CYN_ACCES_HASH) {
-      document.documentElement.classList.add('cyn-open');
-    }
-  } catch (e) {  }
-})();
-</script>
-
-<style>
-html:not(.cyn-open){overflow:hidden}
-html.cyn-open #cyn-gate{display:none}
-#cyn-gate{
-  position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;
-  padding:24px;background:#0E2A24;
-  background-image:radial-gradient(1100px 620px at 50% -10%,#164437 0%,#0E2A24 60%);
-  font-family:'Inter',system-ui,-apple-system,sans-serif;
-}
-.cyn-gate-card{width:100%;max-width:430px;text-align:center;color:#FAF6F0}
-.cyn-gate-logo{
-  font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;font-size:1.45rem;
-  letter-spacing:-.01em;margin-bottom:34px;display:inline-flex;align-items:baseline;gap:2px;
-}
-.cyn-gate-logo i{
-  font-style:normal;width:.42em;height:.42em;margin:0 .09em;align-self:flex-end;
-  background:var(--cyn-star,none) center/contain no-repeat;
-}
-.cyn-gate-logo i::after{content:'';display:block;width:100%;height:100%;
-  background:#3EE0AE;clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);}
-.cyn-gate-logo b{font-weight:700;color:#3EE0AE}
-.cyn-gate-card h1{
-  font-family:'Space Grotesk','Inter',sans-serif;font-size:1.55rem;font-weight:600;
-  line-height:1.25;margin:0 0 12px;color:#FAF6F0;
-}
-.cyn-gate-card p{font-size:.95rem;line-height:1.6;color:#A9BDB4;margin:0 0 26px}
-#cyn-gate form{display:flex;flex-direction:column;gap:10px}
-#cyn-gate input{
-  width:100%;padding:15px 18px;border-radius:13px;border:1px solid #2C5347;
-  background:#0B221D;color:#FAF6F0;font-size:1rem;font-family:inherit;
-  text-align:center;letter-spacing:.06em;outline:none;transition:border-color .18s,box-shadow .18s;
-}
-#cyn-gate input::placeholder{color:#5C7A6F;letter-spacing:normal}
-#cyn-gate input:focus{border-color:#1FB488;box-shadow:0 0 0 3px rgba(31,180,136,.18)}
-#cyn-gate button{
-  width:100%;padding:15px 18px;border:none;border-radius:13px;cursor:pointer;
-  background:#1FB488;color:#062019;font-size:1rem;font-weight:600;font-family:inherit;
-  transition:background .18s,transform .18s;
-}
-#cyn-gate button:hover{background:#3EE0AE}
-#cyn-gate button:active{transform:scale(.985)}
-.cyn-gate-err{
-  min-height:1.3em;margin:14px 0 0!important;font-size:.88rem;color:#FF9C8E;
-  opacity:0;transition:opacity .2s;
-}
-.cyn-gate-err.on{opacity:1}
-.cyn-gate-foot{margin:30px 0 0!important;font-size:.82rem;color:#6E8A7F}
-@media(prefers-reduced-motion:reduce){#cyn-gate *{transition:none!important}}
-</style>
-
-<div id="cyn-gate" role="dialog" aria-modal="true" aria-labelledby="cyn-gate-t">
-  <div class="cyn-gate-card">
-    <div class="cyn-gate-logo">Cynth<i></i><b>IA</b></div>
-    <h1 id="cyn-gate-t">Accès réservé aux testeurs</h1>
-    <p>Cynth.IA n'est pas encore ouverte au public. Entrez le code qui vous a été communiqué.</p>
-    <form onsubmit="return cynGateSubmit(event)">
-      <input id="cyn-gate-input" type="text" autocomplete="off" autocapitalize="characters"
-             autocorrect="off" spellcheck="false" placeholder="Code d'accès" aria-label="Code d'accès">
-      <button type="submit">Entrer</button>
-    </form>
-    <p id="cyn-gate-err" class="cyn-gate-err" role="alert"></p>
-    <p class="cyn-gate-foot">Pas de code ? Écrivez à contact@cynthia-orientation.ch</p>
-  </div>
-</div>
-
-<script>
-function cynGateSubmit(ev) {
-  if (ev) ev.preventDefault();
-  var input = document.getElementById('cyn-gate-input');
-  var err   = document.getElementById('cyn-gate-err');
-  var val   = input ? input.value : '';
-  if (window._cynHash(val) === window.CYN_ACCES_HASH) {
-    try { localStorage.setItem('cynthia_acces', window.CYN_ACCES_HASH); } catch (e) {}
-    document.documentElement.classList.add('cyn-open');
-    if (err) { err.textContent = ''; err.classList.remove('on'); }
-    
-    
-    
-    try { setTimeout(function () { if (typeof _tenterRepriseChat === 'function') _tenterRepriseChat(); }, 300); } catch (e) {}
-  } else {
-    if (err) { err.textContent = 'Code non reconnu. Vérifiez la casse et les espaces.'; err.classList.add('on'); }
-    if (input) { input.value = ''; input.focus(); }
-  }
-  return false;
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-  try {
-    if (document.documentElement.classList.contains('cyn-open')) return;
-    if (window.matchMedia('(min-width:721px)').matches) {
-      var i = document.getElementById('cyn-gate-input');
-      if (i) i.focus();
-    }
-  } catch (e) {}
-});
-</script>
-
 
 
 <div id="beta-banner">
@@ -2103,8 +1987,8 @@ textarea.chat-input{
       <div class="lp-price lp-rv">
         <span class="lp-ptag" id="lp-price-tag" style="display:none;"></span>
         <h3>Le rapport complet</h3>
-        <div class="lp-amount" id="lp-price-amount">Offert</div>
-        <p class="lp-psub" id="lp-price-sub">Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.</p>
+        <div class="lp-amount" id="lp-price-amount"></div>
+        <p class="lp-psub" id="lp-price-sub">Paiement unique, sans abonnement. Vous gardez le rapport.</p>
         <ul>
           <li><i>✓</i><span>Un profil construit sur ce que vous avez vraiment dit.</span></li>
           
@@ -3487,7 +3371,7 @@ const _MODE_VENTE = (function () {
 
 const CONFIG = {
   
-  RAPPORT_GRATUIT: !_MODE_VENTE,
+  RAPPORT_GRATUIT: false,
   
   
   PRIX_LANCEMENT: 59.00,
@@ -17328,8 +17212,6 @@ document.addEventListener('DOMContentLoaded', checkStripeReturn);
 function _tenterRepriseChat() {
   try {
     
-    
-    if (!document.documentElement.classList.contains('cyn-open')) return;
     if (document.getElementById('cyn-reprise')) return;   
     if (window._reportData) return;                       
     if (_URL_PARAMS && _URL_PARAMS.payment) return;
