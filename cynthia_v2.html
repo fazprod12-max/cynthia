@@ -6001,15 +6001,17 @@ function _neutraliserDispositifCanton(txt, canton, transformer) {
 function _financementPourElle(txt) {
   var t = String(txt || '');
   var reGe = /\s*\((?:GE|Gen[eè]ve)\s*:[^)]*\)/gi;
-  if (!reGe.test(t)) return t;
-  reGe.lastIndex = 0;
+  
+  var reGeSeul = /\s*[;,]?\s*[^;,.()]*\((?:GE|Gen[eè]ve)\)/gi;
+  if (!reGe.test(t) && !reGeSeul.test(t)) return t;
+  reGe.lastIndex = 0; reGeSeul.lastIndex = 0;
   try {
     if (_estFrontalier()) {
       if (_chequeFormationAccessibleFrontalier()) return t;
-      return t.replace(/,?\s*ch[eè]que annuel de formation cantonal\s*\((?:GE|Gen[eè]ve)\s*:[^)]*\)/gi, '').replace(reGe, '');
+      return t.replace(/,?\s*ch[eè]que annuel de formation cantonal\s*\((?:GE|Gen[eè]ve)\s*:[^)]*\)/gi, '').replace(reGe, '').replace(reGeSeul, '');
     }
     var c = _cantonDeLaPersonne();
-    if (c && c !== 'geneve') return t.replace(reGe, '');
+    if (c && c !== 'geneve') return t.replace(reGe, '').replace(reGeSeul, '');
   } catch (e) {}
   return t;
 }
@@ -7307,7 +7309,8 @@ var _MOTS_FORMATION_V3 = _MOTS_FORMATION_A1.concat(['formation', 'formations', '
 var _RE_EPISODE_V3 = /\s(un jour|ce jour|le jour ou|la derniere fois|un ami|une amie|un voisin|une voisine|il y a eu|un client|une cliente|un pere|une mere|une dame|un monsieur|un couple|un collegue|une collegue|un enfant|un gamin|un patient|une patiente|la semaine d apres|le lendemain|est revenue?|sont revenus|m a dit|m ont dit|m ont amene|m a remercie|m ont remercie)\s/;
 var _RE_ACTION_V3 = /\s(j ai|je lui ai|je leur ai|je l ai|je les ai|on a|je suis alle|je suis allee|je me suis)\s/;
 
-var _RE_MOMENT_V3 = /\s(l an dernier|l annee derniere|le mois dernier|la semaine derniere|le premier jour|un matin|un soir|un jeune|une jeune|une fois (un|une|il|elle|on))\s/;   
+
+var _RE_MOMENT_V3 = /\s(l an dernier|l annee derniere|le mois dernier|la semaine derniere|l hiver dernier|l ete dernier|l automne dernier|le printemps dernier|cet hiver|cet ete|cet automne|ce printemps|le premier jour|un matin|un soir|un jeune|une jeune|une fois (un|une|il|elle|on))\s/;   
 var _NON_ACTIONS_V3 = ['mal', 'peur', 'envie', 'besoin', 'faim', 'froid', 'chaud', 'honte', 'pas', 'plus', 'jamais', 'rien', 'un', 'une', 'des', 'deux', 'trois', 'le', 'la', 'les', 'l', 'ete', 'eu', 'toujours', 'souvent', 'travaille'];
 function _actionsPasseesV3(n) {
   var re = /\s(?:j ai|je lui ai|je leur ai|je l ai|je les ai|on a|je me suis|je suis)\s([a-z]+)/g, k = 0, m;
@@ -8110,7 +8113,32 @@ function _appliquerChoixMiroirFinalV3(liste) {
   
   var secteur = function (id) { var f = (typeof METIERS_DB !== 'undefined' ? METIERS_DB : []).filter(function (x) { return x.id === id; })[0]; return f ? f.secteur : ''; };
   var secAime = c.aime.map(secteur), secRejet = c.rejete.map(secteur).filter(function (x) { return x && secAime.indexOf(x) === -1; });
+  
+  var fam = []; try { fam = _etatV3.miroirChoix || []; } catch (e) {}
+  var idsMiroir = fam.map(function (f) { return f && f.id; }).filter(Boolean);
+  var motsRefus = [];
+  try {
+    var lect = _lireReactionMiroirV3(c.reaction, fam.length);
+    var phrases = String(c.reaction || '').split(/(?<=[.!?;])\s+/).map(_normaliserTexte);
+    lect.rejete.forEach(function (i) {
+      var j = fam[i] && fam[i].journee; if (!j) return;
+      var lettre = 'ABC'.charAt(i).toLowerCase();
+      var ph = phrases.filter(function (x) { return new RegExp('(^|\\s)(la |le )?' + lettre + '(\\s|$)').test(' ' + x + ' '); }).join(' ') || '';
+      _normaliserTexte(j).split(/\s+/).forEach(function (w) { if (w.length >= 7 && _contientMot(' ' + ph + ' ', w) && motsRefus.indexOf(w) === -1) motsRefus.push(w); });
+    });
+  } catch (e) {}
+  var texteFiche = function (m) {
+    var ex = (typeof METIERS_EXTRA !== 'undefined' && METIERS_EXTRA[m.id]) || {}, v = (typeof VARIANTES_METIERS !== 'undefined' && VARIANTES_METIERS[m.id]) || {};
+    return ' ' + _normaliserTexte([m.titre, (ex.competences_detaillees || []).join(' '), ex.ou_recrute, ex.ce_qui_use, v.env].join(' ')) + ' ';
+  };
+  if (motsRefus.length) reste = reste.filter(function (m) {
+    if (!m || c.aime.indexOf(m.id) !== -1) return true;
+    var t = texteFiche(m), hit = motsRefus.filter(function (w) { return _contientMot(t, w); })[0];
+    if (hit) { try { console.warn('[CYNTH] « ' + (m.titre || m.id) + ' » écarté : elle a refusé « ' + hit + ' » au miroir.'); } catch (e) {} }
+    return !hit;
+  });
   reste = reste.map(function (m) {
+    if (idsMiroir.indexOf(m.id) !== -1) return m;
     if (secRejet.indexOf(m.secteur || secteur(m.id)) === -1) return m;
     return Object.assign({}, m, { type: 'piste', _aExplorer: true, _noteMiroir: 'Pendant l\u2019entretien, vous avez écarté une journée proche de ce métier : à regarder seulement si un autre aspect vous attire.' });
   });
@@ -8174,7 +8202,9 @@ var _ANCIENS_METIERS_V3 = [
   { motifs: ['receptionniste'], ids: ['receptionniste'] },
   { motifs: ['cuisinier', 'cuisiniere', 'commis de cuisine'], ids: ['cuisinier'] },
   
-  { motifs: ['regie', 'regie immobiliere', 'gerance', 'gerance immobiliere'], ids: ['gerant-immobilier'] }
+  { motifs: ['regie', 'regie immobiliere', 'gerance', 'gerance immobiliere'], ids: ['gerant-immobilier'] },
+  
+  { motifs: ['aide soignante', 'aide soignant', 'auxiliaire de sante', 'auxiliaire croix rouge'], ids: ['asa'] }
 ];
 var _RE_CONTINUER_V3 = /\s(je veux|je voudrais|j aimerais|j ai envie de)\s(rester|continuer|retravailler|refaire|garder)\s|\sj aime (bien )?(la vente|le commerce|la cuisine|le service|la restauration|la logistique|le batiment|mon metier|ce metier)\s/;
 
@@ -13098,23 +13128,37 @@ function _metierExerceAvecVariantesV3() {
   if (typeof VARIANTES_METIERS === 'undefined') return null;
   var hay = '';
   try { hay = (' ' + chatHistory.filter(function (m) { return m.role === 'user'; }).map(function (m) { return _normaliserTexte(m.content); }).join(' ') + ' ' + (typeof _cvText !== 'undefined' && _cvText ? _normaliserTexte(_cvText) : '') + ' ').replace(/\s+/g, ' '); } catch (e) { return null; }
-  var trouve = null;
+  
+  var cands = [];
+  var poids = function (pos) {
+    var avant = hay.slice(Math.max(0, pos - 40), pos);
+    return pos + (/\s(depuis|je suis|je travaille|actuellement|aujourd hui|en ce moment)\s/.test(avant + ' ') ? 1e6 : 0);
+  };
+  var dernierePos = function (motif) { var t = ' ' + _normaliserTexte(motif).trim(); var i = hay.lastIndexOf(t + ' '); var j = hay.lastIndexOf(t + 's '); return Math.max(i, j); };
   try {
     _ANCIENS_METIERS_V3.forEach(function (g) {
-      if (trouve) return;
-      if (g.motifs.some(function (m) { return _contientMot(hay, m); }) || (g.re && g.re.test(hay))) trouve = g.ids.filter(function (i) { return VARIANTES_METIERS[i]; })[0] || null;
+      var id = g.ids.filter(function (i) { return VARIANTES_METIERS[i]; })[0];
+      if (!id) return;
+      var pos = -1;
+      g.motifs.forEach(function (m) { if (_contientMot(hay, m)) pos = Math.max(pos, dernierePos(m)); });
+      if (g.re) { var r = new RegExp(g.re.source, 'g'), x; while ((x = r.exec(hay))) pos = Math.max(pos, x.index); }
+      if (pos > -1) cands.push({ id: id, p: poids(pos) });
     });
   } catch (e) {}
-  if (trouve) return trouve;
-  for (var k = 0; k < METIERS_DB.length && !trouve; k++) {
+  for (var k = 0; k < METIERS_DB.length; k++) {
     var m = METIERS_DB[k];
     if (!VARIANTES_METIERS[m.id]) continue;
     var brut = String(m.titre || '').replace(/\([^)]*\)/g, ' ').split('/')[0];
     var formes = [brut.replace(/·[a-zà-ÿ]+/gi, ''), brut.replace(/([a-zà-ÿ]+)·([a-zà-ÿ]+)/gi, function (x, b, s2) { return _feminiserV3(b, s2); })]
       .map(function (f) { return _normaliserTexte(f).trim(); }).filter(Boolean);
-    if (formes.some(function (f) { return new RegExp('\\s(je suis|j ai ete|j etais|je travaille comme|j ai travaille comme|comme) (un |une )?' + f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s').test(hay); })) trouve = m.id;
+    formes.forEach(function (f) {
+      var r = new RegExp('\\s(je suis|j ai ete|j etais|je travaille comme|j ai travaille comme|comme) (un |une )?' + f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s', 'g'), x;
+      while ((x = r.exec(hay))) cands.push({ id: m.id, p: poids(x.index + x[0].length - f.length - 1) });
+    });
   }
-  return trouve;
+  if (!cands.length) return null;
+  cands.sort(function (a, b) { return b.p - a.p; });
+  return cands[0].id;
 }
 
 var _cadresV3 = {};
@@ -15847,7 +15891,7 @@ function downloadRapport(){
       ${_fseaPertinent(m) ? `&nbsp;·&nbsp;
       <a href="https://www.alice.ch/fr/" target="_blank" rel="noopener" style="color:var(--emerald-d);font-weight:600;text-decoration:underline">Certificat FSEA ↗</a>` : ''}
     </div>`;
-    const route = m.route_formation?`<div class="firststep" style="background:var(--emerald-soft);margin-top:10px"><b style="color:var(--emerald-d)">Se former :</b> ${esc(m.route_formation)}${liensForm}</div>`:'';
+    const route = m.route_formation?`<div class="firststep" style="background:var(--emerald-soft);margin-top:10px"><b style="color:var(--emerald-d)">Se former :</b> ${esc(_financementPourElle(m.route_formation))}${liensForm}</div>`:'';
     const at = arrOf(m.atouts).length?`<div><div class="minilabel">Ce que vous avez déjà</div><ul class="mlist plus">${liList(m.atouts)}</ul></div>`:'';
     const dv = arrOf(m.developper).length?`<div><div class="minilabel">À développer</div><ul class="mlist dev">${liList(m.developper)}</ul></div>`:'';
     const grid = (at||dv)?`<div class="mgrid">${at}${dv}</div>`:'';
@@ -16949,11 +16993,18 @@ const STRIPE_PRODUCT_PRICE = CONFIG.PRIX_RAPPORT.toFixed(2);
 function utilisateurAPaye() { return hasPaidReport(); }
 
 
+
 function afficherMessagePaiement() {
   const pBtn = document.getElementById('btn-premium');
   if (pBtn) pBtn.style.display = 'inline-flex';
   try { _syncBoutonPremium(); } catch (e) {}
-  showToast('🔒', `Le rapport complet (vos pistes de métiers, plan d'action 6 mois, salaires, financements) est disponible pour ${CONFIG.PRIX_RAPPORT.toFixed(2).replace('.', ',')} CHF.`, 'info', 6000);
+  if (_cgvAcceptees()) { startStripeCheckout(); return; }
+  const wrap = document.getElementById('cgv-accept-wrap');
+  if (wrap && wrap.style.display === 'none') wrap.style.display = 'flex';
+  const err = document.getElementById('cgv-erreur');
+  const box = document.getElementById('cgv-accept');
+  if (err) err.style.display = 'block';
+  if (box) { try { box.focus(); box.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }
 }
 
 
