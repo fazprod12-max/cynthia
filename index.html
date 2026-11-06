@@ -7487,11 +7487,14 @@ var _MOTS_FAIT_CONNU_V3 = {
   revenu: ['salaire minimum', 'revenu minimum', 'combien vous faut', 'combien il vous faut', 'minimum pour vivre', 'en dessous de quel'],
   echeance: ['echeance', 'date butoir', 'fin de droits', 'fin de vos droits'],
   diplomes: ['diplome', 'diplomes', 'titre reconnu'],
-  formation: ['pret a vous former', 'prete a vous former', 'formation courte', 'formation longue', 'reprendre des etudes']
+  formation: ['pret a vous former', 'prete a vous former', 'formation courte', 'formation longue', 'reprendre des etudes'],
+  
+  freins: ['vous retient', 'vous retient encore', 'vous freine', 'vous empeche de', 'vous bloque encore']
 };
 function _questionSurFaitConnuV3(reply) {
   var f = _faitsQuestionnaireV3();
-  var connus = { canton: !!f.canton, langues: !!f.langues, revenu: !!(f.revenuMin || f.revenuNsp), echeance: !!f.echeance, diplomes: !!f.diplome, formation: !!f.formation };
+  var connus = { canton: !!f.canton, langues: !!f.langues, revenu: !!(f.revenuMin || f.revenuNsp), echeance: !!f.echeance, diplomes: !!f.diplome, formation: !!f.formation,
+    freins: !!((typeof quizAnswers !== 'undefined' && quizAnswers && [].concat(quizAnswers.frein || []).length)) };
   var ph = String(reply || '').split(/(?<=[.!?…])\s+/).filter(function (p) { return /\?/.test(p); });
   for (var s in connus) {
     if (!connus[s]) continue;
@@ -8334,7 +8337,7 @@ function _reponseMarcheV3() {
   return (_nomHasard ? 'Je ne vous donne pas un nom au hasard : un métier qui paie bien pour quelqu’un d’autre peut ne pas vous convenir. ' : '') + 'Dans votre rapport, chaque salaire vient de jobs.ch ou jobup.ch, avec la date du relevé.';
 }
 
-var _RE_ECHEANCE_DITE_V3 = /\s(d ici (l ete|l hiver|l automne|le printemps|la fin de l annee|la rentree|noel|(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre))|avant (l ete|l hiver|la rentree|noel|la fin de l annee)|sinon je (reprends|repars|retourne|rentre))\s/;
+var _RE_ECHEANCE_DITE_V3 = /\s(d ici (l ete|l hiver|l automne|le printemps|la fin de l annee|la rentree|noel|(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre))|avant (l ete|l hiver|la rentree|noel|la fin de l annee)|sinon je (reprends|repars|retourne|rentre)|ne tiendra pas|ne tiendrai pas|ne tiendra plus|ne tiens plus|plus tenir longtemps)\s/;   
 function _echeanceDiteV3() {
   try { var dejaVue = _echeancePhrase(); if (dejaVue) return dejaVue; } catch (e) {}   
   try {
@@ -8348,9 +8351,31 @@ function _echeanceDiteV3() {
 }
 function _retirerSansEcheanceV3(t) {
   if (!_echeanceDiteV3()) return t;
-  var ph = _phrasesV3(t), garde = ph.filter(function (p) { return !/date butoir|pas d['’]échéance|aucune échéance|au calme|rythme calme|tout votre temps/i.test(p); });
+  var ph = _phrasesV3(t), garde = ph.filter(function (p) { return !/date butoir|pas d['’]échéance|aucune échéance|au calme|rythme calme|tout votre temps|pas de date[^.?!]*bonne nouvelle/i.test(p); });
   return (garde.length && garde.length < ph.length) ? garde.join(' ').trim() : t;
 }
+
+var _MOTS_VIDES_ECOUTE_V3 = ('avoir etait avais avait avez aviez avons etes etre faire fait faites quelque chose choses comme comment combien '
+  + 'pourquoi quand alors aussi encore toujours jamais depuis apres avant pendant parce cette celle celui ceux leurs notre votre vous nous '
+  + 'elles ils elle aujourd moment moments vraiment juste tres bien plus moins autre autres meme memes toute toutes tout tous rien sans '
+  + 'vos dans pour avec entre chez sous mais donc ainsi assez beaucoup trop peut peux veux voulez pouvez voila cela ceci chaque '
+  + 'quoi quel quelle quels quelles laquelle lequel dont personne personnes travail metier metiers quelqu une des les ont sont '
+  + 'suis serait seraient pourrait etais etions sommes avions merci oui non dire disais dites pense pensez crois croyez sais savez').split(' ');
+function _racinesEcouteV3(t) {
+  var out = {};
+  _normaliserTexte(t).split(/\s+/).forEach(function (w) { if (w.length >= 5 && _MOTS_VIDES_ECOUTE_V3.indexOf(w) === -1) out[w.slice(0, 5)] = 1; });
+  return out;
+}
+function _manqueRepriseV3(reply, dernier) {
+  var sienne = _racinesEcouteV3(dernier), n = Object.keys(sienne).length;
+  if (n < 3) return false;
+  var rep = _racinesEcouteV3(reply), communs = 0;
+  for (var k in rep) if (sienne[k]) communs++;
+  return communs < 2;
+}
+
+var _RE_MOMENT_LOURD_V3 = /\s(arret maladie|arrets? de travail|malade|maladie|burn ?out|depression|deces|decede|decedee|cancer|operation|accident|divorce|separation|licencie|licenciee|licenciement|chomage|fin de droits|dettes|poursuites|seule? avec (mon|ma|mes)|peur de|angoisse|pleure|pleurais|epuise|epuisee|mon dos|medecin|hopital|handicap|harcele|harcelement|humilie|humiliee|injuste|injustice|on m a refuse|m a refuse|refuse la place)\s/;
+function _momentLourdV3(t) { return _RE_MOMENT_LOURD_V3.test(' ' + _normaliserTexte(t) + ' '); }
 
 function _minusculeApresDeuxPointsV3(t) {
   return String(t || '').replace(/ : (Vous|Votre|Vos) (?=[a-zà-ÿ])/g, function (m, mot) { return ' : ' + mot.toLowerCase() + ' '; });
@@ -8431,7 +8456,14 @@ function _finConformeV3(texteFiltre) {
 }
 
 
+
 function _decisionV3(tour, dernier) {
+  var d = _decisionBaseV3(tour, dernier);
+  if (_momentLourdV3(dernier) && d.blocs.indexOf('accueillir_moment') === -1
+      && !d.blocs.some(function (b) { return /^portrait_|^detresse$|^synthese$|^post_synthese$|^veut_terminer$|^accueillir_info$/.test(b); })) d.blocs.unshift('accueillir_moment');
+  return d;
+}
+function _decisionBaseV3(tour, dernier) {
   var d = { blocs: [], sujet: null, rattrapage: false, synthese: false, demandeDirecte: false };
   if (detectDetresse(dernier)) { d.blocs = ['detresse']; return d; }
   if (synthesisFired) {
@@ -8555,6 +8587,12 @@ function _decisionV3(tour, dernier) {
     _etatV3.premierPasTour = tour; d.blocs = ['premier_pas']; d.chemin = 'premier_pas'; return d;
   }
   
+  if (_momentLourdV3(dernier) && (_etatV3.relances || 0) < 2 && tour >= 2 && tour < seuil - 2 && tour !== (_etatV3.relanceTour || -9) + 1
+      && String(dernier || '').trim().split(/\s+/).length >= 12 && !_etatV3.questionOublieeTour && !_etatV3.portraitTour) {
+    _etatV3.relances = (_etatV3.relances || 0) + 1; _etatV3.relanceTour = tour;
+    d.blocs = ['accueillir_moment', 'relance_libre']; d.relanceLibre = true; return d;
+  }
+  
   
   if (!_etatV3.questionOublieeTour && ((tour >= seuil - 2 && !forces.length && !rattrap.length && !_miroirEnCoursV3()) || tour >= SYNTH_MAX_V3 - 2)) {
     d.blocs = ['demander_fin']; _etatV3.questionOublieeTour = tour; return d;
@@ -8603,6 +8641,18 @@ function _ficheV3() {
   ajoute('Formation courte ou longue', f.formation || _phraseQui(function (n) { return _MOTS_FORMATION_A1.some(function (m) { return _contientMot(n, m); }); }));
   var g = (typeof quizAnswers !== 'undefined' && quizAnswers) ? quizAnswers.genre : null;
   ajoute('Genre', g === 'madame' ? 'Madame' : (g === 'monsieur' ? 'Monsieur' : null));
+  
+  try {
+    var qa = (typeof quizAnswers !== 'undefined' && quizAnswers) || {};
+    if (qa.situation && _QUIZ_SITUATION[qa.situation]) connu.push('Situation (questionnaire) : ' + _QUIZ_SITUATION[qa.situation].replace(/votre/g, 'son'));
+    if (qa.etatEsprit && _QUIZ_MOOD[qa.etatEsprit]) connu.push('Comment elle se sent (questionnaire, en mots, jamais en note) : ' + _QUIZ_MOOD[qa.etatEsprit]);
+    var _mo = (qa.motivations || []).map(function (m) { return _QUIZ_MOTIV[m] || ''; }).filter(Boolean);
+    if (_mo.length) connu.push('Ce qui la pousse à changer (questionnaire) : ' + _mo.join(', '));
+    if (qa.talents && String(qa.talents).trim()) connu.push('Ce qu\'elle fait naturellement bien (questionnaire, ses mots) : « ' + String(qa.talents).trim().slice(0, 160) + ' »');
+    var _FREIN_FICHE = { confiance: 'manque de confiance', age: 'peur que son âge soit un frein', financier: 'contraintes financières', idees: 'manque d\'idées concrètes' };
+    var _fr = [].concat(qa.frein || []).map(function (x) { return _FREIN_FICHE[x] || ''; }).filter(Boolean);
+    if (_fr.length) connu.push('Ce qui la retient (questionnaire, ne pas redemander, s\'en servir) : ' + _fr.join(', '));
+  } catch (e) {}
   var refus = null;
   try {
     var txt = (typeof chatHistory !== 'undefined' ? chatHistory : []).filter(function (x) { return x.role === 'user'; }).map(function (x) { return x.content; }).join(' ');
@@ -8689,7 +8739,7 @@ async function _callCynthAIv3(messages) {
     
     isSynthesis: false
   };
-  if (_enLocal()) { corps.testModele = _modeleTestChat(); corps.testToken = _testTokenLocal(); }
+  if (_enLocal()) { corps.testModele = _modeleTestChat(); corps.testToken = _testTokenLocal(); corps.promptEssai = 'ecoute'; }   
   _etatV3.derniersBlocs = d.blocs.slice();
   var resp = await _fetchProxyV3(corps);
   if (resp.status === 429 || resp.status === 413) {
@@ -8717,6 +8767,14 @@ async function _callCynthAIv3(messages) {
   var avantMeta = reply;
   reply = await _regenererSiMeta(reply, function () { return regenerer([]); });
   if (reply !== avantMeta) _traceTourCourant.regen.push('méta-raisonnement');
+  
+  var _exempteReprise = wantSynthesis || d.filRouge || d.miroir || d.premierPasPreciser || d.metiersAuRapport
+    || d.blocs.some(function (b) { return /^portrait_|^detresse$|^post_synthese$|^veut_terminer$/.test(b); });
+  if (!_exempteReprise && _manqueRepriseV3(reply, lastUserMsg)) {
+    var r0 = null; try { r0 = await regenerer(['rappel_reprise']); } catch (e) {}
+    if (r0 && !_manqueRepriseV3(r0, lastUserMsg)) { reply = r0; _traceTourCourant.regen.push('reprise de sa réponse'); }
+    else _traceTourCourant.filtres.push('reprise toujours absente après régénération');
+  }
 
   if (d.sujet && !wantSynthesis) {
     var g = await _garantirQuestionSujet(reply, d.sujet, function () { return regenerer(['rappel_ferme:' + d.sujet]); });
