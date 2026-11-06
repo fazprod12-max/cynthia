@@ -1525,10 +1525,17 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 }
 
 
+
 @media(max-width:768px){
-  .chat-card{height:var(--cyn-vh,100dvh);max-height:var(--cyn-vh,100dvh);}
+  .chat-page{min-height:var(--cyn-vh,100dvh);}
+  .chat-card{position:fixed;left:0;right:0;top:var(--cyn-vt,0px);height:var(--cyn-vh,100dvh);max-height:var(--cyn-vh,100dvh);}
+  html:has(#page-chat.on),html:has(#page-chat.on) body{overflow:hidden;overscroll-behavior:none;}
   
-  body.beta-open .chat-card{height:calc(var(--cyn-vh,100dvh) - var(--cyn-banniere,0px));max-height:calc(var(--cyn-vh,100dvh) - var(--cyn-banniere,0px));}
+  body.beta-open .chat-card{top:calc(var(--cyn-vt,0px) + var(--cyn-banniere,0px));height:calc(var(--cyn-vh,100dvh) - var(--cyn-banniere,0px));max-height:calc(var(--cyn-vh,100dvh) - var(--cyn-banniere,0px));}
+}
+
+@media(hover:none) and (pointer:coarse){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),textarea,select{font-size:16px !important;}
 }
 </style>
 
@@ -2511,7 +2518,7 @@ textarea.chat-input{
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg();}"></textarea>
           <span id="mic-timer"></span>
           
-          <button id="mic-async-btn" onclick="toggleMicAsync()" title="Parler (max 2 min)">🎤</button>
+          <button id="mic-async-btn" onclick="toggleMicAsync()" title="Parler (max 2 min)" aria-label="Parler (max 2 min)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></button>
           <button class="chat-send" id="chat-send-btn" onclick="sendChatMsg()" title="Envoyer">↑</button>
         </div>
         <div class="chat-hint">Entrée pour envoyer · Maj+Entrée pour aller à la ligne</div>
@@ -2727,17 +2734,20 @@ function _clavierMobile() {
   if (!vv) return;                       
 
   const msgs = () => document.querySelector('.chat-msgs');
-  let dernier = 0;
+  let dernier = 0, dernierHaut = -1;
 
   function ajuster() {
     if (window.innerWidth > 768) {       
       document.documentElement.style.removeProperty('--cyn-vh');
+      document.documentElement.style.removeProperty('--cyn-vt');
       return;
     }
-    const h = Math.round(vv.height);
-    if (Math.abs(h - dernier) < 2) return;   
-    dernier = h;
+    
+    const h = Math.round(vv.height), t = Math.max(0, Math.round(vv.offsetTop || 0));
+    if (Math.abs(h - dernier) < 2 && t === dernierHaut) return;   
+    dernier = h; dernierHaut = t;
     document.documentElement.style.setProperty('--cyn-vh', h + 'px');
+    document.documentElement.style.setProperty('--cyn-vt', t + 'px');
   }
 
   
@@ -16189,6 +16199,7 @@ footer .disc{font-size:.76rem;opacity:.85;margin-top:8px}
 .suiv .row{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;max-width:440px;margin:0 auto}
 .suiv input{flex:1;min-width:210px;font:inherit;font-size:.9rem;padding:11px 15px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
 .suiv input:focus{outline:none;border-color:var(--emerald)}
+@media(hover:none) and (pointer:coarse){.suiv input{font-size:16px}} /* 06.11.2026 : sous 16 px, Safari zoome au toucher */
 .suiv button{font:inherit;cursor:pointer;background:var(--emerald-d);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-size:.88rem;font-weight:600;transition:opacity .2s}
 .suiv button:hover{opacity:.9}
 .suiv .mini{font-size:.76rem;color:var(--muted);margin-top:11px;line-height:1.5}
@@ -17341,20 +17352,24 @@ let _micIntervalId = null;
 let _micSec        = 0;
 const MIC_MAX_SEC  = 120;
 
+
+const _ICONE_MICRO = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg>';
+const _ICONE_STOP = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+const _ICONE_ATTENTE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg>';
 function _setMicState(state) {
   const btn = document.getElementById('mic-async-btn');
   const tmr = document.getElementById('mic-timer');
   if (!btn) return;
   if (state === 'rec') {
-    btn.textContent = '⏹';
+    btn.innerHTML = _ICONE_STOP;
     btn.classList.add('mic-rec'); btn.classList.remove('mic-proc');
     btn.title = "Arrêter l'enregistrement";
   } else if (state === 'proc') {
-    btn.textContent = '⏳';
+    btn.innerHTML = _ICONE_ATTENTE;
     btn.classList.remove('mic-rec'); btn.classList.add('mic-proc');
     btn.title = 'Transcription en cours…';
   } else {
-    btn.textContent = '🎤';
+    btn.innerHTML = _ICONE_MICRO;
     btn.classList.remove('mic-rec', 'mic-proc');
     btn.title = 'Parler (max 2 min)';
     if (tmr) tmr.textContent = '';
