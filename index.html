@@ -7377,14 +7377,15 @@ var _MOTS_FORMATION_V3 = _MOTS_FORMATION_A1.concat(['formation', 'formations', '
 
 
 
-var _RE_EPISODE_V3 = /\s(un jour|ce jour|le jour ou|la derniere fois|un ami|une amie|un voisin|une voisine|il y a eu|un client|une cliente|un pere|une mere|une dame|un monsieur|un couple|un collegue|une collegue|un enfant|un gamin|un patient|une patiente|la semaine d apres|le lendemain|est revenue?|sont revenus|m a dit|m ont dit|m ont amene|m a remercie|m ont remercie)\s/;
+var _RE_EPISODE_V3 = /\s(un jour|ce jour|le jour ou|la derniere fois|un ami|une amie|un voisin|une voisine|il y a eu|un client|une cliente|un pere|une mere|une dame|un monsieur|un couple|un collegue|une collegue|un enfant|un gamin|un patient|une patiente|la semaine d apres|le lendemain|est revenue?|sont revenus|m a dit|m ont dit|m ont amene|m a remercie|m ont remercie|le frere de|la soeur de|ma copine|mon copain|ma femme|mon mari|un proche)\s/;   
 var _RE_ACTION_V3 = /\s(j ai|je lui ai|je leur ai|je l ai|je les ai|on a|je suis alle|je suis allee|je me suis)\s/;
 
 
 var _RE_MOMENT_V3 = /\s(l an dernier|l annee derniere|le mois dernier|la semaine derniere|l hiver dernier|l ete dernier|l automne dernier|le printemps dernier|cet hiver|cet ete|cet automne|ce printemps|le premier jour|un matin|un soir|un jeune|une jeune|une fois (un|une|il|elle|on))\s/;   
 var _NON_ACTIONS_V3 = ['mal', 'peur', 'envie', 'besoin', 'faim', 'froid', 'chaud', 'honte', 'pas', 'plus', 'jamais', 'rien', 'un', 'une', 'des', 'deux', 'trois', 'le', 'la', 'les', 'l', 'ete', 'eu', 'toujours', 'souvent', 'travaille'];
 function _actionsPasseesV3(n) {
-  var re = /\s(?:j ai|je lui ai|je leur ai|je l ai|je les ai|on a|je me suis|je suis)\s([a-z]+)/g, k = 0, m;
+  
+  var re = /\s(?:j ai|je lui ai|je leur ai|je l ai|je les ai|on a|je me suis|je suis|j avais|je lui avais|je leur avais|je l avais|je les avais)\s([a-z]+)/g, k = 0, m;
   while ((m = re.exec(n))) { if (_NON_ACTIONS_V3.indexOf(m[1]) === -1 && !/^\d/.test(m[1])) k++; re.lastIndex = m.index + 1; }
   return k;
 }
@@ -7424,6 +7425,8 @@ function _sujetsForcesManquantsV3(tour) {
   return _SUJETS_FORCES_V3.filter(function (s) {
     if (tour < _FENETRE_V3[s]) return false;
     if (s === 'plus_jamais' && !_sujetCouvertV3('aime')) return false;
+    
+    if (s === 'recit' && (_etatV3.essais.recit || 0) >= 1) return false;
     return !_sujetCouvertV3(s) && (_sujetsDemandes[s] || 0) < 2 && (_etatV3.essais[s] || 0) < 3;
   });
 }
