@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="googlebot" content="noindex, nofollow">
 <meta name="description" content="Cynth.IA, votre conseillère IA en orientation professionnelle en Suisse. Une conversation, puis un rapport complet : portrait de personnalité, jusqu'à 5 pistes métier avec salaires CHF, formations suisses et plan sur 6 mois.">
 <meta property="og:title" content="Cynth.IA, retrouvez votre voie en 20 minutes">
 <meta property="og:description" content="Une IA qui vous écoute vraiment. Portrait de personnalité, jusqu'à 5 pistes métier avec salaires CHF et formations suisses, et un rapport que vous gardez.">
@@ -7348,6 +7346,8 @@ function _sujetCouvertV3(s) {
   return true;
 }
 function _sujetsForcesManquantsV3(tour) {
+  
+  if (_etatV3.premierPasTour && tour > _etatV3.premierPasTour) return [];
   return _SUJETS_FORCES_V3.filter(function (s) {
     if (tour < _FENETRE_V3[s]) return false;
     if (s === 'plus_jamais' && !_sujetCouvertV3('aime')) return false;
@@ -8366,6 +8366,18 @@ function _racinesEcouteV3(t) {
   _normaliserTexte(t).split(/\s+/).forEach(function (w) { if (w.length >= 5 && _MOTS_VIDES_ECOUTE_V3.indexOf(w) === -1) out[w.slice(0, 5)] = 1; });
   return out;
 }
+
+function _repriseParCodeV3(dernier) {
+  var t = String(dernier || '').replace(/\s+/g, ' ').trim().replace(/^(oui|non|bon|ben|bah|alors|euh|ok|je sais pas|je ne sais pas)\b[,.!]?\s*/i, '');
+  var morceaux = t.split(/(?<=[.!?])\s+|,\s+/), pris = [];
+  for (var i = 0; i < morceaux.length; i++) {
+    pris.push(morceaux[i].replace(/[.!?]+$/, ''));
+    if (Object.keys(_racinesEcouteV3(pris.join(', '))).length >= 2) break;
+  }
+  var cite = pris.join(', ').split(' ').slice(0, 18).join(' ').replace(/[,;:\s]+$/, '');
+  if (Object.keys(_racinesEcouteV3(cite)).length < 2) return '';
+  return '« ' + cite.charAt(0).toUpperCase() + cite.slice(1) + ' » : c\'est noté, on s\'en sert pour votre plan.';
+}
 function _manqueRepriseV3(reply, dernier) {
   var sienne = _racinesEcouteV3(dernier), n = Object.keys(sienne).length;
   if (n < 3) return false;
@@ -8396,6 +8408,8 @@ function _alternativeFactuelleV3(seg) {
 function _questionCompleteV3(phrase) {
   var p = String(phrase || '').trim().toLowerCase().replace(/[’]/g, "'");
   if (!/\?\s*["»”)]*\s*$/.test(p)) return false;
+  
+  if (/^(pour|afin de|afin d')\s/.test(p) && p.indexOf(',') === -1) return false;
   if (/(^|[\s,:(«"'])(qu'est-ce|est-ce|quel|quelle|quels|quelles|lequel|laquelle|lesquels|lesquelles|comment|pourquoi|combien|quand|où|à quoi|a quoi|de quoi)(?![a-zà-ÿ])/.test(p)) return true;
   if (/^(et\s+|mais\s+|alors\s+|donc\s+)?(que|qu'|qui)(?![a-zà-ÿ])/.test(p)) return true;
   if (/[a-zà-ÿ]-(t-)?(vous|il|elle|on|je|tu|ils|elles|nous)(?![a-zà-ÿ])/.test(p)) return true;
@@ -8847,6 +8861,11 @@ async function _callCynthAIv3(messages) {
     var r14 = null; try { r14 = await regenerer([_ch.rappel]); } catch (e) {}
     if (r14 && _ch.conforme(r14)) { reply = r14; _traceTourCourant.regen.push('chemin : ' + d.chemin); }
     else { reply = _remplacerQuestionV3(reply, _ch.question()); _traceTourCourant.filtres.push('chemin : question écrite par le code (' + d.chemin + ')'); }
+  }
+  
+  if (_ch && _manqueRepriseV3(reply, lastUserMsg)) {
+    var _rp = _repriseParCodeV3(lastUserMsg);
+    if (_rp) { reply = _rp + ' ' + reply; _traceTourCourant.filtres.push('reprise écrite par le code (chemin)'); }
   }
   if (d.premierPasPreciser) { reply = _QUESTION_PREMIER_PAS_PRECISER_V3; _traceTourCourant.filtres.push('premier pas : relance écrite par le code (pas une action)'); }
   if (d.metiersAuRapport) { reply = _REPONSE_METIERS_RAPPORT_V3; _traceTourCourant.filtres.push('métiers : réponse écrite par le code (rapport)'); }
@@ -10262,7 +10281,7 @@ async function sendChatMsg() {
               + "Click « Mon rapport » at the top to open it: your career leads, real Swiss salaries, the trainings, and your 6-month plan. It's Faouzie, who created me, offering it to you during the test phase.\n\n"
               + "Your report itself will be in French — it's generated from Swiss sources that only exist in French. Take two minutes for the questions at the bottom of the report, it helps me improve for the people who come after you. And if a path still intrigues you, I'm still here."
             : "There you go, I've been through your background.\n\n"
-              + "Your full report is being prepared: your career leads, with what makes you legitimate for each, real Swiss salaries, the trainings and their cost, and your 6-month plan. Click « Mon rapport » at the top to unlock it"
+              + "Your full report is being prepared: your career leads, with what makes you legitimate for each, real Swiss salaries, the trainings to get there and possible funding, and your 6-month plan. Click « Mon rapport » at the top to unlock it"
               + (_prix ? " (" + _prix + " CHF)" : "") + ".\n\n"
               + "Your report itself will be in French — it's generated from Swiss sources that only exist in French. And if a path still intrigues you, I'm still here.")
           : (_gratuit
@@ -10270,7 +10289,7 @@ async function sendChatMsg() {
               + "Cliquez sur « Mon rapport », en haut, pour l'ouvrir : vos pistes de métiers, les salaires réels en Suisse, les formations et votre plan sur 6 mois. C'est Faouzie, qui m'a créée, qui vous l'offre pendant la phase de test.\n\n"
               + "Prenez deux minutes pour les questions en bas du rapport, ça m'aide à m'améliorer pour ceux qui viendront après vous. Et si une piste vous intrigue, je suis encore là."
             : "Voilà, j'ai fait le tour de votre parcours.\n\n"
-              + "Votre rapport complet est en train de se préparer : vos pistes de métiers, avec ce qui vous y rend légitime, les salaires réels en Suisse, les formations et leur coût, et votre plan sur 6 mois. Cliquez sur « Mon rapport », en haut, pour le débloquer"
+              + "Votre rapport complet est en train de se préparer : vos pistes de métiers, avec ce qui vous y rend légitime, les salaires réels en Suisse, les formations pour y arriver et les aides possibles, et votre plan sur 6 mois. Cliquez sur « Mon rapport », en haut, pour le débloquer"
               + (_prix ? " (" + _prix + " CHF)" : "") + ".\n\n"
               + "Et si une piste vous intrigue, je suis encore là.");
         addChatBubble('ai', options);
