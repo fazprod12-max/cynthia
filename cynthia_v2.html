@@ -9048,12 +9048,46 @@ function _majusculePrenom(p) {
   var s = String(p || '').trim();
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 }
+
+var _REPERE_SITUATION_V3 = {
+  'en-poste': 'vous êtes en poste mais vous voulez changer',
+  'en-pause': 'vous êtes en pause dans votre parcours',
+  'en-recherche': 'vous cherchez un nouveau cap',
+  'licencie-preavis': 'votre poste se termine',
+  'etudiant': 'vous êtes en fin de cursus ou en réflexion sur votre orientation',
+  'entrepreneur': 'vous êtes à votre compte et vous voulez pivoter'
+};
+var _REPERE_ECHEANCE_V3 = { deja: 'vous êtes déjà sans revenu', moins3: 'vous avez une échéance de moins de 3 mois', '3a12': 'vous avez une échéance de 3 à 12 mois' };
+var _REPERE_MOTIV_V3 = { sens: 'sens et impact', equilibre: 'équilibre de vie', salaire: 'un meilleur salaire', reconnaissance: 'reconnaissance',
+  autonomie: 'autonomie', passion: 'passion', securite: 'sécurité', defi: 'un nouveau défi' };
+var _OUVERTURE_RECIT_V3 = "Pour commencer, pas besoin de chercher votre plus belle réussite. Racontez-moi le premier souvenir qui vous vient d'une chose que vous avez bien faite, au travail ou ailleurs, même petite. Quelques phrases suffisent : ce qui s'est passé et ce que vous avez fait. Je vous poserai les questions pour la suite.";
+function _repereQuestionnaireV3() {
+  var qa = (typeof quizAnswers !== 'undefined' && quizAnswers) || {};
+  var r = _repV3() || {};
+  var parts = [];
+  if (_REPERE_SITUATION_V3[qa.situation]) parts.push(_REPERE_SITUATION_V3[qa.situation]);
+  var urgent = r.echeance === 'deja' || r.echeance === 'moins3';
+  if (_REPERE_ECHEANCE_V3[r.echeance]) parts.push(_REPERE_ECHEANCE_V3[r.echeance]);
+  else {
+    var mo = (qa.motivations || []).map(function (m) { return _REPERE_MOTIV_V3[m] || ''; }).filter(Boolean).slice(0, 2);
+    if (mo.length) parts.push('ce qui compte pour vous : ' + mo.join(' et '));
+    else {   
+      var f = _faitsQuestionnaireV3();
+      if (f.diplome && f.diplome !== _V3_DIPLOMES.aucun) parts.push('vous avez ' + (f.diplome === _V3_DIPLOMES.autre ? 'un diplôme' : 'un diplôme de niveau ' + f.diplome)
+        + (f.diplomeOu === 'ailleurs' ? ', obtenu hors de Suisse' : (f.diplomeOu === 'suisse' ? ', obtenu en Suisse' : '')));
+      else if (f.canton && f.canton !== _V3_CANTONS.autre) parts.push('vous êtes dans le canton de ' + f.canton);
+    }
+  }
+  if (!parts.length) return '';
+  return "J'ai lu vos réponses : " + parts.join(', et ') + '.' + (urgent ? " On va donc droit à l'essentiel." : ' On part de là.');
+}
 function _buildIntroV3(prenom) {
   var f = _faitsQuestionnaireV3();
   var p = _majusculePrenom(prenom);
   var bonjour = 'Bonjour' + (p ? ' ' + p : '') + ', je suis Cynthia.';
-  var fait = '';
-  if (f.echeance && f.echeance !== _V3_ECHEANCES.aucune) {
+  var fait = _repereQuestionnaireV3();
+  if (fait) {  }
+  else if (f.echeance && f.echeance !== _V3_ECHEANCES.aucune) {
     fait = f.echeance === _V3_ECHEANCES.deja
       ? "Vous m'avez indiqué que vous êtes déjà sans revenu : on va droit à l'essentiel."
       : "Vous m'avez indiqué une échéance de " + f.echeance + " : on va droit à l'essentiel.";
@@ -9066,7 +9100,7 @@ function _buildIntroV3(prenom) {
   var ouvertureCv = '';
   try { ouvertureCv = _ouvertureCvV3(typeof _cvText !== 'undefined' ? _cvText : ''); } catch (e) {}
   return bonjour + '\n\n' + (fait ? fait + '\n\n' : '') + _cadreV3()
-    + (ouvertureCv || 'Pour commencer, racontez-moi un moment, au travail ou en dehors, où quelque chose a bien marché grâce à vous : ce qui s’est passé, du début à la fin.');
+    + (ouvertureCv || _OUVERTURE_RECIT_V3);
 }
 
 
@@ -9121,7 +9155,7 @@ function _ouvertureCvV3(cv) {
   var faits = long === recent
     ? "J'ai lu votre CV. Votre poste le plus long est aussi le plus récent : " + nom(long) + ' ' + dates(long) + '.'
     : "J'ai lu votre CV. Votre poste le plus long : " + nom(long) + ' ' + dates(long) + '. Le plus récent : ' + nom(recent) + ' ' + dates(recent) + '.';
-  return faits + ' Dans votre poste le plus long, racontez-moi un moment où quelque chose a bien marché grâce à vous.';
+  return faits + " Pas besoin de chercher votre plus belle réussite : dans votre poste le plus long, racontez-moi le premier souvenir qui vous vient d'une chose que vous avez bien faite, même petite. Quelques phrases suffisent : ce qui s'est passé et ce que vous avez fait.";
 }
 
 
@@ -11259,7 +11293,7 @@ function _enumerer(t) {
 
 function _cadreV3() {
   if (typeof _modeV3 !== 'function' || !_modeV3()) return '';
-  return "Comptez environ 20 minutes : chaque r\u00e9ponse nourrit votre rapport. Ce que vous \u00e9crivez sert \u00e0 construire votre rapport et ne sert pas \u00e0 entra\u00eener une IA.\n\n";
+  return "Comptez environ 20 minutes. Ce que vous \u00e9crivez sert \u00e0 votre rapport, pas \u00e0 entra\u00eener une IA.\n\n";   
 }
 function _buildPersonalizedIntro(prenom) {
   if (typeof _modeV3 === 'function' && _modeV3()) return _buildIntroV3(prenom);
