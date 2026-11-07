@@ -1540,7 +1540,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
 
 <script>
-  /* pdf.js et mammoth ne servent qu'à lire un CV : chargés seulement à ce moment-là */
+  
   function _chargerScript(url){return new Promise(function(ok,ko){var e=document.createElement('script');e.src=url;e.onload=ok;e.onerror=ko;document.head.appendChild(e);});}
   async function _libsCV(type){
     try{
@@ -1550,9 +1550,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   }
 </script>
 <style id="refonte-2026-11">
-  /* Refonte de novembre 2026 : extraits du rapport, étapes, avis, offre */
+  
   .lp-xgrid{display:grid;grid-template-columns:1fr;gap:28px;align-items:start;max-width:1040px;margin:0 auto;}
-  @media(min-width:900px){.lp-xgrid{grid-template-columns:1.25fr .75fr;gap:40px;}}
+  @media(min-width:900px){.lp-xgrid.avec-video{grid-template-columns:1.25fr .75fr;gap:40px;}}
+  .lp-xgrid:not(.avec-video){max-width:640px;}
   .lp-xcards{display:flex;flex-direction:column;gap:16px;}
   .lp-x{background:#fff;border:1px solid var(--c-line);border-radius:20px;padding:24px 24px 26px;box-shadow:0 12px 32px rgba(15,42,36,.07);}
   .lp-x.red{border:2px solid #ff6f5e;}
@@ -1988,7 +1989,7 @@ textarea.chat-input{
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Voir un extrait du rapport</button>
       </div>
       
-      <p class="lp-hprix"><b>Entretien gratuit</b> · rapport complet <b class="js-prix">59 CHF</b>, seulement si vous le voulez</p>
+      <p class="lp-hprix"><b>Entretien gratuit</b> · rapport complet <b class="js-prix"></b>, seulement si vous le voulez</p>
       
       <div class="lp-reassure"><span>🇨🇭 Ancrée en Suisse romande</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans compte, sans engagement</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">↩ Pas satisfait ? <b style="text-decoration:underline" id="lp-garantie">On corrige, sinon on rembourse</b></span></div>
     </div>
@@ -2005,15 +2006,16 @@ textarea.chat-input{
 <div class="lp-wrap">
     <div class="lp-sechead lp-rv">
 <h2>Ce n'est pas une liste de métiers. <span class="lp-accent">C'est un dossier qui vous ressemble.</span></h2>
-<p>Cynthia reprend ce que vous lui avez dit, avec vos mots, et en tire des pistes suisses concrètes. Voici des extraits réels d'un rapport, issu d'un entretien de test.</p>
+<p>Cynthia reprend ce que vous lui avez dit, avec vos mots, et en tire des pistes suisses concrètes. Voici des extraits réels de rapports : une fiche issue d'un entretien de test, et le frein d'un testeur, publié avec son accord.</p>
 </div>
-    <div class="lp-xgrid">
+    <div class="lp-xgrid avec-video">
       <div class="lp-xcards">
         <div class="lp-x lp-rv">
           <div class="lb">Pourquoi vous</div>
           <div class="ttl">Assistant·e socio-éducatif·ve (ASE)</div>
           <p>Vous l'avez dit vous-même : travailler avec les jeunes vous parle. <mark>Au club, vous entraînez déjà les petits le mercredi</mark>, et depuis cette année le coach vous laisse mener l'échauffement.</p>
         </div>
+        
         <div class="lp-x red lp-rv">
           <div class="lb">Votre frein, et ce qu'il révèle vraiment</div>
           <p>Peur que votre âge soit un frein. Vous avez 8 ans d'expérience solide, vous avez évolué, vous avez vu différents univers. <span class="gap">[…]</span> <mark>L'âge n'est pas un frein, c'est une ressource.</mark></p>
@@ -2043,7 +2045,7 @@ textarea.chat-input{
     <ol class="lp-steps cyn-stag">
       <li class="lp-rv"><span class="n">1</span><span class="tag">Gratuit</span><h3>Votre prénom</h3><p>Et votre CV si vous le souhaitez. Une minute, sans créer de compte.</p></li>
       <li class="lp-rv"><span class="n">2</span><span class="tag">Gratuit</span><h3>L'entretien avec Cynthia</h3><p>Environ 20 minutes, quand vous voulez, même le soir. Elle pose les questions, vous racontez.</p></li>
-      <li class="lp-rv"><span class="n">3</span><span class="tag pay js-prix">59 CHF</span><h3>Votre rapport complet</h3><p>Vos pistes de métiers suisses, salaires sourcés et datés, plan sur six mois. En PDF, à garder.</p></li>
+      <li class="lp-rv"><span class="n">3</span><span class="tag pay js-prix"></span><h3>Votre rapport complet</h3><p>Vos pistes de métiers suisses, salaires sourcés et datés, plan sur six mois. En PDF, à garder.</p></li>
     </ol>
     <p class="lp-steps-g lp-rv">Pas satisfait ? <b>On corrige, sinon on rembourse.</b></p>
   </div>
@@ -2096,7 +2098,7 @@ textarea.chat-input{
       <div class="lp-price lp-rv">
         <span class="lp-ptag" id="lp-price-tag" style="display:none;"></span>
         <h3>Le rapport complet</h3>
-        <div class="lp-amount" id="lp-price-amount">59 CHF</div>
+        <div class="lp-amount" id="lp-price-amount"></div>
         <p class="lp-psub" id="lp-price-sub">Paiement unique, sans abonnement. Vous gardez le rapport.</p>
         <ul>
           <li><i>✓</i><span>Un profil construit sur ce que vous avez vraiment dit.</span></li>
@@ -2112,7 +2114,7 @@ textarea.chat-input{
       </div>
       <div class="lp-price lp-rv" id="lp-offre-conseiller" style="display:none;">
         <h3>Rapport + conseiller</h3>
-        <div class="lp-amount" id="lp-price-amount-2">129 CHF</div>
+        <div class="lp-amount" id="lp-price-amount-2"></div>
         <p class="lp-psub">Le rapport complet, puis 30 minutes avec un conseiller humain pour en parler et décider de la suite.</p>
         <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon entretien gratuit →</button>
       </div>
@@ -2145,7 +2147,7 @@ textarea.chat-input{
     <div class="lp-rv">
 <button class="lp-btn lp-btn-primary" style="padding:17px 36px;font-size:1.05rem;" onclick="gp('preappel')">Commencer mon entretien →</button>
 </div>
-    <p class="lp-rv lp-microline">Entretien gratuit · rapport <span class="js-prix">59 CHF</span> · sans rendez-vous</p>
+    <p class="lp-rv lp-microline">Entretien gratuit · rapport <span class="js-prix"></span> · sans rendez-vous</p>
     <p class="lp-rv lp-microline">Ancrée en Suisse romande, pensée aussi pour les frontaliers : Genève, Vaud, Valais, Fribourg, Neuchâtel, Jura.</p>
   </div>
 </section>
@@ -3435,9 +3437,8 @@ const CONFIG = {
   
   PRIX_LANCEMENT: 59.00,
   FIN_LANCEMENT: '2026-12-31',
-  PRIX_APRES_LANCEMENT: 79.00,
-  /* Offre « rapport + 30 min avec un conseiller humain ». Passer à true seulement quand
-     le paiement (2e Price Stripe + Worker) et la prise de rendez-vous sont prêts. */
+  PRIX_APRES_LANCEMENT: 59.00,   
+  
   OFFRE_CONSEILLER_ACTIVE: false,
   PRIX_CONSEILLER: 129.00,
   get PRIX_RAPPORT() {
@@ -3476,8 +3477,9 @@ function _prixFmt(n) {
 function _majBlocPrix() {
   _masquerBandeauBetaSiPayant();
   if (typeof CONFIG === 'undefined') return;
-  var prix = CONFIG.PRIX_RAPPORT, apres = CONFIG.PRIX_APRES_LANCEMENT;
-  var promo = !CONFIG.RAPPORT_GRATUIT && CONFIG.EN_LANCEMENT && apres > prix;
+  var prix = CONFIG.PRIX_RAPPORT;
+  
+  var lancement = !CONFIG.RAPPORT_GRATUIT && CONFIG.EN_LANCEMENT && !!CONFIG.FIN_LANCEMENT_DATE;
   var txtPrix = CONFIG.RAPPORT_GRATUIT ? 'Offert' : _prixFmt(prix);
   document.querySelectorAll('.js-prix').forEach(function (e) { e.textContent = txtPrix; });
   var elTag = document.getElementById('lp-price-tag');
@@ -3489,12 +3491,12 @@ function _majBlocPrix() {
     elTag.style.display = 'none'; elTag.textContent = '';
     elAmount.textContent = 'Offert';
     elSub.textContent = "Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.";
-  } else if (promo) {
+  } else if (lancement) {
     var f = CONFIG.FIN_LANCEMENT_DATE;
     elTag.style.display = ''; elTag.textContent = 'PRIX DE LANCEMENT';
-    elAmount.innerHTML = _prixFmt(prix) + '<span class="lp-old">au lieu de <s>' + _prixFmt(apres) + '</s></span>';
-    elSub.textContent = "Jusqu'au " + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear()
-      + ', ensuite ' + _prixFmt(apres) + '. Paiement unique, sans abonnement. Vous gardez le rapport.';
+    elAmount.textContent = _prixFmt(prix);
+    elSub.textContent = "Prix de lancement jusqu'au " + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear()
+      + '. Paiement unique, sans abonnement. Vous gardez le rapport.';
   } else {
     elTag.style.display = 'none'; elTag.textContent = '';
     elAmount.textContent = _prixFmt(prix);
