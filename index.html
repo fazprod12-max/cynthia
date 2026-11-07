@@ -1537,27 +1537,76 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+
 <script>
-  
-  if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }
+  /* pdf.js et mammoth ne servent qu'à lire un CV : chargés seulement à ce moment-là */
+  function _chargerScript(url){return new Promise(function(ok,ko){var e=document.createElement('script');e.src=url;e.onload=ok;e.onerror=ko;document.head.appendChild(e);});}
+  async function _libsCV(type){
+    try{
+      if(type==='pdf'&&!window.pdfjsLib){await _chargerScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}
+      if(type==='docx'&&!window.mammoth){await _chargerScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');}
+    }catch(e){}
+  }
 </script>
+<style id="refonte-2026-11">
+  /* Refonte de novembre 2026 : extraits du rapport, étapes, avis, offre */
+  .lp-xgrid{display:grid;grid-template-columns:1fr;gap:28px;align-items:start;max-width:1040px;margin:0 auto;}
+  @media(min-width:900px){.lp-xgrid{grid-template-columns:1.25fr .75fr;gap:40px;}}
+  .lp-xcards{display:flex;flex-direction:column;gap:16px;}
+  .lp-x{background:#fff;border:1px solid var(--c-line);border-radius:20px;padding:24px 24px 26px;box-shadow:0 12px 32px rgba(15,42,36,.07);}
+  .lp-x.red{border:2px solid #ff6f5e;}
+  .lp-x .lb{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--c-emerald-d);}
+  .lp-x.red .lb{color:#c0392b;}
+  .lp-x .ttl{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.15rem;color:var(--c-ink);margin-top:4px;}
+  .lp-x p{font-size:1.06rem;line-height:1.6;color:var(--c-ink);margin-top:10px;}
+  .lp-x .gap{color:#8a958f;}
+  .lp-x mark{background:linear-gradient(transparent 45%,#a6efd6 45%);color:inherit;padding:0 2px;}
+  .lp-x .big{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2rem;letter-spacing:-.02em;color:var(--c-ink);margin-top:6px;}
+  .lp-x .sm{font-size:.95rem;color:var(--c-muted);margin-top:4px;}
+  .lp-xsrc{font-size:.85rem;color:var(--c-muted);text-align:center;}
+  .lp-xsrc a{color:var(--c-emerald-d);font-weight:600;}
+  .lp-xvid{margin:0;max-width:340px;justify-self:center;width:100%;}
+  .lp-xvid video{display:block;width:100%;aspect-ratio:9/16;border-radius:22px;background:#0e2a24;box-shadow:0 18px 44px rgba(15,42,36,.18);}
+  .lp-xvid figcaption{font-size:.85rem;color:var(--c-muted);text-align:center;margin-top:10px;}
+  @media(min-width:900px){.lp-xvid{position:sticky;top:96px;}}
+  .lp-steps{list-style:none;display:grid;grid-template-columns:1fr;gap:14px;max-width:1040px;margin:0 auto;padding:0;counter-reset:none;}
+  @media(min-width:820px){.lp-steps{grid-template-columns:repeat(3,1fr);}}
+  .lp-steps li{position:relative;background:#fff;border:1px solid var(--c-line);border-radius:18px;padding:22px 22px 24px;}
+  .lp-steps .n{display:inline-flex;width:36px;height:36px;border-radius:50%;align-items:center;justify-content:center;background:var(--c-emerald-soft);color:var(--c-emerald-d);font-family:'Space Grotesk',sans-serif;font-weight:700;}
+  .lp-steps h3{font-family:'Space Grotesk',sans-serif;font-size:1.12rem;margin:12px 0 6px;color:var(--c-ink);}
+  .lp-steps p{font-size:.98rem;line-height:1.55;color:var(--c-muted);}
+  .lp-steps .tag{position:absolute;top:22px;right:20px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.82rem;padding:5px 12px;border-radius:999px;background:var(--c-emerald-soft);color:var(--c-emerald-d);}
+  .lp-steps .tag.pay{background:#0e2a24;color:#fff;}
+  .lp-steps-g{text-align:center;margin-top:18px;font-size:.98rem;color:var(--c-ink);}
+  .lp-steps-g b{color:var(--c-emerald-d);}
+  .lp-avis-grid{display:grid;grid-template-columns:1fr;gap:14px;max-width:1040px;margin:0 auto;}
+  @media(min-width:820px){.lp-avis-grid{grid-template-columns:repeat(3,1fr);}}
+  .lp-avis-c{margin:0;background:#0e2a24;color:#faf6f0;border-radius:20px;padding:26px 24px;}
+  .lp-avis-c .lp-avis-mark{color:#3ee0ae;font-size:2rem;line-height:1;}
+  .lp-avis-c blockquote{margin:10px 0 0;font-size:1.04rem;line-height:1.6;font-style:italic;}
+  .lp-avis-c figcaption{margin-top:14px;color:#3ee0ae;font-family:'Space Grotesk',sans-serif;font-weight:700;}
+  .lp-avis-c figcaption span{color:rgba(250,246,240,.6);font-weight:500;}
+  .lp-somm-c{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;max-width:640px;margin:0 auto 26px;padding:0;list-style:none;}
+  .lp-somm-c li{font-size:.95rem;color:var(--c-ink);display:flex;gap:8px;align-items:baseline;}
+  .lp-somm-c b{font-family:'Space Grotesk',sans-serif;color:var(--c-emerald-d);font-size:.85rem;}
+  .lp-offres{display:grid;grid-template-columns:1fr;gap:18px;max-width:820px;margin:0 auto;justify-items:center;}
+  .lp-offres.deux{grid-template-columns:1fr;}
+  @media(min-width:820px){.lp-offres.deux{grid-template-columns:1fr 1fr;align-items:stretch;}}
+  .lp-old{display:block;font-size:.3em;color:var(--c-muted);font-weight:600;letter-spacing:0;margin-top:6px;}
+  .lp-pgar{font-size:.92rem;color:var(--c-emerald-d);font-weight:600;margin-top:12px;text-align:center;}
+  .lp-pfond{display:flex;align-items:center;gap:12px;justify-content:center;margin-top:16px;font-size:.88rem;color:var(--c-muted);}
+  .lp-pfond img{width:40px;height:40px;border-radius:50%;object-fit:cover;}
+  .lp-hprix{margin-top:14px;font-size:.98rem;color:var(--c-ink);}
+  .lp-hprix b{color:var(--c-emerald-d);}
+</style>
 </head>
-<body class="beta-open">
+<body>
 
 
 
 
-<div id="beta-banner">
-  
-  <div class="bb-text">
-    <span>🧪</span>
-    <span class="bb-pill">BÊTA</span>
-    <span>PHASE DE TEST · <strong>Offert aux premiers testeurs</strong>, le temps d'affiner Cynthia avant l'ouverture.</span>
-  </div>
-  <button class="bb-close" onclick="closeBetaBanner()" title="Fermer">✕</button>
-</div>
+
 
 <canvas id="bg-canvas"></canvas>
 <div class="mesh"></div>
@@ -1936,12 +1985,12 @@ textarea.chat-input{
       <div class="lp-hcta">
         <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer mon entretien →</button>
         
-        <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Voir le rapport</button>
+        <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Voir un extrait du rapport</button>
       </div>
       
-      <p class="lp-microline">20 minutes · sans rendez-vous · votre rapport à garder</p>
+      <p class="lp-hprix"><b>Entretien gratuit</b> · rapport complet <b class="js-prix">59 CHF</b>, seulement si vous le voulez</p>
       
-      <div class="lp-reassure"><span>🇨🇭 Ancrée en Suisse romande</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans engagement</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">↩ Pas satisfait ? <b style="text-decoration:underline" id="lp-garantie">On corrige, sinon on rembourse</b></span></div>
+      <div class="lp-reassure"><span>🇨🇭 Ancrée en Suisse romande</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">🔒 <b style="text-decoration:underline">Confidentiel · nLPD &amp; RGPD</b></span><span>✦ Sans compte, sans engagement</span><span style="cursor:pointer" role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">↩ Pas satisfait ? <b style="text-decoration:underline" id="lp-garantie">On corrige, sinon on rembourse</b></span></div>
     </div>
     <div class="lp-chatcard">
       <div class="lp-ctop"><div class="lp-orb"></div><div><div class="lp-who">Cynthia</div><div class="lp-cstat">● en ligne · vous écoute</div></div></div>
@@ -1952,89 +2001,67 @@ textarea.chat-input{
   
   
   
-  <section id="lp-extrait" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Ce n'est pas une liste de métiers. <span class="lp-accent">C'est un dossier qui vous ressemble.</span></h2><p>Pour chaque métier proposé : ce que vous feriez au quotidien, ce que vous gagneriez, comment y arriver. Et la source de chaque chiffre, pour que vous puissiez vérifier.</p><p style="font-size:.85em;opacity:.75;margin-top:6px">Exemple réel de fiche, issu d'un entretien de test.</p></div>
-    <div class="lp-rex lp-rv" style="max-width:420px;margin:0 auto;">
-      <div class="lp-rex-imgcard">
-        <img src="rapport_extrait_metier.png" alt="Exemple réel de fiche, issu d'un entretien de test : fiche métier Assistant·e socio-éducatif·ve (ASE), marquée « Idéal » (la journée choisie), journée type, salaire de départ CHF ~4 300/mois et CHF ~5 350/mois avec l'expérience, formation CFC ASE 3 ans en dual, marché en pénurie dans la petite enfance, ce qui use dans ce métier, premier pas de la semaine." loading="lazy">
-        <p>Une fiche métier complète : pourquoi vous, journée type, salaire sourcé et daté, formation, marché, ce qui use, premier pas de la semaine.</p>
+  <section id="lp-rapport" class="lp-sec">
+<div class="lp-wrap">
+    <div class="lp-sechead lp-rv">
+<h2>Ce n'est pas une liste de métiers. <span class="lp-accent">C'est un dossier qui vous ressemble.</span></h2>
+<p>Cynthia reprend ce que vous lui avez dit, avec vos mots, et en tire des pistes suisses concrètes. Voici des extraits réels d'un rapport, issu d'un entretien de test.</p>
+</div>
+    <div class="lp-xgrid">
+      <div class="lp-xcards">
+        <div class="lp-x lp-rv">
+          <div class="lb">Pourquoi vous</div>
+          <div class="ttl">Assistant·e socio-éducatif·ve (ASE)</div>
+          <p>Vous l'avez dit vous-même : travailler avec les jeunes vous parle. <mark>Au club, vous entraînez déjà les petits le mercredi</mark>, et depuis cette année le coach vous laisse mener l'échauffement.</p>
+        </div>
+        <div class="lp-x red lp-rv">
+          <div class="lb">Votre frein, et ce qu'il révèle vraiment</div>
+          <p>Peur que votre âge soit un frein. Vous avez 8 ans d'expérience solide, vous avez évolué, vous avez vu différents univers. <span class="gap">[…]</span> <mark>L'âge n'est pas un frein, c'est une ressource.</mark></p>
+        </div>
+        <div class="lp-x lp-rv">
+          <div class="lb">Salaire de départ</div>
+          <div class="big">CHF ~4 300</div>
+          <div class="sm">par mois, <mark>fiche du 14.08.2026</mark> · avec l'expérience : CHF ~5 350/mois</div>
+          <div class="sm">Formation : CFC ASE 3 ans (dual) ; financement : art. 32, OrTra, chèque formation, AC/ORP</div>
+        </div>
+        <p class="lp-xsrc"><a href="rapport_extrait_metier.png" target="_blank" rel="noopener">Voir la fiche métier complète →</a></p>
       </div>
+      <figure class="lp-xvid lp-rv">
+        <video src="cynthia-video.mp4" poster="cynthia-video-poster.jpg" controls playsinline preload="none"></video>
+        <figcaption>Cynthia en 30 secondes</figcaption>
+      </figure>
     </div>
-    <div class="lp-stats4 lp-rv">
-      <div class="lp-stat4"><span class="lp-stat4-n">20 min</span><span class="lp-stat4-l">pour un entretien complet</span></div>
-      <div class="lp-stat4"><span class="lp-stat4-n">CHF</span><span class="lp-stat4-l">des salaires suisses réels, datés et sourcés</span></div>
-      <div class="lp-stat4"><span class="lp-stat4-n">9 parties</span><span class="lp-stat4-l">dans votre rapport PDF à garder</span></div>
-      <div class="lp-stat4"><span class="lp-stat4-n">7j/7</span><span class="lp-stat4-l">sans rendez-vous, même le soir</span></div>
+  </div>
+</section>
+
+  <section id="lp-etapes" class="lp-sec">
+<div class="lp-wrap">
+    <div class="lp-sechead lp-rv">
+<h2>Comment ça <span class="lp-accent">se passe</span></h2>
+<p>Vous ne payez qu'à la fin, et seulement si vous voulez votre rapport.</p>
+</div>
+    <ol class="lp-steps cyn-stag">
+      <li class="lp-rv"><span class="n">1</span><span class="tag">Gratuit</span><h3>Votre prénom</h3><p>Et votre CV si vous le souhaitez. Une minute, sans créer de compte.</p></li>
+      <li class="lp-rv"><span class="n">2</span><span class="tag">Gratuit</span><h3>L'entretien avec Cynthia</h3><p>Environ 20 minutes, quand vous voulez, même le soir. Elle pose les questions, vous racontez.</p></li>
+      <li class="lp-rv"><span class="n">3</span><span class="tag pay js-prix">59 CHF</span><h3>Votre rapport complet</h3><p>Vos pistes de métiers suisses, salaires sourcés et datés, plan sur six mois. En PDF, à garder.</p></li>
+    </ol>
+    <p class="lp-steps-g lp-rv">Pas satisfait ? <b>On corrige, sinon on rembourse.</b></p>
+  </div>
+</section>
+
+  <section id="lp-avis" class="lp-sec">
+<div class="lp-wrap">
+    <div class="lp-sechead lp-rv">
+<h2>Dans les mots de <span class="lp-accent">ceux qui l'ont testée</span></h2>
+</div>
+    <div class="lp-avis-grid cyn-stag">
+      <figure class="lp-avis-c lp-rv"><div class="lp-avis-mark">❝</div><blockquote>Le rapport n'a pas essayé de me faire changer de métier. Il a vu que c'était l'environnement, pas le métier. Personne ne m'avait dit ça.</blockquote><figcaption>Thomas <span>· a testé Cynth.IA</span></figcaption></figure>
+      <figure class="lp-avis-c lp-rv"><div class="lp-avis-mark">❝</div><blockquote>Surprenant, mais oser se confier à une IA permet de mieux se connaître et de révéler les compétences qu'on a tendance à enfouir sous des années d'expérience.</blockquote><figcaption>Maxime <span>· a testé Cynth.IA</span></figcaption></figure>
+      <figure class="lp-avis-c lp-rv"><div class="lp-avis-mark">❝</div><blockquote>Honnêtement, je suis enfin sûr que la voie que j'ai choisie est bien la bonne. Maintenant j'ai un plan pour viser le sommet.</blockquote><figcaption>Dylan <span>· a testé Cynth.IA</span></figcaption></figure>
     </div>
-    <p class="lp-microline lp-rv" style="text-align:center;margin-top:16px;">Ancrée en Suisse romande, pensée aussi pour les frontaliers : Genève, Vaud, Valais, Fribourg, Neuchâtel, Jura.</p>
-  </div></section>
+  </div>
+</section>
 
-  
-  <section id="lp-pourquoi" class="lp-sec"><div class="lp-wrap">
-    
-    <div class="lp-sechead lp-rv"><h2>Pourquoi <span class="lp-pop">Cynth.IA</span></h2><p>D'autres IA peuvent vous parler d'orientation. Cynthia va plus loin&nbsp;: chaque piste vient de notre base de fiches métiers suisses, et chaque salaire porte sa source et sa date de relevé. Vous repartez avec un dossier vérifiable, prêt à montrer à un conseiller ORP.</p></div>
-    <div class="lp-cards cyn-stag cyn-spot">
-      
-      <div class="lp-card lp-rv"><div class="lp-ic e">💬</div><h3>Un vrai entretien</h3><p>20 minutes, plus si vous avez à raconter. C'est elle qui mène, et chaque réponse construit votre profil. Elle prend le temps de vous écouter avant de proposer la moindre piste.</p></div>
-      <div class="lp-card lp-rv"><div class="lp-ic g">📄</div><h3>Un rapport PDF à garder</h3><p>Votre portrait, vos pistes métier, chaque chiffre avec sa source et sa date de relevé, et les liens pour agir dès demain.</p></div>
-      <div class="lp-card lp-rv"><div class="lp-ic e">🇨🇭</div><h3>Pensée pour la Suisse</h3><p>Le CFC, le brevet fédéral, l'article 32 : elle connaît les repères d'ici.</p></div>
-      <div class="lp-card lp-rv"><div class="lp-ic c">⚡</div><h3>Disponible ce soir</h3><p>Dès que l'envie est là, sans devoir prendre rendez-vous.</p></div>
-    </div>
-    <div class="lp-row cyn-stag" style="margin-top:22px;">
-      <div class="lp-pill"><b>Vous arrivez de l'étranger ?</b>Vingt minutes pour faire le point sur votre parcours face au marché suisse, avec des repères de salaire en francs et les démarches qui comptent ici.</div>
-      <div class="lp-pill"><b>Vous êtes en poste, en quête de sens ?</b>Cynthia comprend ce qui vous anime vraiment, au-delà du prochain poste, et en ressort avec des pistes concrètes.</div>
-      
-      <div class="lp-pill"><b>Vous êtes d'ici et vous cherchez juste un point d'appui ?</b>Pas besoin d'un parcours particulier. Cynthia part de ce que vous savez déjà faire, pas d'où vous venez.</div>
-    </div>
-
-    
-    <div class="lp-price-wrap" style="margin-top:34px;">
-      <div class="lp-price lp-rv">
-        <span class="lp-ptag" id="lp-price-tag" style="display:none;"></span>
-        <h3>Le rapport complet</h3>
-        <div class="lp-amount" id="lp-price-amount"></div>
-        <p class="lp-psub" id="lp-price-sub">Paiement unique, sans abonnement. Vous gardez le rapport.</p>
-        <ul>
-          <li><i>✓</i><span>Un profil construit sur ce que vous avez vraiment dit.</span></li>
-          
-          <li><i>✓</i><span>Jusqu'à cinq pistes de métiers suisses, uniquement celles qui s'appuient sur ce que vous avez dit. Les pistes principales sont chiffrées en CHF, sourcées et datées.</span></li>
-          <li><i>✓</i><span>Un plan sur six mois calé sur votre échéance réelle.</span></li>
-          <li><i>✓</i><span>Le bon interlocuteur suisse pour agir : CFC, article 32, le guichet cantonal qui vous concerne.</span></li>
-          <li><i>✓</i><span>Un dossier PDF à garder, à montrer ou à relire.</span></li>
-        </ul>
-        <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon entretien →</button>
-      </div>
-    </div>
-  </div></section>
-
-  <section id="lp-rapport" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2><p>Un dossier que vous pouvez montrer à votre conjoint, à votre conseiller ORP, ou relire dans six mois.</p></div>
-
-    
-    <div class="lp-somm cyn-stag cyn-spot">
-      <div class="lp-so"><b>01</b>Votre parcours<span>D'où vous partez, d'après votre CV et notre échange</span></div>
-      <div class="lp-so"><b>02</b>Le changement qui vous concerne<span>Métier, environnement ou équilibre : tout quitter n'est pas toujours la réponse</span></div>
-      <div class="lp-so"><b>03</b>Qui vous êtes<span>Votre portrait, et vos tendances appuyées sur vos propres mots</span></div>
-      <div class="lp-so"><b>04</b>Ce qui vous porte<span>Vos valeurs, vos moteurs, votre environnement idéal</span></div>
-      <div class="lp-so"><b>05</b>Savoir-faire et savoir-être<span>Ce que vous savez faire, et comment vous le faites</span></div>
-      <div class="lp-so"><b>06</b>Booster votre CV<span>Des phrases prêtes à coller dans votre CV</span></div>
-      <div class="lp-so"><b>07</b>Vos métiers suisses<span>Ceux qui collent à vos compétences et à vos valeurs</span></div>
-      <div class="lp-so"><b>08</b>Votre plan sur 6 mois<span>Étape par étape, avec des délais réels</span></div>
-      <div class="lp-so"><b>09</b>Vos ressources en Suisse<span>Qui finance quoi, et où frapper à la porte</span></div>
-    </div>
-
-    
-
-    <div class="lp-ract" style="margin-top:8px;"><button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Obtenir mon rapport →</button></div>
-  </div></section>
-
-  
-
-  
-
-  
-
-  
   <section id="lp-franc" class="lp-sec"><div class="lp-wrap"><div class="lp-band lp-rv">
     <h2>On préfère <span class="lp-accent">vous le dire franchement</span></h2>
     <p>Vous allez nous confier des choses personnelles. Autant commencer par être clairs.</p>
@@ -2051,29 +2078,48 @@ textarea.chat-input{
   </div></div></section>
 
   
-  <section id="lp-avis" class="lp-sec"><div class="lp-wrap">
-    <div class="lp-sechead lp-rv"><h2>Dans les mots de <span class="lp-accent">ceux qui l'ont testée</span></h2></div>
-    <div class="lp-avis-carousel lp-rv" id="avisCarousel" tabindex="0"
-         onkeydown="if(event.key==='ArrowLeft'){_avisNav(-1);}else if(event.key==='ArrowRight'){_avisNav(1);}"
-         aria-roledescription="carrousel" aria-label="Témoignages de testeurs">
-      <button type="button" class="lp-avis-arrow lp-avis-prev" id="avisPrev" onclick="_avisNav(-1)" aria-label="Témoignage précédent">‹</button>
-      <div class="lp-avis-viewport">
-        <div class="lp-avis-track" id="avisTrack">
-          <div class="lp-avis-slide"><div class="lp-avis-mark">❝</div><p>Le rapport n'a pas essayé de me faire changer de métier. Il a vu que c'était l'environnement, pas le métier. Personne ne m'avait dit ça.</p><div class="lp-avis-who">Thomas</div></div>
-          <div class="lp-avis-slide"><div class="lp-avis-mark">❝</div><p>Surprenant, mais oser se confier à une IA permet de mieux se connaître et de révéler les compétences qu'on a tendance à enfouir sous des années d'expérience.</p><div class="lp-avis-who">Maxime</div></div>
-          <div class="lp-avis-slide"><div class="lp-avis-mark">❝</div><p>Honnêtement, je suis enfin sûr que la voie que j'ai choisie est bien la bonne. Maintenant j'ai un plan pour viser le sommet.</p><div class="lp-avis-who">Dylan</div></div>
-        </div>
-      </div>
-      <button type="button" class="lp-avis-arrow lp-avis-next" id="avisNext" onclick="_avisNav(1)" aria-label="Témoignage suivant">›</button>
-    </div>
-    <div class="lp-avis-dots" id="avisDots">
-      <button type="button" class="lp-avis-dot is-active" onclick="_avisGoto(0)" aria-label="Aller au témoignage 1"></button>
-      <button type="button" class="lp-avis-dot" onclick="_avisGoto(1)" aria-label="Aller au témoignage 2"></button>
-      <button type="button" class="lp-avis-dot" onclick="_avisGoto(2)" aria-label="Aller au témoignage 3"></button>
-    </div>
-  </div></section>
-
   
+  <section id="lp-offre" class="lp-sec">
+<div class="lp-wrap">
+    <div class="lp-sechead lp-rv">
+<h2>Votre rapport, <span class="lp-accent">rien que pour vous</span></h2>
+<p>Un dossier en 9 parties, à montrer à votre conjoint, à votre conseiller ORP, ou à relire dans six mois.</p>
+</div>
+    <ol class="lp-somm-c lp-rv">
+      <li><b>01</b>Votre parcours</li><li><b>02</b>Le changement qui vous concerne</li>
+      <li><b>03</b>Qui vous êtes</li><li><b>04</b>Ce qui vous porte</li>
+      <li><b>05</b>Savoir-faire et savoir-être</li><li><b>06</b>Booster votre CV</li>
+      <li><b>07</b>Vos métiers suisses</li><li><b>08</b>Votre plan sur 6 mois</li>
+      <li><b>09</b>Vos ressources en Suisse</li>
+    </ol>
+    <div class="lp-offres" id="lp-offres">
+      <div class="lp-price lp-rv">
+        <span class="lp-ptag" id="lp-price-tag" style="display:none;"></span>
+        <h3>Le rapport complet</h3>
+        <div class="lp-amount" id="lp-price-amount">59 CHF</div>
+        <p class="lp-psub" id="lp-price-sub">Paiement unique, sans abonnement. Vous gardez le rapport.</p>
+        <ul>
+          <li><i>✓</i><span>Un profil construit sur ce que vous avez vraiment dit.</span></li>
+          
+          <li><i>✓</i><span>Jusqu'à cinq pistes de métiers suisses, uniquement celles qui s'appuient sur ce que vous avez dit. Les pistes principales sont chiffrées en CHF, sourcées et datées.</span></li>
+          <li><i>✓</i><span>Un plan sur six mois calé sur votre échéance réelle.</span></li>
+          <li><i>✓</i><span>Le bon interlocuteur suisse pour agir : CFC, article 32, le guichet cantonal qui vous concerne.</span></li>
+          <li><i>✓</i><span>Un dossier PDF à garder, à montrer ou à relire.</span></li>
+        </ul>
+        <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon entretien gratuit →</button>
+        <p class="lp-pgar">Pas satisfait ? On corrige, sinon on rembourse.</p>
+        <div class="lp-pfond"><img src="faouzi.jpg" alt="Faouzie Samhoud" loading="lazy"><span>Créé à Genève par Faouzie Samhoud</span></div>
+      </div>
+      <div class="lp-price lp-rv" id="lp-offre-conseiller" style="display:none;">
+        <h3>Rapport + conseiller</h3>
+        <div class="lp-amount" id="lp-price-amount-2">129 CHF</div>
+        <p class="lp-psub">Le rapport complet, puis 30 minutes avec un conseiller humain pour en parler et décider de la suite.</p>
+        <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon entretien gratuit →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
   <section id="lp-fondateur" class="lp-sec"><div class="lp-wrap">
     <div class="lp-fond lp-rv">
       <div class="lp-fond-av" id="lp-fond-av">FS</div>
@@ -2091,15 +2137,18 @@ textarea.chat-input{
     </div>
   </div></section>
 
-  <section class="lp-final"><div class="lp-wrap">
-    <h2 class="lp-rv">Vingt minutes <span class="lp-pop">pour y voir plus clair.</span></h2>
-    <p class="lp-rv">Vous en saurez plus sur votre avenir qu'en deux ans à y penser le dimanche soir.</p>
-    
-    <p class="lp-rv">Cynthia est prête. Elle ne vous connaît pas encore, et c'est justement le point. Votre prénom suffit pour commencer.</p>
-    <div class="lp-rv"><button class="lp-btn lp-btn-primary" style="padding:17px 36px;font-size:1.05rem;" onclick="gp('preappel')">Commencer mon entretien →</button></div>
-    
-    <p class="lp-rv lp-microline">20 minutes · sans rendez-vous · votre rapport à garder</p>
-  </div></section>
+  <section class="lp-final">
+<div class="lp-wrap">
+    <h2 class="lp-rv">Vingt minutes <span class="lp-pop">pour y voir plus clair.</span>
+</h2>
+    <p class="lp-rv">Vous en saurez plus sur votre avenir qu'en deux ans à y penser le dimanche soir. Votre prénom suffit pour commencer.</p>
+    <div class="lp-rv">
+<button class="lp-btn lp-btn-primary" style="padding:17px 36px;font-size:1.05rem;" onclick="gp('preappel')">Commencer mon entretien →</button>
+</div>
+    <p class="lp-rv lp-microline">Entretien gratuit · rapport <span class="js-prix">59 CHF</span> · sans rendez-vous</p>
+    <p class="lp-rv lp-microline">Ancrée en Suisse romande, pensée aussi pour les frontaliers : Genève, Vaud, Valais, Fribourg, Neuchâtel, Jura.</p>
+  </div>
+</section>
 
   <footer class="lp-foot"><div class="lp-wrap lp-foot-row">
     <div class="lp-logo" style="font-size:1.2rem;">Cynth<span class="lp-dot"></span><span class="lp-accent">IA</span></div>
@@ -2237,7 +2286,7 @@ textarea.chat-input{
       <div class="pa-guarantees">
         
         <div class="pg"><span class="pgc">✓</span>Confidentiel · nLPD &amp; RGPD</div>
-        <div class="pg" id="pa-badge-prix"><span class="pgc">✓</span>Gratuit · bêta</div>
+        <div class="pg" id="pa-badge-prix"><span class="pgc">✓</span>Entretien gratuit</div>
         
         <div class="pg"><span class="pgc">✓</span>20 min, parfois plus</div>
         <div class="pg"><span class="pgc">✓</span>Rapport immédiat</div>
@@ -3012,6 +3061,7 @@ async function _extractCvText(file){
   const name = (file.name||'').toLowerCase();
   const buf = await file.arrayBuffer();
   if (name.endsWith('.pdf')) {
+    await _libsCV('pdf');
     if (!window.pdfjsLib) throw new Error('lib');
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     let txt = '';
@@ -3020,6 +3070,7 @@ async function _extractCvText(file){
     return txt.replace(/[ \t]+/g,' ').replace(/ *\n */g,'\n').replace(/\n{3,}/g,'\n\n').trim();
   }
   if (name.endsWith('.docx')) {
+    await _libsCV('docx');
     if (!window.mammoth) throw new Error('lib');
     const r = await mammoth.extractRawText({ arrayBuffer: buf });
     return (r.value||'').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
@@ -3384,7 +3435,11 @@ const CONFIG = {
   
   PRIX_LANCEMENT: 59.00,
   FIN_LANCEMENT: '2026-12-31',
-  PRIX_APRES_LANCEMENT: 59.00,
+  PRIX_APRES_LANCEMENT: 79.00,
+  /* Offre « rapport + 30 min avec un conseiller humain ». Passer à true seulement quand
+     le paiement (2e Price Stripe + Worker) et la prise de rendez-vous sont prêts. */
+  OFFRE_CONSEILLER_ACTIVE: false,
+  PRIX_CONSEILLER: 129.00,
   get PRIX_RAPPORT() {
     var f = this.FIN_LANCEMENT_DATE;
     if (!f) return this.PRIX_LANCEMENT;   
@@ -3415,32 +3470,44 @@ function _masquerBandeauBetaSiPayant() {
     if (typeof _hauteurBanniere === 'function') _hauteurBanniere();
   } catch (e) {}
 }
+function _prixFmt(n) {
+  return (Math.round(n * 100) % 100 ? n.toFixed(2) : String(Math.round(n))) + ' CHF';
+}
 function _majBlocPrix() {
   _masquerBandeauBetaSiPayant();
+  if (typeof CONFIG === 'undefined') return;
+  var prix = CONFIG.PRIX_RAPPORT, apres = CONFIG.PRIX_APRES_LANCEMENT;
+  var promo = !CONFIG.RAPPORT_GRATUIT && CONFIG.EN_LANCEMENT && apres > prix;
+  var txtPrix = CONFIG.RAPPORT_GRATUIT ? 'Offert' : _prixFmt(prix);
+  document.querySelectorAll('.js-prix').forEach(function (e) { e.textContent = txtPrix; });
   var elTag = document.getElementById('lp-price-tag');
   var elAmount = document.getElementById('lp-price-amount');
   var elSub = document.getElementById('lp-price-sub');
-  if (!elTag || !elAmount || !elSub || typeof CONFIG === 'undefined') return;
-
+  if (!elTag || !elAmount || !elSub) return;
+  var mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   if (CONFIG.RAPPORT_GRATUIT) {
     elTag.style.display = 'none'; elTag.textContent = '';
     elAmount.textContent = 'Offert';
     elSub.textContent = "Pendant la phase de test, l'entretien et le rapport sont offerts. Vous gardez le rapport.";
-    return;
-  }
-
-  
-  var mois = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-  if (CONFIG.EN_LANCEMENT) {
+  } else if (promo) {
     var f = CONFIG.FIN_LANCEMENT_DATE;
     elTag.style.display = ''; elTag.textContent = 'PRIX DE LANCEMENT';
-    elAmount.textContent = CONFIG.PRIX_RAPPORT + ' CHF';
-    elSub.textContent = "Prix de lancement jusqu'au " + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear()
-      + '. Paiement unique, sans abonnement. Vous gardez le rapport.';
+    elAmount.innerHTML = _prixFmt(prix) + '<span class="lp-old">au lieu de <s>' + _prixFmt(apres) + '</s></span>';
+    elSub.textContent = "Jusqu'au " + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear()
+      + ', ensuite ' + _prixFmt(apres) + '. Paiement unique, sans abonnement. Vous gardez le rapport.';
   } else {
     elTag.style.display = 'none'; elTag.textContent = '';
-    elAmount.textContent = CONFIG.PRIX_RAPPORT + ' CHF';
+    elAmount.textContent = _prixFmt(prix);
     elSub.textContent = 'Paiement unique, sans abonnement. Vous gardez le rapport.';
+  }
+  var carte2 = document.getElementById('lp-offre-conseiller');
+  var grille = document.getElementById('lp-offres');
+  if (carte2 && grille) {
+    var actif = !CONFIG.RAPPORT_GRATUIT && CONFIG.OFFRE_CONSEILLER_ACTIVE;
+    carte2.style.display = actif ? '' : 'none';
+    grille.classList.toggle('deux', actif);
+    var a2 = document.getElementById('lp-price-amount-2');
+    if (a2) a2.textContent = _prixFmt(CONFIG.PRIX_CONSEILLER);
   }
 }
 try { document.addEventListener('DOMContentLoaded', _majBlocPrix); } catch (e) {}
@@ -3450,7 +3517,7 @@ function _majBadgePreappel() {
   try {
     var el = document.getElementById('pa-badge-prix');
     if (!el || typeof CONFIG === 'undefined') return;
-    var texte = CONFIG.RAPPORT_GRATUIT ? 'Gratuit · bêta' : 'Paiement unique';
+    var texte = CONFIG.RAPPORT_GRATUIT ? 'Gratuit' : 'Entretien gratuit';
     el.innerHTML = '<span class="pgc">✓</span>' + texte;
   } catch (e) {}
 }
