@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /
+Sitemap: https://cynthia-orientation.ch/sitemap.xml
