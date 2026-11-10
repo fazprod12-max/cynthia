@@ -1630,6 +1630,18 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   .lp-x .sm{font-size:.95rem;color:var(--c-muted);margin-top:4px;}
   .lp-xsrc{font-size:.85rem;color:var(--c-muted);text-align:center;}
   .lp-xsrc a{color:var(--c-emerald-d);font-weight:600;}
+  
+  #lp-histoire{padding-top:40px;}
+  .hs-grille{display:grid;grid-template-columns:1fr;gap:26px;align-items:center;max-width:1000px;margin:0 auto;}
+  @media(min-width:900px){.hs-grille{grid-template-columns:380px 1fr;gap:56px;}.hs-hote{width:380px!important;}}
+  .hs-hote{border-radius:28px;box-shadow:0 18px 44px rgba(15,42,36,.18);}
+  .hs-texte h2{font-size:2rem;line-height:1.2;margin:0 0 18px;}
+  @media(max-width:600px){.hs-texte h2{font-size:1.55rem;}}
+  .hs-rassure{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .hs-rassure li{position:relative;padding-left:30px;color:var(--c-ink);font-size:1.02rem;line-height:1.45;}
+  .hs-rassure li::before{content:"";position:absolute;left:0;top:3px;width:20px;height:20px;border-radius:50%;background:var(--c-emerald-soft) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2312876A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 12l4 4 8-8'/></svg>") center/13px no-repeat;}
+  .hs-questions{display:inline-block;margin-top:14px;color:var(--c-emerald-d);font-weight:600;text-decoration:underline;text-underline-offset:3px;}
+  @media(max-width:899px){.hs-texte .lp-btn{width:100%;}}
   .lp-xvid{margin:0;max-width:340px;justify-self:center;width:100%;}
   .lp-xvid video{display:block;width:100%;aspect-ratio:9/16;border-radius:22px;background:#0e2a24;box-shadow:0 18px 44px rgba(15,42,36,.18);}
   .lp-xvid figcaption{font-size:.85rem;color:var(--c-muted);text-align:center;margin-top:10px;}
@@ -2063,6 +2075,333 @@ textarea.chat-input{
   </div></section>
 
   
+  <section id="lp-histoire" class="lp-sec">
+<div class="lp-wrap">
+    <div class="hs-grille">
+      <div id="hs-hote" class="hs-hote"></div>
+      <div class="hs-texte lp-rv">
+        <h2>Une vraie conversation, <span class="lp-accent">puis un rapport qui part de vous.</span></h2>
+        <ul class="hs-rassure">
+          <li><b>L'entretien est gratuit.</b> Vous ne payez que si vous voulez votre rapport.</li>
+          <li><b>Avant de payer,</b> vous voyez un extrait de votre propre rapport.</li>
+          <li><b>Confidentiel.</b> Ce que vous écrivez ne sert pas à entraîner une IA.</li>
+          <li><b>Environ 20 minutes,</b> à votre rythme, sans rendez-vous.</li>
+        </ul>
+        <button class="lp-btn lp-btn-primary" onclick="gp('preappel');_introBoussole()">Commencer mon entretien →</button>
+        <a class="hs-questions" href="#lp-franc">Vos questions, nos réponses franches ↓</a>
+      </div>
+    </div>
+  </div>
+<template id="hs-modele"><style>
+:host{display:block;width:min(100%,max(280px,calc(70svh * 9 / 16)));margin:0 auto;--vert:#0E2A24;--emeraude:#1FB488;--emeraude-f:#12876A;--emeraude-d:#E7F4EE;--creme:#FAF6F0;--creme2:#F1E9DC;--corail:#FF6F5E;--corail-d:#FFE9E4;
+--peche:#FF9A80;--peche-c:#FFC9B6;--menthe:#5DCAA5;--menthe-c:#9FE6CF;--or:var(--peche);--or-c:var(--peche-c)}
+*{box-sizing:border-box}
+
+.hist{position:relative;width:100%;font-family:Inter,system-ui,sans-serif;aspect-ratio:9/16;border-radius:28px;overflow:hidden;background:#0E2A24;color:var(--creme);user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+
+.ciel{position:absolute;inset:0;background:linear-gradient(180deg,#06140F 0%,#0E2A24 34%,#124236 66%,#16614D 100%)}
+.voile{position:absolute;inset:0;background:radial-gradient(90% 50% at 80% 12%,rgba(31,180,136,.22),rgba(31,180,136,0) 70%),radial-gradient(70% 40% at 15% 30%,rgba(231,244,238,.08),rgba(231,244,238,0) 70%)}
+.aube{position:absolute;inset:0;background:linear-gradient(180deg,#12876A 0%,#5FB79A 18%,#FF8A73 44%,#FFB39E 62%,#FFE9E4 80%,#FAF6F0 100%);opacity:0;transition:opacity 1.8s ease}
+.hist.jour .aube{opacity:1}
+.soleil{position:absolute;left:50%;top:55%;width:170px;height:170px;margin-left:-85px;border-radius:50%;background:radial-gradient(circle,#FAF6F0 0%,#FFE9E4 35%,rgba(255,154,128,0) 70%);transform:translateY(70px);opacity:0;transition:transform 2s cubic-bezier(.2,.7,.2,1),opacity 1.2s}
+.hist.jour .soleil{transform:translateY(0);opacity:1}
+.monts{position:absolute;left:0;right:0;bottom:0;width:100%;height:50%}
+.monts path,.monts rect{transition:fill 2s,opacity 2s}
+.monts stop{transition:stop-color 2s,stop-opacity 2s}
+
+.m1{fill:#1F5A4A}.m2{fill:#17473B}.m3{fill:#10372E}.m4{fill:#0A241E}
+.hist.jour .m1{fill:#E6A898}.hist.jour .m2{fill:#8FC2AE}.hist.jour .m3{fill:#3E9A7E}.hist.jour .m4{fill:#12876A}
+.sn-a{stop-color:#E7F4EE;stop-opacity:.42}.sn-b{stop-color:#E7F4EE;stop-opacity:0}
+.hist.jour .sn-a{stop-color:#FFE9E4;stop-opacity:.9}.hist.jour .sn-b{stop-color:#FFE9E4;stop-opacity:0}
+.br-a{stop-color:#E7F4EE;stop-opacity:0}.br-b{stop-color:#E7F4EE;stop-opacity:.14}
+.hist.jour .br-a{stop-color:#FAF6F0;stop-opacity:0}.hist.jour .br-b{stop-color:#FAF6F0;stop-opacity:.32}
+.lune{position:absolute;left:86%;top:27%;width:22px;height:22px;margin-left:-11px;border-radius:50%;box-shadow:-6px 3px 0 0 #FAF6F0;filter:drop-shadow(0 0 8px rgba(250,246,240,.7));transform:rotate(-15deg);transition:opacity 1.5s}
+.hist.jour .lune{opacity:0}
+.voie{position:absolute;left:-30%;top:4%;width:160%;height:30%;background:radial-gradient(ellipse at center,rgba(231,244,238,.13),rgba(231,244,238,.04) 45%,rgba(231,244,238,0) 70%);transform:rotate(-24deg);filter:blur(4px);transition:opacity 1.5s;pointer-events:none}
+.hist.jour .voie{opacity:0}
+.grain{position:absolute;inset:0;opacity:.09;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.etoiles-fond i{position:absolute;border-radius:50%;background:#fff;opacity:.7;animation:scint 3s ease-in-out infinite}
+.etoiles-fond i.g{box-shadow:0 0 6px 1px rgba(231,244,238,.8)}
+.etoiles-fond{transition:opacity 1.5s}
+.hist.jour .etoiles-fond{opacity:0}
+@keyframes scint{50%{opacity:.15}}
+
+.souv{position:absolute;width:130px;margin-left:-65px;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;transform:scale(.4);transition:opacity .5s,transform .6s cubic-bezier(.3,1.6,.4,1)}
+.souv.on{opacity:1;transform:none}
+.souv svg{width:22px;height:22px;filter:drop-shadow(0 0 8px rgba(159,230,207,.9))}
+.souv svg path{fill:#E7F4EE;transition:fill .5s}
+.souv span{font-size:11.5px;color:#fff;white-space:nowrap;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:2px 9px;border-radius:999px;backdrop-filter:blur(4px)}
+.constel{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.constel line{stroke:#E7F4EE;stroke-width:1.6;stroke-dasharray:200;stroke-dashoffset:200;transition:stroke-dashoffset 1s ease,stroke .6s,stroke-width .6s;opacity:.9}
+.hist.relie .constel line{stroke-dashoffset:0}
+
+.leg{position:absolute;left:18px;right:18px;top:10%;text-align:center;font:600 17px/1.35 'Space Grotesk',sans-serif;color:#fff;text-shadow:0 2px 14px rgba(6,20,15,.45);opacity:0;transition:opacity .45s,top 1.1s cubic-bezier(.6,0,.2,1),font-size 1.1s}
+.leg.on{opacity:1}
+.leg.centre{top:30%;font-size:23px}
+.leg em{font-style:normal;color:var(--or-c)}
+.hist.jour .leg{text-shadow:0 2px 16px rgba(140,40,30,.55),0 0 2px rgba(140,40,30,.4)}
+.hist.jour .leg.nord-titre{font-size:26px;letter-spacing:.01em;color:#fff;text-shadow:0 0 22px rgba(255,233,228,.95),0 0 6px rgba(255,233,228,.8),0 3px 14px rgba(140,40,30,.55);animation:brille 2.4s ease-in-out infinite}
+@keyframes brille{50%{text-shadow:0 0 30px rgba(255,233,228,1),0 0 10px rgba(255,233,228,.9),0 3px 14px rgba(140,40,30,.55)}}
+
+.bulles{position:absolute;left:16px;right:16px;top:37%;display:flex;flex-direction:column;gap:8px;transition:opacity .5s}
+.bulle{max-width:88%;padding:9px 12px;border-radius:16px;font-size:13px;line-height:1.45;opacity:0;transform:translateY(10px);transition:all .35s}
+.bulle.on{opacity:1;transform:none}
+.bulle.elle{align-self:flex-end;background:var(--creme);color:var(--vert);border-bottom-right-radius:4px}
+.bulle.cyn{align-self:flex-start;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;border-bottom-left-radius:4px;backdrop-filter:blur(4px)}
+.bulles.off{opacity:0}
+
+.fil{position:absolute;left:20px;right:20px;top:47%;text-align:center;opacity:0;transform:translateY(10px);transition:all .5s}
+.fil.on{opacity:1;transform:none}
+.fil small{display:block;font-size:11px;letter-spacing:.12em;color:var(--or-c);margin-bottom:8px}
+.fil b{font:700 21px/1.3 'Space Grotesk',sans-serif;color:#fff;text-shadow:0 2px 14px rgba(6,20,15,.45)}
+
+.journees{position:absolute;left:16px;right:16px;top:42%;display:flex;flex-direction:column;gap:8px;transition:opacity .5s}
+.jr{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:13px;line-height:1.35;opacity:0;transform:translateX(-14px);transition:all .35s;backdrop-filter:blur(4px)}
+.jr.on{opacity:1;transform:none}
+.jr b{flex:none;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font:700 12px 'Space Grotesk';display:flex;align-items:center;justify-content:center}
+.jr.choisie{background:rgba(255,201,182,.25);border-color:var(--or-c);transform:scale(1.03)}
+.jr.choisie b{background:var(--or);color:var(--vert)}
+.jr.pale{opacity:.35}
+.doigt{position:absolute;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid #fff;opacity:0;pointer-events:none}
+.doigt.go{animation:tap 1s ease forwards}
+@keyframes tap{0%{opacity:0;transform:translate(30px,40px)}40%{opacity:1;transform:none}60%{transform:scale(.8)}100%{opacity:0;transform:scale(1.4)}}
+
+.bous{position:absolute;left:50%;bottom:7%;width:84px;height:84px;margin-left:-42px;border-radius:50%;background:#0E2A24 url(boussole-cynthia.jpg) center/104% no-repeat;box-shadow:0 0 0 1px rgba(255,255,255,.35),0 0 40px rgba(159,230,207,.45);transform:rotate(var(--a,50deg));transition:transform 1s cubic-bezier(.3,1.5,.4,1),bottom .9s,width .9s,height .9s,margin .9s,opacity .6s}
+.bous.cherche{animation:cherche 2.2s ease-in-out infinite}
+@keyframes cherche{0%,100%{transform:rotate(var(--a,50deg))}50%{transform:rotate(calc(var(--a,50deg) * -.6))}}
+
+.rayon{position:absolute;left:50%;width:4px;margin-left:-2px;top:calc(28% + 11px);bottom:calc(7% + 42px);background:linear-gradient(to top,#FAF6F0,rgba(255,154,128,.95) 60%,rgba(255,201,182,.2));border-radius:4px;box-shadow:0 0 16px 4px rgba(255,154,128,.75);transform:scaleY(0);transform-origin:bottom;opacity:0;pointer-events:none}
+.hist.nord .rayon{animation:rayon 1.6s cubic-bezier(.2,.9,.2,1) forwards}
+@keyframes rayon{0%{transform:scaleY(0);opacity:1}45%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
+.hist.nord .souv svg{animation:or 1.2s .5s ease forwards}
+@keyframes or{40%{transform:scale(1.9)}100%{transform:scale(1.3);filter:drop-shadow(0 0 14px #FFC9B6)}}
+.hist.nord .souv svg path{fill:#FFC9B6}
+.hist.nord .constel line{stroke:#FFE9E4;stroke-width:2.4}
+.eclat{position:absolute;left:50%;bottom:calc(7% + 42px);width:7px;height:7px;margin:0 0 -3px -3px;border-radius:50%;background:#FAF6F0;box-shadow:0 0 8px #FF9A80;opacity:0;pointer-events:none}
+.hist.nord .eclat{animation:eclat 1.1s cubic-bezier(.1,.8,.3,1) forwards}
+@keyframes eclat{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+.hist.nord .bous{animation:verrou .7s cubic-bezier(.3,1.8,.4,1)}
+@keyframes verrou{0%{transform:rotate(0) scale(1)}35%{transform:rotate(0) scale(1.18)}100%{transform:rotate(0) scale(1)}}
+
+.rapport{position:absolute;left:16px;right:16px;bottom:-62%;background:#fff;color:var(--vert);border-radius:18px;padding:15px 15px 13px;box-shadow:0 18px 40px rgba(140,40,30,.25);transition:bottom .8s cubic-bezier(.2,.8,.2,1)}
+.hist.rapport-on .rapport{bottom:6%}
+.hist.rapport-on .bous{bottom:calc(100% - 112px);width:58px;height:58px;margin-left:-29px}
+.rapport .pas{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.06em;color:#12876A;background:#E7F4EE;border-radius:999px;padding:3px 9px}
+.rapport h3{font:700 19px/1.2 'Space Grotesk';margin:8px 0 10px}
+.rapport .lg{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:7px 0;border-top:1px solid #EDE6DA}
+.rapport .lg span:first-child{color:#5C6B64}.rapport .lg span:last-child{font-weight:600;text-align:right}
+.rapport .src{font-size:10.5px;color:#5C6B64;margin-top:2px}
+.rapport .pp{margin-top:9px;background:#FDEDE8;border-radius:10px;padding:8px 10px;font-size:12.5px}
+.rapport .pp b{color:#C4533D}
+
+.fin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center;opacity:0;pointer-events:none;transition:opacity .9s;
+ background:radial-gradient(60% 38% at 50% 30%,rgba(255,233,228,.95),rgba(255,233,228,0) 70%),linear-gradient(180deg,#12876A 0%,#1FB488 100%)}
+.fin.on{opacity:1;pointer-events:auto}
+.fin-bous{position:relative;width:118px;height:118px;margin-bottom:22px;transform:scale(.6);opacity:0;transition:transform 1.2s cubic-bezier(.3,1.5,.4,1),opacity .6s}
+.fin.on .fin-bous{transform:none;opacity:1}
+.fin-bous .disque{position:absolute;inset:0;border-radius:50%;background:#0E2A24 url(boussole-cynthia.jpg) center/104% no-repeat;box-shadow:0 0 0 2px rgba(255,255,255,.6),0 0 50px rgba(255,233,228,.9)}
+.fin.on .fin-bous .disque{animation:pivote 3.2s .4s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes pivote{0%{transform:rotate(0)}40%{transform:rotate(-200deg)}70%{transform:rotate(25deg)}100%{transform:rotate(0)}}
+.fin-bous .halo{position:absolute;inset:-42px;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,233,228,0),rgba(255,233,228,.55),rgba(255,233,228,0) 18%,rgba(255,233,228,0) 25%,rgba(255,233,228,.45) 33%,rgba(255,233,228,0) 43%,rgba(255,233,228,0) 50%,rgba(255,233,228,.55) 58%,rgba(255,233,228,0) 68%,rgba(255,233,228,0) 75%,rgba(255,233,228,.45) 83%,rgba(255,233,228,0) 93%);-webkit-mask:radial-gradient(circle,transparent 46%,#000 48%,transparent 72%);mask:radial-gradient(circle,transparent 46%,#000 48%,transparent 72%);animation:tourne 9s linear infinite}
+@keyframes tourne{to{transform:rotate(360deg)}}
+.fin h4{font:700 27px/1.2 'Space Grotesk';margin:0 0 12px;color:#fff;text-shadow:0 2px 18px rgba(14,42,36,.35);opacity:0;transform:translateY(12px);transition:all .7s .5s}
+.fin p{font-size:14.5px;line-height:1.5;color:#E7F4EE;margin:0 0 18px;opacity:0;transform:translateY(10px);transition:all .7s 1.1s}
+.fin p b{color:#fff;font-weight:600}
+.fin.on h4,.fin.on p{opacity:1;transform:none}
+.fin button{border:0;border-radius:999px;padding:14px 22px;background:var(--creme);color:var(--vert);font:700 15px 'Space Grotesk';cursor:pointer;width:100%;box-shadow:0 10px 26px rgba(0,60,45,.25);opacity:0;transition:opacity .6s 1.7s}
+.fin.on button{opacity:1}
+.fin .rejouer{margin-top:10px;background:none;box-shadow:none;color:#fff;font:500 13px Inter;width:auto;padding:6px;text-decoration:underline;text-underline-offset:3px}
+
+.cmd{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:5}
+.cmd button{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px)}
+.cmd svg{width:18px;height:18px}
+.mention{position:absolute;left:14px;top:15px;font-size:10px;color:rgba(255,255,255,.75);z-index:5}
+.barre{position:absolute;left:0;bottom:0;height:3px;background:var(--or-c);width:0;z-index:5}
+.pause-ind{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .3s;z-index:6}
+.hist.en-pause .pause-ind{opacity:1}
+.pause-ind span{background:rgba(0,0,0,.4);color:#fff;font-size:13px;padding:8px 14px;border-radius:999px}
+@media (prefers-reduced-motion:reduce){.hist *{transition:none!important;animation:none!important}}
+</style>
+<div class="hist" id="hist" role="img" aria-label="Histoire illustrée : Sofia raconte des moments de sa vie, Cynthia les relie, elle choisit une journée type et trouve son métier : spécialiste RH. Puis : et vous, où est votre nord ?">
+  <div class="ciel"></div><div class="voile"></div><div class="aube"></div>
+  <div class="voie"></div>
+  <div class="etoiles-fond" id="ef"></div>
+  <div class="lune"></div>
+  <div class="soleil"></div>
+  <svg class="monts" id="monts" viewBox="0 0 380 300" preserveAspectRatio="none"></svg>
+  <div class="grain"></div>
+  <svg class="constel" id="constel" viewBox="0 0 380 676" preserveAspectRatio="none"></svg>
+  <div id="souvenirs"></div>
+
+  <div class="leg" id="leg"></div>
+  <div class="bulles" id="bulles"></div>
+  <div class="fil" id="fil"><small>SON FIL ROUGE</small><b>« Elle rend les choses simples pour les autres. »</b></div>
+  <div class="journees" id="journees">
+    <div class="jr" data-j="a"><b>A</b><span>Recruter, faire passer les entretiens et accueillir les nouveaux</span></div>
+    <div class="jr" data-j="b"><b>B</b><span>Animer un groupe d'adultes en formation</span></div>
+    <div class="jr" data-j="c"><b>C</b><span>Accueillir et orienter le public au guichet</span></div>
+  </div>
+  <div class="doigt" id="doigt"></div>
+
+  <div class="rayon"></div>
+  <div id="eclats"></div>
+  <div class="bous cherche" id="bous"></div>
+
+  <div class="rapport" id="rapport">
+    <span class="pas">SON RAPPORT · PISTE IDÉALE</span>
+    <h3>Spécialiste RH</h3>
+    <div class="lg"><span>Salaire de départ</span><span>≈ 6 750 CHF / mois</span></div>
+    <div class="src">Source : jobs.ch, relevé du 13.08.2026</div>
+    <div class="lg"><span>La voie</span><span>Brevet fédéral, en emploi</span></div>
+    <div class="lg"><span>Ses autres pistes</span><span>Formateur·rice d'adultes<br>Assistant·e de direction</span></div>
+    <div class="pp"><b>Son premier pas :</b> appeler un centre de formation cette semaine.</div>
+  </div>
+
+  <div class="fin" id="fin">
+    <div class="fin-bous"><div class="halo"></div><div class="disque"></div></div>
+    <h4>Et vous, où est votre nord ?</h4>
+    <p>Tout ce que vous avez vécu compte. Cynthia vous aide à en faire une direction.<br><b>Avant de payer, vous voyez un extrait de votre propre rapport.</b></p>
+    <button type="button" id="commencer">Commencer mon entretien →</button>
+    <button type="button" class="rejouer" id="rejouer">Revoir l'histoire</button>
+  </div>
+
+  <div class="mention">Histoire illustrée · personnage fictif</div>
+  <div class="cmd"><button type="button" id="btnSon" aria-label="Activer le son"></button></div>
+  <div class="pause-ind"><span>En pause · touchez pour reprendre</span></div>
+  <div class="barre" id="barre"></div>
+</div>
+</template>
+<script>
+
+(function(){
+const hote=document.getElementById('hs-hote'),modele=document.getElementById('hs-modele');
+if(!hote||!modele||!hote.attachShadow)return;
+const R=hote.attachShadow({mode:'open'});R.appendChild(modele.content.cloneNode(true));
+const $=id=>R.getElementById(id);
+const H=$('hist');
+(function(){let h='';for(let i=0;i<70;i++){const tl=(Math.random()<.75?.8+Math.random()*1:1.6+Math.random()*1.2).toFixed(1);h+='<i class="'+(tl>1.8?'g':'')+'" style="width:'+tl+'px;height:'+tl+'px;left:'+(Math.random()*100)+'%;top:'+(Math.random()*56)+'%;animation-delay:'+(Math.random()*3)+'s;animation-duration:'+(2+Math.random()*3).toFixed(1)+'s"></i>'}$('ef').innerHTML=h})();
+(function(){
+ let graine=7;const alea=()=>{graine=(graine*16807)%2147483647;return graine/2147483647};
+ 
+ function crete(base,amp,rugo,pas){let pts=[[0,base+(alea()-.5)*amp],[380,base+(alea()-.5)*amp]];let a=amp;
+  while(pts[1][0]-pts[0][0]>pas){const n=[];for(let i=0;i<pts.length-1;i++){const [x1,y1]=pts[i],[x2,y2]=pts[i+1];n.push(pts[i],[(x1+x2)/2,(y1+y2)/2+(alea()-.5)*a])}n.push(pts[pts.length-1]);pts=n;a*=rugo}
+  return pts}
+ const d=p=>'M0 300 L'+p.map(([x,y])=>x.toFixed(1)+' '+y.toFixed(1)).join(' L')+' L380 300 Z';
+ const c1=crete(70,120,.56,3),c2=crete(125,90,.55,3),c3=crete(185,60,.52,4),c4=crete(242,34,.5,5);
+ const haut=Math.min(...c1.map(p=>p[1]));
+ $('monts').innerHTML='<defs>'
+  +'<linearGradient id="gN" x1="0" y1="0" x2="0" y2="1"><stop class="sn-a" offset="0"/><stop class="sn-b" offset="1"/></linearGradient>'
+  +'<linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop class="br-a" offset="0"/><stop class="br-b" offset=".6"/><stop class="br-a" offset="1"/></linearGradient>'
+  +'<clipPath id="cl1"><path d="'+d(c1)+'"/></clipPath></defs>'
+  +'<path class="m1" d="'+d(c1)+'"/>'
+  +'<rect clip-path="url(#cl1)" x="0" y="'+haut.toFixed(0)+'" width="380" height="34" fill="url(#gN)"/>'
+  +'<rect x="0" y="85" width="380" height="70" fill="url(#gB)"/>'
+  +'<path class="m2" d="'+d(c2)+'"/>'
+  +'<rect x="0" y="150" width="380" height="60" fill="url(#gB)"/>'
+  +'<path class="m3" d="'+d(c3)+'"/>'
+  +'<rect x="0" y="210" width="380" height="50" fill="url(#gB)"/>'
+  +'<path class="m4" d="'+d(c4)+'"/>';
+})();
+const SOUV=[{x:24,y:19,t:'former les nouveaux'},{x:73,y:16,t:'expliquer aux parents'},{x:50,y:28,t:'rassurer un client perdu'}];
+$('souvenirs').innerHTML=SOUV.map((s,i)=>'<div class="souv" id="s'+i+'" style="left:'+s.x+'%;top:'+s.y+'%"><svg viewBox="-50 -50 100 100"><path d="M0,-46 C6,-9 9,-6 46,0 C9,6 6,9 0,46 C-6,9 -9,6 -46,0 C-9,-6 -6,-9 0,-46 Z"/></svg><span>'+s.t+'</span></div>').join('');
+(function(){let h='';for(let i=0;i<12;i++){const a=i/12*Math.PI*2,d=70+Math.random()*50;h+='<i class="eclat" style="--dx:'+(Math.cos(a)*d).toFixed(0)+'px;--dy:'+(Math.sin(a)*d).toFixed(0)+'px"></i>'}$('eclats').innerHTML=h})();
+$('constel').innerHTML=[[0,2],[2,1],[0,1]].map(([a,b])=>'<line x1="'+(SOUV[a].x*3.8)+'" y1="'+(SOUV[a].y*6.76+11)+'" x2="'+(SOUV[b].x*3.8)+'" y2="'+(SOUV[b].y*6.76+11)+'"/>').join('');
+const BULLES=[
+ ['elle',"Quand l'hôtel a ouvert une nouvelle aile, j'ai formé les trois nouveaux de la réception. En une semaine, ils se débrouillaient seuls."],
+ ['cyn',"Et en dehors du travail ?"],
+ ['elle',"Au club de foot de mon fils, c'est moi qui explique le tournoi aux parents. Sinon c'est le chaos."]];
+let legT=null;function leg(html,cls){const l=$('leg');clearTimeout(legT);l.classList.remove('on');legT=setTimeout(()=>{l.innerHTML=html;l.className='leg on'+(cls?' '+cls:'')},l.style.opacity==='0'?0:470)}
+function bulle(i){const b=document.createElement('div');b.className='bulle '+BULLES[i][0];b.textContent=BULLES[i][1];$('bulles').appendChild(b);requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.add('on')))}
+function angle(a){$('bous').style.setProperty('--a',a+'deg')}
+const T=[
+ [0.3,()=>leg('Sofia, 41 ans.<br>Douze ans à la réception d\'un hôtel.','centre')],
+ [3.2,()=>leg('Elle sent qu\'il est temps de changer.<br><em>Sans savoir vers quoi.</em>','centre')],
+ [6.0,()=>{$('leg').classList.remove('centre')}],
+ [7.7,()=>leg('Avec Cynthia, elle raconte des moments de sa vie.')],
+ [8.3,()=>bulle(0)],
+ [10.0,()=>{$('s0').classList.add('on');son.etoile(0)}],
+ [10.8,()=>bulle(1)],
+ [11.6,()=>bulle(2)],
+ [13.4,()=>{$('s1').classList.add('on');son.etoile(1)}],
+ [14.0,()=>{$('s2').classList.add('on');son.etoile(2);angle(34)}],
+ [15.2,()=>{$('bulles').classList.add('off');leg('Cynthia relie ce qu\'elle a vécu.')}],
+ [15.8,()=>{H.classList.add('relie');son.lien()}],
+ [16.8,()=>$('fil').classList.add('on')],
+ [19.6,()=>{$('fil').classList.remove('on');leg('Puis elle lui décrit des journées,<br><em>pas des étiquettes.</em>')}],
+ [20.2,()=>R.querySelectorAll('.jr').forEach((j,i)=>setTimeout(()=>j.classList.add('on'),i*220))],
+ [22.0,()=>{const a=R.querySelector('.jr[data-j="a"]'),r=a.getBoundingClientRect(),h=H.getBoundingClientRect(),d=$('doigt');d.style.left=(r.left-h.left+r.width-60)+'px';d.style.top=(r.top-h.top+r.height/2-17)+'px';d.classList.remove('go');void d.offsetWidth;d.classList.add('go')}],
+ [22.4,()=>{R.querySelectorAll('.jr').forEach(j=>j.classList.add(j.dataset.j==='a'?'choisie':'pale'));angle(14);son.choix()}],
+ [23.8,()=>{$('journees').style.opacity=0;$('leg').classList.remove('on');H.classList.add('jour');$('bous').classList.remove('cherche');angle(0);son.aube()}],
+ [24.4,()=>{H.classList.add('nord');son.nord()}],
+ [25.2,()=>leg('Son nord est trouvé.','nord-titre')],
+ [27.2,()=>{H.classList.add('rapport-on');$('leg').classList.remove('on')}],
+ [32.2,()=>{$('fin').classList.add('on');son.final()}],
+];
+const DUREE=36;
+let t=0,last=null,joue=false,idx=0,raf=null;
+function boucle(ts){if(!joue)return;if(last!==null)t+=(ts-last)/1000;last=ts;
+ while(idx<T.length&&T[idx][0]<=t){T[idx][1]();idx++}
+ $('barre').style.width=Math.min(100,t/DUREE*100)+'%';
+ if(t<DUREE)raf=requestAnimationFrame(boucle);else{joue=false;son.fin()}}
+function lancer(){if(joue||t>=DUREE)return;joue=true;last=null;H.classList.remove('en-pause');raf=requestAnimationFrame(boucle);son.reprendre()}
+function pause(){if(!joue)return;joue=false;cancelAnimationFrame(raf);H.classList.add('en-pause');son.suspendre()}
+function rejouer(){cancelAnimationFrame(raf);t=0;idx=0;joue=false;
+ H.className='hist';$('bulles').innerHTML='';$('bulles').classList.remove('off');$('leg').className='leg';$('fil').classList.remove('on');
+ R.querySelectorAll('.souv').forEach(s=>s.classList.remove('on'));R.querySelectorAll('.jr').forEach(j=>j.className='jr');$('journees').style.opacity='';
+ $('bous').classList.add('cherche');angle(50);$('fin').classList.remove('on');son.redemarrer();lancer()}
+H.addEventListener('click',()=>{if($('fin').classList.contains('on'))return;joue?pause():lancer()});
+if('IntersectionObserver' in window)new IntersectionObserver(e=>{e.forEach(x=>{x.isIntersecting&&x.intersectionRatio>.35?lancer():pause()})},{threshold:[0,.35,.7,1]}).observe(hote);
+if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){H.classList.add('jour','rapport-on','nord');angle(0);$('bous').classList.remove('cherche');$('fin').classList.add('on');t=DUREE}
+
+
+const ICONE_SON_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>';
+const ICONE_SON_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>';
+$('btnSon').innerHTML=ICONE_SON_OFF;
+const son=(function(){
+ let ctx=null,actif=false,maitre=null,echo=null,ventGain=null,oiseauxTimer=null,jour=false;
+ 
+ const GAMME=[587.3,659.3,740,880,987.8,1174.7];
+ function init(){if(ctx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ctx=new AC();
+  maitre=ctx.createGain();maitre.gain.value=0;maitre.connect(ctx.destination);
+  
+  const L=ctx.sampleRate*2.5,ir=ctx.createBuffer(2,L,ctx.sampleRate);for(let c=0;c<2;c++){const d=ir.getChannelData(c);for(let i=0;i<L;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/L,3)}
+  const conv=ctx.createConvolver();conv.buffer=ir;echo=ctx.createGain();echo.gain.value=.4;echo.connect(conv).connect(maitre);
+  
+  const n=ctx.sampleRate*4,buf=ctx.createBuffer(1,n,ctx.sampleRate),d=buf.getChannelData(0);let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;l=(l+0.02*w)/1.02;d[i]=l*3.2}
+  const vent=ctx.createBufferSource();vent.buffer=buf;vent.loop=true;const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=380;
+  ventGain=ctx.createGain();ventGain.gain.value=.07;vent.connect(f).connect(ventGain).connect(maitre);vent.start()}
+ function sortie(g){g.connect(maitre);g.connect(echo)}
+ 
+ function cloche(freq,vol,dur){if(!ctx||!actif)return;const t0=ctx.currentTime;[[1,1],[2.76,.22],[5.4,.06]].forEach(([m,a])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=freq*m;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol*a,t0+.035);g.gain.exponentialRampToValueAtTime(.0001,t0+dur/m*1.6);o.connect(g);sortie(g);o.start(t0);o.stop(t0+dur*1.7)})}
+ 
+ function nappe(freqs,vol,montee,duree){if(!ctx||!actif)return;const t0=ctx.currentTime;freqs.forEach(fr=>{[-4,4].forEach(cents=>{const o=ctx.createOscillator(),g=ctx.createGain(),lp=ctx.createBiquadFilter();o.type='sawtooth';o.frequency.value=fr;o.detune.value=cents;lp.type='lowpass';lp.frequency.value=1100;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+montee);g.gain.linearRampToValueAtTime(vol*.8,t0+duree*.6);g.gain.linearRampToValueAtTime(0,t0+duree);o.connect(lp).connect(g);sortie(g);o.start(t0);o.stop(t0+duree+.1)})})}
+ function oiseau(){if(!ctx||!actif)return;const base=2800+Math.random()*1400,nb=2+Math.floor(Math.random()*3);for(let k=0;k<nb;k++){const t0=ctx.currentTime+k*.12,o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(base,t0);o.frequency.exponentialRampToValueAtTime(base*1.3,t0+.06);o.frequency.exponentialRampToValueAtTime(base*.92,t0+.1);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.035,t0+.012);g.gain.exponentialRampToValueAtTime(.0001,t0+.11);o.connect(g);sortie(g);o.start(t0);o.stop(t0+.13)}}
+ function boucleOiseaux(){clearTimeout(oiseauxTimer);if(!jour||!actif)return;oiseau();oiseauxTimer=setTimeout(boucleOiseaux,1100+Math.random()*2200)}
+ return{
+  activer(){init();if(!ctx)return;actif=true;if(t>=DUREE){ctx.suspend();return}ctx.resume();maitre.gain.cancelScheduledValues(ctx.currentTime);maitre.gain.linearRampToValueAtTime(.8,ctx.currentTime+1);if(jour)boucleOiseaux()},
+  desactiver(){actif=false;if(ctx)maitre.gain.linearRampToValueAtTime(0,ctx.currentTime+.4);clearTimeout(oiseauxTimer)},
+  estActif(){return actif},
+  suspendre(){if(ctx)ctx.suspend();clearTimeout(oiseauxTimer)},
+  reprendre(){if(ctx&&actif){ctx.resume();if(jour)boucleOiseaux()}},
+  etoile(i){cloche(GAMME[[2,4,3][i]||3]/2,.026,2.6)},
+  lien(){nappe([293.7,370,440],.018,1.2,4);[0,1,3,5].forEach((k,i)=>setTimeout(()=>cloche(GAMME[k],.018,2.2),300+i*260))},
+  choix(){cloche(GAMME[3]/2,.028,1.8)},
+  aube(){jour=true;if(ventGain&&ctx)ventGain.gain.linearRampToValueAtTime(.03,ctx.currentTime+2);setTimeout(boucleOiseaux,1500)},
+  nord(){nappe([293.7,440,587.3,740],.022,1.5,5.5);[0,2,3,4,5].forEach((k,i)=>setTimeout(()=>cloche(GAMME[k]*(i>2?1:.5)*2,.02,2.6),500+i*200))},
+  final(){nappe([293.7,370,440,587.3],.02,1.4,4);setTimeout(()=>cloche(GAMME[5]/2,.026,3),900)},
+  fin(){clearTimeout(oiseauxTimer);jour=false;if(ctx){maitre.gain.cancelScheduledValues(ctx.currentTime);maitre.gain.setValueAtTime(maitre.gain.value,ctx.currentTime);maitre.gain.linearRampToValueAtTime(0,ctx.currentTime+2);setTimeout(()=>{if(!joue&&ctx)ctx.suspend()},2200)}},
+  redemarrer(){jour=false;clearTimeout(oiseauxTimer);if(ventGain&&ctx)ventGain.gain.value=.07;if(ctx&&actif){ctx.resume();maitre.gain.cancelScheduledValues(ctx.currentTime);maitre.gain.linearRampToValueAtTime(.8,ctx.currentTime+.8)}}
+ }})();
+$('rejouer').addEventListener('click',e=>{e.stopPropagation();rejouer()});
+$('commencer').addEventListener('click',e=>{e.stopPropagation();try{window.gp('preappel')}catch(x){}try{window._introBoussole()}catch(x){}});
+$('btnSon').addEventListener('click',e=>{e.stopPropagation();basculerSon()});
+function basculerSon(){const b=$('btnSon');if(son.estActif()){son.desactiver();b.innerHTML=ICONE_SON_OFF;b.setAttribute('aria-label','Activer le son')}else{son.activer();b.innerHTML=ICONE_SON_ON;b.setAttribute('aria-label','Couper le son')}}
+hote._histoire={etat:()=>({t:t,joue:joue,idx:idx,duree:DUREE}),rejouer:rejouer,pause:pause,lancer:lancer,aller:x=>{pause();t=x;lancer()}};
+})();
+</script>
+</section>
+
+  
   
   
   <section id="lp-rapport" class="lp-sec">
@@ -2071,7 +2410,8 @@ textarea.chat-input{
 <h2>Ce n'est pas une liste de métiers. <span class="lp-accent">C'est un dossier qui vous ressemble.</span></h2>
 <p>Cynthia reprend ce que vous lui avez dit, avec vos mots, et en tire des pistes suisses concrètes. Voici des extraits réels de rapports : une fiche issue d'un entretien de test, et le frein d'un testeur, publié avec son accord.</p>
 </div>
-    <div class="lp-xgrid avec-video">
+    
+    <div class="lp-xgrid">
       <div class="lp-xcards">
         <div class="lp-x lp-rv">
           <div class="lb">Pourquoi vous</div>
@@ -2091,10 +2431,6 @@ textarea.chat-input{
         </div>
         <p class="lp-xsrc"><a href="rapport_extrait_metier.png" target="_blank" rel="noopener">Voir la fiche métier complète →</a></p>
       </div>
-      <figure class="lp-xvid lp-rv">
-        <video src="cynthia-video.mp4" poster="cynthia-video-poster.jpg" controls playsinline preload="none"></video>
-        <figcaption>Cynthia en 30 secondes</figcaption>
-      </figure>
     </div>
   </div>
 </section>
@@ -2108,7 +2444,7 @@ textarea.chat-input{
     <ol class="lp-steps cyn-stag">
       <li class="lp-rv"><span class="n">1</span><span class="tag">Gratuit</span><h3>Votre prénom</h3><p>Et votre CV si vous le souhaitez. Une minute, sans créer de compte.</p></li>
       <li class="lp-rv"><span class="n">2</span><span class="tag">Gratuit</span><h3>L'entretien avec Cynthia</h3><p>Environ 20 minutes, quand vous voulez, même le soir. Elle pose les questions, vous racontez.</p></li>
-      <li class="lp-rv"><span class="n">3</span><span class="tag pay js-prix"></span><h3>Votre rapport complet</h3><p>Vos pistes de métiers suisses, salaires sourcés et datés, plan sur six mois. En PDF, à garder.</p></li>
+      <li class="lp-rv"><span class="n">3</span><span class="tag pay js-prix"></span><h3>Votre rapport complet</h3><p>Vos pistes de métiers suisses, salaires sourcés et datés, plan sur six mois. En PDF, à garder. Avant de payer, vous voyez un extrait de votre propre rapport.</p></li>
     </ol>
     <p class="lp-steps-g lp-rv">Pas satisfait ? <b>On corrige, sinon on rembourse.</b></p>
   </div>
@@ -2136,7 +2472,8 @@ textarea.chat-input{
       <div class="lp-pill"><b>Elle regarde vos réponses en face</b>Votre entourage vous encourage, c'est normal. Cynthia, elle, regarde vos réponses en face. Si une piste ne tient pas, elle le dit maintenant. Pas dans deux ans.</div>
       
       
-      <div class="lp-pill"><b>Elle ne peut pas inventer un métier qui n'existe pas</b>Chaque piste vient d'une base de fiches suisses vérifiées à l'avance, avec un vrai salaire, une vraie source et sa date. Le choix se fait dans cette base, jamais au hasard, et le rapport est contrôlé avant de vous être livré.</div>
+      
+      <div class="lp-pill"><b>Pourquoi pas une IA généraliste ?</b>Une IA généraliste répond de mémoire : elle peut vous donner un salaire ou une formation sans source. Cynthia, elle, ne peut pas inventer un métier qui n'existe pas. Chaque piste vient d'une base de fiches suisses vérifiées à l'avance, avec un vrai salaire, une vraie source et sa date, et la voie suisse pour y arriver (CFC, AFP, brevet fédéral). Le choix se fait dans cette base, jamais au hasard, et le rapport est contrôlé avant de vous être livré.</div>
       
       <div class="lp-pill us"><b>Elle ne remplace pas un conseiller agréé</b>Ni viamia, ni l'ORP, ni un bilan de compétences. Elle vous prépare à ces rendez-vous-là, avec déjà vos mots pour ce que vous savez faire et ce que vous cherchez.</div>
     </div>
