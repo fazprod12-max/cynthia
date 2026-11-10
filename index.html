@@ -1634,7 +1634,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   #lp-histoire{padding-top:40px;}
   .hs-grille{display:grid;grid-template-columns:1fr;gap:26px;align-items:center;max-width:1000px;margin:0 auto;}
   @media(min-width:900px){.hs-grille{grid-template-columns:380px 1fr;gap:56px;}.hs-hote{width:380px!important;}}
-  .hs-hote{border-radius:28px;box-shadow:0 18px 44px rgba(15,42,36,.18);}
+  .hs-hote{position:relative;width:min(100%,380px);aspect-ratio:380/676;margin:0 auto;justify-self:center;border-radius:28px;overflow:hidden;box-shadow:0 18px 44px rgba(15,42,36,.18);}
   .hs-texte h2{font-size:2rem;line-height:1.2;margin:0 0 18px;}
   @media(max-width:600px){.hs-texte h2{font-size:1.55rem;}}
   .hs-rassure{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:10px;}
@@ -2093,11 +2093,11 @@ textarea.chat-input{
     </div>
   </div>
 <template id="hs-modele"><style>
-:host{display:block;width:min(100%,max(280px,calc(70svh * 9 / 16)));margin:0 auto;--vert:#0E2A24;--emeraude:#1FB488;--emeraude-f:#12876A;--emeraude-d:#E7F4EE;--creme:#FAF6F0;--creme2:#F1E9DC;--corail:#FF6F5E;--corail-d:#FFE9E4;
+:host{display:block;width:100%;height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;--vert:#0E2A24;--emeraude:#1FB488;--emeraude-f:#12876A;--emeraude-d:#E7F4EE;--creme:#FAF6F0;--creme2:#F1E9DC;--corail:#FF6F5E;--corail-d:#FFE9E4;
 --peche:#FF9A80;--peche-c:#FFC9B6;--menthe:#5DCAA5;--menthe-c:#9FE6CF;--or:var(--peche);--or-c:var(--peche-c)}
 *{box-sizing:border-box}
 
-.hist{position:relative;width:100%;font-family:Inter,system-ui,sans-serif;aspect-ratio:9/16;border-radius:28px;overflow:hidden;background:#0E2A24;color:var(--creme);user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.hist{position:absolute;left:0;top:0;width:380px;height:676px;transform-origin:0 0;transform:scale(var(--k,1));-webkit-text-size-adjust:100%;text-size-adjust:100%;font-family:Inter,system-ui,sans-serif;border-radius:28px;overflow:hidden;background:#0E2A24;color:var(--creme);user-select:none;-webkit-user-select:none;cursor:pointer;}
 
 .ciel{position:absolute;inset:0;background:linear-gradient(180deg,#06140F 0%,#0E2A24 34%,#124236 66%,#16614D 100%)}
 .voile{position:absolute;inset:0;background:radial-gradient(90% 50% at 80% 12%,rgba(31,180,136,.22),rgba(31,180,136,0) 70%),radial-gradient(70% 40% at 15% 30%,rgba(231,244,238,.08),rgba(231,244,238,0) 70%)}
@@ -2183,8 +2183,9 @@ textarea.chat-input{
 .hist.nord .bous{animation:verrou .7s cubic-bezier(.3,1.8,.4,1)}
 @keyframes verrou{0%{transform:rotate(0) scale(1)}35%{transform:rotate(0) scale(1.18)}100%{transform:rotate(0) scale(1)}}
 
-.rapport{position:absolute;left:16px;right:16px;bottom:-62%;background:#fff;color:var(--vert);border-radius:18px;padding:15px 15px 13px;box-shadow:0 18px 40px rgba(140,40,30,.25);transition:bottom .8s cubic-bezier(.2,.8,.2,1)}
-.hist.rapport-on .rapport{bottom:6%}
+.rapport{position:absolute;left:16px;right:16px;bottom:-62%;visibility:hidden;background:#fff;color:var(--vert);border-radius:18px;padding:15px 15px 13px;box-shadow:0 18px 40px rgba(140,40,30,.25);transition:bottom .8s cubic-bezier(.2,.8,.2,1)}
+.hist.rapport-on .rapport{bottom:6%;visibility:visible}
+.hist.rapport-on .leg{opacity:0!important}
 .hist.rapport-on .bous{bottom:calc(100% - 112px);width:58px;height:58px;margin-left:-29px}
 .rapport .pas{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.06em;color:#12876A;background:#E7F4EE;border-radius:999px;padding:3px 9px}
 .rapport h3{font:700 19px/1.2 'Space Grotesk';margin:8px 0 10px}
@@ -2277,8 +2278,12 @@ textarea.chat-input{
 const hote=document.getElementById('hs-hote'),modele=document.getElementById('hs-modele');
 if(!hote||!modele||!hote.attachShadow)return;
 const R=hote.attachShadow({mode:'open'});R.appendChild(modele.content.cloneNode(true));
+let echeller=null;
 const $=id=>R.getElementById(id);
 const H=$('hist');
+function echelle(){const w=hote.getBoundingClientRect().width||380;const k=w/380;H.style.setProperty('--k',k);return k}
+echeller=echelle;echelle();
+if('ResizeObserver' in window)new ResizeObserver(echelle).observe(hote);window.addEventListener('resize',echelle);
 (function(){let h='';for(let i=0;i<70;i++){const tl=(Math.random()<.75?.8+Math.random()*1:1.6+Math.random()*1.2).toFixed(1);h+='<i class="'+(tl>1.8?'g':'')+'" style="width:'+tl+'px;height:'+tl+'px;left:'+(Math.random()*100)+'%;top:'+(Math.random()*56)+'%;animation-delay:'+(Math.random()*3)+'s;animation-duration:'+(2+Math.random()*3).toFixed(1)+'s"></i>'}$('ef').innerHTML=h})();
 (function(){
  let graine=7;const alea=()=>{graine=(graine*16807)%2147483647;return graine/2147483647};
@@ -2329,12 +2334,12 @@ const T=[
  [16.8,()=>$('fil').classList.add('on')],
  [19.6,()=>{$('fil').classList.remove('on');leg('Puis elle lui décrit des journées,<br><em>pas des étiquettes.</em>')}],
  [20.2,()=>R.querySelectorAll('.jr').forEach((j,i)=>setTimeout(()=>j.classList.add('on'),i*220))],
- [22.0,()=>{const a=R.querySelector('.jr[data-j="a"]'),r=a.getBoundingClientRect(),h=H.getBoundingClientRect(),d=$('doigt');d.style.left=(r.left-h.left+r.width-60)+'px';d.style.top=(r.top-h.top+r.height/2-17)+'px';d.classList.remove('go');void d.offsetWidth;d.classList.add('go')}],
+ [22.0,()=>{const a=R.querySelector('.jr[data-j="a"]'),r=a.getBoundingClientRect(),h=H.getBoundingClientRect(),d=$('doigt');const k=echelle();d.style.left=((r.left-h.left+r.width)/k-60)+'px';d.style.top=((r.top-h.top+r.height/2)/k-17)+'px';d.classList.remove('go');void d.offsetWidth;d.classList.add('go')}],
  [22.4,()=>{R.querySelectorAll('.jr').forEach(j=>j.classList.add(j.dataset.j==='a'?'choisie':'pale'));angle(14);son.choix()}],
  [23.8,()=>{$('journees').style.opacity=0;$('leg').classList.remove('on');H.classList.add('jour');$('bous').classList.remove('cherche');angle(0);son.aube()}],
  [24.4,()=>{H.classList.add('nord');son.nord()}],
  [25.2,()=>leg('Son nord est trouvé.','nord-titre')],
- [27.2,()=>{H.classList.add('rapport-on');$('leg').classList.remove('on')}],
+ [27.2,()=>{clearTimeout(legT);H.classList.add('rapport-on');$('leg').classList.remove('on')}],
  [32.2,()=>{$('fin').classList.add('on');son.final()}],
 ];
 const DUREE=36;
