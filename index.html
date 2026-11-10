@@ -1378,6 +1378,68 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 .q-retour[hidden]{display:flex;visibility:hidden;}
 .q-retour:hover{color:var(--c-emerald-d);}
 .q-reste{font-size:12px;color:var(--c-muted);margin-left:auto;}
+
+.bq-mini{width:44px;height:44px;flex:none;position:relative;}
+.bq-disque{width:100%;height:100%;border-radius:50%;background:#0E2A24 url(boussole-cynthia.jpg) center/104% no-repeat;box-shadow:0 0 0 1px rgba(14,42,36,.15);transform:rotate(var(--bq-a,42deg));transition:transform 1s cubic-bezier(.3,1.5,.4,1);}
+.bq-disque.cherche{animation:bqCherche 2.4s ease-in-out infinite;}
+@keyframes bqCherche{0%,100%{transform:rotate(var(--bq-a,42deg))}50%{transform:rotate(calc(var(--bq-a,42deg) * -.5))}}
+.bq-onde{position:absolute;inset:0;border-radius:50%;border:2px solid var(--c-emerald);opacity:0;pointer-events:none;}
+.bq-onde.go{animation:bqOnde 1.1s ease-out 2;}
+@keyframes bqOnde{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.9);opacity:0}}
+.bq-texte{min-width:0;flex:1;}
+.bq-t1{font:700 14px/1.2 'Space Grotesk',system-ui,sans-serif;color:var(--c-ink);}
+.bq-t2{font-size:12px;line-height:1.3;color:var(--c-muted);margin-top:2px;}
+.bq-fil{display:flex;gap:5px;margin-top:6px;}
+.bq-fil i{display:block;height:3px;width:34px;border-radius:2px;background:var(--c-line);overflow:hidden;}
+.bq-fil i.ok{background:var(--c-emerald-d);}
+.bq-fil i b{display:block;height:100%;width:0;background:var(--c-emerald-d);transition:width .6s;}
+.bq-tete{display:flex;align-items:center;gap:12px;margin:0 0 12px;}
+.quiz-card.q-sombre .bq-tete{display:none;}
+.chat-phase-bar.bq-barre{gap:12px;padding:8px 16px;}
+@media(max-width:600px){
+  .chat-phase-bar.bq-barre{padding:6px 12px;gap:10px;}
+  .bq-barre .bq-mini{width:34px;height:34px;}
+  .bq-barre .bq-t2{display:none;}
+  .bq-barre .bq-fil{margin-top:4px;}
+  .bq-tete .bq-mini{width:40px;height:40px;}
+}
+.bq-intro{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(120% 80% at 50% 30%,#18443A 0%,#0E2A24 60%);color:#F3EBDD;transition:opacity .3s;}
+.bq-intro[hidden]{display:none;}
+.bq-intro.ferme{opacity:0;}
+.bq-scene{min-height:100%;max-width:400px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px calc(28px + env(safe-area-inset-bottom,0px));box-sizing:border-box;}
+.bq-grand{position:relative;width:176px;height:176px;flex:none;}
+.bq-grand .bq-disque{--bq-a:0deg;box-shadow:0 0 0 1px rgba(159,230,207,.25),0 0 60px rgba(93,202,165,.25);}
+.bq-etoile{position:absolute;left:28px;top:28px;width:120px;height:120px;opacity:0;}
+.bq-titre{font:700 21px/1.25 'Space Grotesk',system-ui,sans-serif;color:#F3EBDD;text-align:center;margin:18px 0 0;}
+.bq-titre em{font-style:normal;color:#5DCAA5;}
+.bq-sous{font-size:14px;color:#C9DCD4;text-align:center;margin:10px 0 0;line-height:1.5;}
+.bq-etapes{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;width:100%;}
+.bq-etapes li{display:flex;gap:12px;align-items:center;background:rgba(243,235,221,.07);border:1px solid rgba(159,230,207,.18);border-radius:14px;padding:9px 12px;}
+.bq-etapes b{width:26px;height:26px;flex:none;border-radius:50%;background:#5DCAA5;color:#0E2A24;font:700 13px 'Space Grotesk',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;}
+.bq-etapes span{font-size:14px;color:#F3EBDD;line-height:1.35;}
+.bq-etapes small{display:block;color:#9FE6CF;font-size:12.5px;}
+.bq-go{margin-top:16px;width:100%;min-height:48px;padding:12px;border:0;border-radius:999px;background:#5DCAA5;color:#0E2A24;font:700 16px 'Space Grotesk',system-ui,sans-serif;cursor:pointer;}
+.bq-go:focus-visible{outline:3px solid #F3EBDD;outline-offset:3px;}
+
+.bq-intro.joue .bq-etoile{animation:bqEtoile 1.1s cubic-bezier(.5,0,.2,1) both;}
+.bq-intro.joue .bq-grand .bq-disque{animation:bqArrivee 2s cubic-bezier(.25,1.35,.35,1) .55s both;}
+.bq-intro.joue .bq-titre{animation:bqMonte .6s ease 1.7s both;}
+.bq-intro.joue .bq-sous{animation:bqMonte .6s ease 1.85s both;}
+.bq-intro.joue .bq-etapes li:nth-child(1){animation:bqMonte .45s ease 2.3s both;}
+.bq-intro.joue .bq-etapes li:nth-child(2){animation:bqMonte .45s ease 2.55s both;}
+.bq-intro.joue .bq-etapes li:nth-child(3){animation:bqMonte .45s ease 2.8s both;}
+.bq-intro.joue .bq-go{animation:bqMonte .5s ease 3.1s both;}
+@keyframes bqEtoile{0%{opacity:1;transform:scale(.5) rotate(0)}55%{opacity:1;transform:scale(1.15) rotate(45deg)}100%{opacity:0;transform:scale(1.15) rotate(45deg)}}
+@keyframes bqArrivee{0%{opacity:0;transform:scale(.35) rotate(-160deg)}25%{opacity:1}100%{opacity:1;transform:scale(1) rotate(0deg)}}
+@keyframes bqMonte{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  .bq-intro.joue *{animation:none!important;}
+  .bq-disque,.bq-disque.cherche,.bq-onde.go{animation:none!important;transition:none!important;}
+  .bq-intro{transition:none;}
+}
+@media(max-height:620px){.bq-grand{width:132px;height:132px;}.bq-etoile{left:21px;top:21px;width:90px;height:90px;}.bq-titre{font-size:19px;margin-top:12px;}}
+.q-intro{margin:2px 0 12px;padding:10px 12px;border-radius:12px;background:var(--c-emerald-l,#E6F4EE);color:var(--c-ink);font-size:13.5px;line-height:1.45;}
+.q-intro b{color:var(--c-emerald-d);}
 .q-profil{background:var(--c-ink);color:#FAF6F0;border-radius:14px;padding:12px 14px;margin:-14px 0 18px;}
 .q-profil-titre{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--c-emerald);font-weight:600;margin-bottom:8px;}
 .q-puces{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;}
@@ -1410,6 +1472,7 @@ body.beta-open .gnav-mobile{top:calc(40px + 88px);}
 #qca-continuer{margin-bottom:8px;}
 
 .quiz-card.q-sombre{background:var(--c-ink);border-color:var(--c-ink);}
+html.bq-ouverte,html.bq-ouverte body{overflow:hidden;}
 .quiz-card.q-sombre .quiz-header,.quiz-card.q-sombre .q-entete,.quiz-card.q-sombre .quiz-progress,.quiz-card.q-sombre .q-profil,.quiz-card.q-sombre .q-ecoute{display:none;}
 .q-transition{color:#FAF6F0;}
 .q-tr-av{width:56px;height:56px;border-radius:999px;background:#1E3D35;color:var(--c-emerald);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;margin-bottom:20px;}
@@ -1972,7 +2035,7 @@ textarea.chat-input{
       
       <a role="button" tabindex="0" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Le rapport</a>
       <a role="button" tabindex="0" onclick="document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})" onkeydown="if(event.key==='Enter')document.getElementById('lp-fondateur').scrollIntoView({behavior:'smooth'})">Qui est derrière</a>
-      <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer</button>
+      <button class="lp-btn lp-btn-primary" onclick="gp('preappel');_introBoussole()">Commencer</button>
     </div>
   </nav>
 
@@ -1984,7 +2047,7 @@ textarea.chat-input{
       
       <p class="lp-lead">Racontez votre parcours à Cynthia, une IA qui pose les bonnes questions. Vous repartez avec des pistes de métiers suisses, leurs salaires, et un premier pas concret.</p>
       <div class="lp-hcta">
-        <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel')">Commencer mon entretien →</button>
+        <button class="lp-btn lp-btn-primary" style="padding:18px 38px;font-size:1.1rem;" onclick="gp('preappel');_introBoussole()">Commencer mon entretien →</button>
         
         <button class="lp-btn lp-btn-ghost" onclick="document.getElementById('lp-rapport').scrollIntoView({behavior:'smooth'})">Voir un extrait du rapport</button>
       </div>
@@ -2088,10 +2151,11 @@ textarea.chat-input{
 <p>Un dossier en 9 parties, à montrer à votre conjoint, à votre conseiller ORP, ou à relire dans six mois.</p>
 </div>
     <ol class="lp-somm-c lp-rv">
-      <li><b>01</b>Votre parcours</li><li><b>02</b>Le changement qui vous concerne</li>
+      
+      <li><b>01</b>Votre parcours</li><li><b>02</b>Ce que la conversation a révélé</li>
       <li><b>03</b>Qui vous êtes</li><li><b>04</b>Ce qui vous porte</li>
-      <li><b>05</b>Savoir-faire et savoir-être</li><li><b>06</b>Booster votre CV</li>
-      <li><b>07</b>Vos métiers suisses</li><li><b>08</b>Votre plan sur 6 mois</li>
+      <li><b>05</b>Savoir-faire et savoir-être</li><li><b>06</b>Vos métiers suisses</li>
+      <li><b>07</b>Votre plan sur 6 mois</li><li><b>08</b>Booster votre CV</li>
       <li><b>09</b>Vos ressources en Suisse</li>
     </ol>
     <div class="lp-offres" id="lp-offres">
@@ -2108,7 +2172,7 @@ textarea.chat-input{
           <li><i>✓</i><span>Le bon interlocuteur suisse pour agir : CFC, article 32, le guichet cantonal qui vous concerne.</span></li>
           <li><i>✓</i><span>Un dossier PDF à garder, à montrer ou à relire.</span></li>
         </ul>
-        <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon entretien gratuit →</button>
+        <button class="lp-btn lp-btn-primary" onclick="gp('preappel');_introBoussole()">Commencer mon entretien gratuit →</button>
         <p class="lp-pgar">Pas satisfait ? On corrige, sinon on rembourse.</p>
         <div class="lp-pfond"><img src="faouzi.jpg" alt="Faouzie Samhoud" loading="lazy"><span>Créé à Genève par Faouzie Samhoud</span></div>
       </div>
@@ -2116,7 +2180,7 @@ textarea.chat-input{
         <h3>Rapport + conseiller</h3>
         <div class="lp-amount" id="lp-price-amount-2"></div>
         <p class="lp-psub">Le rapport complet, puis 30 minutes avec un conseiller humain pour en parler et décider de la suite.</p>
-        <button class="lp-btn lp-btn-primary" onclick="gp('preappel')">Commencer mon entretien gratuit →</button>
+        <button class="lp-btn lp-btn-primary" onclick="gp('preappel');_introBoussole()">Commencer mon entretien gratuit →</button>
       </div>
     </div>
   </div>
@@ -2145,7 +2209,7 @@ textarea.chat-input{
 </h2>
     <p class="lp-rv">Vous en saurez plus sur votre avenir qu'en deux ans à y penser le dimanche soir. Votre prénom suffit pour commencer.</p>
     <div class="lp-rv">
-<button class="lp-btn lp-btn-primary" style="padding:17px 36px;font-size:1.05rem;" onclick="gp('preappel')">Commencer mon entretien →</button>
+<button class="lp-btn lp-btn-primary" style="padding:17px 36px;font-size:1.05rem;" onclick="gp('preappel');_introBoussole()">Commencer mon entretien →</button>
 </div>
     <p class="lp-rv lp-microline">Entretien gratuit · rapport <span class="js-prix"></span> · sans rendez-vous</p>
     <p class="lp-rv lp-microline">Ancrée en Suisse romande, pensée aussi pour les frontaliers : Genève, Vaud, Valais, Fribourg, Neuchâtel, Jura.</p>
@@ -2168,7 +2232,7 @@ textarea.chat-input{
   </div></footer>
 
   
-  <button id="btn-start-float" class="btn-start-float" onclick="gp('preappel')">Commencer →</button>
+  <button id="btn-start-float" class="btn-start-float" onclick="gp('preappel');_introBoussole()">Commencer →</button>
 
 </div></div>
 
@@ -2321,6 +2385,8 @@ textarea.chat-input{
 
       
       <div class="q-entete"><button type="button" id="q-retour" class="q-retour" aria-label="Question précédente" onclick="_retourQuestionnaire()" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg></button><div id="q-reste" class="q-reste"></div></div>
+      
+      <div class="bq-tete" id="q-boussole"><div class="bq-mini" aria-hidden="true"><div class="bq-disque cherche" style="--bq-a:42deg"></div></div><div class="bq-texte"><div class="bq-t1">Calibrer votre boussole</div><div class="bq-t2">Étape 1 sur 3 · ensuite, votre conversation avec Cynthia</div></div></div>
 
       
       <div class="quiz-progress">
@@ -2545,12 +2611,10 @@ textarea.chat-input{
       </div>
       
       
-      <div class="chat-phase-bar" id="chat-phase-bar">
-        <div class="chat-phase-step active" id="phase-step-1"><div class="chat-phase-dot"></div>Vous connaître</div>
-        <div class="chat-phase-sep"></div>
-        <div class="chat-phase-step" id="phase-step-2"><div class="chat-phase-dot"></div>Explorer</div>
-        <div class="chat-phase-sep"></div>
-        <div class="chat-phase-step" id="phase-step-3"><div class="chat-phase-dot"></div>Vos pistes</div>
+      
+      <div class="chat-phase-bar bq-barre" id="chat-phase-bar">
+        <div class="bq-mini" aria-hidden="true"><div class="bq-disque cherche" id="chat-bq" style="--bq-a:30deg"></div><div class="bq-onde" id="chat-bq-onde"></div></div>
+        <div class="bq-texte"><div class="bq-t1" id="chat-bq-t1">Trouver votre nord</div><div class="bq-t2" id="chat-bq-t2">Étape 2 sur 3 · votre conversation avec Cynthia</div><div class="bq-fil" aria-hidden="true"><i class="ok"></i><i id="chat-bq-fil2"><b style="width:33%"></b></i><i id="chat-bq-fil3"></i></div></div>
         <div class="chat-phase-temps" id="chat-phase-temps"><span class="tps-amorce">Encore </span>10 à 20 min</div>
       </div>
       <div class="chat-msgs" id="chat-msgs"></div>
@@ -2691,7 +2755,7 @@ textarea.chat-input{
         <button class="btn-outline" onclick="gp('landing')">← Retour à l'accueil</button>
       </div>
       <div style="text-align:center;margin-top:18px;">
-        <a href="retour.html" target="_blank" rel="noopener" style="font-size:13px;color:var(--c-muted);text-decoration:underline;">Donner mon avis sur ce test (5 min) →</a>
+        <a href="retour.html" target="_blank" rel="noopener" style="font-size:13px;color:var(--c-muted);text-decoration:underline;">Donner mon avis (5 min) →</a>
       </div>
     </div>
   </div>
@@ -3129,6 +3193,14 @@ function _cvUi(state, name, msg){
 function cvReady(name){ _cvUi('ok', name); }
 
 
+
+function _texteDepotCv() {
+  var tactile = false;
+  try { tactile = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches; } catch (e) {}
+  return tactile ? 'Touchez ici pour ajouter votre CV' : 'Glissez votre CV ici ou cliquez';
+}
+try { document.addEventListener('DOMContentLoaded', function () { var t = document.getElementById('uz-text'); if (t && /^Glissez votre CV/.test(t.textContent)) t.textContent = _texteDepotCv(); }); } catch (e) {}
+
 function _resetCv(){
   _cvText = '';
   try { const f = document.getElementById('cv-input'); if (f) f.value = ''; } catch(e){}
@@ -3138,7 +3210,7 @@ function _resetCv(){
   const hint=document.getElementById('uz-hint');
   if(z){ z.style.borderColor=''; z.style.background=''; }
   if(icon) icon.textContent='📄';
-  if(text){ text.textContent='Glissez votre CV ici ou cliquez'; text.style.color=''; }
+  if(text){ text.textContent=_texteDepotCv(); text.style.color=''; }
   if(hint) hint.textContent='PDF, Word · max 5 Mo';
 }
 
@@ -5507,14 +5579,27 @@ function _verifierPucesCvDites(puces) {
   return puces.map(function (p) {
     var s = String(p || ''), i = s.indexOf(':');
     if (i === -1) return s;
-    var tete = s.slice(0, i), items = s.slice(i + 1).replace(/[.]\s*$/, '').split(/,|\set\s/);
+    
+    var tete = s.slice(0, i), corps = s.slice(i + 1).replace(/[.]\s*$/, ''), items = [], cur = '', prof = 0;
+    for (var c = 0; c < corps.length; c++) {
+      var ch = corps[c];
+      if (ch === '(') prof++;
+      else if (ch === ')') prof = Math.max(0, prof - 1);
+      if (prof === 0 && ch === ',') { items.push(cur); cur = ''; continue; }
+      if (prof === 0 && corps.substr(c, 4) === ' et ') { items.push(cur); cur = ''; c += 3; continue; }
+      cur += ch;
+    }
+    items.push(cur);
     var gardes = items.filter(function (it) {
       var ok = _segmentDit(it, racines);
       if (!ok) { try { console.warn('[CYNTH] CV : compétence jamais dite retirée : « ' + it.trim() + ' »'); } catch (e) {} }
       return ok;
     }).map(function (x) { return x.trim(); }).filter(Boolean);
     if (!gardes.length) return '';
-    return tete.trim() + ' : ' + gardes.join(', ') + '.';
+    var res = tete.trim() + ' : ' + gardes.join(', ') + '.';
+    
+    if ((res.match(/\(/g) || []).length !== (res.match(/\)/g) || []).length) return '';
+    return res;
   }).filter(Boolean);
 }
 
@@ -7828,6 +7913,8 @@ function _filRougeHypotheseV3(t) {
   var h = ph.filter(function (p) { return /hypoth/i.test(p); })[0] || ph[ph.length - 1] || '';
   h = h.replace(/^[\s\S]*?\bmon hypoth[eè]se\s*(?:,\s*(?:à corriger|que vous pouvez corriger)\s*,?)?\s*(?::|,?\s*c['’]est que|\s+est que)\s*/i, '')
     .replace(/,?\s*sans (?:vous )?en rendre compte\s*\.?\s*$/i, '.').trim();
+  
+  h = h.replace(/^(?:dans (?:les|ces) deux (?:cas|moments|situations|histoires|r[ée]cits)|dans chacun de (?:ces|vos) (?:deux )?(?:cas|moments|r[ée]cits)|les deux fois|[àa] chaque fois|chaque fois)\s*,?\s*/i, '').trim();
   if (h && !/[.!]$/.test(h)) h += '.';
   return h ? h.charAt(0).toUpperCase() + h.slice(1) : '';
 }
@@ -10489,7 +10576,7 @@ function _apercuRapport(data) {
       + '<span>Où ça recrute</span><span>Par quoi commencer</span></div>';
     if (restants) {
       h += '<div class="apercu-reste">+ ' + restants + ' autres pistes, avec pour chacune '
-        + 'le salaire réel, la voie de formation et son coût</div>';
+        + 'le salaire réel, la voie de formation et son financement</div>';   
     }
     h += '</div>';
   }
@@ -10804,6 +10891,75 @@ function doEndChat() {
     });
 }
 
+
+let _bqNordVu = false;
+function _majBoussoleChat(phase, fini) {
+  const d = document.getElementById('chat-bq');
+  if (!d) return;
+  const a = fini ? 0 : (phase >= 3 ? 8 : phase === 2 ? 18 : 30);
+  d.style.setProperty('--bq-a', a + 'deg');
+  d.classList.toggle('cherche', !fini);
+  const t1 = document.getElementById('chat-bq-t1'), t2 = document.getElementById('chat-bq-t2');
+  const titre = fini ? 'Votre nord est trouvé' : 'Trouver votre nord';
+  const sous = fini ? 'Étape 3 sur 3 · votre rapport est prêt' : 'Étape 2 sur 3 · votre conversation avec Cynthia';
+  if (t1 && t1.textContent !== titre) t1.textContent = titre;
+  if (t2 && t2.textContent !== sous) t2.textContent = sous;
+  const f2 = document.getElementById('chat-bq-fil2'), f3 = document.getElementById('chat-bq-fil3');
+  if (f2 && f2.firstElementChild) f2.firstElementChild.style.width = fini ? '100%' : (Math.min(3, Math.max(1, phase)) * 33) + '%';
+  if (f3) f3.classList.toggle('ok', !!fini);
+  if (fini && !_bqNordVu) {
+    _bqNordVu = true;
+    const o = document.getElementById('chat-bq-onde');
+    if (o) { o.classList.remove('go'); void o.offsetWidth; o.classList.add('go'); }
+  }
+  if (!fini) _bqNordVu = false;
+}
+
+const _BQ_INTRO_KEY = 'cynthia_intro_boussole_vue';
+let _bqIntroMemoire = false;
+function _introDejaVue() {
+  try { if (localStorage.getItem(_BQ_INTRO_KEY) === '1') return true; } catch (e) {}
+  return _bqIntroMemoire;
+}
+function _introBoussole() {
+  try {
+    const el = document.getElementById('bq-intro');
+    if (!el || _introDejaVue()) return;
+    _bqIntroMemoire = true;
+    try { localStorage.setItem(_BQ_INTRO_KEY, '1'); } catch (e) {}
+    el.classList.remove('ferme', 'joue');
+    el.hidden = false;
+    el.scrollTop = 0;
+    document.documentElement.classList.add('bq-ouverte');
+    let reduit = false;
+    try { reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    if (!reduit) { void el.offsetWidth; el.classList.add('joue'); }
+    const go = document.getElementById('bq-go');
+    if (go) { try { go.focus({ preventScroll: true }); } catch (e) {} }
+  } catch (e) {}
+}
+
+function _introBoussoleToucher(ev) {
+  const el = document.getElementById('bq-intro');
+  if (!el || el.hidden) return;
+  if (ev && ev.target && ev.target.closest && ev.target.closest('#bq-go')) return;
+  el.classList.remove('joue');
+}
+function _fermerIntroBoussole() {
+  const el = document.getElementById('bq-intro');
+  if (!el || el.hidden) return;
+  el.classList.add('ferme');
+  document.documentElement.classList.remove('bq-ouverte');
+  setTimeout(function () {
+    el.hidden = true; el.classList.remove('ferme', 'joue');
+    const n = document.getElementById('inp-name');
+    if (n && !n.value) { try { n.focus({ preventScroll: true }); } catch (e) {} }
+  }, 260);
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { const el = document.getElementById('bq-intro'); if (el && !el.hidden) _fermerIntroBoussole(); }
+});
+
 function updatePhaseIndicator() {
   
   
@@ -10811,20 +10967,8 @@ function updatePhaseIndicator() {
   const phase = cynthPhase(userCount, synthesisFired);
   chatProfile.currentPhase = phase;
 
-  const steps = [1, 2, 3].map(i => document.getElementById('phase-step-' + i));
-  if (!steps[0]) return;
-
-  steps.forEach((el, idx) => {
-    if (!el) return;
-    const stepNum = idx + 1;
-    if (stepNum < phase) {
-      el.className = 'chat-phase-step done';
-    } else if (stepNum === phase) {
-      el.className = 'chat-phase-step active';
-    } else {
-      el.className = 'chat-phase-step';
-    }
-  });
+  
+  try { _majBoussoleChat(phase, synthesisFired); } catch (e) {}
 
   
   const temps = document.getElementById('chat-phase-temps');
@@ -11066,6 +11210,9 @@ function _qPuces() {
     var r = qa.v3 || {};
     var cantonUtile = !qa.ancrage || qa.ancrage === 'resident' || qa.ancrage === 'frontalier';
     if (cantonUtile) l.push(['canton', r.canton ? (_V3_CANTONS[r.canton] || r.canton) : 'Canton', !!r.canton]);
+    
+    var _dipC = { aucun: 'Sans diplôme', cfc_afp: 'CFC ou AFP', maturite: 'Maturité', es_hes: 'ES ou HES', universite: 'Université', autre: 'Autre diplôme' };
+    l.push(['diplome', r.diplome ? (_dipC[r.diplome] || 'Diplôme') : 'Diplôme', !!r.diplome]);
     var nL = (r.langues || []).length;
     l.push(['langues', nL ? (nL === 1 ? '1 langue' : nL + ' langues') : 'Langues', !!nL]);
     l.push(['revenu', r.revenuMin ? _Q_REVENU_COURT[r.revenuMin] : 'Revenu', !!r.revenuMin]);
@@ -11207,6 +11354,9 @@ function _qFaitsTransition() {
   var lieu = [];
   if (f.canton) lieu.push(_majuscule(f.canton));
   if (f.dureeSuisse) lieu.push(f.dureeSuisse === 'depuis toujours' ? 'en Suisse depuis toujours' : f.dureeSuisse + ' en Suisse');
+  
+  if (r.diplome && typeof _V3_DIPLOMES !== 'undefined' && _V3_DIPLOMES[r.diplome] && r.diplome !== 'autre')
+    lieu.push(r.diplome === 'aucun' ? 'sans diplôme' : 'diplôme : ' + _V3_DIPLOMES[r.diplome]);
   if (f.langues) lieu.push(f.langues);
   if (lieu.length) faits.push(_majuscule(lieu.join(', ')) + '.');
   else if (qa.ancrage) faits.push(_Q_ANCRAGE_PHRASE[qa.ancrage] + '.');
@@ -17781,5 +17931,22 @@ async function _transcrireAudio(blob) {
   </div>
 </div>
 
+
+<div class="bq-intro" id="bq-intro" hidden role="dialog" aria-modal="true" aria-labelledby="bq-intro-titre" onclick="_introBoussoleToucher(event)">
+  <div class="bq-scene">
+    <div class="bq-grand" aria-hidden="true">
+      <svg class="bq-etoile" viewBox="-50 -50 100 100"><path d="M0,-46 C6,-9 9,-6 46,0 C9,6 6,9 0,46 C-6,9 -9,6 -46,0 C-9,-6 -6,-9 0,-46 Z" fill="#5DCAA5"/></svg>
+      <div class="bq-disque"></div>
+    </div>
+    <h2 class="bq-titre" id="bq-intro-titre">Avant de trouver votre nord, <em>calibrons votre boussole.</em></h2>
+    <p class="bq-sous">Quelques questions rapides, puis Cynthia vous aide à trouver votre direction.</p>
+    <ol class="bq-etapes">
+      <li><b>1</b><span>Calibrer votre boussole<small>Une quinzaine de questions · environ 4 min</small></span></li>
+      <li><b>2</b><span>Trouver votre nord<small>Votre conversation avec Cynthia · 20 min</small></span></li>
+      <li><b>3</b><span>Votre carte<small>Votre rapport : métiers, salaires, plan</small></span></li>
+    </ol>
+    <button type="button" class="bq-go" id="bq-go" onclick="_fermerIntroBoussole()">C'est parti →</button>
+  </div>
+</div>
 </body>
 </html>
