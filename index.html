@@ -7372,7 +7372,10 @@ function _echeanceApplicableV3() {
 function _faitsQuestionnaireV3() {
   var r = _repV3(), f = {};
   if (!r) return f;
-  if (r.canton) f.canton = _V3_CANTONS[r.canton] || r.canton;
+  
+  var _front = false; try { _front = quizAnswers.ancrage === 'frontalier'; } catch (e) {}
+  if (r.canton && _front) f.cantonTravail = _V3_CANTONS[r.canton] || r.canton;
+  else if (r.canton) f.canton = _V3_CANTONS[r.canton] || r.canton;
   if (r.dureeSuisse) f.dureeSuisse = _V3_DUREES[r.dureeSuisse] || r.dureeSuisse;
   if (r.diplome) {
     f.diplome = _V3_DIPLOMES[r.diplome] || r.diplome;
@@ -7578,6 +7581,7 @@ function _resumeFicheParCodeV3() {
   var postes = _postesCitesV3();
   if (postes.length) l.push('votre parcours (' + postes.slice(0, 6).join(', ') + ')');
   if (f.canton) l.push('canton : ' + f.canton);
+  if (f.cantonTravail) l.push('canton de travail : ' + f.cantonTravail);
   if (f.diplome) l.push('diplôme : ' + f.diplome + (f.diplomeOu === 'ailleurs' ? ", obtenu hors de Suisse" : (f.diplomeOu === 'suisse' ? ', obtenu en Suisse' : '')));
   if (f.langues) l.push('langues : ' + f.langues);
   if (f.revenuMin) l.push('revenu minimum : ' + f.revenuMin);
@@ -7657,7 +7661,7 @@ var _MOTS_FAIT_CONNU_V3 = {
 };
 function _questionSurFaitConnuV3(reply) {
   var f = _faitsQuestionnaireV3();
-  var connus = { canton: !!f.canton, langues: !!f.langues, revenu: !!(f.revenuMin || f.revenuNsp), echeance: !!f.echeance, diplomes: !!f.diplome, formation: !!f.formation,
+  var connus = { canton: !!(f.canton || f.cantonTravail), langues: !!f.langues, revenu: !!(f.revenuMin || f.revenuNsp), echeance: !!f.echeance, diplomes: !!f.diplome, formation: !!f.formation,
     freins: !!((typeof quizAnswers !== 'undefined' && quizAnswers && [].concat(quizAnswers.frein || []).length)) };
   var ph = String(reply || '').split(/(?<=[.!?…])\s+/).filter(function (p) { return /\?/.test(p); });
   for (var s in connus) {
@@ -8800,7 +8804,7 @@ function _ficheV3() {
   var canton = f.canton || null;
   if (!canton) { try { canton = _cantonDeLaPersonne(); } catch (e) {} }
   var anc = (typeof quizAnswers !== 'undefined' && quizAnswers) ? quizAnswers.ancrage : null;
-  ajoute('Canton', canton ? canton : (anc === 'frontalier' ? 'frontalier·ère (vit hors de Suisse)' : (anc === 'etranger' ? 'vit hors de Suisse' : null)));
+  ajoute('Canton', canton ? canton : (anc === 'frontalier' ? 'frontalier·ère (vit hors de Suisse' + (f.cantonTravail ? ', travaille ou veut travailler dans le canton de ' + f.cantonTravail : '') + ')' : (anc === 'etranger' ? 'vit hors de Suisse' : null)));
   ajoute('Durée en Suisse', f.dureeSuisse || _phraseQui(function (n) { return _contientMot(n, 'suisse') && /\s(depuis|il y a|arrive|arrivee|installe|installee)\s/.test(n); }));
   var postes = _postesCitesV3();
   ajoute('Parcours cité', postes.length ? postes.slice(0, 8).join(', ') : null);
@@ -9199,6 +9203,9 @@ function _afficherEcranV3(id) {
   var e = document.getElementById(id); if (e) e.classList.add('active');
   var anc = quizAnswers.ancrage;
   var bc = document.getElementById('v3-bloc-canton'); if (bc) bc.style.display = (anc === 'resident' || anc === 'frontalier') ? '' : 'none';
+  var bct = bc && bc.querySelector('.qs-title');
+  if (bct) { var tq = anc === 'frontalier' ? 'Dans quel canton travaillez-vous, ou voulez-vous travailler ?' : 'Quel est votre canton ?';
+    if (bct.textContent.replace(/\u00A0/g, ' ') !== tq) bct.textContent = tq; }
   var bd = document.getElementById('v3-bloc-duree'); if (bd) bd.style.display = (anc === 'resident') ? '' : 'none';
   var be = document.getElementById('v3-bloc-echeance'); if (be) be.style.display = _echeanceApplicableV3() ? '' : 'none';
   
@@ -11236,6 +11243,10 @@ function _qEcoute(id) {
   }
   var vs = (id === 'qs-v3-situation') ? _v3BlocsVisibles('situation') : [];
   var apresCanton = vs.indexOf('v3-bloc-canton') !== -1 && vs[vs.indexOf('v3-bloc-canton') + 1] === _v3BlocCourant.situation;
+  if (apresCanton && qa.v3 && qa.v3.canton && qa.ancrage === 'frontalier') {
+    if (!_V3_CANTONS[qa.v3.canton] || qa.v3.canton === 'autre') return null;
+    return [_V3_CANTONS[qa.v3.canton], _V3_CANTONS[qa.v3.canton] + " : c'est là que je regarderai les métiers et les salaires. Pour les démarches, je tiendrai compte du fait que vous vivez hors de Suisse."];
+  }
   if (apresCanton && qa.v3 && qa.v3.canton && _Q_GUICHETS[qa.v3.canton]) {
     var g = null; try { g = _ressourceParId(_Q_GUICHETS[qa.v3.canton]); } catch (e) {}
     if (!g || !g.nom) return null;
@@ -11353,6 +11364,7 @@ function _qFaitsTransition() {
   }
   var lieu = [];
   if (f.canton) lieu.push(_majuscule(f.canton));
+  if (f.cantonTravail) lieu.push('travail visé : ' + f.cantonTravail);
   if (f.dureeSuisse) lieu.push(f.dureeSuisse === 'depuis toujours' ? 'en Suisse depuis toujours' : f.dureeSuisse + ' en Suisse');
   
   if (r.diplome && typeof _V3_DIPLOMES !== 'undefined' && _V3_DIPLOMES[r.diplome] && r.diplome !== 'autre')
@@ -11597,6 +11609,7 @@ function _buildQuizContext() {
   try {
     var _f3 = (typeof _faitsQuestionnaireV3 === 'function') ? _faitsQuestionnaireV3() : {};
     if (_f3.canton) lines.push("Canton (questionnaire) : " + _f3.canton);
+    if (_f3.cantonTravail) lines.push("Canton de travail vise (questionnaire ; frontalier, vit hors de Suisse, ce n'est PAS son canton de residence) : " + _f3.cantonTravail);
     if (_f3.dureeSuisse) lines.push("En Suisse depuis (questionnaire) : " + _f3.dureeSuisse);
     if (_f3.diplome) lines.push("Diplome le plus eleve (questionnaire) : " + _f3.diplome + (_f3.diplomeOu === 'ailleurs' ? ", obtenu hors de Suisse" : (_f3.diplomeOu === 'suisse' ? ", obtenu en Suisse" : "")));
     if (_f3.langues) lines.push("Langues (questionnaire) : " + _f3.langues);
