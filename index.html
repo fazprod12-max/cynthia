@@ -2561,10 +2561,10 @@ hote._histoire={etat:()=>({t:t,joue:joue,idx:idx,duree:DUREE}),rejouer:rejouer,p
       
       <a href="ressources.html">Ressources et sources</a>
       
-      <a role="button" tabindex="0" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">Confidentialité · nLPD &amp; RGPD</a>
-      <a role="button" tabindex="0" onclick="showModal('cgu')" onkeydown="if(event.key==='Enter')showModal('cgu')">Conditions d'utilisation</a>
-      <a role="button" tabindex="0" onclick="showModal('cgv')" onkeydown="if(event.key==='Enter')showModal('cgv')">Conditions de vente</a>
-      <a role="button" tabindex="0" onclick="showModal('contact')" onkeydown="if(event.key==='Enter')showModal('contact')">Contact</a>
+      <a href="confidentialite.html" onclick="event.preventDefault();showModal('confidentialite')">Confidentialité · nLPD &amp; RGPD</a>
+      <a href="cgu.html" onclick="event.preventDefault();showModal('cgu')">Conditions d'utilisation</a>
+      <a href="cgv.html" onclick="event.preventDefault();showModal('cgv')">Conditions de vente</a>
+      <a href="contact.html" onclick="event.preventDefault();showModal('contact')">Contact</a>
     </div>
     <div>© 2026 Cynth.IA · Genève, Suisse</div>
   </div></footer>
@@ -2684,7 +2684,7 @@ hote._histoire={etat:()=>({t:t,joue:joue,idx:idx,duree:DUREE}),rejouer:rejouer,p
         
         <div style="margin-top:10px;padding:10px 14px;background:var(--c-emerald-soft);border:1px solid transparent;border-radius:10px;font-size:11.5px;color:var(--c-muted);line-height:1.6;">
           🔒 Votre CV est lu directement dans votre navigateur pour personnaliser l'entretien : le fichier lui-même n'est jamais envoyé ni stocké sur nos serveurs. Seul le texte extrait est transmis à l'IA pour l'analyse. <strong style="color:var(--c-emerald-d);">Il ne sert pas à entraîner l'IA.</strong>
-          <a role="button" tabindex="0" style="display:inline-block;margin-top:6px;color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;font-weight:600;" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">Lire la politique de confidentialité</a>
+          <a style="display:inline-block;margin-top:6px;color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;font-weight:600;" href="confidentialite.html" onclick="event.preventDefault();showModal('confidentialite')">Lire la politique de confidentialité</a>
         </div>
       </div>
       <div class="pa-guarantees">
@@ -2700,9 +2700,9 @@ hote._histoire={etat:()=>({t:t,joue:joue,idx:idx,duree:DUREE}),rejouer:rejouer,p
       
       <p style="margin-top:14px;font-size:11.5px;color:var(--c-muted);text-align:center;line-height:1.6;">
         En continuant, vous acceptez nos
-        <a role="button" tabindex="0" style="color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;" onclick="showModal('cgu')" onkeydown="if(event.key==='Enter')showModal('cgu')">conditions d'utilisation</a>
+        <a style="color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;" href="cgu.html" onclick="event.preventDefault();showModal('cgu')">conditions d'utilisation</a>
         et notre
-        <a role="button" tabindex="0" style="color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;" onclick="showModal('confidentialite')" onkeydown="if(event.key==='Enter')showModal('confidentialite')">politique de confidentialité</a>.
+        <a style="color:var(--c-emerald-d);text-decoration:underline;cursor:pointer;" href="confidentialite.html" onclick="event.preventDefault();showModal('confidentialite')">politique de confidentialité</a>.
       </p>
     </div>
   </div>
@@ -5149,7 +5149,7 @@ var RESSOURCES = [
     public: ['neuchatel'], categorie: 'guichet-cantonal', verifie: true, verifie_le: '2026-09-25',
     source: 'ne.ch, vérifié le 25.09.2026 (URL mise à jour le 25.09.2026 : l\'ancienne adresse ne.ch/autorites/DFDS/... redirige encore aujourd\'hui vers celle-ci mais pourrait cesser de le faire, on pointe directement sur l\'adresse actuelle)' },
   { id: 'guichet-jura', nom: 'COSP (Centre d\'orientation scolaire et professionnelle), Delémont',
-    url: 'http://www.jura.ch/cos',
+    url: 'https://www.jura.ch/cos',
     ce_que_fait: 'Conseil confidentiel et gratuit sur le choix d\'un métier ou d\'une formation.',
     public: ['jura'], categorie: 'guichet-cantonal', verifie: true, verifie_le: '2026-10-13',
     source: 'jura.ch, vérifié le 13.10.2026 (l\'URL posée le 25.09.2026 rendait encore 404 ; nouvelle adresse confirmée ouverte, titre "Orientation scolaire et professionnelle et psychologie scolaire - République et Canton du Jura")' },
