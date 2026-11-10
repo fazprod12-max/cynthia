@@ -3441,7 +3441,8 @@ const CONFIG = {
   
   PRIX_LANCEMENT: 59.00,
   FIN_LANCEMENT: '2026-12-31',
-  PRIX_APRES_LANCEMENT: 59.00,   
+  
+  PRIX_APRES_LANCEMENT: 79.00,
   
   OFFRE_CONSEILLER_ACTIVE: false,
   PRIX_CONSEILLER: 129.00,
@@ -3499,8 +3500,10 @@ function _majBlocPrix() {
     var f = CONFIG.FIN_LANCEMENT_DATE;
     elTag.style.display = ''; elTag.textContent = 'PRIX DE LANCEMENT';
     elAmount.textContent = _prixFmt(prix);
+    
+    var suite = CONFIG.PRIX_APRES_LANCEMENT > prix ? ', puis ' + _prixFmt(CONFIG.PRIX_APRES_LANCEMENT) : '';
     elSub.textContent = "Prix de lancement jusqu'au " + f.getDate() + ' ' + mois[f.getMonth()] + ' ' + f.getFullYear()
-      + '. Paiement unique, sans abonnement. Vous gardez le rapport.';
+      + suite + '. Paiement unique, sans abonnement. Vous gardez le rapport.';
   } else {
     elTag.style.display = 'none'; elTag.textContent = '';
     elAmount.textContent = _prixFmt(prix);
