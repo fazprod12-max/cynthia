@@ -16283,7 +16283,175 @@ function _buildTemoignage(m) {
 
 function printRapport() {
   const frame = document.getElementById('rapport-frame');
+  
+  try { if (_imprimerRapportPagine(frame)) return; } catch(e) { console.warn('[CYNTH] PDF paginé indisponible', e); }
   try { frame.contentWindow.print(); } catch(e) { window.print(); }
+}
+
+
+function _imprimerRapportPagine(frame) {
+  const src = frame && frame.contentDocument && frame.contentDocument.documentElement;
+  if (!src || !frame.contentDocument.querySelector('.doc')) return false;
+  const ancien = document.getElementById('rapport-impression'); if (ancien) ancien.remove();
+  const ifr = document.createElement('iframe');
+  ifr.id = 'rapport-impression';
+  ifr.setAttribute('aria-hidden', 'true');
+  ifr.style.cssText = 'position:fixed;left:-12000px;top:0;width:794px;height:1123px;border:0;opacity:0;pointer-events:none';
+  document.body.appendChild(ifr);
+  const nettoyer = () => { try { ifr.remove(); } catch (e) {} };
+  try {
+    const d = ifr.contentDocument;
+    
+    const copie = src.cloneNode(true);
+    Array.prototype.forEach.call(copie.querySelectorAll('script'), s => s.remove());
+    d.open(); d.write('<!doctype html>' + copie.outerHTML); d.close();
+    _paginerRapportDoc(d);
+  } catch (e) { nettoyer(); throw e; }
+  const imprimer = () => {
+    try { ifr.contentWindow.focus(); ifr.contentWindow.print(); }
+    catch (e) { nettoyer(); try { frame.contentWindow.print(); } catch (e2) { window.print(); } return; }
+    setTimeout(nettoyer, 60000);
+  };
+  const polices = ifr.contentDocument.fonts && ifr.contentDocument.fonts.ready;
+  if (polices && typeof polices.then === 'function') {
+    
+    polices.then(() => { try { _paginerRapportDoc(ifr.contentDocument); } catch (e) {} imprimer(); }, imprimer);
+  } else imprimer();
+  return true;
+}
+
+function _paginerRapportDoc(d) {
+  const W = '210mm', H = '296mm';
+  const SKIP = /(^|\s)(divider|fbk|suiv)(\s|$)/;
+  const GLUE = /(^|\s)(minilabel|sec-sub|partie-num|partie-titre|mtete|mpills|mhead|ap-titre|partie)(\s|$)/;
+  const NOSPLIT = /(^|\s)(cover|callout|why-card|reserve|journee-type|marqs|firststep|use|engagement|msgfin|lead-quote|comparatif|ap-fil|ap-duo|item|card|trait|res)(\s|$)/;
+  const classe = el => (typeof el.className === 'string' ? el.className : '');
+  const estTitre = el => /^H[1-4]$/.test(el.tagName) || GLUE.test(classe(el));
+  if (!d.getElementById('pg-style')) {
+    const s = d.createElement('style'); s.id = 'pg-style';
+    s.textContent =
+      '#pg{position:absolute;left:0;top:0;width:' + W + ';font-size:10.6pt;line-height:1.55;background:#fff}' +
+      '.pg-page{width:' + W + ';height:' + H + ';box-sizing:border-box;padding:13mm 16mm 13mm;position:relative;overflow:hidden;background:#fff}' +
+      '.pg-page.pg-longue{height:auto;min-height:' + H + '}' +
+      '.pg-page.pg-cover{padding:0}.pg-page.pg-cover>.pg-in>.cover{height:' + H + ';min-height:0!important;box-sizing:border-box;padding:38mm 20mm;display:flex;flex-direction:column;justify-content:center}' +
+      '.pg-in{height:100%}' +
+      
+      '#pg .divider{display:none}#pg .grid2,#pg .mgrid,#pg .res{display:block!important}#pg .grid2>div,#pg .mgrid>div,#pg .res>div{margin-bottom:9mm}' +
+      '#pg .metier{box-shadow:none;border:1px solid var(--line)}#pg a{text-decoration:none;color:inherit}' +
+      '.pg-in .pad{padding:0!important;margin:0 0 7mm}' +
+      '.pg-in>*:first-child,.pg-in .pad>*:first-child{margin-top:0!important}' +
+      '.pg-in .metier{margin-top:0;margin-bottom:5mm}' +
+      '.pg-in .marq-v{font-size:13px!important;line-height:1.3!important}.pg-in .marq{padding:12px!important}' +
+      '.pg-in .metier.pg-suite{border-top-left-radius:0!important;border-top-right-radius:0!important;padding-top:14px!important}' +
+      '.pg-in .metier.pg-coupe{border-bottom-left-radius:0!important;border-bottom-right-radius:0!important;margin-bottom:0!important}' +
+      '.pg-in footer{padding:2mm 0 0!important;margin:0!important;font-size:8px!important;line-height:1.35!important}' +
+      '.pg-mention{position:absolute;left:20mm;right:20mm;bottom:10mm;padding:0!important;text-align:left!important}' +
+      '.pg-mention,.pg-mention *{color:rgba(255,255,255,.55)!important;font-size:8px!important;line-height:1.4!important;margin:0!important}' +
+      '.pg-pied{position:absolute;left:16mm;right:16mm;bottom:5.5mm;display:flex;justify-content:space-between;font:9px/1 Inter,Arial,sans-serif;color:#8a948f}' +
+      '@media print{@page{size:A4;margin:0}html,body{margin:0!important;padding:0!important;background:#fff!important}' +
+      'body>*:not(#pg){display:none!important}#pg{position:static}' +
+      '.pg-page{break-after:page;page-break-after:always}.pg-page:last-child{break-after:auto;page-break-after:auto}}';
+    d.head.appendChild(s);
+  }
+  const vieux = d.getElementById('pg'); if (vieux) vieux.remove();
+  const docEl = d.querySelector('.doc');
+  if (!docEl) throw new Error('rapport absent');
+  const hote = d.createElement('div'); hote.id = 'pg'; d.body.appendChild(hote);
+  const mesure = d.createElement('div'); mesure.className = 'pg-page'; mesure.style.height = 'auto';
+  const mIn = d.createElement('div'); mIn.className = 'pg-in'; mIn.style.height = 'auto'; mesure.appendChild(mIn);
+  const copie = docEl.cloneNode(true); mIn.appendChild(copie); hote.appendChild(mesure);
+  const essai = d.createElement('div'); essai.className = 'pg-page'; const essaiIn = d.createElement('div'); essaiIn.className = 'pg-in';
+  essai.appendChild(essaiIn); hote.appendChild(essai);
+  const utile = essaiIn.clientHeight; essai.remove();
+  if (!utile) throw new Error('mesure impossible');
+
+  
+  const atomes = [];
+  (function atomiser(liste, chaine) {
+    Array.prototype.forEach.call(liste, el => {
+      const cls = classe(el);
+      if (el.nodeType !== 1 || SKIP.test(cls) || /^(STYLE|SCRIPT|BUTTON)$/.test(el.tagName) || el.id === 'clarte-apres') return;
+      const h = el.getBoundingClientRect().height;
+      const enfants = Array.prototype.filter.call(el.children, c => !/^(STYLE|SCRIPT)$/.test(c.tagName));
+      const texteDirect = Array.prototype.some.call(el.childNodes, n => n.nodeType === 3 && n.textContent.trim());
+      if (h > utile * 0.28 && enfants.length > 1 && !NOSPLIT.test(cls) && !texteDirect && !/^(P|H\d|UL|OL|TABLE)$/.test(el.tagName)) {
+        atomiser(enfants, chaine.concat([el]));
+      } else if (h > 0) atomes.push({ el: el, chaine: chaine });
+    });
+  })(copie.children, []);
+  atomes.forEach(a => { if (a.el.parentNode) a.el.parentNode.removeChild(a.el); });
+  mesure.remove();
+
+  
+  const groupes = []; let g = [];
+  atomes.forEach(a => { g.push(a); if (!estTitre(a.el)) { groupes.push(g); g = []; } });
+  if (g.length) groupes.push(g);
+
+  
+  const pages = []; let page, pin, ouverts = [], crees = [];
+  const nouvellePage = () => {
+    page = d.createElement('div'); page.className = 'pg-page';
+    pin = d.createElement('div'); pin.className = 'pg-in'; page.appendChild(pin);
+    hote.appendChild(page); pages.push(page); ouverts = [];
+  };
+  const parentPour = chaine => {
+    let i = 0;
+    while (i < ouverts.length && i < chaine.length && ouverts[i].src === chaine[i]) i++;
+    ouverts = ouverts.slice(0, i);
+    let parent = i ? ouverts[i - 1].clone : pin;
+    for (; i < chaine.length; i++) {
+      const c = chaine[i].cloneNode(false);
+      if (chaine[i].__pgOuvert) c.classList.add('pg-suite');
+      crees.push({ src: chaine[i], avant: !!chaine[i].__pgOuvert, clone: c });
+      chaine[i].__pgOuvert = true;
+      parent.appendChild(c); ouverts.push({ src: chaine[i], clone: c }); parent = c;
+    }
+    return parent;
+  };
+  const deborde = () => pin.scrollHeight > pin.clientHeight + 1;
+  const poser = grp => { crees = []; grp.forEach(a => parentPour(a.chaine).appendChild(a.el)); };
+  const reste = () => pin.clientHeight - pin.scrollHeight;
+
+  nouvellePage();
+  groupes.forEach(grp => {
+    const premier = grp[0];
+    const cls0 = classe(premier.el);
+    if (premier.el.tagName === 'FOOTER' && pages[0] && pages[0].classList.contains('pg-cover')) {
+      premier.el.classList.add('pg-mention'); pages[0].appendChild(premier.el); return;
+    }
+    if (/(^|\s)cover(\s|$)/.test(cls0)) {
+      if (pin.children.length) nouvellePage();
+      page.classList.add('pg-cover'); pin.appendChild(premier.el); nouvellePage(); return;
+    }
+    const estPartie = /(^|\s)partie(\s|$)/.test(cls0) || premier.chaine.some(x => /(^|\s)partie(\s|$)/.test(classe(x)));
+    if (estPartie && pin.children.length && reste() < pin.clientHeight * 0.5) nouvellePage();
+    const pageVide = !pin.children.length;
+    const ouvertsAvant = ouverts.slice();
+    poser(grp);
+    if (!deborde()) return;
+    if (pageVide) { page.classList.add('pg-longue'); nouvellePage(); return; }
+    grp.forEach(a => a.el.remove());
+    crees.slice().reverse().forEach(c => { c.clone.remove(); c.src.__pgOuvert = c.avant; });
+    ouverts = ouvertsAvant;
+    ouverts.forEach(o => { if (premier.chaine.indexOf(o.src) !== -1) o.clone.classList.add('pg-coupe'); });
+    nouvellePage();
+    poser(grp);
+    if (deborde()) { page.classList.add('pg-longue'); nouvellePage(); }
+  });
+  pages.forEach(p => { if (!p.classList.contains('pg-cover') && !p.querySelector('.pg-in').children.length) p.remove(); });
+
+  
+  const finales = Array.prototype.slice.call(hote.querySelectorAll('.pg-page'));
+  const h1 = copie.querySelector('.cover h1') || (pages[0] && pages[0].querySelector('h1'));
+  const prenom = h1 ? h1.textContent.trim() : '';
+  finales.forEach((p, i) => {
+    if (p.classList.contains('pg-cover')) return;
+    const f = d.createElement('div'); f.className = 'pg-pied';
+    const g1 = d.createElement('span'); g1.textContent = 'Cynth.IA · Rapport d’orientation' + (prenom && prenom !== 'Vous' ? ' · ' + prenom : '');
+    const g2 = d.createElement('span'); g2.textContent = (i + 1) + ' / ' + finales.length;
+    f.appendChild(g1); f.appendChild(g2); p.appendChild(f);
+  });
+  return finales.length;
 }
 
 function closeRapportOverlay() {
