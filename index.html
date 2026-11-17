@@ -3138,7 +3138,8 @@ var _URL_PARAMS = (function () {
     modele:        p.get('modele'),         
     modeleRapport: p.get('modeleRapport'),
     testToken:     p.get('testToken'),      
-    entretien:     p.get('entretien')       
+    entretien:     p.get('entretien'),      
+    utm_source:    p.get('utm_source')      
   };
 })();
 if (location.search) { history.replaceState(null, '', location.pathname + location.hash); }
@@ -3684,7 +3685,7 @@ function showModal(type){
       <p>Les notes de clarté que nous vous demandons avant l'entretien, après votre rapport, et dans la relance à 3 mois (voir ci-dessous) sont conservées <strong>3 ans</strong>, sous forme de nombres agrégés : c'est une mesure de preuve dans la durée, pas une donnée qu'il faudrait effacer, puisqu'elle ne peut être reliée à personne une fois votre onglet fermé.</p>
 
       <h4>La seule chose que nous comptons</h4>
-      <p>Nous enregistrons des totaux anonymes pour savoir si le service fonctionne : combien de conversations ont démarré dans la journée, combien sont allées jusqu'au bout, combien de rapports ont été produits, et en combien de temps. Ce sont des nombres, rien d'autre. Aucun identifiant, aucun cookie de mesure, aucun mot de votre conversation, aucune adresse IP conservée. Il nous est donc impossible de savoir qui a fait quoi, ni de relier deux visites entre elles. Nous saurons « douze rapports aujourd'hui », jamais « le vôtre ».</p>
+      <p>Nous enregistrons des totaux anonymes pour savoir si le service fonctionne : combien de visites le site a reçues et d'où elles viennent (seulement le nom du site d'où vous venez, par exemple LinkedIn ou Google, jamais la page précise), combien de conversations ont démarré dans la journée, combien sont allées jusqu'au bout, combien de rapports ont été produits, et en combien de temps. Ce sont des nombres, rien d'autre. Aucun identifiant, aucun cookie de mesure, aucun mot de votre conversation, aucune adresse IP conservée. Il nous est donc impossible de savoir qui a fait quoi, ni de relier deux visites entre elles. Nous saurons « douze rapports aujourd'hui », jamais « le vôtre ».</p>
       <p>Une exception ciblée, à ce principe : avant l'entretien, puis une fois votre rapport ouvert, nous vous demandons sur dix à quel point vous voyez clair sur votre direction professionnelle. Pour savoir si ça progresse entre les deux, ces deux notes précises portent un identifiant tiré au hasard, sans lien avec vous : pas votre prénom, pas votre email, pas la référence de votre rapport. Il sert uniquement à savoir que les deux notes viennent de la même visite, et il disparaît avec votre onglet. La question posée dans la relance à 3 mois, elle, n'est reliée à rien du tout : c'est volontaire, pour rester la mesure la plus honnête des trois.</p>
 
       <h4>Ce qui reste sur votre appareil</h4>
@@ -10856,6 +10857,32 @@ function _compter(type, secondes) {
     }).catch(function(){});
   } catch (e) {  }
 }
+
+
+function _sourceVisite(referrer, search) {
+  var utm = '';
+  try { utm = (new URLSearchParams(search || '').get('utm_source') || '').toLowerCase(); } catch (e) {}
+  var hote = '';
+  try { hote = referrer ? new URL(referrer).hostname.toLowerCase() : ''; } catch (e) {}
+  var nom = utm || hote;
+  if (!nom || /(^|\.)cynthia-orientation\.ch$/.test(nom)) return 'direct';
+  if (/linkedin|(^|\.)lnkd\.in$/.test(nom)) return 'linkedin';
+  if (/facebook|(^|\.)fb\.(me|com)$/.test(nom)) return 'facebook';
+  if (/(^|\.)google\./.test(nom) || nom === 'google') return 'google';
+  return 'autre';
+}
+function _compterVisite() {
+  try {
+    if (!/(^|\.)cynthia-orientation\.ch$/.test(location.hostname)) return;
+    try { if (sessionStorage.getItem('cyn_visite')) return; sessionStorage.setItem('cyn_visite', '1'); }
+    catch (e) { if (window._cynVisiteFaite) return; window._cynVisiteFaite = true; }
+    _compter('visite');
+    
+    var utm = (typeof _URL_PARAMS !== 'undefined' && _URL_PARAMS.utm_source) ? '?utm_source=' + encodeURIComponent(_URL_PARAMS.utm_source) : location.search;
+    _compter('src_' + _sourceVisite(document.referrer, utm));
+  } catch (e) {  }
+}
+document.addEventListener('DOMContentLoaded', _compterVisite);
 
 
 
