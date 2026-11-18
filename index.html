@@ -10844,11 +10844,12 @@ function confirmEndChat() {
 }
 
 
-function _compter(type, secondes) {
+function _compter(type, secondes, src) {
   try {
     if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) return;
     var corps = { type: type };
     if (typeof secondes === 'number' && isFinite(secondes)) corps.s = Math.round(secondes);
+    if (src) corps.src = src;
     fetch(GROQ_PROXY_URL.replace(/\/+$/, '') + '/evt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -10876,10 +10877,10 @@ function _compterVisite() {
     if (!/(^|\.)cynthia-orientation\.ch$/.test(location.hostname)) return;
     try { if (sessionStorage.getItem('cyn_visite')) return; sessionStorage.setItem('cyn_visite', '1'); }
     catch (e) { if (window._cynVisiteFaite) return; window._cynVisiteFaite = true; }
-    _compter('visite');
     
     var utm = (typeof _URL_PARAMS !== 'undefined' && _URL_PARAMS.utm_source) ? '?utm_source=' + encodeURIComponent(_URL_PARAMS.utm_source) : location.search;
-    _compter('src_' + _sourceVisite(document.referrer, utm));
+    
+    _compter('visite', null, _sourceVisite(document.referrer, utm));
   } catch (e) {  }
 }
 document.addEventListener('DOMContentLoaded', _compterVisite);
