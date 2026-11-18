@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Votre avis sur Cynth.IA</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230E2A24'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAF6F0; --ink:#0E2A24; --muted:#5C6B64;
+  --emerald:#1FB488; --emerald-d:#12876A; --emerald-soft:#E7F4EE;
+  --coral:#FF6F5E; --coral-soft:#FFE9E4; --gold:#E9B44C; --line:#E8E1D6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--cream);color:var(--ink);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 0 60px;
+}
+.top{background:linear-gradient(150deg,#0E2A24,#134034);color:var(--cream);padding:36px 20px 40px}
+.top .in,.carte{max-width:560px;margin:0 auto}
+.brand{font-family:'Space Grotesk';font-weight:700;font-size:1.02rem;margin-bottom:20px;display:inline-block;color:var(--cream);text-decoration:none}
+.brand .ia{color:#3EE0AE}
+.top h1{font-family:'Space Grotesk';font-weight:600;font-size:clamp(1.5rem,6vw,2rem);line-height:1.2;letter-spacing:-.02em;margin-bottom:10px}
+.top p{font-size:1rem;opacity:.9}
+.carte{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px 20px;margin:-20px 16px 0;position:relative}
+@media(min-width:600px){.carte{margin:-20px auto 0;padding:30px 28px}}
+.bloc{margin-bottom:24px}
+.lab{display:block;font-weight:600;font-size:1rem;margin-bottom:10px}
+.sub{font-size:.88rem;color:var(--muted);margin:-6px 0 10px}
+.etoiles{display:flex;gap:6px}
+.etoiles button{
+  width:48px;height:48px;border:0;background:none;cursor:pointer;padding:4px;border-radius:10px;
+  color:#D9D1C4;font-size:2.1rem;line-height:1;transition:color .15s,transform .15s;
+}
+.etoiles button.on{color:var(--gold)}
+.etoiles button:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}
+.etoiles button:active{transform:scale(.92)}
+.note-txt{font-size:.88rem;color:var(--muted);margin-top:6px;min-height:1.4em}
+textarea,input[type=text]{
+  width:100%;font-family:inherit;font-size:16px;color:var(--ink);
+  background:#FCFAF7;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;
+}
+textarea{min-height:110px;line-height:1.5;resize:vertical}
+textarea:focus,input:focus{outline:none;border-color:var(--emerald);background:#fff}
+.accord{display:flex;gap:12px;align-items:flex-start;font-size:.95rem;cursor:pointer;
+  background:var(--emerald-soft);border-radius:12px;padding:14px}
+.accord input{width:22px;height:22px;flex:0 0 22px;margin-top:1px;accent-color:var(--emerald-d)}
+#envoyer{
+  width:100%;border:0;border-radius:100px;background:var(--emerald-d);color:#fff;
+  font-family:'Space Grotesk';font-weight:600;font-size:1.05rem;padding:15px;cursor:pointer;
+}
+#envoyer:disabled{opacity:.6;cursor:default}
+#erreur{background:var(--coral-soft);color:#8A2B1F;border-radius:12px;padding:12px 14px;font-size:.92rem;margin-bottom:14px}
+#erreur a{color:inherit}
+.pied{font-size:.82rem;color:var(--muted);margin-top:16px;text-align:center}
+#merci{text-align:center;padding:10px 0}
+#merci .ic{width:56px;height:56px;border-radius:50%;background:var(--emerald-soft);color:var(--emerald-d);
+  font-size:1.6rem;line-height:56px;margin:0 auto 14px}
+#merci h2{font-family:'Space Grotesk';font-weight:600;font-size:1.4rem;margin-bottom:8px}
+#merci a{color:var(--emerald-d);font-weight:600}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="in">
+  <a class="brand" href="https://cynthia-orientation.ch/">Cynth<span class="ia">.IA</span></a>
+  <h1>Votre avis sur Cynthia</h1>
+  <p>Trente secondes. Ce que vous en avez pensé, honnêtement, même si tout n'était pas parfait.</p>
+</div></header>
+
+<main class="carte">
+  <div id="form">
+    <div class="bloc">
+      <span class="lab" id="lab-note">Votre note</span>
+      <div class="etoiles" role="radiogroup" aria-labelledby="lab-note">
+        <button type="button" role="radio" aria-checked="false" data-note="1" aria-label="1 sur 5">★</button>
+        <button type="button" role="radio" aria-checked="false" data-note="2" aria-label="2 sur 5">★</button>
+        <button type="button" role="radio" aria-checked="false" data-note="3" aria-label="3 sur 5">★</button>
+        <button type="button" role="radio" aria-checked="false" data-note="4" aria-label="4 sur 5">★</button>
+        <button type="button" role="radio" aria-checked="false" data-note="5" aria-label="5 sur 5">★</button>
+      </div>
+      <div class="note-txt" id="note-txt"></div>
+    </div>
+
+    <div class="bloc">
+      <label class="lab" for="commentaire">Votre commentaire</label>
+      <div class="sub">Avec vos mots. Une ou deux phrases suffisent.</div>
+      <textarea id="commentaire" maxlength="1500" placeholder="Ce que l'entretien ou le rapport vous a apporté…"></textarea>
+    </div>
+
+    <div class="bloc">
+      <label class="lab" for="prenom">Votre prénom <span style="font-weight:400;color:var(--muted)">(facultatif)</span></label>
+      <input type="text" id="prenom" maxlength="60" autocomplete="given-name" placeholder="Votre prénom">
+    </div>
+
+    <div class="bloc">
+      <label class="accord"><input type="checkbox" id="accord">
+        <span>J'accepte que mon avis soit affiché sur le site de Cynthia, tel que je l'ai écrit, avec mon prénom s'il est indiqué.</span>
+      </label>
+    </div>
+
+    <div id="erreur" role="alert" hidden></div>
+    <button type="button" id="envoyer">Envoyer mon avis</button>
+    <p class="pied">Rien n'est publié sans votre accord. Vous pouvez changer d'avis à tout moment en écrivant à contact@cynthia-orientation.ch.</p>
+  </div>
+
+  <div id="merci" hidden>
+    <div class="ic">✓</div>
+    <h2>Merci, c'est reçu.</h2>
+    <p>Votre avis compte vraiment pour faire connaître Cynthia.</p>
+    <p style="margin-top:14px"><a href="https://cynthia-orientation.ch/">Retour au site</a></p>
+  </div>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var WORKER = 'https://cynth-ia-proxy.fazprod12.workers.dev';
+  var MOTS = ['', 'Pas satisfait', 'Peu satisfait', 'Correct', 'Bien', 'Excellent'];
+  var note = 0;
+  var etoiles = document.querySelectorAll('[data-note]');
+  var erreur = document.getElementById('erreur');
+  var bouton = document.getElementById('envoyer');
+
+  function montrer(n){
+    etoiles.forEach(function(b){
+      var v = Number(b.getAttribute('data-note'));
+      b.classList.toggle('on', v <= n);
+      b.setAttribute('aria-checked', v === note ? 'true' : 'false');
+    });
+    document.getElementById('note-txt').textContent = note ? MOTS[note] : '';
+  }
+  etoiles.forEach(function(b){
+    b.addEventListener('click', function(){
+      note = Number(b.getAttribute('data-note'));
+      erreur.hidden = true;
+      montrer(note);
+    });
+  });
+
+  function dire(html){ erreur.innerHTML = html; erreur.hidden = false; }
+
+  bouton.addEventListener('click', function(){
+    if (!note) { dire('Choisissez une note de 1 à 5 étoiles.'); return; }
+    var commentaire = document.getElementById('commentaire').value.trim();
+    var prenom = document.getElementById('prenom').value.trim();
+    var accord = document.getElementById('accord').checked;
+    var reponses = { source: 'page_avis', note_avis: note, citation_accord: accord ? 'Oui, avec mon prénom' : 'Non' };
+    if (commentaire) reponses.citation_texte = commentaire;
+    if (prenom) reponses.prenom = prenom;
+
+    bouton.disabled = true;
+    bouton.textContent = 'Envoi en cours…';
+    erreur.hidden = true;
+
+    fetch(WORKER + '/retour', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reponses: reponses, meta: { ecran: 'avis', langue: navigator.language || '' } })
+    }).then(function(r){
+      if (!r.ok) throw new Error('statut ' + r.status);
+      document.getElementById('form').hidden = true;
+      document.getElementById('merci').hidden = false;
+      window.scrollTo(0, 0);
+    }).catch(function(){
+      bouton.disabled = false;
+      bouton.textContent = 'Réessayer';
+      var corps = 'Note : ' + note + '/5\n\n' + commentaire + (prenom ? '\n\n' + prenom : '') +
+        '\n\nAccord pour être affiché : ' + (accord ? 'oui' : 'non');
+      dire('L\'envoi n\'a pas marché. Réessayez dans un instant, ou <a href="mailto:contact@cynthia-orientation.ch?subject=' +
+        encodeURIComponent('Mon avis sur Cynthia') + '&body=' + encodeURIComponent(corps) + '">envoyez-le par e-mail</a>.');
+    });
+  });
+})();
+</script>
+</body>
+</html>
