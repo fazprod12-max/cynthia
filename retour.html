@@ -136,6 +136,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 .send:hover{transform:translateY(-2px);background:#134034}
 .send:active{transform:translateY(0)}
 .send:disabled{opacity:.55;cursor:default;transform:none}
+.end .avis-pub a{color:var(--emerald-d);font-weight:600}
 .end .note{font-size:.83rem;color:var(--muted);margin-top:14px;max-width:52ch;margin-inline:auto}
 .err{
   display:none;margin-top:16px;background:var(--coral-soft);
@@ -180,190 +181,47 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
 <header class="top">
   <div class="in">
     <div class="brand">Cynth<span class="star"></span><span class="ia">IA</span></div>
-    <h1>Vous venez de tester Cynthia. Dites-moi tout.</h1>
-    <p>Vous faites partie des toutes premières personnes à l'essayer. Vos réponses vont directement servir à corriger ce qui ne va pas. Soyez franc, surtout quand c'est négatif : c'est là que ça m'aide le plus.</p>
-    <div class="dur">Cinq minutes. Quatre questions à écrire, tout le reste se répond en un clic. Les questions marquées d'une étoile sont celles qui comptent vraiment : le reste, sautez-le sans scrupule. Anonyme si vous voulez.</div>
+    <h1>Votre retour sur Cynthia</h1>
+    <p>Vos réponses servent directement à corriger ce qui ne va pas. Soyez franc, surtout quand c'est négatif : c'est là que ça m'aide le plus.</p>
+    <div class="dur">Environ 2 minutes. Presque tout se répond en un clic, et vous pouvez sauter ce que vous voulez.</div>
   </div>
 </header>
 
 <main id="form">
 
-  
   <section class="sec">
-    <div class="hd"><span class="num">01</span><h2>Vous, en trois clics</h2></div>
-    <p class="hint">Pour comprendre à qui Cynthia parle bien, et à qui elle parle mal.</p>
+    <div class="hd"><span class="num">01</span><h2>Votre expérience</h2></div>
 
     <div class="q">
-      <span class="lab">Votre tranche d'âge</span>
-      <div class="opts" data-champ="age">
-        <button type="button">Moins de 25 ans</button>
-        <button type="button">25 à 34 ans</button>
-        <button type="button">35 à 44 ans</button>
-        <button type="button">45 à 54 ans</button>
-        <button type="button">55 ans et plus</button>
-      </div>
-    </div>
-
-    <div class="q">
-      <span class="lab">Votre situation en ce moment</span>
-      <div class="opts" data-champ="situation">
-        <button type="button">En emploi</button>
-        <button type="button">Au chômage</button>
-        <button type="button">En formation ou études</button>
-        <button type="button">En arrêt ou en pause</button>
-        <button type="button">Indépendant</button>
-        <button type="button">Autre</button>
-      </div>
-    </div>
-
-    <div class="q">
-      <span class="lab">Qu'est-ce qui vous a amené à tester Cynthia ?</span>
-      <div class="opts" data-champ="motif">
-        <button type="button">Je veux changer de métier</button>
-        <button type="button">Je cherche du travail</button>
-        <button type="button">Je m'ennuie mais je ne sais pas vers quoi aller</button>
-        <button type="button">Curiosité, je rends service</button>
-        <button type="button">Autre</button>
-      </div>
-    </div>
-  </section>
-
-  
-  <section class="sec">
-    <div class="hd"><span class="num">02</span><h2>La conversation avec Cynthia</h2></div>
-    <p class="hint">Le moment où vous discutiez avec elle, avant le rapport.</p>
-
-    <div class="q" data-scale="ecoute"
-         data-lab="Vous êtes-vous senti écouté et compris ?"
-         data-g="Pas du tout" data-d="Totalement"></div>
-
-    <div class="q" data-scale="pertinence"
-         data-lab="Ses questions étaient-elles pertinentes ?"
-         data-sub="Est-ce qu'elle posait les bonnes questions, ou est-ce qu'elle tournait autour du pot ?"
-         data-g="À côté de la plaque" data-d="Très justes"></div>
-
-
-<div class="q">
-      <label for="cote">Y a-t-il eu un moment où elle est tombée complètement à côté ? <span class="req">*</span></label>
-      <div class="sub">C'est la réponse la plus utile de tout le questionnaire. N'hésitez pas à être dur.</div>
-      <textarea id="cote" data-champ="moment_rate" placeholder="Par exemple : elle a insisté sur un sujet dont je m'en fichais, ou elle n'a pas compris que…"></textarea>
-    </div>
-
-    <div class="q">
-      <span class="lab">La longueur de la conversation</span>
-      <div class="opts" data-champ="longueur">
-        <button type="button">Trop courte</button>
-        <button type="button">Juste bien</button>
-        <button type="button">Un peu longue</button>
-        <button type="button">Beaucoup trop longue</button>
-      </div>
-    </div>
-
-  </section>
-
-  
-  <section class="sec">
-    <div class="hd"><span class="num">03</span><h2>Le rapport</h2></div>
-    <p class="hint">Le document que vous avez reçu à la fin.</p>
-
-    <div class="q" data-scale="ressemble"
-         data-lab="Est-ce que ce rapport vous ressemble ?"
-         data-sub="Est-ce que vous vous êtes reconnu dedans, ou est-ce que ça aurait pu être n'importe qui ?"
-         data-g="Ce n'est pas moi" data-d="C'est exactement moi"></div>
-
-    <div class="q" data-scale="metiers"
-         data-lab="Les métiers proposés vous parlent-ils ?"
-         data-g="Aucun rapport" data-d="Très bien vus"></div>
-
-    <div class="q" data-scale="lundi"
-         data-lab="Après l'avoir lu, sauriez-vous quoi faire lundi matin ?"
-         data-sub="Une action concrète, précise, que vous pourriez vraiment faire."
-         data-g="Toujours perdu" data-d="Je sais exactement"></div>
-
-    <div class="q" data-scale="confiance"
-         data-lab="Avez-vous eu confiance dans ce qui était écrit ?"
-         data-sub="Les salaires, les formations, les démarches suisses."
-         data-g="J'ai douté" data-d="Ça m'a paru solide"></div>
-
-    <div class="q">
-      <label for="faux">Y a-t-il quelque chose de faux, d'inventé ou de bizarre dans le rapport ? <span class="req">*</span></label>
-      <div class="sub">Un chiffre qui vous a semblé faux, une formation qui n'existe pas, une phrase qui ne veut rien dire. Même un doute, dites-le.</div>
-      <textarea id="faux" data-champ="erreurs" placeholder="Par exemple : le salaire annoncé pour tel métier me paraît trop élevé, ou cette formation je crois qu'elle n'existe pas en Suisse…"></textarea>
-    </div>
-
-
-</section>
-
-  
-  <section class="sec">
-    <div class="hd"><span class="num">04</span><h2>Ce que ça vaut</h2></div>
-    <p class="hint">Ne soyez pas gentil avec moi, ça ne m'aiderait pas. C'est la section qui décide du prix, et je n'ai personne d'autre pour me le dire.</p>
-
-    
-    <div class="q">
-      <span class="lab">Comment avez-vous obtenu ce rapport ? <span class="req">*</span></span>
+      <span class="lab">Comment avez-vous obtenu ce rapport ?</span>
       <div class="opts" data-champ="acquisition">
         <button type="button">Je l'ai payé</button>
         <button type="button">Il m'a été offert</button>
       </div>
     </div>
 
+    <div class="q" data-scale="ecoute"
+         data-lab="Pendant la conversation, vous êtes-vous senti écouté et compris ?"
+         data-g="Pas du tout" data-d="Totalement"></div>
+
+    <div class="q" data-scale="ressemble"
+         data-lab="Est-ce que ce rapport vous ressemble ?"
+         data-sub="Vous êtes-vous reconnu dedans, ou est-ce que ça aurait pu être n'importe qui ?"
+         data-g="Ce n'est pas moi" data-d="C'est exactement moi"></div>
+
+    <div class="q" data-scale="lundi"
+         data-lab="Après l'avoir lu, sauriez-vous quoi faire lundi matin ?"
+         data-sub="Une action concrète, que vous pourriez vraiment faire."
+         data-g="Toujours perdu" data-d="Je sais exactement"></div>
+
     <div class="q">
-      <span class="lab" id="lab-paierait">Auriez-vous payé pour ce rapport ? <span class="req">*</span></span>
-      <div class="opts" data-champ="paierait">
-        <button type="button">Oui, sans hésiter</button>
-        <button type="button">Oui, mais moins cher</button>
-        <button type="button">J'aurais hésité</button>
-        <button type="button">Non</button>
-      </div>
+      <label for="faux">Quelque chose de faux, d'inventé ou de bizarre ?</label>
+      <div class="sub">Dans la conversation (un moment où Cynthia est tombée à côté) ou dans le rapport (un chiffre, une formation, une phrase). Même un doute, dites-le : c'est la réponse la plus utile.</div>
+      <textarea id="faux" data-champ="erreurs" placeholder="Par exemple : elle n'a pas compris que…, ou ce salaire me paraît trop élevé…"></textarea>
     </div>
 
     <div class="q">
-      <span class="lab">À votre avis, ce rapport vaut combien ? <span class="req">*</span></span>
-      <div class="sub">Le prix que vous trouveriez normal de payer, en francs.</div>
-      <div class="opts" data-champ="prix_juste">
-        <button type="button">19 CHF</button>
-        <button type="button">29 CHF</button>
-        <button type="button">39 CHF</button>
-        <button type="button">49 CHF</button>
-        <button type="button">59 CHF</button>
-        <button type="button">69 CHF</button>
-        <button type="button">79 CHF</button>
-        <button type="button">89 CHF</button>
-        <button type="button">99 CHF</button>
-        <button type="button">119 CHF</button>
-      </div>
-    </div>
-
-    <div class="q">
-      <label for="pourquoi_prix">Pourquoi ce prix ?</label>
-      <div class="sub">En une phrase. À quoi vous l'avez comparé dans votre tête.</div>
-      <textarea id="pourquoi_prix" data-champ="pourquoi_prix" placeholder="Je l'ai comparé à…"></textarea>
-    </div>
-
-    <div class="q">
-      <span class="lab">À partir de quel prix vous trouveriez ça franchement trop cher ?</span>
-      <div class="sub">Le prix où vous refermez la page.</div>
-      <div class="opts warm" data-champ="prix_trop_cher">
-        <button type="button">Dès 29 CHF</button>
-        <button type="button">Dès 49 CHF</button>
-        <button type="button">Dès 69 CHF</button>
-        <button type="button">Dès 79 CHF</button>
-        <button type="button">Dès 99 CHF</button>
-        <button type="button">Dès 129 CHF</button>
-        <button type="button">Au-delà de 129 CHF</button>
-      </div>
-    </div>
-
-</section>
-
-  
-  <section class="sec">
-    <div class="hd"><span class="num">05</span><h2>Est-ce que ça compte</h2></div>
-    <p class="hint">Deux questions, et ce sont peut-être les plus importantes de toutes.</p>
-
-    <div class="q">
-      <span class="lab">Si Cynthia disparaissait demain et que vous ne pouviez plus l'utiliser, vous seriez… <span class="req">*</span></span>
+      <span class="lab">Si Cynthia disparaissait demain, vous seriez…</span>
       <div class="opts" data-champ="disparition">
         <button type="button">Très déçu</button>
         <button type="button">Un peu déçu</button>
@@ -371,52 +229,23 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       </div>
     </div>
 
-  </section>
-
-  
-  <section class="sec">
-    <div class="hd"><span class="num">06</span><h2>Le mot de la fin</h2></div>
-
     <div class="q">
-      <label for="priorite">S'il n'y avait qu'une seule chose à améliorer ou à ajouter, ce serait quoi ? <span class="req">*</span></label>
+      <label for="priorite">S'il n'y avait qu'une seule chose à améliorer ou à ajouter, ce serait quoi ?</label>
       <textarea id="priorite" data-champ="priorite" placeholder="Ce qui m'a gêné, ou ce que j'aurais aimé y trouver…"></textarea>
     </div>
 
-<div class="q">
-      <span class="lab">Est-ce que je peux citer votre retour publiquement ?</span>
-      <div class="sub">Sur le site ou dans un article de presse. Vous choisissez sous quelle forme, et vous pouvez changer d'avis à tout moment en m'écrivant.</div>
-      <div class="opts" data-champ="citation_accord">
-        <button type="button">Oui, avec mon prénom</button>
-        <button type="button">Oui, mais anonyme</button>
-        <button type="button">Oui, prénom et métier</button>
-        <button type="button">Non, gardez ça pour vous</button>
-      </div>
-    </div>
-
-    <div class="q" id="q-citation" hidden>
-      <label for="citation">Si oui, y a-t-il une phrase que vous diriez à quelqu'un qui hésite ?</label>
-      <div class="sub">Avec vos mots, même maladroits. C'est ce qui parle le mieux aux gens qui sont là où vous étiez il y a une heure.</div>
-      <textarea id="citation" data-champ="citation_texte" placeholder="Si j'avais un truc à dire à quelqu'un qui hésite…"></textarea>
-    </div>
-
-<div class="q">
-      <span class="lab">Avez-vous rencontré un bug, un blocage, une lenteur ?</span>
+    <div class="q">
+      <span class="lab">Avez-vous rencontré un bug, un blocage, une lenteur ?</span>
       <div class="opts warm" data-champ="bug_oui">
         <button type="button">Non, tout a fonctionné</button>
         <button type="button">Oui</button>
       </div>
-      <textarea id="bug" hidden data-champ="bug_detail" placeholder="Si oui, racontez ce qui s'est passé et à quel moment…"></textarea>
+      <textarea id="bug" hidden data-champ="bug_detail" placeholder="Racontez ce qui s'est passé et à quel moment…"></textarea>
     </div>
 
     <div class="q">
-      <label for="qui">Votre prénom, si vous voulez que je sache qui vous êtes</label>
-      <div class="sub">Facultatif. Vous pouvez rester totalement anonyme.</div>
-      <input type="text" id="qui" data-champ="prenom" placeholder="Votre prénom" autocomplete="given-name">
-    </div>
-
-    <div class="q">
-      <label for="mail">Votre email, si j'ai le droit de vous rappeler pour creuser</label>
-      <div class="sub">Facultatif. Uniquement pour vous poser des questions sur ce test, rien d'autre, aucune liste de diffusion.</div>
+      <label for="mail">Votre e-mail, si j'ai le droit de vous recontacter</label>
+      <div class="sub">Facultatif. Uniquement pour vous poser une question sur votre retour, aucune liste de diffusion.</div>
       <input type="email" id="mail" data-champ="email" placeholder="vous@exemple.ch" autocomplete="email">
     </div>
   </section>
@@ -425,6 +254,7 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
     <button class="send" id="envoyer" type="button">Envoyer mon retour</button>
     <p class="note">Vos réponses partent directement chez moi. Elles ne sont ni revendues, ni utilisées pour entraîner une intelligence artificielle.</p>
     <div class="err" id="erreur"><b>L'envoi n'a pas fonctionné.</b><span id="erreur-txt"></span></div>
+    <p class="note avis-pub">Envie de laisser un avis public, affiché sur le site ? <a href="https://cynthia-orientation.ch/avis.html">Laisser un avis (30 secondes)</a></p>
   </div>
 </main>
 
@@ -527,20 +357,8 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
   restaurer();
 
   
-  var labPaierait = document.getElementById('lab-paierait');
-  var TEXTE_PAYE  = 'Avec le recul, est-ce que ça les valait ? ';
-  var TEXTE_OFFERT = 'Auriez-vous payé pour ce rapport ? ';
-  document.addEventListener('click', function (ev) {
-    var b = ev.target.closest('.opts[data-champ="acquisition"] button');
-    if (!b || !labPaierait) return;
-    var paye = /pay/i.test(b.textContent) && b.getAttribute('aria-pressed') === 'true';
-    labPaierait.innerHTML = (paye ? TEXTE_PAYE : TEXTE_OFFERT) + '<span class="req">*</span>';
-  });
-
-  
   (function conditionnelles () {
     var champBug = document.getElementById('bug');
-    var blocCit  = document.getElementById('q-citation');
     document.addEventListener('click', function (ev) {
       var b = ev.target.closest('.opts button');
       if (!b) return;
@@ -548,9 +366,6 @@ textarea::placeholder,input::placeholder{color:#9AA8A1}
       var choisi = b.getAttribute('aria-pressed') === 'true';
       if (champ === 'bug_oui' && champBug) {
         champBug.hidden = !(choisi && /oui/i.test(b.textContent));
-      }
-      if (champ === 'citation_accord' && blocCit) {
-        blocCit.hidden = !(choisi && /^oui/i.test(b.textContent.trim()));
       }
     });
   })();
