@@ -16587,23 +16587,19 @@ function downloadRapport(){
   if (bf) {
     
     const dims = [
-      ['Ouverture',              bf.ouverture,                                          'Votre goût pour la nouveauté, les idées et le changement.'],
-      ['Rigueur',                bf.rigueur!=null?bf.rigueur:bf.conscience,             'Votre sens de l\'organisation et votre façon de tenir vos engagements.'],
-      ['Extraversion',           bf.extraversion,                                       'L\'énergie que vous tirez du contact avec les autres.'],
-      ['Amabilité',              bf.amabilite!=null?bf.amabilite:bf['amabilité'],       'Votre tendance à coopérer, écouter et faire confiance.'],
-      ['Stabilité émotionnelle', bf.stabilite!=null?bf.stabilite:bf['stabilité'],       'Votre calme face à la pression et à l\'imprévu.']
+      ['ouverture',    bf.ouverture,                                     'Vous aimez la nouveauté, les idées et le changement.'],
+      ['rigueur',      bf.rigueur!=null?bf.rigueur:bf.conscience,        'Vous vous organisez et vous tenez vos engagements.'],
+      ['extraversion', bf.extraversion,                                  'Vous tirez de l\'énergie du contact avec les autres.'],
+      ['amabilite',    bf.amabilite!=null?bf.amabilite:bf['amabilité'],  'Vous coopérez, vous écoutez, vous faites confiance.'],
+      ['stabilite',    bf.stabilite!=null?bf.stabilite:bf['stabilité'],  'Vous gardez votre calme face à la pression et à l\'imprévu.']
     ];
-    
     const _pBF = (P.big_five_preuves && typeof P.big_five_preuves==='object') ? P.big_five_preuves : {};
-    const _cBF = { 'Ouverture':'ouverture', 'Rigueur':'rigueur', 'Extraversion':'extraversion', 'Amabilité':'amabilite', 'Stabilité émotionnelle':'stabilite' };
-    const bars = dims.filter(d=>d[1]!=null && !isNaN(Number(d[1]))).map(function(d){
-      var cit = _pBF[_cBF[d[0]]];
+    const bars = dims.filter(d=>d[1]!=null && !isNaN(Number(d[1])) && Number(d[1]) >= 45).map(function(d){
+      var cit = _pBF[d[0]];
       if (!_citationDiteRapport(cit)) return '';
-      var val = Number(d[1]), mot = val >= 65 ? 'très présente' : (val >= 45 ? 'présente' : 'plus discrète');
-      return `<div class="trait"><div class="tt"><span>${d[0]}</span><span>${mot}</span></div><div class="tdef">${esc(d[2])}</div><div class="tdef">Vous avez dit : «\u00A0${esc(cit)}\u00A0»</div></div>`;
+      return `<div class="trait"><div class="tt">${esc(d[2])}</div> <div class="tdef">Vous avez dit : «\u00A0${esc(cit)}\u00A0»</div></div>`;
     }).join('');
-    
-    if (bars) portraitLeft = `<div><div class="minilabel">Ce que votre façon de parler laisse voir</div>${bars}<p class="bfnote">Ces repères sont <b>lus dans votre conversation</b>, ils ne viennent pas d'un questionnaire de personnalité. Ils s'inspirent des cinq grandes dimensions utilisées en psychologie du travail, mais ce ne sont pas des scores validés : voyez-les comme des tendances observées pendant l'échange, utiles pour repérer les environnements où vous serez à l'aise. Aucune n'est « bonne » ou « mauvaise », et un vrai test pourrait donner d'autres chiffres.</p></div>`;
+    if (bars) portraitLeft = `<div><div class="minilabel">Ce que votre façon de parler laisse voir</div>${bars}<p class="bfnote">Ces tendances sont <b>lues dans votre conversation</b>, elles ne viennent pas d'un questionnaire de personnalité. Aucune n'est « bonne » ou « mauvaise ».</p></div>`;
   }
   if (!portraitLeft && arrOf(P.traits_dominants).length) portraitLeft = `<div><div class="minilabel">Vos traits dominants</div><div class="tags">${tagList(P.traits_dominants)}</div></div>`;
   const portraitRight = `${arrOf(P.intelligences_cles).length?`<div class="callout"><div class="minilabel">Intelligences dominantes</div><div class="tags">${tagList(P.intelligences_cles)}</div></div>`:''}${P.style_travail?`<div class="callout"><div class="minilabel">Votre style de travail</div><p class="body" style="margin:0;font-size:.94rem">${esc(P.style_travail)}</p></div>`:''}`;
@@ -16926,7 +16922,7 @@ function downloadRapport(){
   const liensSources = resHtml ? `<p style="margin-top:14px;font-size:.85rem"><a href="https://cynthia-orientation.ch/ressources.html" target="_blank" rel="noopener" style="color:var(--emerald-d);font-weight:600;text-decoration:underline">Voir toutes nos sources et fiches métier →</a></p>` : '';
   const secRes = secWrap('Vos ressources en Suisse', 'Des dispositifs réels et accessibles depuis la Suisse romande.', resHtml?`<div class="res">${resHtml}</div>${liensSources}`:'');
 
-  const section6 = data.message_fin ? `<div class="pad"><div class="msgfin"><div class="minilabel">Un mot pour la suite</div><p>${esc(data.message_fin)}</p><div class="signature"><div class="orb"></div><div><b>Cynthia</b><small>Votre coach d'orientation</small></div></div></div></div>` : '';
+  const section6 = data.message_fin ? `<div class="pad"><div class="msgfin"><div class="minilabel">Un mot pour la suite</div><p>${esc(data.message_fin)}</p><div class="signature"><div class="orb"></div><div><b>Cynthia</b><small>L'IA d'orientation de Cynth.IA</small></div></div></div></div>` : '';
 
   
   const coverFil = (_rv && _rv.filRouge) ? `<div class="cover-fil"><div class="cover-fil-l">Votre fil rouge, validé par vous</div><p>«\u00A0${esc(_rv.filRouge)}\u00A0»</p></div>` : '';
