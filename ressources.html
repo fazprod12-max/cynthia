@@ -22,93 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=fallback" rel="stylesheet">
-<style>
-:root{
-  --cream:#FAF6F0; --cream2:#F1E9DC;
-  --ink:#0E2A24; --muted:#5C6B64;
-  --emerald:#1FB488; --emerald-d:#12876A; --emerald-soft:#E7F4EE;
-  --line:#E8E1D6;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{
-  background:var(--cream);color:var(--ink);
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  line-height:1.65;-webkit-font-smoothing:antialiased;
-}
-.wrap{max-width:720px;margin:0 auto;padding:0 24px}
-
-.top{
-  background:linear-gradient(150deg,#0E2A24,#134034);
-  color:var(--cream);padding:34px 0 50px;position:relative;overflow:hidden;
-}
-.top::after{
-  content:"";position:absolute;inset:auto -25% -60% 35%;
-  height:320px;border-radius:50%;
-  background:radial-gradient(circle,rgba(31,180,136,.28),transparent 68%);
-}
-.top .wrap{position:relative;z-index:1}
-.brandrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:44px;gap:16px;flex-wrap:wrap}
-.brand{
-  font-family:'Space Grotesk';font-weight:700;font-size:1.08rem;
-  display:flex;align-items:center;gap:1px;letter-spacing:-.01em;color:var(--cream);
-  text-decoration:none;
-}
-.brand .star{
-  width:11px;height:11px;margin:0 1px;display:inline-block;align-self:flex-end;margin-bottom:3px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4 Q34 30 60 32 Q34 34 32 60 Q30 34 4 32 Q30 30 32 4 Z' fill='%233EE0AE'/%3E%3C/svg%3E") center/contain no-repeat;
-}
-.brand .ia{color:#3EE0AE}
-.backlink{
-  font-size:.86rem;color:#A9BDB4;text-decoration:none;
-  border:1px solid rgba(169,189,180,.32);border-radius:100px;padding:8px 16px;
-  transition:border-color .18s,color .18s;white-space:nowrap;
-}
-.backlink:hover{border-color:#3EE0AE;color:#3EE0AE}
-.eyebrow{
-  display:inline-block;font-size:.76rem;font-weight:600;letter-spacing:.09em;
-  text-transform:uppercase;color:#3EE0AE;margin-bottom:18px;
-}
-.top h1{
-  font-family:'Space Grotesk';font-weight:600;
-  font-size:clamp(1.7rem,4.8vw,2.5rem);line-height:1.16;
-  letter-spacing:-.025em;margin-bottom:18px;
-}
-.top .lead{font-size:1.04rem;color:#C3D5CD;max-width:58ch}
-
-main{padding:52px 0 40px}
-section{margin-bottom:48px}
-h2{
-  font-family:'Space Grotesk';font-weight:600;
-  font-size:clamp(1.22rem,3.1vw,1.5rem);line-height:1.25;
-  letter-spacing:-.02em;margin-bottom:14px;
-}
-p{font-size:1rem;margin-bottom:15px;color:#26382F}
-p:last-child{margin-bottom:0}
-p a{color:var(--emerald-d);text-decoration:underline}
-p a:hover{color:#3EE0AE}
-ul.mlist{list-style:none;display:flex;flex-direction:column;gap:9px}
-ul.mlist li{
-  font-size:.94rem;line-height:1.5;padding:10px 0;
-  border-bottom:1px solid var(--line);
-  display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;
-}
-ul.mlist li:last-child{border-bottom:none}
-ul.mlist .t{font-weight:600;color:var(--ink)}
-ul.mlist a{color:var(--emerald-d);text-decoration:underline;font-size:.88rem;white-space:nowrap}
-ul.mlist a:hover{color:#3EE0AE}
-ul.mlist.src li{flex-direction:column;align-items:flex-start;gap:3px;padding:14px 0}
-ul.mlist.src .d{display:block;font-size:.88rem;color:var(--muted);font-weight:400;margin:2px 0 2px}
-.foot{padding:30px 0 44px;text-align:center;font-size:.84rem;color:var(--muted)}
-.foot a{color:var(--emerald-d);text-decoration:none}
-.foot a:hover{text-decoration:underline}
-@media(max-width:560px){
-  .top{padding:26px 0 40px}
-  .brandrow{margin-bottom:34px}
-  main{padding:40px 0 30px}
-  section{margin-bottom:38px}
-}
-</style>
+<link rel="stylesheet" href="pages.css">
 </head>
 <body>
 
@@ -126,11 +40,11 @@ ul.mlist.src .d{display:block;font-size:.88rem;color:var(--muted);font-weight:40
 
 <main class="wrap">
 
-  <section>
+  <section class="carte">
     <p>Cette page liste les sources institutionnelles sur lesquelles s'appuie Cynth.IA. Nos pistes de métiers suisses s'appuient sur les fiches publiques d'<a href="https://orientation.ch" target="_blank" rel="noopener">orientation.ch</a>, consultables intégralement et gratuitement sur orientation.ch.</p>
   </section>
 
-  <section>
+  <section class="carte">
     <h2>Les autres sources</h2>
     <p>Guichets cantonaux d'orientation, dispositifs fédéraux et de formation continue, cités dans nos rapports pour leurs coordonnées et ce qu'ils proposent.</p>
 <ul class="mlist src">

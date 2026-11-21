@@ -22,187 +22,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230E2A24'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 34 32 54 Q30.2 34 10 32 Q30.2 30 32 10 Z' fill='%23FAF6F0'/%3E%3Cpath d='M32 10 Q33.8 30 54 32 Q33.8 30 32 10 Z' fill='%233EE0AE'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{
-  --cream:#FAF6F0; --cream2:#F1E9DC;
-  --ink:#0E2A24; --muted:#5C6B64;
-  --emerald:#1FB488; --emerald-d:#12876A; --emerald-soft:#E7F4EE;
-  --coral:#FF6F5E; --coral-soft:#FFE9E4;
-  --line:#E8E1D6;
-
-  
-  --portrait: url('faouzi.jpg');
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{
-  background:var(--cream);color:var(--ink);
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  line-height:1.65;-webkit-font-smoothing:antialiased;
-}
-.wrap{max-width:660px;margin:0 auto;padding:0 24px}
-
-
-.top{
-  background:linear-gradient(150deg,#0E2A24,#134034);
-  color:var(--cream);padding:34px 0 78px;position:relative;overflow:hidden;
-}
-.top::after{
-  content:"";position:absolute;inset:auto -25% -60% 35%;
-  height:320px;border-radius:50%;
-  background:radial-gradient(circle,rgba(31,180,136,.28),transparent 68%);
-}
-.top .wrap{position:relative;z-index:1}
-.brandrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:64px;gap:16px;flex-wrap:wrap}
-.brand{
-  font-family:'Space Grotesk';font-weight:700;font-size:1.08rem;
-  display:flex;align-items:center;gap:1px;letter-spacing:-.01em;color:var(--cream);
-  text-decoration:none;
-}
-.brand .star{
-  width:11px;height:11px;margin:0 1px;display:inline-block;align-self:flex-end;margin-bottom:3px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4 Q34 30 60 32 Q34 34 32 60 Q30 34 4 32 Q30 30 32 4 Z' fill='%233EE0AE'/%3E%3C/svg%3E") center/contain no-repeat;
-}
-.brand .ia{color:#3EE0AE}
-.backlink{
-  font-size:.86rem;color:#A9BDB4;text-decoration:none;
-  border:1px solid rgba(169,189,180,.32);border-radius:100px;padding:8px 16px;
-  transition:border-color .18s,color .18s;white-space:nowrap;
-}
-.backlink:hover{border-color:#3EE0AE;color:#3EE0AE}
-.eyebrow{
-  display:inline-block;font-size:.76rem;font-weight:600;letter-spacing:.09em;
-  text-transform:uppercase;color:#3EE0AE;margin-bottom:20px;
-}
-.top h1{
-  font-family:'Space Grotesk';font-weight:600;
-  font-size:clamp(1.95rem,5.6vw,3rem);line-height:1.13;
-  letter-spacing:-.025em;margin-bottom:20px;
-}
-.top .lead{font-size:1.06rem;color:#C3D5CD;max-width:52ch}
-
-
-main{padding:66px 0 40px}
-section{margin-bottom:56px}
-h2{
-  font-family:'Space Grotesk';font-weight:600;
-  font-size:clamp(1.3rem,3.4vw,1.62rem);line-height:1.25;
-  letter-spacing:-.02em;margin-bottom:18px;
-}
-p{font-size:1.05rem;margin-bottom:17px;color:#26382F}
-p:last-child{margin-bottom:0}
-strong{font-weight:600;color:var(--ink)}
-.em{color:var(--emerald-d);font-weight:600}
-
-
-.pull{
-  font-family:'Space Grotesk';font-weight:500;
-  font-size:clamp(1.18rem,3.2vw,1.42rem);line-height:1.4;letter-spacing:-.015em;
-  color:var(--ink);border-left:3px solid var(--emerald);
-  padding:4px 0 4px 22px;margin:30px 0;border-radius:0;
-}
-
-
-.fact{
-  background:#fff;border:1px solid var(--line);border-radius:16px;
-  padding:24px 26px;margin:28px 0;
-}
-.fact h3{
-  font-family:'Space Grotesk';font-size:.78rem;font-weight:600;letter-spacing:.09em;
-  text-transform:uppercase;color:var(--emerald-d);margin-bottom:14px;
-}
-.fact ul{list-style:none;display:flex;flex-direction:column;gap:12px}
-.fact li{font-size:.98rem;line-height:1.55;padding-left:20px;position:relative;color:#26382F}
-.fact li::before{
-  content:"";position:absolute;left:0;top:.55em;width:8px;height:8px;
-  background:var(--emerald);
-  clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);
-}
-.fact .src{margin-top:16px;font-size:.8rem;color:var(--muted);line-height:1.5}
-
-
-.want{display:flex;flex-wrap:wrap;gap:9px;margin:24px 0 4px}
-.want span{
-  background:var(--cream2);border-radius:100px;padding:9px 17px;
-  font-size:.92rem;font-weight:500;color:#2C4139;
-}
-
-
-.promise{display:flex;flex-direction:column;gap:11px;margin-top:24px}
-.pr{
-  background:#fff;border:1px solid var(--line);border-radius:14px;padding:17px 20px;
-  display:flex;gap:14px;align-items:flex-start;
-}
-.pr .mk{
-  flex-shrink:0;width:22px;height:22px;border-radius:50%;margin-top:1px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.8rem;font-weight:700;font-family:'Space Grotesk';
-}
-.pr.no .mk{background:var(--coral-soft);color:#B4382B}
-.pr.yes .mk{background:var(--emerald-soft);color:var(--emerald-d)}
-.pr b{display:block;font-weight:600;font-size:.98rem;margin-bottom:3px}
-.pr span.t{font-size:.94rem;color:var(--muted);line-height:1.55}
-
-
-.sign{
-  background:#fff;border:1px solid var(--line);border-radius:20px;
-  padding:30px 28px;display:flex;gap:22px;align-items:center;margin-top:8px;
-}
-.avatar{
-  flex-shrink:0;width:78px;height:78px;border-radius:50%;
-  background-color:var(--ink);background-image:var(--portrait);
-  background-size:cover;background-position:center;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Space Grotesk';font-weight:600;font-size:1.5rem;color:#3EE0AE;
-  letter-spacing:.02em;
-}
-
-.avatar.has-photo{color:transparent}
-.sign .who b{
-  display:block;font-family:'Space Grotesk';font-weight:600;
-  font-size:1.14rem;letter-spacing:-.01em;margin-bottom:4px;
-}
-.sign .who span{display:block;font-size:.94rem;color:var(--muted);line-height:1.5}
-
-
-.cta{
-  background:linear-gradient(150deg,#0E2A24,#134034);color:var(--cream);
-  padding:58px 0;margin-top:62px;text-align:center;
-}
-.cta h2{color:var(--cream);margin-bottom:12px}
-.cta p{color:#A9BDB4;font-size:1rem;margin-bottom:26px;max-width:44ch;margin-left:auto;margin-right:auto}
-.btn{
-  display:inline-block;background:var(--emerald);color:#062019;
-  font-family:'Inter';font-weight:600;font-size:1rem;text-decoration:none;
-  padding:16px 32px;border-radius:14px;transition:background .18s,transform .18s;
-}
-.btn:hover{background:#3EE0AE}
-.btn:active{transform:scale(.985)}
-.presse{
-  border-top:1px solid rgba(169,189,180,.2);margin-top:44px;padding-top:26px;
-  font-size:.88rem;color:#8AA69C;line-height:1.6;
-}
-.presse a{color:#3EE0AE;text-decoration:none}
-.presse a:hover{text-decoration:underline}
-.foot{padding:26px 0 40px;text-align:center;font-size:.84rem;color:var(--muted)}
-
-
-.rv{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
-.rv.in{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){
-  .rv{opacity:1!important;transform:none!important;transition:none!important}
-  html{scroll-behavior:auto}
-}
-@media(max-width:560px){
-  .top{padding:26px 0 56px}
-  .brandrow{margin-bottom:44px}
-  main{padding:48px 0 30px}
-  section{margin-bottom:44px}
-  .sign{flex-direction:column;text-align:center;gap:16px;padding:26px 22px}
-  .pull{padding-left:18px}
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=fallback" rel="stylesheet">
+<link rel="stylesheet" href="pages.css">
 
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Faouzie Samhoud","image":"https://cynthia-orientation.ch/faouzi.jpg","url":"https://cynthia-orientation.ch/histoire.html","address":{"@type":"PostalAddress","addressLocality":"Genève","addressCountry":"CH"},"worksFor":{"@type":"Organization","name":"Cynth.IA","url":"https://cynthia-orientation.ch/"}}
@@ -223,16 +44,16 @@ strong{font-weight:600;color:var(--ink)}
   </div>
 </header>
 
-<main class="wrap">
+<main class="wrap histoire">
 
-  <section class="rv">
+  <section class="carte rv">
     <h2>Arriver quelque part, et ne rien comprendre</h2>
     <p>Je suis arrivé à Genève de l'étranger. Le monde du travail suisse a ses propres règles : CFC, brevet fédéral, maturité professionnelle, apprentissage dual, article 32. Je me suis renseigné, sérieusement, comme on le fait quand on veut s'installer quelque part. L'information existe, et elle est même très bien faite.</p>
     <p>Et ça n'a pas suffi. Parce que savoir ce qu'est un CFC ne vous dit pas si c'est le vôtre. Lire une liste de métiers ne vous dit pas lequel vous irait. Aucune brochure ne peut vous dire ce que votre parcours vaut ici, ni nommer ce que vous savez faire sans le savoir. <strong>L'information, ce n'est pas de l'orientation.</strong></p>
     <p>Puis j'ai regardé les chiffres de ma ville : à Genève, <strong>61 % des habitants sont issus de la migration</strong>. Nous sommes des dizaines de milliers à avoir cherché exactement la même chose, chacun dans son coin.</p>
   </section>
 
-  <section class="rv">
+  <section class="carte rv">
     
     <h2>On est choisi par les circonstances</h2>
     <p>Plus j'y réfléchissais, plus je voyais la même chose partout autour de moi. Ce n'est pas une histoire d'ambition ou de courage : c'est une histoire de temps. Personne ne nous en donne pour poser la question.</p>
@@ -241,7 +62,7 @@ strong{font-weight:600;color:var(--ink)}
     <p>Pas au sens vague. Au sens précis. Je voulais un point sur la carte : voilà où vous êtes, dans le monde du travail d'aujourd'hui, avec ce que vous savez faire.</p>
   </section>
 
-  <section class="rv">
+  <section class="carte rv">
     <h2>Ce que je voulais qu'on me dise</h2>
     <p>Il y avait une liste, dans ma tête, de choses que j'aurais voulu que quelqu'un regarde en face avec moi :</p>
     <div class="want">
@@ -253,10 +74,10 @@ strong{font-weight:600;color:var(--ink)}
       <span>Mes défauts</span>
       <span>Des métiers qui vont avec mes valeurs</span>
     </div>
-    <p style="margin-top:22px">Ce dernier point comptait plus que tout le reste. Je ne cherchais pas un salaire. Je cherchais un métier qui ne me demande pas de laisser mes principes à l'entrée.</p>
+    <p>Ce dernier point comptait plus que tout le reste. Je ne cherchais pas un salaire. Je cherchais un métier qui ne me demande pas de laisser mes principes à l'entrée.</p>
   </section>
 
-  <section class="rv">
+  <section class="carte rv">
     <h2>Et là, j'ai découvert le trou</h2>
     <p>En Suisse, quand on veut de l'aide pour y voir clair, il existe deux portes.</p>
     <div class="fact">
@@ -272,7 +93,7 @@ strong{font-weight:600;color:var(--ink)}
     <p>J'étais exactement dans cet entre-deux. Et le plus frustrant, ce n'était pas de ne pas avoir de réponse. C'était de comprendre que la question elle-même n'était prévue pour personne comme moi.</p>
   </section>
 
-  <section class="rv">
+  <section class="carte rv">
     <h2>Alors je l'ai construite</h2>
     <p>Je n'ai pas cherché à faire une entreprise. J'ai construit le conseiller que je cherchais, pour me répondre à moi-même. J'ai commencé par apprendre le terrain suisse pour de vrai : les métiers un par un, avec les vraies compétences qu'ils demandent, les vrais salaires en francs, les vraies formations, et l'état réel du marché. Pas des généralités trouvées quelque part, des sources officielles. Et la base continue de s'étoffer, secteur après secteur.</p>
     <p>Puis je lui ai donné ce qui lui manquait : une façon d'écouter. J'ai mis dedans toutes les choses que j'aurais aimé qu'on découvre de moi. Ce qui fait ma force. Ce qui fait ma faiblesse. Ce que je ne voyais plus parce que je le faisais tous les jours. Je lui ai appris à creuser au lieu de flatter, parce que ce dont j'avais besoin, ce n'était pas d'être rassuré. C'était d'être vu.</p>
@@ -285,15 +106,15 @@ strong{font-weight:600;color:var(--ink)}
   </section>
 
 
-  <section class="rv">
+  <section class="carte rv">
     <h2>Ce que je vous promets, et ce que je ne vous promets pas</h2>
     <div class="promise">
-      <div class="pr no"><span class="mk">—</span><span><b>Je ne vous promets pas votre vocation</b><span class="t">Personne ne peut faire ça, et ceux qui le promettent vous vendent quelque chose. Ce que vous aurez, c'est une direction claire et un premier pas concret.</span></span></div>
-      <div class="pr no"><span class="mk">—</span><span><b>Je ne remplace pas un conseiller humain</b><span class="t">Si viamia vous est ouvert, allez-y, c'est gratuit et c'est bien. Cynthia est là pour ceux à qui la porte est fermée, et pour arriver préparé chez ceux à qui elle est ouverte.</span></span></div>
-      <div class="pr yes"><span class="mk">✓</span><span><b>Je vous promets qu'on ne vous flattera pas</b><span class="t">Votre entourage vous encourage, c'est son rôle. Cynthia regarde vos réponses en face. Si une piste ne tient pas, elle vous le dit maintenant, pas dans deux ans.</span></span></div>
+      <div class="pr no"><span class="mk" aria-hidden="true"></span><span><b>Je ne vous promets pas votre vocation</b><span class="t">Personne ne peut faire ça, et ceux qui le promettent vous vendent quelque chose. Ce que vous aurez, c'est une direction claire et un premier pas concret.</span></span></div>
+      <div class="pr no"><span class="mk" aria-hidden="true"></span><span><b>Je ne remplace pas un conseiller humain</b><span class="t">Si viamia vous est ouvert, allez-y, c'est gratuit et c'est bien. Cynthia est là pour ceux à qui la porte est fermée, et pour arriver préparé chez ceux à qui elle est ouverte.</span></span></div>
+      <div class="pr yes"><span class="mk" aria-hidden="true"></span><span><b>Je vous promets qu'on ne vous flattera pas</b><span class="t">Votre entourage vous encourage, c'est son rôle. Cynthia regarde vos réponses en face. Si une piste ne tient pas, elle vous le dit maintenant, pas dans deux ans.</span></span></div>
       
-      <div class="pr yes"><span class="mk">✓</span><span><b>Des sources vérifiées, et tenues à jour</b><span class="t">Des francs, des CFC, des brevets fédéraux, l'article 32, les financements cantonaux. Chaque salaire porte sa source et la date de son relevé, et quand une source est fragile, la fiche le dit au lieu de faire semblant. Une boussole ne vaut que par sa précision : celle-ci, on la revérifie.</span></span></div>
-      <div class="pr yes"><span class="mk">✓</span><span><b>Je vous promets que vos mots restent les vôtres</b><span class="t">Votre CV est lu dans votre navigateur et n'est jamais envoyé nulle part. Rien n'est stocké sur nos serveurs, et rien ne sert à entraîner quoi que ce soit.</span></span></div>
+      <div class="pr yes"><span class="mk" aria-hidden="true"></span><span><b>Des sources vérifiées, et tenues à jour</b><span class="t">Des francs, des CFC, des brevets fédéraux, l'article 32, les financements cantonaux. Chaque salaire porte sa source et la date de son relevé, et quand une source est fragile, la fiche le dit au lieu de faire semblant. Une boussole ne vaut que par sa précision : celle-ci, on la revérifie.</span></span></div>
+      <div class="pr yes"><span class="mk" aria-hidden="true"></span><span><b>Je vous promets que vos mots restent les vôtres</b><span class="t">Votre CV est lu dans votre navigateur et n'est jamais envoyé nulle part. Rien n'est stocké sur nos serveurs, et rien ne sert à entraîner quoi que ce soit.</span></span></div>
     </div>
   </section>
 
@@ -322,7 +143,10 @@ strong{font-weight:600;color:var(--ink)}
   </div>
 </section>
 
-<div class="foot">© 2026 Cynth.IA · Genève, Suisse</div>
+<div class="foot">
+  © 2026 Cynth.IA · Genève, Suisse ·
+  <a href="index.html">Retour au site</a>
+</div>
 
 <script>
 (function(){
