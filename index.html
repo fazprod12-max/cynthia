@@ -807,6 +807,11 @@ footer{
   box-shadow:0 12px 28px -10px rgba(18,135,106,.7);transition:.25s;margin-top:12px;font-family:inherit;
 }
 .modal-box .mcta:hover{transform:translateY(-2px);box-shadow:0 18px 34px -12px rgba(18,135,106,.8);}
+.modal-box .merci-cadeau{margin:6px 0 18px;padding:16px 18px;border-radius:16px;background:var(--c-emerald-soft);}
+.modal-box .merci-cadeau h4{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:var(--c-ink);margin-bottom:6px;}
+.modal-box .merci-cadeau p{color:var(--c-ink);margin-bottom:4px;}
+.modal-box .merci-cadeau p a{color:var(--c-emerald-d);text-decoration:underline;overflow-wrap:anywhere;}
+.modal-box a.mcta{text-decoration:none;}
 .modal-tag{
   display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:50px;margin-bottom:16px;
   background:var(--c-emerald-soft);border:1px solid transparent;
@@ -1935,7 +1940,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   .lp-price{background:#fff;border:2px solid var(--c-emerald);border-radius:28px;padding:42px;max-width:450px;width:100%;text-align:center;box-shadow:0 40px 80px -32px rgba(18,135,106,.5);position:relative;}
   .lp-ptag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(120deg,var(--c-coral),#FF9166);color:#fff;font-family:'Space Grotesk';font-weight:600;font-size:.8rem;padding:6px 16px;border-radius:100px;}
   .lp-price h3{font-size:1.3rem;margin-bottom:6px;} .lp-amount{font-family:'Space Grotesk';font-size:3.4rem;font-weight:700;color:var(--c-ink);margin:10px 0 4px;}
-  .lp-amount small{font-size:1rem;color:var(--c-muted);font-weight:500;} .lp-psub{color:var(--c-muted);font-size:.92rem;margin-bottom:22px;}
+  .lp-amount small{font-size:1rem;color:var(--c-muted);font-weight:500;} .lp-psub{color:var(--c-muted);font-size:.92rem;margin-bottom:22px;} .lp-pcadeau{margin:-12px 0 22px;padding:10px 14px;border-radius:12px;background:var(--c-emerald-soft);color:var(--c-emerald-d);font-size:.9rem;font-weight:600;line-height:1.5;}
   .lp-price ul{list-style:none;text-align:left;margin:22px 0;display:grid;gap:11px;padding:0;} .lp-price li{display:flex;gap:10px;font-size:.94rem;} .lp-price li i{color:var(--c-emerald);font-weight:700;font-style:normal;}
   .lp-price .lp-btn-primary{width:100%;justify-content:center;padding:15px;}
   .lp-final{text-align:center;padding:100px 0;} .lp-final h2{font-size:2.7rem;margin-bottom:16px;} .lp-final p{color:var(--c-muted);font-size:1.1rem;margin-bottom:28px;}
@@ -2503,6 +2508,7 @@ hote._histoire={etat:()=>({t:t,joue:joue,idx:idx,duree:DUREE}),rejouer:rejouer,p
         <h3>Le rapport complet</h3>
         <div class="lp-amount" id="lp-price-amount"></div>
         <p class="lp-psub" id="lp-price-sub">Paiement unique, sans abonnement. Vous gardez le rapport.</p>
+        <p class="lp-pcadeau" id="lp-price-cadeau" style="display:none;"></p>
         <ul>
           <li><i>✓</i><span>Un profil construit sur ce que vous avez vraiment dit.</span></li>
           
@@ -3598,8 +3604,8 @@ const LEGAL = {
   email: 'contact@cynthia-orientation.ch',   
   version: '2.1',
   maj: '26 septembre 2026',
-  cgv_version: '1.1',
-  cgv_maj: '26 septembre 2026',
+  cgv_version: '1.2',          
+  cgv_maj: '21 novembre 2026',
   for_juridique: 'Genève, Suisse'
 };
 
@@ -3726,6 +3732,7 @@ function showModal(type){
       <h4>Prix</h4>
       <p>Le prix est celui affiché sur la page au moment où vous commandez, en francs suisses. Il est indiqué toutes taxes comprises : il n'y a rien à ajouter.</p>
       <p><strong>Pas de TVA.</strong> Le chiffre d'affaires de l'activité reste en dessous du seuil légal d'assujettissement de CHF 100 000 par an. Aucune TVA n'est donc facturée ni récupérable. Si cela change, le prix affiché changera aussi, et cette clause avec.</p>
+      <p><strong>Offre « un rapport à offrir ».</strong> Pour chaque rapport payé jusqu'au 31 décembre 2026, l'acheteur peut demander à <a href="mailto:${LEGAL.email}" style="color:var(--c-emerald-d)">${LEGAL.email}</a> un code qui permet à une personne de son choix d'obtenir un rapport sans payer. Un seul code par rapport payé, utilisable une seule fois, valable jusqu'au 31 janvier 2027. Le code n'a aucune valeur en argent : il ne peut être ni échangé ni remboursé. Le rapport obtenu est le même qu'un rapport payé. Aucun avis ni aucune contrepartie n'est demandé en échange. Un rapport obtenu avec un code ne donne pas droit à un nouveau code. Si le rapport payé est remboursé, le code non utilisé est annulé.</p>
 
       <h4>Comment la commande se conclut</h4>
       <p>Dans l'ordre, et vous pouvez vous arrêter à chaque étape :</p>
@@ -3893,6 +3900,11 @@ function _masquerBandeauBetaSiPayant() {
 function _prixFmt(n) {
   return (Math.round(n * 100) % 100 ? n.toFixed(2) : String(Math.round(n))) + ' CHF';
 }
+
+function _offreCadeauEnCours() {
+  return Date.now() < new Date(2027, 0, 1, 0, 0, 0).getTime();
+}
+var _TEXTE_CADEAU_PRIX = "Jusqu'au 31 décembre 2026, chaque rapport acheté vous permet d'en offrir un à la personne de votre choix.";
 function _majBlocPrix() {
   _masquerBandeauBetaSiPayant();
   if (typeof CONFIG === 'undefined') return;
@@ -3922,6 +3934,12 @@ function _majBlocPrix() {
     elTag.style.display = 'none'; elTag.textContent = '';
     elAmount.textContent = _prixFmt(prix);
     elSub.textContent = 'Paiement unique, sans abonnement. Vous gardez le rapport.';
+  }
+  var elCadeau = document.getElementById('lp-price-cadeau');
+  if (elCadeau) {
+    var cadeau = lancement && _offreCadeauEnCours();
+    elCadeau.textContent = cadeau ? _TEXTE_CADEAU_PRIX : '';
+    elCadeau.style.display = cadeau ? '' : 'none';
   }
   var carte2 = document.getElementById('lp-offre-conseiller');
   var grille = document.getElementById('lp-offres');
@@ -16500,6 +16518,16 @@ function closeRapportOverlay() {
 }
 
 
+
+function _blocCadeauMerci() {
+  if (!_paiementParCarte || !_offreCadeauEnCours()) return '';
+  var mail = 'mailto:contact@cynthia-orientation.ch?subject=' + encodeURIComponent('Mon rapport à offrir');
+  return '<div class="merci-cadeau"><h4>Un rapport à offrir</h4>' +
+    "<p>Jusqu'au 31 décembre 2026, votre achat vous permet d'offrir un rapport à la personne de votre choix. Écrivez-nous à " +
+    '<a href="' + mail + '">contact@cynthia-orientation.ch</a> ' +
+    "avec l'adresse e-mail utilisée pour votre paiement&nbsp;: nous vous envoyons son code sous 24 heures (jours ouvrables).</p>" +
+    '<a class="mcta" href="' + mail + '">Mon rapport à offrir</a></div>';
+}
 function _afficherRemerciement() {
   const overlay = document.getElementById('merci-overlay');
   const body = document.getElementById('merci-body');
@@ -16510,6 +16538,7 @@ function _afficherRemerciement() {
   body.innerHTML =
     '<h3>' + salut + '</h3>' +
     '<p>Ce rapport est votre feuille de route pour les prochains jours. J’espère sincèrement qu’il vous aide à avancer, et que vous atteindrez tous les objectifs que vous vous fixez.</p>' +
+    _blocCadeauMerci() +
     '<p>Si vous avez un petit moment, votre avis compte énormément pour Faouzie, le fondateur : il y tient vraiment, pour que chaque personne qui passe par ici vive une meilleure expérience que la précédente.</p>' +
     '<button class="mcta" onclick="window.open(\'retour.html\',\'_blank\')">Donner mon avis (2 min)</button>' +
     '<p style="margin-top:14px"><a href="#" onclick="_fermerRemerciement();return false;">Non merci, retour à l’accueil</a></p>';
@@ -18218,6 +18247,7 @@ async function startStripeCheckout() {
 
 
 var _stripeJustSucceeded = false;
+var _paiementParCarte = false;   
 
 
 async function checkStripeReturn() {
@@ -18246,6 +18276,7 @@ async function checkStripeReturn() {
     if (!resp.ok) throw new Error('verify-' + resp.status);
     const data = await resp.json();
     if (data.paid === true) {
+      _paiementParCarte = (data.status === 'paid');
       
       localStorage.setItem('cynthia_paid_session', JSON.stringify({ ts: Date.now(), sessionId }));
 
