@@ -3517,6 +3517,7 @@ async function _processCv(file){
     if (!txt || txt.length < 40) { _cvText=''; _cvUi('error', file.name, "Texte illisible (CV scanné en image ?). Vous pouvez continuer sans, ou envoyer un PDF texte / Word."); return; }
     _cvText = txt.slice(0, 8000); 
     _cvUi('ok', file.name);
+    try { _compterEtape('cv_ajoute'); } catch (e) {}   
   } catch(err){
     _cvText = '';
     const msg = (err && err.message === 'old-doc')
@@ -3694,7 +3695,7 @@ function showModal(type){
       <p>Les notes de clarté que nous vous demandons avant l'entretien, après votre rapport, et dans la relance à 3 mois (voir ci-dessous) sont conservées <strong>3 ans</strong>, sous forme de nombres agrégés : c'est une mesure de preuve dans la durée, pas une donnée qu'il faudrait effacer, puisqu'elle ne peut être reliée à personne une fois votre onglet fermé.</p>
 
       <h4>La seule chose que nous comptons</h4>
-      <p>Nous enregistrons des totaux anonymes pour savoir si le service fonctionne : combien de visites le site a reçues et d'où elles viennent (seulement le nom du site d'où vous venez, par exemple LinkedIn ou Google, jamais la page précise), combien de conversations ont démarré dans la journée, combien sont allées jusqu'au bout, combien de rapports ont été produits, et en combien de temps. Ce sont des nombres, rien d'autre. Aucun identifiant, aucun cookie de mesure, aucun mot de votre conversation, aucune adresse IP conservée. Il nous est donc impossible de savoir qui a fait quoi, ni de relier deux visites entre elles. Nous saurons « douze rapports aujourd'hui », jamais « le vôtre ».</p>
+      <p>Nous enregistrons des totaux anonymes pour savoir si le service fonctionne : combien de visites le site a reçues et d'où elles viennent (seulement le nom du site d'où vous venez, par exemple LinkedIn ou Google, jamais la page précise), combien de personnes ont atteint chaque étape du parcours (par exemple le questionnaire ou le premier message), combien de conversations ont démarré dans la journée, combien sont allées jusqu'au bout, combien de rapports ont été produits, et en combien de temps. Ce sont des nombres, rien d'autre. Aucun identifiant, aucun cookie de mesure, aucun mot de votre conversation, aucune adresse IP conservée. Il nous est donc impossible de savoir qui a fait quoi, ni de relier deux visites entre elles. Nous saurons « douze rapports aujourd'hui », jamais « le vôtre ».</p>
       <p>Une exception ciblée, à ce principe : avant l'entretien, puis une fois votre rapport ouvert, nous vous demandons sur dix à quel point vous voyez clair sur votre direction professionnelle. Pour savoir si ça progresse entre les deux, ces deux notes précises portent un identifiant tiré au hasard, sans lien avec vous : pas votre prénom, pas votre email, pas la référence de votre rapport. Il sert uniquement à savoir que les deux notes viennent de la même visite, et il disparaît avec votre onglet. La question posée dans la relance à 3 mois, elle, n'est reliée à rien du tout : c'est volontaire, pour rester la mesure la plus honnête des trois.</p>
 
       <h4>Ce qui reste sur votre appareil</h4>
@@ -10666,6 +10667,7 @@ async function sendChatMsg() {
 
   
   chatHistory.push({ role: 'user', content: text });
+  try { _compterEtape('premier_message'); } catch (e) {}   
   if (input) { input.value = ''; _reinitSaisie(input); }   
   chatWaiting = true;
   if (btn)   btn.disabled   = true;
@@ -10865,18 +10867,51 @@ function confirmEndChat() {
 }
 
 
+
+var _fileCompteur = [];
+var _compteurEnVol = false;
+function _envoyerCompteurSuivant() {
+  if (_compteurEnVol || !_fileCompteur.length) return;
+  var corps = _fileCompteur.shift();
+  _compteurEnVol = true;
+  var fini = false;
+  function suite() {
+    if (fini) return;
+    fini = true; _compteurEnVol = false;
+    _envoyerCompteurSuivant();
+  }
+  try {
+    fetch(GROQ_PROXY_URL.replace(/\/+$/, '') + '/evt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(corps),
+      keepalive: true
+    }).then(suite, suite);
+    setTimeout(suite, 4000);
+  } catch (e) { suite(); }
+}
 function _compter(type, secondes, src) {
   try {
     if (!GROQ_PROXY_URL || GROQ_PROXY_URL.includes('VOTRE_SUBDOMAIN')) return;
     var corps = { type: type };
     if (typeof secondes === 'number' && isFinite(secondes)) corps.s = Math.round(secondes);
     if (src) corps.src = src;
-    fetch(GROQ_PROXY_URL.replace(/\/+$/, '') + '/evt', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(corps),
-      keepalive: true
-    }).catch(function(){});
+    _fileCompteur.push(corps);
+    _envoyerCompteurSuivant();
+  } catch (e) {  }
+}
+
+
+var _ETAPES_PARCOURS = ['clic_commencer', 'intro_vue', 'preappel_ok', 'cv_ajoute', 'questionnaire_fini', 'premier_message'];
+var _etapesFaitesMemoire = {};
+function _compterEtape(etape) {
+  try {
+    if (_ETAPES_PARCOURS.indexOf(etape) === -1) return;
+    if (!/(^|\.)cynthia-orientation\.ch$/.test(location.hostname)) return;
+    var cle = 'cyn_etape_' + etape;
+    try { if (sessionStorage.getItem(cle)) return; sessionStorage.setItem(cle, '1'); }
+    catch (e) { if (_etapesFaitesMemoire[etape]) return; _etapesFaitesMemoire[etape] = true; }
+    _compter(etape);
   } catch (e) {  }
 }
 
@@ -11316,6 +11351,7 @@ function _introDejaVue() {
   return _bqIntroMemoire;
 }
 function _introBoussole() {
+  try { _compterEtape('clic_commencer'); } catch (e) {}   
   try {
     const el = document.getElementById('bq-intro');
     if (!el || _introDejaVue()) return;
@@ -11342,6 +11378,7 @@ function _introBoussoleToucher(ev) {
 function _fermerIntroBoussole() {
   const el = document.getElementById('bq-intro');
   if (!el || el.hidden) return;
+  try { _compterEtape('intro_vue'); } catch (e) {}   
   el.classList.add('ferme');
   document.documentElement.classList.remove('bq-ouverte');
   setTimeout(function () {
@@ -11776,6 +11813,7 @@ function _qFaitsTransition() {
 }
 function _transitionAfficher() {
   _qMontrer('qs-transition');
+  try { _compterEtape('questionnaire_fini'); } catch (e) {}   
   var qc = document.querySelector('.quiz-card'); if (qc) qc.classList.add('q-sombre');
   var p = _qPrenom();
   var h = document.getElementById('q-tr-titre');
@@ -12011,6 +12049,7 @@ function _buildQuizContext() {
 
 
 function launchChat() {
+  try { _compterEtape('preappel_ok'); } catch (e) {}   
   resetQuiz();
   gp('questionnaire');
 }
