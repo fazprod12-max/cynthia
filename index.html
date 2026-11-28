@@ -18315,7 +18315,8 @@ async function checkStripeReturn() {
     if (!resp.ok) throw new Error('verify-' + resp.status);
     const data = await resp.json();
     if (data.paid === true) {
-      _paiementParCarte = (data.status === 'paid');
+      
+      _paiementParCarte = (data.carte === true);
       
       localStorage.setItem('cynthia_paid_session', JSON.stringify({ ts: Date.now(), sessionId }));
 
